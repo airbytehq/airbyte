@@ -54,6 +54,199 @@ definitions:
       primary_key: "key_id"
       path: "/api2/projects/{{ config['project_id'] }}/keys"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          key_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+          created_at_timestamp:
+            type:
+              - "null"
+              - number
+          key_name:
+            type: object
+            properties:
+              ios:
+                type:
+                  - "null"
+                  - string
+              android:
+                type:
+                  - "null"
+                  - string
+              web:
+                type:
+                  - "null"
+                  - string
+              other:
+                type:
+                  - "null"
+                  - string
+          filenames:
+            type: object
+            properties:
+              ios:
+                type:
+                  - "null"
+                  - string
+              android:
+                type:
+                  - "null"
+                  - string
+              web:
+                type:
+                  - "null"
+                  - string
+              other:
+                type:
+                  - "null"
+                  - string
+          description:
+            type:
+              - "null"
+              - string
+          platforms:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          comments:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                comment_id:
+                  type: number
+                comment:
+                  type: string
+                added_by:
+                  type: number
+                added_by_email:
+                  type: string
+                added_at:
+                  type: string
+                added_at_timestamp:
+                  type: number
+          screenshots:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                screenshot_id:
+                  type: number
+                key_ids:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: number
+                url:
+                  type: string
+                title:
+                  type: string
+                description:
+                  type: string
+                screenshot_tags:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: string
+                width:
+                  type:
+                    - "null"
+                    - number
+                height:
+                  type:
+                    - "null"
+                    - number
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                created_at_timestamp:
+                  type:
+                    - "null"
+                    - number
+          translations:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                translation_id:
+                  type: number
+                key_id:
+                  type: number
+                language_iso:
+                  type: string
+                translation:
+                  type: string
+                modified_by:
+                  type: number
+                modified_by_email:
+                  type: string
+                modified_at:
+                  type: string
+                modified_at_timestamp:
+                  type: number
+                is_reviewed:
+                  type: boolean
+                is_unverified:
+                  type: boolean
+                verified_by:
+                  type: number
+                words:
+                  type: number
+                custom_translation_statuses:
+                  type: string
+                task_id:
+                  type: number
+          is_plural:
+            type: boolean
+          plural_name:
+            type: string
+          is_hidden:
+            type: boolean
+          is_archived:
+            type: boolean
+          context:
+            type: string
+          base_words:
+            type: number
+          char_limit:
+            type: number
+          custom_attributes:
+            type: string
+          modified_at:
+            type: string
+          modified_at_timestamp:
+            type: number
+          translations_modified_at:
+            type: string
+          translations_modified_at_timestamp:
+            type: number
   languages_stream:
     # https://developers.lokalise.com/reference/list-all-keys
     $ref: "#/definitions/base_stream"
@@ -69,6 +262,34 @@ definitions:
       primary_key: "lang_id"
       path: "/api2/projects/{{ config['project_id'] }}/languages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          lang_id:
+            type:
+              - "null"
+              - number
+          lang_iso:
+            type:
+              - "null"
+              - string
+          lang_name:
+            type:
+              - "null"
+              - string
+          is_rtl:
+            type:
+              - "null"
+              - boolean
+          plural_forms:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
   comments_stream:
     # https://developers.lokalise.com/reference/list-project-comments
     $ref: "#/definitions/base_stream"
@@ -84,6 +305,26 @@ definitions:
       primary_key: "comment_id"
       path: "/api2/projects/{{ config['project_id'] }}/comments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          added_at_timestamp:
+            type: integer
+          added_at:
+            type: string
+          added_by_email:
+            type: string
+          key_id:
+            type: integer
+          added_by:
+            type: integer
+          comment:
+            type: string
+          comment_id:
+            type: integer
   contributors_stream:
     # https://developers.lokalise.com/reference/list-all-contributors
     $ref: "#/definitions/base_stream"
@@ -99,6 +340,43 @@ definitions:
       primary_key: "user_id"
       path: "/api2/projects/{{ config['project_id'] }}/contributors"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          is_admin:
+            type: boolean
+          is_reviewer:
+            type: boolean
+          languages:
+            type: array
+            items:
+              type: object
+              properties:
+                lang_name:
+                  type: string
+                lang_id:
+                  type: integer
+                is_writable:
+                  type: boolean
+                lang_iso:
+                  type: string
+          user_id:
+            type: integer
+          created_at_timestamp:
+            type: integer
+          created_at:
+            type: string
+          admin_rights:
+            type: array
+            items:
+              type: string
+          fullname:
+            type: string
+          email:
+            type: string
   translations_stream:
     # https://developers.lokalise.com/reference/list-all-translations
     $ref: "#/definitions/base_stream"
@@ -114,6 +392,44 @@ definitions:
       primary_key: "translation_id"
       path: "/api2/projects/{{ config['project_id'] }}/translations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          modified_at_timestamp:
+            type: integer
+          translation_id:
+            type: integer
+          reviewed_by:
+            type: integer
+          key_id:
+            type: integer
+          words:
+            type: integer
+          custom_translation_statuses:
+            type: array
+          segment_number:
+            type: integer
+          task_id:
+            type: "null"
+          language_iso:
+            type: string
+          is_fuzzy:
+            type: boolean
+          modified_by_email:
+            type: string
+          is_reviewed:
+            type: boolean
+          is_unverified:
+            type: boolean
+          translation:
+            type: string
+          modified_by:
+            type: integer
+          modified_at:
+            type: string
 streams:
   - "#/definitions/keys_stream"
   - "#/definitions/languages_stream"

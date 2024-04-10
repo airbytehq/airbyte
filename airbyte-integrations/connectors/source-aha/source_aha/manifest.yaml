@@ -37,11 +37,90 @@ definitions:
     $parameters:
       name: "features"
       path: "/features"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the feature.
+            type:
+              - "null"
+              - string
+          reference_num:
+            description: A reference number associated with the feature.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the feature.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the feature was created.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL that provides more details about the feature.
+            type:
+              - "null"
+              - string
+          resource:
+            description: The type of resource that the feature represents.
+            type:
+              - "null"
+              - string
+          product_id:
+            description: The identifier of the product the feature belongs to.
+            type:
+              - "null"
+              - string
   products_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "products"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the product
+            type:
+              - "null"
+              - string
+          reference_prefix:
+            description: The prefix used in the product's reference code
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the product
+            type:
+              - "null"
+              - string
+          product_line:
+            description: The category or group to which the product belongs
+            type:
+              - "null"
+              - boolean
+          created_at:
+            description: The timestamp when the product was created
+            type:
+              - "null"
+              - string
+          workspace_type:
+            description: The type of workspace associated with the product
+            type:
+              - "null"
+              - string
   idea_categories_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -57,11 +136,138 @@ definitions:
           - stream: "#/definitions/products_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the idea category
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the idea category
+            type:
+              - "null"
+              - string
+          parent_id:
+            description:
+              The identifier of the parent idea category, if this category
+              is nested
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the idea category was created
+            type:
+              - "null"
+              - string
   ideas_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "ideas"
       path: "/ideas"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the idea
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the idea
+            type:
+              - "null"
+              - string
+          reference_num:
+            description: Reference number associated with the idea
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the idea was created
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp of when the idea was last updated
+            type:
+              - "null"
+              - string
+          workflow_status:
+            description: Status of the idea in the workflow
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the workflow status
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the workflow status
+                type:
+                  - "null"
+                  - string
+              position:
+                description: Position of the workflow status
+                type:
+                  - "null"
+                  - integer
+              complete:
+                description: Indicates if the workflow status is complete
+                type:
+                  - "null"
+                  - boolean
+              color:
+                description: Color associated with the workflow status
+                type:
+                  - "null"
+                  - string
+          description:
+            description: Details related to the idea description
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the description
+                type:
+                  - "null"
+                  - string
+              body:
+                description: The main content of the idea description
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp of when the description was created
+                type:
+                  - "null"
+                  - string
+              attachments:
+                description: Attachments related to the idea
+                type:
+                  - "null"
+                  - array
+          url:
+            description: URL link related to the idea
+            type:
+              - "null"
+              - string
+          resource:
+            description: Resource linked to the idea
+            type:
+              - "null"
+              - string
   idea_endorsements_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -77,6 +283,151 @@ definitions:
           - stream: "#/definitions/ideas_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the endorsement.
+            type:
+              - "null"
+              - string
+          idea_id:
+            description: The unique identifier of the idea being endorsed.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the endorsement was created.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the endorsement was last updated.
+            type:
+              - "null"
+              - string
+          value:
+            description: The value of the endorsement.
+            type:
+              - "null"
+              - string
+          link:
+            description: The link associated with the endorsement.
+            type:
+              - "null"
+              - string
+          weight:
+            description: The weight of the endorsement.
+            type:
+              - "null"
+              - integer
+          endorsed_by_portal_user:
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the endorsing portal user.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the endorsing portal user.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email of the endorsing portal user.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The timestamp when the endorsing portal user was created.
+                type:
+                  - "null"
+                  - string
+          endorsed_by_idea_user:
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the endorsing idea user.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the endorsing idea user.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email of the endorsing idea user.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The timestamp when the endorsing idea user was created.
+                type:
+                  - "null"
+                  - string
+          endorsed_by_idea_organization:
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the endorsing idea organization.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the endorsing idea organization.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description:
+                  The timestamp when the endorsing idea organization was
+                  created.
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL of the endorsing idea organization.
+                type:
+                  - "null"
+                  - string
+              resource:
+                description: The resource associated with the endorsing idea organization.
+                type:
+                  - "null"
+                  - string
+          endorsed_by_user:
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the endorsing user.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the endorsing user.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email of the endorsing user.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The timestamp when the endorsing user was created.
+                type:
+                  - "null"
+                  - string
+              updated_at:
+                description: The timestamp when the endorsing user was last updated.
+                type:
+                  - "null"
+                  - string
   idea_comments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -92,17 +443,396 @@ definitions:
           - stream: "#/definitions/ideas_stream"
             parent_key: "id"
             partition_field: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the idea comment
+            type:
+              - "null"
+              - string
+          idea_id:
+            description: Unique identifier of the parent idea
+            type:
+              - "null"
+              - string
+          body:
+            description: Textual content of the idea comment
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp indicating when the idea comment was created
+            type:
+              - "null"
+              - string
+          visibility:
+            description: Visibility settings for the idea comment
+            type:
+              - "null"
+              - string
+          parent_idea_comment_id:
+            description: Identifier of the parent idea comment if applicable
+            type:
+              - "null"
+              - string
+          idea_commenter_user:
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the commenter user
+                type:
+                  - "null"
+                  - string
+              name_id:
+                description: Name ID of the commenter user
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the commenter user
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp indicating when the commenter user was created
+                type:
+                  - "null"
+                  - string
+              updated_at:
+                description:
+                  Timestamp indicating when the commenter user was last
+                  updated
+                type:
+                  - "null"
+                  - string
+          idea:
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the parent idea
+                type:
+                  - "null"
+                  - string
+              reference_num:
+                description: Reference number for the parent idea
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the parent idea
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp indicating when the parent idea was created
+                type:
+                  - "null"
+                  - string
+              updated_at:
+                description: Timestamp indicating when the parent idea was last updated
+                type:
+                  - "null"
+                  - string
+              workflow_status:
+                type: object
+                properties:
+                  id:
+                    description: Unique identifier for the workflow status
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the workflow status
+                    type:
+                      - "null"
+                      - string
+                  position:
+                    description: Position of the workflow status
+                    type:
+                      - "null"
+                      - integer
+                  complete:
+                    description: Flag indicating if the workflow status is complete
+                    type:
+                      - "null"
+                      - boolean
+                  color:
+                    description:
+                      Color associated with the workflow status of the
+                      parent idea
+                    type:
+                      - "null"
+                      - string
+              description:
+                type: object
+                properties:
+                  id:
+                    description: Unique identifier for the idea description
+                    type:
+                      - "null"
+                      - string
+                  body:
+                    description: Textual content of the idea description
+                    type:
+                      - "null"
+                      - string
+                  created_at:
+                    description:
+                      Timestamp indicating when the idea description was
+                      created
+                    type:
+                      - "null"
+                      - string
+                  attachments:
+                    description: Attachments associated with the idea description
+                    type:
+                      - "null"
+                      - array
+                url:
+                  description: URL pointing to the idea description
+                  type:
+                    - "null"
+                    - string
+                resource:
+                  description: Resource linked to the idea description
+                  type:
+                    - "null"
+                    - string
+            attachments:
+              description: Attachments associated with the parent idea of the comment
+              type:
+                - "null"
+                - array
+          attachments:
+            description: Attachments associated with the idea comment
+            type:
+              - "null"
+              - array
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: "/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the user
+            type:
+              - "null"
+              - string
+          name:
+            description: Full name of the user
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the user
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Date and time when the user account was created
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Date and time when the user account was last updated
+            type:
+              - "null"
+              - string
+          accessed_at:
+            description: Date and time when the user last accessed the system
+            type:
+              - "null"
+              - string
+          product_roles:
+            description: Roles assigned to the user for accessing different products/features
+            type:
+              - "null"
+              - array
+          enabled:
+            description: Boolean indicating if the user account is active/enabled
+            type:
+              - "null"
+              - boolean
+          paid_seat:
+            description: Boolean indicating if the user account is on a paid seat/license
+            type:
+              - "null"
+              - boolean
+          administrator:
+            description: Boolean indicating if the user has administrative privileges
+            type:
+              - "null"
+              - boolean
+          administrator_roles:
+            description: Roles assigned to the user for administrative access
+            type:
+              - "null"
+              - object
+          identity_provider:
+            description: Identity provider used for user authentication
+            type:
+              - "null"
+              - object
   goals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "goals"
       path: "/goals"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the goal.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the goal.
+            type:
+              - "null"
+              - string
+          reference_num:
+            description: A reference number or code for the goal.
+            type:
+              - "null"
+              - string
+          effort:
+            description: The estimated effort required to achieve the goal.
+            type:
+              - "null"
+              - number
+          value:
+            description: The value or importance of the goal.
+            type:
+              - "null"
+              - number
+          position:
+            description: The order or position of the goal in a list or hierarchy.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the goal was created.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time when the goal was last updated.
+            type:
+              - "null"
+              - string
+          product_id:
+            description: The ID of the product or project the goal belongs to.
+            type:
+              - "null"
+              - string
+          progress:
+            description: The current progress towards achieving the goal.
+            type:
+              - "null"
+              - number
+          progress_source:
+            description: The source of progress data for the goal.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL or link related to the goal.
+            type:
+              - "null"
+              - string
+          resource:
+            description: The resource allocated or needed for the goal.
+            type:
+              - "null"
+              - string
+          description:
+            description: A detailed description of the goal.
+            type:
+              - "null"
+              - object
+          success_metric:
+            description: The metric used to measure the success of the goal.
+            type:
+              - "null"
+              - object
+          project:
+            description: The project associated with the goal.
+            type:
+              - "null"
+              - object
+          timeframe:
+            description: The timeframe within which the goal is expected to be achieved.
+            type:
+              - "null"
+              - object
+          initiatives:
+            description: List of initiatives associated with the goal.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+          comments_count:
+            description: The number of comments on the goal.
+            type:
+              - "null"
+              - integer
+          features:
+            description: List of features related to the goal.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+          releases:
+            description: List of releases relevant to the goal.
+            type:
+              - "null"
+              - array
+          custom_fields:
+            description: Any custom fields or metadata associated with the goal.
+            type:
+              - "null"
+              - array
+          parent:
+            description: The parent goal if this is a sub-goal.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          parents:
+            description: List of parent goals.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
 streams:
   - "#/definitions/features_stream"
   - "#/definitions/products_stream"

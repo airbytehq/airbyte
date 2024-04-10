@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
       field_path:
@@ -31,12 +28,291 @@ definitions:
     $parameters:
       name: "candidates"
       path: "/candidates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          rating:
+            type: integer
+          created_at:
+            type: string
+          phones:
+            type: array
+            items:
+              type: string
+          placements:
+            type: array
+            items:
+              type: object
+              properties:
+                stage_id:
+                  type:
+                    - "null"
+                    - integer
+                job_starts_at:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type: string
+                language:
+                  type:
+                    - "null"
+                    - string
+                hired_at:
+                  type:
+                    - "null"
+                    - string
+                offer_id:
+                  type: integer
+                candidate_id:
+                  type:
+                    - "null"
+                    - integer
+                overdue_diff:
+                  type:
+                    - "null"
+                    - string
+                updated_at:
+                  type: string
+                ratings:
+                  type: object
+                overdue_at:
+                  type:
+                    - "null"
+                    - string
+                positive_ratings:
+                  type:
+                    - "null"
+                    - integer
+                id:
+                  type: integer
+                position:
+                  type:
+                    - "null"
+                    - integer
+          source:
+            type:
+              - "null"
+              - string
+          adminapp_url:
+            type:
+              - "null"
+              - string
+          example:
+            type: boolean
+          emails:
+            type: array
+            items:
+              type: string
+          pending_result_request:
+            type: boolean
+          has_avatar:
+            type: boolean
+          updated_at:
+            type: string
+          ratings:
+            type: object
+            properties:
+              yes:
+                type: integer
+          viewed:
+            type: boolean
+          positive_ratings:
+            type:
+              - "null"
+              - integer
+          id:
+            type: integer
+          ratings_count:
+            type: integer
+          tasks_count:
+            type: integer
+          upcoming_event:
+            type: boolean
+          unread_notifications:
+            type: boolean
+          photo_thumb_url:
+            type:
+              - "null"
+              - string
+          initials:
+            type:
+              - "null"
+              - string
+          followed:
+            type: boolean
+          my_upcoming_event:
+            type: boolean
+          referrer:
+            type:
+              - "null"
+              - string
+          my_pending_result_request:
+            type: boolean
+          admin_id:
+            type:
+              - "null"
+              - integer
+          my_last_rating:
+            type:
+              - "null"
+              - string
+          notes_count:
+            type: integer
+          name:
+            type: string
+          last_message_at:
+            type:
+              - "null"
+              - string
   offers_stream:
     # Docs: https://docs.recruitee.com/reference/offers-get
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "offers"
       path: "/offers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          has_active_campaign:
+            type: boolean
+          employment_type:
+            type:
+              - "null"
+              - string
+          eeo_settings:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: string
+          title:
+            type: string
+          adminapp_url:
+            type:
+              - "null"
+              - string
+          example:
+            type: boolean
+          mailbox_email:
+            type:
+              - "null"
+              - string
+          pipeline_template:
+            type:
+              - "null"
+              - object
+          careers_url:
+            type: string
+          disqualified_candidates_count:
+            type: integer
+          updated_at:
+            type: string
+          state_name:
+            type:
+              - "null"
+              - string
+          street:
+            type:
+              - "null"
+              - string
+          id:
+            type: integer
+          hiring_manager_id:
+            type:
+              - "null"
+              - integer
+          department:
+            type:
+              - "null"
+              - string
+          published_at:
+            type:
+              - "null"
+              - string
+          slug:
+            type: string
+          closed_at:
+            type:
+              - "null"
+              - string
+          department_id:
+            type: integer
+          qualified_candidates_count:
+            type: integer
+          kind:
+            type: string
+          recruiter_id:
+            type:
+              - "null"
+              - integer
+          enabled_languages:
+            type: array
+            items:
+              type: object
+              properties:
+                code:
+                  type: string
+                name:
+                  type: string
+                native_name:
+                  type: string
+          followed:
+            type: boolean
+          url:
+            type: string
+          pipeline:
+            type: boolean
+          country_code:
+            type:
+              - "null"
+              - string
+          followers:
+            type: array
+          number_of_openings:
+            type:
+              - "null"
+              - integer
+          candidates_count:
+            type: integer
+          hired_candidates_count:
+            type: integer
+          job_scheduler:
+            type:
+              - "null"
+              - string
+          guid:
+            type: string
+          enabled_for_referrals:
+            type: boolean
+          location:
+            type: string
+          position:
+            type:
+              - "null"
+              - integer
+          postal_code:
+            type:
+              - "null"
+              - string
+          state_code:
+            type:
+              - "null"
+              - string
+          offer_tags:
+            type: array
+          status:
+            type: string
   departments_stream:
     # Docs: https://docs.recruitee.com/reference/departments-get
     $ref: "#/definitions/base_stream"
@@ -44,6 +320,30 @@ definitions:
       name: "departments"
       path: "/departments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          name:
+            type: string
+          offers_count:
+            type: integer
+          grouped_translations:
+            type: object
+            properties:
+              en:
+                type: object
+                properties:
+                  name:
+                    type: string
+          id:
+            type: integer
+          status:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/candidates_stream"
   - "#/definitions/offers_stream"

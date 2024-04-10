@@ -53,9 +53,6 @@ definitions:
       $ref: "#/definitions/pagination"
 
   base_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/retriever"
 
@@ -66,6 +63,103 @@ definitions:
       primary_key: "id"
       path: "v2/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          fullName:
+            type:
+              - "null"
+              - string
+          username:
+            type:
+              - "null"
+              - string
+          blocked:
+            type:
+              - "null"
+              - boolean
+          verified:
+            type:
+              - "null"
+              - boolean
+          role:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          timeZone:
+            type:
+              - "null"
+              - string
+          locale:
+            type:
+              - "null"
+              - string
+          userAddress:
+            type:
+              - "null"
+              - object
+            properties:
+              country:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              line:
+                type:
+                  - "null"
+                  - string
+              zipCode:
+                type:
+                  - "null"
+                  - string
+          invitationDisabled:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          details:
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
+          skypeUsername:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
   teams_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,6 +167,37 @@ definitions:
       primary_key: "id"
       path: "v2/teams"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                type:
+                  - "null"
+                  - string
+              api:
+                type:
+                  - "null"
+                  - string
   services_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -80,6 +205,51 @@ definitions:
       primary_key: "id"
       path: "v1/services"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          teamId:
+            type:
+              - "null"
+              - string
+          isExternal:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                type:
+                  - "null"
+                  - string
+              api:
+                type:
+                  - "null"
+                  - string
   integrations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -87,6 +257,41 @@ definitions:
       primary_key: "id"
       path: "v2/integrations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          enabled:
+            type:
+              - "null"
+              - boolean
+          type:
+            type:
+              - "null"
+              - string
+          teamId:
+            type:
+              - "null"
+              - string
+          version:
+            type:
+              - "null"
+              - string
+          advanced:
+            type:
+              - "null"
+              - boolean
   incidents_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -94,6 +299,100 @@ definitions:
       primary_key: "id"
       path: "v1/incidents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          tinyId:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          priority:
+            type:
+              - "null"
+              - string
+          responders:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+          impactedServices:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          statusPageEntry:
+            type:
+              - "null"
+              - object
+            properties:
+              title:
+                type:
+                  - "null"
+                  - string
+              detail:
+                type:
+                  - "null"
+                  - string
+          details:
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
+          notifyStakeholders:
+            type:
+              - "null"
+              - boolean
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
   alerts_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -117,6 +416,205 @@ definitions:
       primary_key: "id"
       path: "v2/alerts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          tinyId:
+            type:
+              - "null"
+              - string
+          alias:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          acknowledged:
+            type:
+              - "null"
+              - boolean
+          seen:
+            type:
+              - "null"
+              - boolean
+          isSeen:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          snoozed:
+            type:
+              - "null"
+              - boolean
+          snoozedUntil:
+            type:
+              - "null"
+              - string
+            format: date-time
+          count:
+            type:
+              - "null"
+              - number
+          lastOccurredAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          source:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - string
+          user:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - string
+          responders:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+          visibleTo:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+          teams:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+          integration:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+          report:
+            type:
+              - "null"
+              - object
+            properties:
+              ackTime:
+                type:
+                  - "null"
+                  - number
+              closeTime:
+                type:
+                  - "null"
+                  - number
+              acknowledgedBy:
+                type:
+                  - "null"
+                  - string
+              closedBy:
+                type:
+                  - "null"
+                  - string
+          actions:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          entity:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          details:
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
+          ownerTeamId:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
   user_teams_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -142,6 +640,24 @@ definitions:
             path: ["user_id"]
             value: "{{ stream_partition['id'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          user_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   alert_recipients_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -181,6 +697,46 @@ definitions:
         field_pointers:
           - ["user"]
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          alert_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_username:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          method:
+            type:
+              - "null"
+              - string
+          aware:
+            type:
+              - "null"
+              - boolean
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
   alert_logs_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -208,18 +764,49 @@ definitions:
             path: ["alert_id"]
             value: "{{ stream_partition['id'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          alert_id:
+            type:
+              - "null"
+              - string
+          offset:
+            type:
+              - "null"
+              - string
+          log:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
 check:
   type: CheckStream
   stream_names:
     - users
-    # - teams
-    # - services
-    # - incidents
-    # - integrations
-    # - alerts
-    # - user_teams
-    # - alert_recipients
-    # - alert_logs
+      # - teams
+      # - services
+      # - incidents
+      # - integrations
+      # - alerts
+      # - user_teams
+      # - alert_recipients
+      # - alert_logs
 
 streams:
   - "#/definitions/users_stream"

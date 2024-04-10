@@ -50,6 +50,197 @@ definitions:
     $parameters:
       path: "people/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          socials:
+            type:
+              - "null"
+              - array
+            properties:
+              note:
+                type:
+                  - "null"
+                  - string
+          leads_converted_from:
+            type:
+              - "null"
+              - array
+            properties:
+              leads:
+                type:
+                  - "null"
+                  - string
+          tags:
+            type:
+              - "null"
+              - array
+            properties:
+              sticker:
+                type:
+                  - "null"
+                  - string
+          custom_fields:
+            type:
+              - "null"
+              - array
+            properties:
+              mprc:
+                type:
+                  - "null"
+                  - string
+          prefix:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          middle_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          suffix:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            properties:
+              street:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          assignee_id:
+            type:
+              - "null"
+              - integer
+          company_id:
+            type:
+              - "null"
+              - integer
+          company_name:
+            type:
+              - "null"
+              - string
+          contact_type_id:
+            type:
+              - "null"
+              - integer
+          details:
+            type: "null"
+          emails:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                category:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+          phone_numbers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                number:
+                  type:
+                    - "null"
+                    - string
+                category:
+                  type:
+                    - "null"
+                    - string
+          title:
+            type:
+              - "null"
+              - string
+          websites:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                category:
+                  type:
+                    - "null"
+                    - string
+          date_created:
+            type:
+              - "null"
+              - integer
+          date_modified:
+            type:
+              - "null"
+              - integer
+          date_last_contacted:
+            type:
+              - "null"
+              - integer
+          interaction_count:
+            type:
+              - "null"
+              - integer
+          date_lead_created:
+            type:
+              - "null"
+              - integer
+        required:
+          - id
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
@@ -57,6 +248,65 @@ definitions:
     $parameters:
       path: "projects/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            properties:
+              sticker:
+                type:
+                  - "null"
+                  - string
+          custom_fields:
+            type:
+              - "null"
+              - array
+            properties:
+              mprc:
+                type:
+                  - "null"
+                  - string
+          related_resource:
+            type:
+              - "null"
+              - string
+          assignee_id:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          details:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - integer
+          date_modified:
+            type:
+              - "null"
+              - integer
   companies_stream:
     $ref: "#/definitions/base_stream"
     name: "companies"
@@ -64,6 +314,131 @@ definitions:
     $parameters:
       path: "companies/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          phone_numbers:
+            type:
+              - "null"
+              - array
+            properties:
+              category:
+                type:
+                  - "null"
+                  - string
+              number:
+                type:
+                  - "null"
+                  - string
+          custom_fields:
+            type:
+              - "null"
+              - array
+            properties:
+              mpc:
+                type:
+                  - "null"
+                  - string
+          name:
+            type:
+              - "null"
+              - string
+          address:
+            type: object
+            properties:
+              street:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+          assignee_id:
+            type:
+              - "null"
+              - integer
+          contact_type_id:
+            type:
+              - "null"
+              - integer
+          details:
+            type:
+              - "null"
+              - string
+          email_domain:
+            type:
+              - "null"
+              - string
+          socials:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                category:
+                  type:
+                    - "null"
+                    - string
+          tags:
+            type:
+              - "null"
+              - array
+            items: {}
+          websites:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                url:
+                  type:
+                    - "null"
+                    - string
+                category:
+                  type:
+                    - "null"
+                    - string
+          interaction_count:
+            type:
+              - "null"
+              - integer
+          date_created:
+            type:
+              - "null"
+              - integer
+          date_modified:
+            type:
+              - "null"
+              - integer
   opportunities_stream:
     $ref: "#/definitions/base_stream"
     name: "opportunities"
@@ -71,6 +446,93 @@ definitions:
     $parameters:
       path: "opportunities/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          assignee_id:
+            type:
+              - "null"
+              - number
+          close_date:
+            type:
+              - "null"
+              - string
+          company_id:
+            type:
+              - "null"
+              - string
+          company_name:
+            type:
+              - "null"
+              - string
+          customer_source_id:
+            type:
+              - "null"
+              - string
+          details:
+            type:
+              - "null"
+              - string
+          loss_reason_id:
+            type:
+              - "null"
+              - string
+          monetary_value:
+            type:
+              - "null"
+              - integer
+          pipeline_id:
+            type:
+              - "null"
+              - string
+          primary_contact_id:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - string
+          pipeline_stage_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          win_probability:
+            type:
+              - "null"
+              - number
+          date_created:
+            type:
+              - "null"
+              - integer
+          date_modified:
+            type:
+              - "null"
+              - integer
 streams:
   - "#/definitions/people_stream"
   - "#/definitions/projects_stream"

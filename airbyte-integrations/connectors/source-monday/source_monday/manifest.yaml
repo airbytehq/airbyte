@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_monday/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -18,7 +15,11 @@ definitions:
     url_base: "https://api.monday.com/v2"
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
+      api_token:
+        "{{ config.get('credentials', {}).get('api_token') if config.get('credentials',
+        {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token')
+        if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token',
+        '') }}"
     limit: "{{ parameters['items_per_page'] }}"
     nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
     error_handler:
@@ -26,24 +27,24 @@ definitions:
       error_handlers:
         - type: "DefaultErrorHandler"
           response_filters:
-            - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+            - predicate:
+                "{{ 'error_code' in response and response['error_code'] == 'ComplexityException'
+                }}"
               action: RETRY
           backoff_strategies:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
         - type: "DefaultErrorHandler"
-          description: "
-            Ignore the slice when there is no access to the requested entity - 'code: 403, message: None'.
-            https://github.com/airbytehq/alpha-beta-issues/issues/846
-            "
+          description:
+            " Ignore the slice when there is no access to the requested entity
+            - 'code: 403, message: None'. https://github.com/airbytehq/alpha-beta-issues/issues/846 "
           response_filters:
             - http_codes: [403]
               action: IGNORE
         - type: "DefaultErrorHandler"
-          description: "
-            Retry when `Internal Server Error occures - `code: 500, message: Internal server error`.
-            https://github.com/airbytehq/alpha-beta-issues/issues/245
-            "
+          description:
+            " Retry when `Internal Server Error occures - `code: 500, message:
+            Internal server error`. https://github.com/airbytehq/alpha-beta-issues/issues/245 "
           response_filters:
             - http_codes: [500, 502]
               action: RETRY
@@ -67,8 +68,6 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     primary_key: "id"
 
   base_nopagination_stream:
@@ -82,27 +81,522 @@ definitions:
     $parameters:
       name: "tags"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          color:
+            description: The color associated with the tag in hexadecimal or RGB format.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the tag.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or label of the tag.
+            type:
+              - "null"
+              - string
   teams_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
       name: "teams"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the team.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the team.
+            type:
+              - "null"
+              - string
+          picture_url:
+            description: URL to the picture of the team.
+            type:
+              - "null"
+              - string
+          users:
+            description: List of users in the team.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier for the user.
+                  type:
+                    - "null"
+                    - string
   updates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "updates"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          assets:
+            description: List of assets related to the update
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                created_at:
+                  description: Timestamp when the asset was created
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                file_extension:
+                  description: Extension of the file
+                  type:
+                    - "null"
+                    - string
+                file_size:
+                  description: Size of the file
+                  type:
+                    - "null"
+                    - integer
+                id:
+                  description: Unique identifier for the asset
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the asset
+                  type:
+                    - "null"
+                    - string
+                original_geometry:
+                  description: Original geometry of the asset
+                  type:
+                    - "null"
+                    - string
+                public_url:
+                  description: Public URL for accessing the asset
+                  type:
+                    - "null"
+                    - string
+                uploaded_by:
+                  description: User who uploaded the asset
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier of the user
+                      type:
+                        - "null"
+                        - string
+                url:
+                  description: URL of the asset
+                  type:
+                    - "null"
+                    - string
+                url_thumbnail:
+                  description: URL of the thumbnail for the asset
+                  type:
+                    - "null"
+                    - string
+          body:
+            description: Main content of the update
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp when the update was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          creator_id:
+            description: Unique identifier of the creator
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the update
+            type:
+              - "null"
+              - string
+          item_id:
+            description: Identifier of the item associated with the update
+            type:
+              - "null"
+              - string
+          replies:
+            description: List of replies to the update
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier for the reply
+                  type:
+                    - "null"
+                    - string
+                creator_id:
+                  description: Unique identifier of the reply creator
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  description: Timestamp when the reply was created
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                text_body:
+                  description: Textual body of the reply
+                  type:
+                    - "null"
+                    - string
+                updated_at:
+                  description: Timestamp when the reply was last updated
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                body:
+                  description: Content of the reply
+                  type:
+                    - "null"
+                    - string
+          text_body:
+            description: Textual content of the update
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp when the update was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "users"
       path: ""
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          birthday:
+            description: The user's date of birth
+            type:
+              - "null"
+              - string
+            format: date-time
+          country_code:
+            description: The country code associated with the user
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The datetime when the user account was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          join_date:
+            description: The date when the user joined the platform
+            type:
+              - "null"
+              - string
+            format: date
+          email:
+            description: The user's email address
+            type:
+              - "null"
+              - string
+          enabled:
+            description: Flag indicating if the user account is currently enabled
+            type:
+              - "null"
+              - boolean
+          id:
+            description: Unique identifier for the user
+            type:
+              - "null"
+              - string
+          is_admin:
+            description: Flag indicating if the user has admin privileges
+            type:
+              - "null"
+              - boolean
+          is_guest:
+            description: Flag indicating if the user is considered a guest user
+            type:
+              - "null"
+              - boolean
+          is_pending:
+            description: Flag indicating if the user account is pending approval
+            type:
+              - "null"
+              - boolean
+          is_view_only:
+            description: Flag indicating if the user has view-only permissions
+            type:
+              - "null"
+              - boolean
+          is_verified:
+            description: Flag indicating if the user account is verified
+            type:
+              - "null"
+              - boolean
+          location:
+            description: The user's location
+            type:
+              - "null"
+              - string
+          mobile_phone:
+            description: The user's mobile phone number
+            type:
+              - "null"
+              - string
+          name:
+            description: The user's name
+            type:
+              - "null"
+              - string
+          phone:
+            description: The user's phone number
+            type:
+              - "null"
+              - string
+          photo_original:
+            description: URL of the user's original photo
+            type:
+              - "null"
+              - string
+          photo_small:
+            description: URL of the user's small-sized photo
+            type:
+              - "null"
+              - string
+          photo_thumb:
+            description: URL of the user's thumbnail photo
+            type:
+              - "null"
+              - string
+          photo_thumb_small:
+            description: URL of the user's small-sized thumbnail photo
+            type:
+              - "null"
+              - string
+          photo_tiny:
+            description: URL of the user's tiny-sized photo
+            type:
+              - "null"
+              - string
+          time_zone_identifier:
+            description: The identifier of the user's timezone
+            type:
+              - "null"
+              - string
+          title:
+            description: The user's title or role
+            type:
+              - "null"
+              - string
+          url:
+            description: URL associated with the user
+            type:
+              - "null"
+              - string
+          utc_hours_diff:
+            description: The difference in hours from UTC timezone
+            type:
+              - "null"
+              - integer
   workspaces_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workspaces"
       path: ""
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            description: Timestamp indicating when the workspace was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            description: A brief summary or explanation of the workspace
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier of the workspace
+            type:
+              - "null"
+              - string
+          kind:
+            description: Type or category of the workspace
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the workspace
+            type:
+              - "null"
+              - string
+          state:
+            description: Current state or status of the workspace
+            type:
+              - "null"
+              - string
+          account_product:
+            description: Details of the account product associated with the workspace
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the account product
+                type:
+                  - "null"
+                  - string
+              kind:
+                description: Type or category of the account product
+                type:
+                  - "null"
+                  - string
+          owners_subscribers:
+            description: List of users who are owners or subscribers of the workspace
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier of a user
+                  type:
+                    - "null"
+                    - string
+          settings:
+            description: Custom settings and configurations for the workspace
+            type:
+              - "null"
+              - object
+            properties:
+              icon:
+                description: Icon settings for the workspace
+                type:
+                  - "null"
+                  - object
+                properties:
+                  color:
+                    description: Color code of the icon
+                    type:
+                      - "null"
+                      - string
+                  image:
+                    description: URL of the icon image
+                    type:
+                      - "null"
+                      - string
+          team_owners_subscribers:
+            description: List of teams who are owners or subscribers of the workspace
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier of a team
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name or title of the team
+                  type:
+                    - "null"
+                    - string
+          teams_subscribers:
+            description: List of teams who are subscribers of the workspace
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier of a team
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name or title of the team
+                  type:
+                    - "null"
+                    - string
+          users_subscribers:
+            description: List of users who are subscribers of the workspace
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: Unique identifier of a user
+                  type:
+                    - "null"
+                    - string
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
@@ -137,7 +631,57 @@ definitions:
       page_size: 50
       nested_items_per_page: 50
 
-  # semi-incremental substreams
+    # semi-incremental substreams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique ID of the activity log entry.
+            type:
+              - "null"
+              - string
+          event:
+            description: The type of event captured in the activity log.
+            type:
+              - "null"
+              - string
+          data:
+            description: Additional data associated with the activity log.
+            type:
+              - "null"
+              - string
+          entity:
+            description: The entity that the activity log pertains to.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp indicating when the activity log was created.
+            type:
+              - "null"
+              - string
+          created_at_int:
+            description:
+              The integer representation of the timestamp when the activity
+              log was created.
+            type:
+              - "null"
+              - integer
+          pulse_id:
+            description:
+              The ID of the pulse associated with this activity log, if
+              applicable.
+            type:
+              - "null"
+              - integer
+          board_id:
+            description: The ID of the board related to this activity log.
+            type:
+              - "null"
+              - integer
   substream_semi_incremental:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -174,6 +718,292 @@ definitions:
         extractor:
           $ref: "#/definitions/incremental_extractor"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the board.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the board.
+            type:
+              - "null"
+              - string
+          board_kind:
+            description: The type or category of the board.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the board.
+            type:
+              - "null"
+              - string
+          columns:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                archived:
+                  description: Indicates if the column is archived.
+                  type:
+                    - "null"
+                    - boolean
+                description:
+                  description: The description or details of the column.
+                  type:
+                    - "null"
+                    - string
+                id:
+                  description: The unique identifier of the column.
+                  type:
+                    - "null"
+                    - string
+                settings_str:
+                  description: String representation of the column settings.
+                  type:
+                    - "null"
+                    - string
+                title:
+                  description: The title or name of the column.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: The type of data represented in the column.
+                  type:
+                    - "null"
+                    - string
+                width:
+                  description: The width configuration of the column.
+                  type:
+                    - "null"
+                    - integer
+          communication:
+            description: Communication related data for the board.
+            type:
+              - "null"
+              - string
+          description:
+            description: The description or details of the board.
+            type:
+              - "null"
+              - string
+          groups:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                archived:
+                  description: Indicates if the group is archived.
+                  type:
+                    - "null"
+                    - boolean
+                color:
+                  description: The color associated with the group.
+                  type:
+                    - "null"
+                    - string
+                deleted:
+                  description: Indicates if the group is deleted.
+                  type:
+                    - "null"
+                    - boolean
+                id:
+                  description: The unique identifier of the group.
+                  type:
+                    - "null"
+                    - string
+                position:
+                  description: The position or order of the group.
+                  type:
+                    - "null"
+                    - string
+                title:
+                  description: The title or name of the group.
+                  type:
+                    - "null"
+                    - string
+          owners:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The ID of an owner of the board.
+                  type:
+                    - "null"
+                    - string
+          creator:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the creator of the board.
+                type:
+                  - "null"
+                  - string
+          permissions:
+            description: Permissions associated with the board.
+            type:
+              - "null"
+              - string
+          state:
+            description: The state or status of the board.
+            type:
+              - "null"
+              - string
+          subscribers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The ID of a subscriber to the board.
+                  type:
+                    - "null"
+                    - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description:
+                    The unique identifier of a tag associated with the
+                    board.
+                  type:
+                    - "null"
+                    - string
+          top_group:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the top group associated with the board.
+                type:
+                  - "null"
+                  - string
+          updated_at:
+            description: The date and time when the board was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at_int:
+            description: The timestamp when the board was last updated.
+            type:
+              - "null"
+              - integer
+          updates:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The unique identifier of an update related to the board.
+                  type:
+                    - "null"
+                    - string
+          views:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description:
+                    The unique identifier of a view associated with the
+                    board.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name or title of the view.
+                  type:
+                    - "null"
+                    - string
+                settings_str:
+                  description: String representation of the view settings.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: The type of the view.
+                  type:
+                    - "null"
+                    - string
+                view_specific_data_str:
+                  description: String representation of view specific data.
+                  type:
+                    - "null"
+                    - string
+          workspace:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the workspace.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name or title of the workspace.
+                type:
+                  - "null"
+                  - string
+              kind:
+                description: The kind or type of the workspace.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: The description or details of the workspace.
+                type:
+                  - "null"
+                  - string
   items_stream:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
@@ -195,6 +1025,218 @@ definitions:
         extractor:
           $ref: "#/definitions/incremental_extractor"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the item.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the item.
+            type:
+              - "null"
+              - string
+          assets:
+            description: Information about any asset associated with the item.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                created_at:
+                  description: The date and time the asset was created.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                file_extension:
+                  description: The file extension of the asset.
+                  type:
+                    - "null"
+                    - string
+                file_size:
+                  description: The size of the asset file.
+                  type:
+                    - "null"
+                    - integer
+                id:
+                  description: The unique identifier of the asset.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the asset.
+                  type:
+                    - "null"
+                    - string
+                original_geometry:
+                  description: The original geometry of the asset.
+                  type:
+                    - "null"
+                    - string
+                public_url:
+                  description: The public URL where the asset can be accessed.
+                  type:
+                    - "null"
+                    - string
+                uploaded_by:
+                  description: Information about the user who uploaded the asset.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The user ID of the person who uploaded the asset.
+                      type:
+                        - "null"
+                        - string
+                url:
+                  description: The URL of the asset.
+                  type:
+                    - "null"
+                    - string
+                url_thumbnail:
+                  description: The URL to the thumbnail image of the asset.
+                  type:
+                    - "null"
+                    - string
+          board:
+            description: Information about the board to which the item belongs.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the board.
+                type:
+                  - "null"
+                  - string
+          column_values:
+            description: Values of the columns associated with the item.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The unique identifier of the column value.
+                  type:
+                    - "null"
+                    - string
+                text:
+                  description: The text value of the column.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: The type of the column value.
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: The actual value of the column.
+                  type:
+                    - "null"
+                    - string
+                display_value:
+                  description: The display value of the column.
+                  type:
+                    - "null"
+                    - string
+          created_at:
+            description: The date and time the item was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          creator_id:
+            description: The user ID of the creator of the item.
+            type:
+              - "null"
+              - string
+          group:
+            description: Information about the group to which the item belongs.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the group.
+                type:
+                  - "null"
+                  - string
+          parent_item:
+            description: Information about the parent item, if any.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the parent item.
+                type:
+                  - "null"
+                  - string
+          state:
+            description: The state of the item.
+            type:
+              - "null"
+              - string
+          subscribers:
+            description: Users who are subscribed to the item.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The unique identifier of the subscriber.
+                  type:
+                    - "null"
+                    - string
+          updated_at:
+            description: The date and time the item was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at_int:
+            description: The updated timestamp of the item.
+            type:
+              - "null"
+              - integer
+          updates:
+            description: Updates associated with the item.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  description: The unique identifier of the update.
+                  type:
+                    - "null"
+                    - string
 streams:
   - "#/definitions/items_stream"
   - "#/definitions/boards_stream"

@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_clickup_api/schemas/{{ parameters['name'] }}.json"
   singleSelector:
     type: RecordSelector
     extractor:
@@ -32,8 +29,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "user"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -43,11 +38,34 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/singleSelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          user:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+              username:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              profilePicture:
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "team"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -57,11 +75,52 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          avatar:
+            type:
+              - "null"
+              - string
+          members:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                username:
+                  type:
+                    - "null"
+                    - string
+                color:
+                  type:
+                    - "null"
+                    - string
+                profilePicture:
+                  type:
+                    - "null"
+                    - string
   - type: DeclarativeStream
     $parameters:
       name: "list"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -71,11 +130,106 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          orderindex:
+            type:
+              - "null"
+              - integer
+          content:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+              - object
+          priority:
+            type:
+              - "null"
+              - string
+          assignee:
+            type:
+              - "null"
+              - string
+          task_count:
+            type:
+              - "null"
+              - integer
+          due_date:
+            type:
+              - "null"
+              - string
+          start_date:
+            type:
+              - "null"
+              - string
+          archived:
+            type:
+              - "null"
+              - boolean
+          override_statuses:
+            type:
+              - "null"
+              - boolean
+          permission_level:
+            type:
+              - "null"
+              - string
+          folder:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              hidden:
+                type:
+                  - "null"
+                  - boolean
+              access:
+                type:
+                  - "null"
+                  - boolean
+          space:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              access:
+                type:
+                  - "null"
+                  - boolean
   - type: DeclarativeStream
     $parameters:
       name: "space"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -85,11 +239,126 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          statuses:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                status:
+                  type:
+                    - "null"
+                    - string
+                color:
+                  type:
+                    - "null"
+                    - string
+                orderindex:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+          private:
+            type:
+              - "null"
+              - boolean
+          multiple_assignees:
+            type:
+              - "null"
+              - boolean
+          assignees:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          features:
+            type:
+              - "null"
+              - object
+            properties:
+              due_dates:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+                  start_date:
+                    type:
+                      - "null"
+                      - boolean
+                  remap_due_dates:
+                    type:
+                      - "null"
+                      - boolean
+                  remap_closed_due_date:
+                    type:
+                      - "null"
+                      - boolean
+              time_tracking:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              tags:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              time_estimates:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              checklists:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
   - type: DeclarativeStream
     $parameters:
       name: "folder"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -99,11 +368,64 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          orderindex:
+            type:
+              - "null"
+              - integer
+          override_statuses:
+            type:
+              - "null"
+              - boolean
+          hidden:
+            type:
+              - "null"
+              - boolean
+          task_count:
+            type:
+              - "null"
+              - string
+          lists:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          space:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              access:
+                type:
+                  - "null"
+                  - boolean
   - type: DeclarativeStream
     $parameters:
       name: "task"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -126,6 +448,153 @@ streams:
           field_name: "page"
           inject_into: "request_parameter"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - object
+            properties:
+              status:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              orderindex:
+                type:
+                  - "null"
+                  - integer
+              type:
+                type:
+                  - "null"
+                  - string
+          orderindex:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_closed:
+            type:
+              - "null"
+              - string
+          creator:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+              username:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              profilePicture:
+                type:
+                  - "null"
+                  - string
+          assignees:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          checklists:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          parent:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - object
+          due_date:
+            type:
+              - "null"
+              - string
+          start_date:
+            type:
+              - "null"
+              - string
+          time_estimate:
+            type:
+              - "null"
+              - string
+          time_spent:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          folder:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+          space:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+          list:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
 check:
   type: CheckStream
   stream_names: ["user", "team", "space", "folder", "list", "task"]

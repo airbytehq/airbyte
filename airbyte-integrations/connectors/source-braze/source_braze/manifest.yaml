@@ -67,24 +67,118 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          last_edited:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          is_api_campaign:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
   canvases_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "canvases"
       primary_key: "id"
       path: "/canvas/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          last_edited:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
   cards_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "cards"
       primary_key: "id"
       path: "/feed/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
   segments_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "segments"
       primary_key: "id"
       path: "/segments/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          analytics_tracking_enabled:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
   custom_events_stream:
     retriever:
       $ref: "#/definitions/event_retriever"
@@ -92,7 +186,17 @@ definitions:
       name: "events"
       path: "/events/list"
 
-  # ----- Incremental Sync -----
+    # ----- Incremental Sync -----
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            type:
+              - "null"
+              - string
   datetime_100d_incremental_sync:
     type: CustomIncrementalSync
     class_name: "source_braze.DatetimeIncrementalSyncComponent"
@@ -136,6 +240,20 @@ definitions:
     $parameters:
       name: "kpi_daily_new_users"
       path: "/kpi/new_users/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+              - "null"
+              - string
+          new_users:
+            type:
+              - "null"
+              - integer
   kpi_daily_active_users_stream:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -144,6 +262,20 @@ definitions:
     $parameters:
       name: "kpi_daily_active_users"
       path: "/kpi/dau/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+              - "null"
+              - string
+          dau:
+            type:
+              - "null"
+              - integer
   kpi_daily_app_uninstalls_stream:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -153,7 +285,21 @@ definitions:
       name: "kpi_daily_app_uninstalls"
       path: "/kpi/uninstalls/data_series"
 
-  # ----- Incremental sub-streams -----
+    # ----- Incremental sub-streams -----
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            type:
+              - "null"
+              - string
+          uninstalls:
+            type:
+              - "null"
+              - integer
   campaigns_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -271,28 +417,219 @@ definitions:
     $parameters:
       name: "campaigns_analytics"
       path: "/campaigns/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          campaign_id:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - string
+          messages:
+            type:
+              - "null"
+              - object
+            properties:
+              ios_push:
+                type:
+                  - "null"
+                  - array
+              android_push:
+                type:
+                  - "null"
+                  - array
+              webhook:
+                type:
+                  - "null"
+                  - array
+              email:
+                type:
+                  - "null"
+                  - array
+              sms:
+                type:
+                  - "null"
+                  - array
+          conversions_by_send_time:
+            type:
+              - "null"
+              - integer
+          conversions1_by_send_time:
+            type:
+              - "null"
+              - integer
+          conversions2_by_send_time:
+            type:
+              - "null"
+              - integer
+          conversions3_by_send_time:
+            type:
+              - "null"
+              - integer
+          conversions:
+            type:
+              - "null"
+              - integer
+          conversions1:
+            type:
+              - "null"
+              - integer
+          conversions2:
+            type:
+              - "null"
+              - integer
+          conversions3:
+            type:
+              - "null"
+              - integer
+          unique_recipients:
+            type:
+              - "null"
+              - integer
+          revenue:
+            type:
+              - "null"
+              - number
   canvases_analytics_stream:
     $ref: "#/definitions/canvases_analytics_substream_config"
     $parameters:
       name: "canvases_analytics"
       path: "/canvas/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          canvas_id:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - string
+          total_stats:
+            type:
+              - "null"
+              - object
+            properties:
+              revenue:
+                type:
+                  - "null"
+                  - number
+              conversions:
+                type:
+                  - "null"
+                  - integer
+              conversions_by_entry_time:
+                type:
+                  - "null"
+                  - integer
+              entries:
+                type:
+                  - "null"
+                  - integer
+          variant_stats:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          step_stats:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
   cards_analytics_stream:
     $ref: "#/definitions/cards_analytics_substream_config"
     $parameters:
       name: "cards_analytics"
       path: "/feed/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          card_id:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - string
+          clicks:
+            type:
+              - "null"
+              - integer
+          impressions:
+            type:
+              - "null"
+              - integer
+          unique_clicks:
+            type:
+              - "null"
+              - integer
+          unique_impressions:
+            type:
+              - "null"
+              - integer
   segments_analytics_stream:
     $ref: "#/definitions/segments_analytics_substream_config"
     $parameters:
       name: "segments_analytics"
       path: "/segments/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          segment_id:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - string
+          size:
+            type:
+              - "null"
+              - number
   events_analytics_stream:
     $ref: "#/definitions/events_analytics_substream_config"
     $parameters:
       name: "events_analytics"
       path: "/events/data_series"
 
-  # -- Details streams
+    # -- Details streams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            type:
+              - "null"
+              - string
+          time:
+            type:
+              - "null"
+              - string
+          count:
+            type:
+              - "null"
+              - integer
   segments_details_stream:
     retriever:
       record_selector:
@@ -319,6 +656,49 @@ definitions:
     $parameters:
       name: "segments_details"
       path: "/segments/details"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            type: string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          text_description:
+            type:
+              - "null"
+              - string
+          segment_id:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   campaigns_details_stream:
     retriever:
       record_selector:
@@ -345,6 +725,95 @@ definitions:
     $parameters:
       name: "campaigns_details"
       path: "/campaigns/details"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            type: string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          archived:
+            type:
+              - "null"
+              - boolean
+          draft:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          schedule_type:
+            type:
+              - "null"
+              - string
+          first_sent:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_sent:
+            type:
+              - "null"
+              - string
+            format: date-time
+          campaign_id:
+            type:
+              - "null"
+              - string
+          channels:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          conversion_behaviors:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          messages:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          enabled:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   canvases_details_stream:
     retriever:
       record_selector:
@@ -372,6 +841,99 @@ definitions:
       name: "canvases_details"
       path: "/canvas/details"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          archived:
+            type:
+              - "null"
+              - boolean
+          draft:
+            type:
+              - "null"
+              - boolean
+          schedule_type:
+            type:
+              - "null"
+              - string
+          first_entry:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_entry:
+            type:
+              - "null"
+              - string
+            format: date-time
+          message:
+            type: string
+          canvas_id:
+            type:
+              - "null"
+              - string
+          channels:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          steps:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          variants:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          enabled:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/campaigns_analytics_stream"

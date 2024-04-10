@@ -32,14 +32,8 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_zoom/schemas/{{ parameters['name'] }}.json"
-
   users_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/user/methods/#operation/users
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       paginator:
         $ref: "#/definitions/zoom_paginator"
@@ -53,11 +47,129 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          user_created_at:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          custom_attributes:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                key:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          dept:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          employee_unique_id:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          group_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          id:
+            type:
+              - "null"
+              - string
+          im_group_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          language:
+            type:
+              - "null"
+              - string
+          last_client_version:
+            type:
+              - "null"
+              - string
+          last_login_time:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          phone_number:
+            type:
+              - "null"
+              - string
+          plan_united_type:
+            type:
+              - "null"
+              - string
+          pmi:
+            type:
+              - "null"
+              - number
+          role_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - number
+          verified:
+            type:
+              - "null"
+              - number
+          display_name:
+            type:
+              - "null"
+              - string
   meetings_list_tmp_stream:
     # This stream is used to fetch parent_ids for the meetings stream and all its substreams. No data is synced from this stream.
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetings
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meetings_list_tmp"
       primary_key: "id"
@@ -81,8 +193,6 @@ definitions:
 
   meetings_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meeting
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meetings"
       primary_key: "id"
@@ -104,10 +214,624 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          assistant_id:
+            type:
+              - "null"
+              - string
+          host_email:
+            type:
+              - "null"
+              - string
+          host_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          uuid:
+            type:
+              - "null"
+              - string
+          agenda:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          encrypted_password:
+            type:
+              - "null"
+              - string
+          h323_password:
+            type:
+              - "null"
+              - string
+          join_url:
+            type:
+              - "null"
+              - string
+          chat_join_url:
+            type:
+              - "null"
+              - string
+          occurrences:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                duration:
+                  type:
+                    - "null"
+                    - number
+                occurrence_id:
+                  type:
+                    - "null"
+                    - string
+                start_time:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+          password:
+            type:
+              - "null"
+              - string
+          pmi:
+            type:
+              - "null"
+              - string
+          pre_schedule:
+            type:
+              - "null"
+              - boolean
+          pstn_password:
+            type:
+              - "null"
+              - string
+          recurrence:
+            type:
+              - "null"
+              - object
+            properties:
+              end_date_time:
+                type:
+                  - "null"
+                  - string
+              end_times:
+                type:
+                  - "null"
+                  - number
+              monthly_day:
+                type:
+                  - "null"
+                  - number
+              monthly_week:
+                type:
+                  - "null"
+                  - number
+              monthly_week_day:
+                type:
+                  - "null"
+                  - number
+              repeat_interval:
+                type:
+                  - "null"
+                  - number
+              type:
+                type:
+                  - "null"
+                  - number
+              weekly_days:
+                type:
+                  - "null"
+                  - string
+          settings:
+            type:
+              - "null"
+              - object
+            properties:
+              allow_multiple_devices:
+                type:
+                  - "null"
+                  - boolean
+              alternative_hosts:
+                type:
+                  - "null"
+                  - string
+              alternative_hosts_email_notification:
+                type:
+                  - "null"
+                  - boolean
+              alternative_host_update_polls:
+                type:
+                  - "null"
+                  - boolean
+              approval_type:
+                type:
+                  - "null"
+                  - number
+              approved_or_denied_countries_or_regions:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  approved_list:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  denied_list:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  method:
+                    type:
+                      - "null"
+                      - string
+              audio:
+                type:
+                  - "null"
+                  - string
+              audio_conference_info:
+                type:
+                  - "null"
+                  - string
+              authentication_domains:
+                type:
+                  - "null"
+                  - string
+              authentication_exception:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    email:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    join_url:
+                      type:
+                        - "null"
+                        - string
+              authentication_name:
+                type:
+                  - "null"
+                  - string
+              authentication_option:
+                type:
+                  - "null"
+                  - string
+              auto_recording:
+                type:
+                  - "null"
+                  - string
+              breakout_room:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  rooms:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        participants:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - string
+              calendar_type:
+                type:
+                  - "null"
+                  - number
+              close_registration:
+                type:
+                  - "null"
+                  - boolean
+              cn_meeting:
+                type:
+                  - "null"
+                  - boolean
+              contact_email:
+                type:
+                  - "null"
+                  - string
+              contact_name:
+                type:
+                  - "null"
+                  - string
+              custom_keys:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    key:
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      type:
+                        - "null"
+                        - string
+              email_notification:
+                type:
+                  - "null"
+                  - boolean
+              device_testing:
+                type:
+                  - "null"
+                  - boolean
+              email_in_attendee_report:
+                type:
+                  - "null"
+                  - boolean
+              enable_dedicated_group_chat:
+                type:
+                  - "null"
+                  - boolean
+              encryption_type:
+                type:
+                  - "null"
+                  - string
+              enforce_login:
+                type:
+                  - "null"
+                  - boolean
+              enforce_login_domains:
+                type:
+                  - "null"
+                  - string
+              focus_mode:
+                type:
+                  - "null"
+                  - boolean
+              global_dial_in_countries:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              global_dial_in_numbers:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    city:
+                      type:
+                        - "null"
+                        - string
+                    country:
+                      type:
+                        - "null"
+                        - string
+                    country_name:
+                      type:
+                        - "null"
+                        - string
+                    number:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+              host_video:
+                type:
+                  - "null"
+                  - boolean
+              in_meeting:
+                type:
+                  - "null"
+                  - boolean
+              jbh_time:
+                type:
+                  - "null"
+                  - number
+              join_before_host:
+                type:
+                  - "null"
+                  - boolean
+              language_interpretation:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  interpreters:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        languages:
+                          type:
+                            - "null"
+                            - string
+              meeting_authentication:
+                type:
+                  - "null"
+                  - boolean
+              mute_upon_entry:
+                type:
+                  - "null"
+                  - boolean
+              participant_video:
+                type:
+                  - "null"
+                  - boolean
+              private_meeting:
+                type:
+                  - "null"
+                  - boolean
+              resources:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    resource_type:
+                      type:
+                        - "null"
+                        - string
+                    resource_id:
+                      type:
+                        - "null"
+                        - string
+                    permission_level:
+                      type:
+                        - "null"
+                        - string
+              registrants_confirmation_email:
+                type:
+                  - "null"
+                  - boolean
+              registrants_email_notification:
+                type:
+                  - "null"
+                  - boolean
+              registration_type:
+                type:
+                  - "null"
+                  - number
+              request_permission_to_unmute_participants:
+                type:
+                  - "null"
+                  - boolean
+              show_join_info:
+                type:
+                  - "null"
+                  - boolean
+              show_share_button:
+                type:
+                  - "null"
+                  - boolean
+              sign_language_interpretation:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+              use_pmi:
+                type:
+                  - "null"
+                  - boolean
+              waiting_room:
+                type:
+                  - "null"
+                  - boolean
+              waiting_room_options:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  admit_type:
+                    type:
+                      - "null"
+                      - number
+                  auto_admit:
+                    type:
+                      - "null"
+                      - number
+                  internal_user_auto_admit:
+                    type:
+                      - "null"
+                      - number
+              watermark:
+                type:
+                  - "null"
+                  - boolean
+              host_save_video_order:
+                type:
+                  - "null"
+                  - boolean
+              internal_meeting:
+                type:
+                  - "null"
+                  - boolean
+              continuous_meeting_chat:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  auto_add_invited_external_users:
+                    type:
+                      - "null"
+                      - boolean
+                  channel_id:
+                    type:
+                      - "null"
+                      - string
+              participant_focused_meeting:
+                type:
+                  - "null"
+                  - boolean
+              push_change_to_calendar:
+                type:
+                  - "null"
+                  - boolean
+          registration_url:
+            type:
+              - "null"
+              - string
+          resources:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+                resource_id:
+                  type:
+                    - "null"
+                    - string
+                permission_level:
+                  type:
+                    - "null"
+                    - string
+          start_time:
+            type:
+              - "null"
+              - string
+          start_url:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+          topic:
+            type:
+              - "null"
+              - string
+          tracking_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                visible:
+                  type:
+                    - "null"
+                    - boolean
+          type:
+            type:
+              - "null"
+              - number
   meeting_registrants_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingRegistrants
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meeting_registrants"
       primary_key: "id"
@@ -143,10 +867,115 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          meeting_id:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          comments:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          custom_questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                title:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          job_title:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          no_of_employees:
+            type:
+              - "null"
+              - string
+          org:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          purchasing_time_frame:
+            type:
+              - "null"
+              - string
+          role_in_purchase_process:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          zip:
+            type:
+              - "null"
+              - string
+          create_time:
+            type:
+              - "null"
+              - string
+          join_url:
+            type:
+              - "null"
+              - string
   meeting_polls_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingPolls
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meeting_polls"
       primary_key: "id"
@@ -182,10 +1011,128 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          meeting_id:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - string
+          anonymous:
+            type:
+              - "null"
+              - boolean
+          poll_type:
+            type:
+              - "null"
+              - number
+          questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answer_max_character:
+                  type:
+                    - "null"
+                    - number
+                answer_min_character:
+                  type:
+                    - "null"
+                    - number
+                answer_required:
+                  type:
+                    - "null"
+                    - boolean
+                answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                case_sensitive:
+                  type:
+                    - "null"
+                    - boolean
+                name:
+                  type:
+                    - "null"
+                    - string
+                prompts:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      prompt_question:
+                        type:
+                          - "null"
+                          - string
+                      prompt_right_answers:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - string
+                rating_max_label:
+                  type:
+                    - "null"
+                    - string
+                rating_max_value:
+                  type:
+                    - "null"
+                    - number
+                rating_min_label:
+                  type:
+                    - "null"
+                    - string
+                rating_min_value:
+                  type:
+                    - "null"
+                    - number
+                right_answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                show_as_dropdown:
+                  type:
+                    - "null"
+                    - boolean
+                type:
+                  type:
+                    - "null"
+                    - string
+          title:
+            type:
+              - "null"
+              - string
   meeting_poll_results_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/listPastMeetingPolls
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meeting_poll_results"
     retriever:
@@ -221,10 +1168,63 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          meeting_uuid:
+            type:
+              - "null"
+              - string
+          meeting_id:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          question_details:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answer:
+                  type:
+                    - "null"
+                    - string
+                date_time:
+                  type:
+                    - "null"
+                    - string
+                polling_id:
+                  type:
+                    - "null"
+                    - string
+                question:
+                  type:
+                    - "null"
+                    - string
   meeting_registration_questions_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingRegistrantsQuestionsGet
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "meeting_registration_questions"
     retriever:
@@ -259,9 +1259,63 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinars_list_tmp_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          meeting_id:
+            type:
+              - "null"
+              - integer
+          custom_questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                required:
+                  type:
+                    - "null"
+                    - boolean
+                title:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+          questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field_name:
+                  type:
+                    - "null"
+                    - string
+                required:
+                  type:
+                    - "null"
+                    - boolean
+  webinars_list_tmp_stream:
     $parameters:
       name: "webinars_list_tmp"
       primary_key: "id"
@@ -293,8 +1347,6 @@ definitions:
             partition_field: "parent_id"
 
   webinars_stream:
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "webinars"
       primary_key: "id"
@@ -327,9 +1379,403 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
-  webinar_panelists_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          host_email:
+            type:
+              - "null"
+              - string
+          host_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          uuid:
+            type:
+              - "null"
+              - string
+          agenda:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          join_url:
+            type:
+              - "null"
+              - string
+          occurrences:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                duration:
+                  type:
+                    - "null"
+                    - number
+                occurrence_id:
+                  type:
+                    - "null"
+                    - string
+                start_time:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+          password:
+            type:
+              - "null"
+              - string
+          recurrence:
+            type:
+              - "null"
+              - object
+            properties:
+              end_date_time:
+                type:
+                  - "null"
+                  - string
+              end_times:
+                type:
+                  - "null"
+                  - number
+              monthly_day:
+                type:
+                  - "null"
+                  - number
+              monthly_week:
+                type:
+                  - "null"
+                  - number
+              monthly_week_day:
+                type:
+                  - "null"
+                  - number
+              repeat_interval:
+                type:
+                  - "null"
+                  - number
+              type:
+                type:
+                  - "null"
+                  - number
+              weekly_days:
+                type:
+                  - "null"
+                  - string
+          settings:
+            type:
+              - "null"
+              - object
+            properties:
+              allow_multiple_devices:
+                type:
+                  - "null"
+                  - boolean
+              alternative_hosts:
+                type:
+                  - "null"
+                  - string
+              alternative_host_update_polls:
+                type:
+                  - "null"
+                  - boolean
+              approval_type:
+                type:
+                  - "null"
+                  - number
+              attendees_and_panelists_reminder_email_notification:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  type:
+                    type:
+                      - "null"
+                      - number
+              audio:
+                type:
+                  - "null"
+                  - string
+              authentication_domains:
+                type:
+                  - "null"
+                  - string
+              authentication_name:
+                type:
+                  - "null"
+                  - string
+              authentication_option:
+                type:
+                  - "null"
+                  - string
+              auto_recording:
+                type:
+                  - "null"
+                  - string
+              close_registration:
+                type:
+                  - "null"
+                  - boolean
+              contact_email:
+                type:
+                  - "null"
+                  - string
+              contact_name:
+                type:
+                  - "null"
+                  - string
+              email_language:
+                type:
+                  - "null"
+                  - string
+              follow_up_absentees_email_notification:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  type:
+                    type:
+                      - "null"
+                      - number
+              follow_up_attendees_email_notification:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  type:
+                    type:
+                      - "null"
+                      - number
+              global_dial_in_countries:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              hd_video:
+                type:
+                  - "null"
+                  - boolean
+              hd_video_for_attendees:
+                type:
+                  - "null"
+                  - boolean
+              host_video:
+                type:
+                  - "null"
+                  - boolean
+              language_interpretation:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+                  interpreters:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        languages:
+                          type:
+                            - "null"
+                            - string
+              panelist_authentication:
+                type:
+                  - "null"
+                  - boolean
+              meeting_authentication:
+                type:
+                  - "null"
+                  - boolean
+              add_watermark:
+                type:
+                  - "null"
+                  - boolean
+              add_audio_watermark:
+                type:
+                  - "null"
+                  - boolean
+              notify_registrants:
+                type:
+                  - "null"
+                  - boolean
+              on_demand:
+                type:
+                  - "null"
+                  - boolean
+              panelists_invitation_email_notification:
+                type:
+                  - "null"
+                  - boolean
+              panelists_video:
+                type:
+                  - "null"
+                  - boolean
+              post_webinar_survey:
+                type:
+                  - "null"
+                  - boolean
+              practice_session:
+                type:
+                  - "null"
+                  - boolean
+              question_and_answer:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  allow_anonymous_questions:
+                    type:
+                      - "null"
+                      - boolean
+                  answer_questions:
+                    type:
+                      - "null"
+                      - string
+                  attendees_can_comment:
+                    type:
+                      - "null"
+                      - boolean
+                  attendees_can_upvote:
+                    type:
+                      - "null"
+                      - boolean
+                  allow_auto_reply:
+                    type:
+                      - "null"
+                      - boolean
+                  auto_reply_text:
+                    type:
+                      - "null"
+                      - string
+                  enable:
+                    type:
+                      - "null"
+                      - boolean
+              registrants_confirmation_email:
+                type:
+                  - "null"
+                  - boolean
+              registrants_email_notification:
+                type:
+                  - "null"
+                  - boolean
+              registrants_restrict_number:
+                type:
+                  - "null"
+                  - number
+              registration_type:
+                type:
+                  - "null"
+                  - number
+              send_1080p_video_to_attendees:
+                type:
+                  - "null"
+                  - boolean
+              show_share_button:
+                type:
+                  - "null"
+                  - boolean
+              survey_url:
+                type:
+                  - "null"
+                  - string
+              enable_session_branding:
+                type:
+                  - "null"
+                  - boolean
+          start_time:
+            type:
+              - "null"
+              - string
+          start_url:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+          topic:
+            type:
+              - "null"
+              - string
+          tracking_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          type:
+            type:
+              - "null"
+              - number
+          is_simulive:
+            type:
+              - "null"
+              - boolean
+          record_file_id:
+            type:
+              - "null"
+              - string
+  webinar_panelists_stream:
     $parameters:
       name: "webinar_panelists"
     retriever:
@@ -365,9 +1811,53 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_registrants_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_id:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          join_url:
+            type:
+              - "null"
+              - string
+          virtual_background_id:
+            type:
+              - "null"
+              - string
+          name_tag_id:
+            type:
+              - "null"
+              - string
+          name_tag_name:
+            type:
+              - "null"
+              - string
+          name_tag_pronouns:
+            type:
+              - "null"
+              - string
+          name_tag_description:
+            type:
+              - "null"
+              - string
+  webinar_registrants_stream:
     $parameters:
       name: "webinar_registrants"
     retriever:
@@ -403,9 +1893,114 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_absentees_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          comments:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          custom_questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                title:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          job_title:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          no_of_employees:
+            type:
+              - "null"
+              - string
+          org:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          purchasing_time_frame:
+            type:
+              - "null"
+              - string
+          role_in_purchase_process:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          zip:
+            type:
+              - "null"
+              - string
+          create_time:
+            type:
+              - "null"
+              - string
+          join_url:
+            type:
+              - "null"
+              - string
+  webinar_absentees_stream:
     $parameters:
       name: "webinar_absentees"
       primary_key: "id"
@@ -442,9 +2037,114 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_uuid }}"
 
-  webinar_polls_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_uuid:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          comments:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          custom_questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                title:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          job_title:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          no_of_employees:
+            type:
+              - "null"
+              - string
+          org:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          purchasing_time_frame:
+            type:
+              - "null"
+              - string
+          role_in_purchase_process:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          zip:
+            type:
+              - "null"
+              - string
+          create_time:
+            type:
+              - "null"
+              - string
+          join_url:
+            type:
+              - "null"
+              - string
+  webinar_polls_stream:
     $parameters:
       name: "webinar_polls"
     retriever:
@@ -480,9 +2180,127 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_poll_results_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          anonymous:
+            type:
+              - "null"
+              - boolean
+          poll_type:
+            type:
+              - "null"
+              - number
+          questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answer_max_character:
+                  type:
+                    - "null"
+                    - number
+                answer_min_character:
+                  type:
+                    - "null"
+                    - number
+                answer_required:
+                  type:
+                    - "null"
+                    - boolean
+                answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                case_sensitive:
+                  type:
+                    - "null"
+                    - boolean
+                name:
+                  type:
+                    - "null"
+                    - string
+                prompts:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      prompt_question:
+                        type:
+                          - "null"
+                          - string
+                      prompt_right_answers:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - string
+                rating_max_label:
+                  type:
+                    - "null"
+                    - string
+                rating_max_value:
+                  type:
+                    - "null"
+                    - number
+                rating_min_label:
+                  type:
+                    - "null"
+                    - string
+                rating_min_value:
+                  type:
+                    - "null"
+                    - number
+                right_answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                show_as_dropdown:
+                  type:
+                    - "null"
+                    - boolean
+                type:
+                  type:
+                    - "null"
+                    - string
+          title:
+            type:
+              - "null"
+              - string
+  webinar_poll_results_stream:
     $parameters:
       name: "webinar_poll_results"
     retriever:
@@ -516,9 +2334,50 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_registration_questions_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_uuid:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          question_details:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answer:
+                  type:
+                    - "null"
+                    - string
+                date_time:
+                  type:
+                    - "null"
+                    - string
+                polling_id:
+                  type:
+                    - "null"
+                    - string
+                question:
+                  type:
+                    - "null"
+                    - string
+  webinar_registration_questions_stream:
     $parameters:
       name: "webinar_registration_questions"
     retriever:
@@ -553,9 +2412,63 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_tracking_sources_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_id:
+            type:
+              - "null"
+              - string
+          custom_questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answers:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                required:
+                  type:
+                    - "null"
+                    - boolean
+                title:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+          questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field_name:
+                  type:
+                    - "null"
+                    - string
+                required:
+                  type:
+                    - "null"
+                    - boolean
+  webinar_tracking_sources_stream:
     $parameters:
       name: "webinar_tracking_sources"
       primary_key: "id"
@@ -590,9 +2503,37 @@ definitions:
           - path: ["webinar_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  webinar_qna_results_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          registration_count:
+            type:
+              - "null"
+              - number
+          source_name:
+            type:
+              - "null"
+              - string
+          tracking_url:
+            type:
+              - "null"
+              - string
+          visitor_count:
+            type:
+              - "null"
+              - number
+  webinar_qna_results_stream:
     $parameters:
       name: "webinar_qna_results"
     retriever:
@@ -626,10 +2567,43 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_uuid:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          question_details:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                answer:
+                  type:
+                    - "null"
+                    - string
+                question:
+                  type:
+                    - "null"
+                    - string
   report_meetings_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingDetails
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "report_meetings"
       primary_key: "id"
@@ -659,10 +2633,104 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          meeting_uuid:
+            type:
+              - "null"
+              - string
+          custom_keys:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          dept:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          end_time:
+            type:
+              - "null"
+              - string
+          host_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          participants_count:
+            type:
+              - "null"
+              - number
+          start_time:
+            type:
+              - "null"
+              - string
+          topic:
+            type:
+              - "null"
+              - string
+          total_minutes:
+            type:
+              - "null"
+              - number
+          tracking_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          type:
+            type:
+              - "null"
+              - number
+          user_email:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          uuid:
+            type:
+              - "null"
+              - string
   report_meeting_participants_stream:
     # Endpoint docs: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/reportMeetingParticipants
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     $parameters:
       name: "report_meeting_participants"
       primary_key: "id"
@@ -697,9 +2765,77 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_partition.parent_id }}"
 
-  report_webinars_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          meeting_uuid:
+            type:
+              - "null"
+              - string
+          meeting_id:
+            type:
+              - "null"
+              - integer
+          customer_key:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          failover:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          join_time:
+            type:
+              - "null"
+              - string
+          leave_time:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          registrant_id:
+            type:
+              - "null"
+              - string
+          user_email:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          bo_mtg_id:
+            type:
+              - "null"
+              - string
+          participant_user_id:
+            type:
+              - "null"
+              - string
+          attentiveness_score:
+            type:
+              - "null"
+              - string
+  report_webinars_stream:
     $parameters:
       name: "report_webinars"
     retriever:
@@ -733,9 +2869,99 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
-  report_webinar_participants_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_uuid:
+            type:
+              - "null"
+              - string
+          custom_keys:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                key:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          dept:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          end_time:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - number
+          participants_count:
+            type:
+              - "null"
+              - number
+          start_time:
+            type:
+              - "null"
+              - string
+          topic:
+            type:
+              - "null"
+              - string
+          total_minutes:
+            type:
+              - "null"
+              - number
+          tracking_fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                field:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+          type:
+            type:
+              - "null"
+              - number
+          user_email:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          uuid:
+            type:
+              - "null"
+              - string
+  report_webinar_participants_stream:
     $parameters:
       name: "report_webinar_participants"
     retriever:
@@ -769,6 +2995,60 @@ definitions:
           - path: ["webinar_uuid"]
             value: "{{ stream_partition.parent_id }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          webinar_uuid:
+            type:
+              - "null"
+              - string
+          customer_key:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          failover:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          join_time:
+            type:
+              - "null"
+              - string
+          leave_time:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          registrant_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          user_email:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/meetings_stream"

@@ -38,7 +38,156 @@ definitions:
       name: "contacts"
       primary_key: "contactID"
       path: "/contacts"
-  # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
+    # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          contactID:
+            type: string
+          identifiers:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                id:
+                  type: string
+                channels:
+                  type: object
+                  properties:
+                    sms:
+                      type: object
+                      properties:
+                        status:
+                          type:
+                            - string
+                            - "null"
+                        statusDate:
+                          type:
+                            - string
+                            - "null"
+                    email:
+                      type: object
+                      properties:
+                        status:
+                          type:
+                            - string
+                            - "null"
+                        statusDate:
+                          type:
+                            - string
+                            - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          country:
+            type:
+              - string
+              - "null"
+          countryCode:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          gender:
+            type: string
+          birthdate:
+            type:
+              - string
+              - "null"
+          clicked:
+            type:
+              - integer
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          optIns:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                date:
+                  type: string
+          segments:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          status:
+            type:
+              - string
+              - "null"
+          opened:
+            type:
+              - integer
+              - "null"
+          phone:
+            type: array
+            items:
+              type: string
+          phoneNumber:
+            type:
+              - string
+              - "null"
+          statuses:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                status:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+          sent:
+            type:
+              - integer
+              - "null"
+        required:
+          - contactID
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -50,6 +199,94 @@ definitions:
       record_selector:
         extractor:
           field_path: ["campaign"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          campaignID:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          fromName:
+            type:
+              - string
+              - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+          endDate:
+            type:
+              - string
+              - "null"
+          sent:
+            type:
+              - integer
+              - "null"
+          opened:
+            type:
+              - integer
+              - "null"
+          clicked:
+            type:
+              - integer
+              - "null"
+          bounced:
+            type:
+              - integer
+              - "null"
+          complained:
+            type:
+              - integer
+              - "null"
+          unsubscribed:
+            type:
+              - integer
+              - "null"
+          allSubscribers:
+            type:
+              - boolean
+              - "null"
+          segments:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                segmentID:
+                  type:
+                    - string
+                    - "null"
+        required:
+          - campaignID
   # API Docs: https://api-docs.omnisend.com/reference/get_carts
   carts_stream:
     $ref: "#/definitions/base_stream"
@@ -57,14 +294,385 @@ definitions:
       name: "carts"
       primary_key: "cartID"
       path: "/carts"
-  # API Docs: https://api-docs.omnisend.com/reference/get_orders
+    # API Docs: https://api-docs.omnisend.com/reference/get_orders
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          contactID:
+            type:
+              - string
+              - "null"
+          cartID:
+            type: string
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          cartSum:
+            type:
+              - integer
+              - "null"
+          cartRecoveryUrl:
+            type:
+              - string
+              - "null"
+          products:
+            type: array
+            items:
+              type: object
+              properties:
+                cartProductID:
+                  type:
+                    - string
+                    - "null"
+                productID:
+                  type:
+                    - string
+                    - "null"
+                variantID:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                description:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - integer
+                    - "null"
+                price:
+                  type:
+                    - integer
+                    - "null"
+                oldPrice:
+                  type:
+                    - integer
+                    - "null"
+                discount:
+                  type:
+                    - integer
+                    - "null"
+                imageUrl:
+                  type:
+                    - string
+                    - "null"
+                productUrl:
+                  type:
+                    - string
+                    - "null"
+        required:
+          - cartID
   orders_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "orders"
       primary_key: "orderID"
       path: "/orders"
-  # API Docs: https://api-docs.omnisend.com/reference/get_products
+    # API Docs: https://api-docs.omnisend.com/reference/get_products
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          orderID:
+            type: string
+          orderNumber:
+            type:
+              - integer
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          contactID:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          cartID:
+            type:
+              - string
+              - "null"
+          shippingMethod:
+            type:
+              - string
+              - "null"
+          trackingCode:
+            type:
+              - string
+              - "null"
+          courierTitle:
+            type:
+              - string
+              - "null"
+          courierUrl:
+            type:
+              - string
+              - "null"
+          orderUrl:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          discountCode:
+            type:
+              - string
+              - "null"
+          discountValue:
+            type:
+              - integer
+              - "null"
+          discountType:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          subTotalSum:
+            type:
+              - integer
+              - "null"
+          orderSum:
+            type:
+              - integer
+              - "null"
+          discountSum:
+            type:
+              - integer
+              - "null"
+          taxSum:
+            type:
+              - integer
+              - "null"
+          shippingSum:
+            type:
+              - integer
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          contactNote:
+            type:
+              - string
+              - "null"
+          paymentMethod:
+            type:
+              - string
+              - "null"
+          paymentStatus:
+            type:
+              - string
+              - "null"
+          fulfillmentStatus:
+            type:
+              - string
+              - "null"
+          billingAddress:
+            type: object
+            properties:
+              firstName:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              company:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              address:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+          shippingAddress:
+            type: object
+            properties:
+              firstName:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              company:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              address:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+          products:
+            type: array
+            items:
+              type: object
+              properties:
+                cartProductID:
+                  type:
+                    - string
+                    - "null"
+                productID:
+                  type:
+                    - string
+                    - "null"
+                variantID:
+                  type:
+                    - string
+                    - "null"
+                variantTitle:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                quantity:
+                  type:
+                    - integer
+                    - "null"
+                weight:
+                  type:
+                    - integer
+                    - "null"
+                price:
+                  type:
+                    - integer
+                    - "null"
+                discount:
+                  type:
+                    - integer
+                    - "null"
+                imageUrl:
+                  type:
+                    - string
+                    - "null"
+                productUrl:
+                  type:
+                    - string
+                    - "null"
+                categoryIDs:
+                  type: array
+                  items:
+                    type:
+                      - string
+                      - "null"
+                tags:
+                  type: array
+                  items:
+                    type:
+                      - string
+                      - "null"
+          customFields:
+            type:
+              - object
+              - "null"
+            properties:
+              phone:
+                type:
+                  - string
+                  - "null"
+        required:
+          - orderID
   products_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -72,6 +680,138 @@ definitions:
       primary_key: "productID"
       path: "/products"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          productID:
+            type: string
+          title:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          productUrl:
+            type:
+              - string
+              - "null"
+          vendor:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          categoryIDs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          images:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                imageID:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                isDefault:
+                  type:
+                    - boolean
+                    - "null"
+                variants:
+                  type: array
+                  items:
+                    type:
+                      - string
+                      - "null"
+          variants:
+            type: array
+            items:
+              type: object
+              properties:
+                variantID:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                sku:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - integer
+                    - "null"
+                oldPrice:
+                  type:
+                    - integer
+                    - "null"
+                productUrl:
+                  type:
+                    - string
+                    - "null"
+                imageID:
+                  type:
+                    - string
+                    - "null"
+                customFields:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    protectionClass:
+                      type:
+                        - string
+                        - "null"
+        required:
+          - productID
 streams:
   - "#/definitions/contacts_stream"
   - "#/definitions/campaigns_stream"

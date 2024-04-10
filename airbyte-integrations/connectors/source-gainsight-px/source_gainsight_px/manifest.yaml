@@ -63,6 +63,98 @@ definitions:
     name: "accounts"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Accounts Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          trackedSubscriptionId:
+            type:
+              - "null"
+              - string
+          sfdcId:
+            type:
+              - "null"
+              - string
+          lastSeenDate:
+            type:
+              - "null"
+              - string
+          dunsNumber:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          numberOfEmployees:
+            type:
+              - "null"
+              - string
+          sicCode:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          naicsCode:
+            type:
+              - "null"
+              - string
+          plan:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          numberOfUsers:
+            type:
+              - "null"
+              - string
+          propertyKeys:
+            type:
+              - "null"
+              - array
+            items:
+              location:
+                type:
+                  - "null"
+                  - string
+          createDate:
+            type:
+              - "null"
+              - string
+          lastModifiedDate:
+            type:
+              - "null"
+              - string
+          customAttributes:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          parentGroupId:
+            type:
+              - "null"
+              - string
   admin_attributes_stream:
     $parameters:
       path: "admin/model/account/attributes"
@@ -70,6 +162,60 @@ definitions:
     name: "admin_attributes"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Attributes Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          apiName:
+            type:
+              - "null"
+              - string
+          internalName:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          origin:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            type:
+              - "null"
+              - number
+          defaultValue:
+            type:
+              - "null"
+              - string
   articles_stream:
     $parameters:
       path: "articles"
@@ -80,6 +226,84 @@ definitions:
     name: "articles"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Articles Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          modifiedBy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          articleKCs:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                kcId:
+                  type:
+                    - "null"
+                    - string
+                kcName:
+                  type:
+                    - "null"
+                    - string
+          articleName:
+            type:
+              - "null"
+              - string
+          author:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            type:
+              - "null"
+              - number
+          productId:
+            type:
+              - "null"
+              - string
+          productName:
+            type:
+              - "null"
+              - string
+          releaseDate:
+            type:
+              - "null"
+              - string
+          viewType:
+            type:
+              - "null"
+              - string
   feature_stream:
     $parameters:
       path: "feature"
@@ -90,6 +314,64 @@ definitions:
     name: "feature"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Feature Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+            enum:
+              - FEATURE
+              - MODULE
+          parentFeatureId:
+            type:
+              - "null"
+              - string
+          propertyKey:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+            enum:
+              - ACTIVATED
+              - DELETED
+          featureLabels:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
   segments_stream:
     $parameters:
       path: "segment"
@@ -99,6 +381,24 @@ definitions:
       $ref: "#/definitions/custom_retriever"
     name: "segments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Segment Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   kcbot_stream:
     $parameters:
       path: "kcbot"
@@ -109,6 +409,88 @@ definitions:
     name: "kcbot"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: KCBot Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          createdBy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          createdDate:
+            type:
+              - "null"
+              - number
+          description:
+            type:
+              - "null"
+              - string
+          environments:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          id:
+            type:
+              - "null"
+              - string
+          modifiedBy:
+            additionalProperties: true
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          modifiedDate:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - number
+          productId:
+            type:
+              - "null"
+              - string
+          productName:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
   user_attributes_stream:
     $parameters:
       path: "admin/model/user/attributes"
@@ -116,6 +498,60 @@ definitions:
     name: "user_attributes"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Attributes Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          apiName:
+            type:
+              - "null"
+              - string
+          internalName:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          origin:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            type:
+              - "null"
+              - number
+          defaultValue:
+            type:
+              - "null"
+              - string
   users_stream:
     $parameters:
       path: "users"
@@ -126,6 +562,236 @@ definitions:
     name: "users"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Users Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          aptrinsicId:
+            type:
+              - "null"
+              - string
+          identifyId:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+            enum:
+              - LEAD
+              - USER
+              - VISITOR
+              - EMPTY_USER_TYPE
+          gender:
+            type:
+              - "null"
+              - string
+            enum:
+              - MALE
+              - FEMALE
+              - OTHER
+              - EMPTY_GENDER
+          email:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          lastSeenDate:
+            type:
+              - "null"
+              - integer
+            format: int64
+          signUpDate:
+            type:
+              - "null"
+              - integer
+            format: int64
+          firstVisitDate:
+            type:
+              - "null"
+              - integer
+            format: int64
+          title:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          score:
+            type:
+              - "null"
+              - integer
+            format: int64
+          role:
+            type:
+              - "null"
+              - string
+          subscriptionId:
+            type:
+              - "null"
+              - string
+          accountId:
+            type:
+              - "null"
+              - string
+          numberOfVisits:
+            type:
+              - "null"
+              - integer
+            format: int32
+          location:
+            type:
+              - "null"
+              - string
+          propertyKeys:
+            type:
+              - "null"
+              - array
+            description: Aptrinsic Tag Key, at least one is required
+            items:
+              type:
+                - "null"
+                - string
+            examples:
+              - - AP-XXXXXXXXXX-2
+          createDate:
+            type:
+              - "null"
+              - integer
+            format: int64
+          lastModifiedDate:
+            type:
+              - "null"
+              - integer
+            format: int64
+          globalUnsubscribe:
+            type:
+              - "null"
+              - boolean
+          sfdcContactId:
+            type:
+              - "null"
+              - string
+          lastVisitedUserAgentData:
+            type:
+              - "null"
+              - array
+            items:
+              propertyKey:
+                type:
+                  - "null"
+                  - string
+              userAgent:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  rawUserAgent:
+                    type:
+                      - "null"
+                      - string
+                  device:
+                    type:
+                      - "null"
+                      - string
+                  platformType:
+                    type:
+                      - "null"
+                      - string
+                  platformVersion:
+                    type:
+                      - "null"
+                      - string
+                  browserType:
+                    type:
+                      - "null"
+                      - string
+                  browserVersion:
+                    type:
+                      - "null"
+                      - string
+          id:
+            type:
+              - "null"
+              - string
+            description: Synonym for identifyId, output only, not filterable
+          lastInferredLocation:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              countryName:
+                type:
+                  - "null"
+                  - string
+              countryCode:
+                type:
+                  - "null"
+                  - string
+              stateName:
+                type:
+                  - "null"
+                  - string
+              stateCode:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              postalCode:
+                type:
+                  - "null"
+                  - string
+              continent:
+                type:
+                  - "null"
+                  - string
+              regionName:
+                type:
+                  - "null"
+                  - string
+              timeZone:
+                type:
+                  - "null"
+                  - string
+              coordinates:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  latitude:
+                    type:
+                      - "null"
+                      - number
+                  longitude:
+                    type:
+                      - "null"
+                      - number
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"

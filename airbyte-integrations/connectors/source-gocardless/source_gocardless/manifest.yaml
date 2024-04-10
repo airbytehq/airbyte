@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_gocardless/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -23,7 +20,9 @@ definitions:
   retriever:
     type: SimpleRetriever
     $parameters:
-      url_base: "{{ 'https://api.gocardless.com' if config['gocardless_environment'] == 'live' else 'https://api-sandbox.gocardless.com' }}"
+      url_base:
+        "{{ 'https://api.gocardless.com' if config['gocardless_environment']
+        == 'live' else 'https://api-sandbox.gocardless.com' }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -48,46 +47,346 @@ streams:
     $parameters:
       name: "payments"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/payments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          charge_date:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - integer
+          description:
+            type:
+              - "null"
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              order_dispatch_date:
+                type:
+                  - "null"
+                  - string
+          amount_refunded:
+            type:
+              - "null"
+              - integer
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              mandate:
+                type:
+                  - "null"
+                  - string
+              creditor:
+                type:
+                  - "null"
+                  - string
+          retry_if_possible:
+            type:
+              - "null"
+              - boolean
   - type: DeclarativeStream
     $parameters:
       name: "refunds"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/refunds"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          amount:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              reason:
+                type:
+                  - "null"
+                  - string
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              payment:
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "mandates"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/mandates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reference:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          scheme:
+            type:
+              - "null"
+              - string
+          next_possible_charge_date:
+            type:
+              - "null"
+              - string
+            format: date
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              contract:
+                type:
+                  - "null"
+                  - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              customer_bank_account:
+                type:
+                  - "null"
+                  - string
+              creditor:
+                type:
+                  - "null"
+                  - string
+              customer:
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "payouts"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/payouts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - integer
+          arrival_date:
+            type:
+              - "null"
+              - string
+            format: date
+          deducted_fees:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          payout_type:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          fx:
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                type:
+                  - "null"
+                  - string
+          tax_currency:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
+          amount_refunded:
+            type:
+              - "null"
+              - integer
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              creditor_bank_account:
+                type:
+                  - "null"
+                  - string
+              creditor:
+                type:
+                  - "null"
+                  - string
 check:
   type: CheckStream
   stream_names:

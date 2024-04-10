@@ -52,6 +52,111 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/emailCampaigns"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          testSent:
+            type:
+              - "null"
+              - boolean
+          header:
+            type:
+              - "null"
+              - string
+          footer:
+            type:
+              - "null"
+              - string
+          sender:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          replyTo:
+            type:
+              - "null"
+              - string
+          toField:
+            type:
+              - "null"
+              - string
+          htmlContent:
+            type:
+              - "null"
+              - string
+          tag:
+            type:
+              - "null"
+              - string
+          inlineImageActivation:
+            type:
+              - "null"
+              - boolean
+          mirrorActive:
+            type:
+              - "null"
+              - boolean
+          recipients:
+            type:
+              - "null"
+              - object
+          statistics:
+            type:
+              - "null"
+              - object
+          subject:
+            type:
+              - "null"
+              - string
+          scheduledAt:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            type:
+              - "null"
+              - string
+          previewText:
+            type:
+              - "null"
+              - string
+          shareLink:
+            type:
+              - "null"
+              - string
+          sendAtBestTime:
+            type:
+              - "null"
+              - boolean
+          abTesting:
+            type:
+              - "null"
+              - boolean
   campaign_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -64,6 +169,67 @@ definitions:
       name: templates
       primary_key: id
       path: "/smtp/templates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          testSent:
+            type:
+              - "null"
+              - boolean
+          isActive:
+            type:
+              - "null"
+              - boolean
+          sender:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          subject:
+            type:
+              - "null"
+              - string
+          replyTo:
+            type:
+              - "null"
+              - string
+          toField:
+            type:
+              - "null"
+              - string
+          htmlContent:
+            type:
+              - "null"
+              - string
+          tag:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            type:
+              - "null"
+              - string
   contacts_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -73,6 +239,47 @@ definitions:
       primary_key: id
       path: "/contacts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          emailBlacklisted:
+            type:
+              - "null"
+              - boolean
+          smsBlacklisted:
+            type:
+              - "null"
+              - boolean
+          listIds:
+            type:
+              - "null"
+              - array
+          createdAt:
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            type:
+              - "null"
+              - string
+          attributes:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/templates_stream"

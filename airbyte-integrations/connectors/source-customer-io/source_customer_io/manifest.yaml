@@ -37,6 +37,131 @@ definitions:
       path: "/campaigns"
       extractor_path: "campaigns"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          start_hour:
+            type:
+              - "null"
+              - integer
+          timezone:
+            type:
+              - "null"
+              - string
+          date_attribute:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+          event_name:
+            type:
+              - "null"
+              - string
+          trigger_segment_ids:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+          first_started:
+            type:
+              - "null"
+              - integer
+          frequency:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          start_minutes:
+            type:
+              - "null"
+              - integer
+          use_customer_timezone:
+            type:
+              - "null"
+              - boolean
+          updated:
+            type:
+              - "null"
+              - integer
+          deduplicate_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          msg_templates:
+            type: array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+          actions:
+            type: array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  type:
+                    - "null"
+                    - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - integer
   campaigns_actions_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -56,6 +181,123 @@ definitions:
       partition_router:
         $ref: "#/definitions/campaigns_actions_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          recipient_environment_id:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          layout:
+            type:
+              - "null"
+              - string
+          recipient:
+            type:
+              - "null"
+              - string
+          campaign_id:
+            type:
+              - "null"
+              - integer
+          editor:
+            type:
+              - "null"
+              - string
+          preheader_text:
+            type:
+              - "null"
+              - string
+          from_id:
+            type:
+              - "null"
+              - string
+          bcc:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          reply_to:
+            type:
+              - "null"
+              - string
+          reply_to_id:
+            type:
+              - "null"
+              - string
+          sending_state:
+            type:
+              - "null"
+              - string
+          fake_bcc:
+            type:
+              - "null"
+              - boolean
+          request_method:
+            type:
+              - "null"
+              - string
+          headers:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          preprocessor:
+            type:
+              - "null"
+              - string
+          parent_action_id:
+            type:
+              - "null"
+              - integer
+          deduplicate_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - integer
+          updated:
+            type:
+              - "null"
+              - integer
+          body:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
   newsletters_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -64,6 +306,67 @@ definitions:
       path: "/newsletters"
       extractor_path: "newsletters"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          content_ids:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+          sent_at:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+          tags:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - integer
+          deduplicate_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - integer
+          created:
+            type:
+              - "null"
+              - integer
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/campaigns_actions_stream"

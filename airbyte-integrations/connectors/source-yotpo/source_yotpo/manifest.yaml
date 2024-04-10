@@ -74,6 +74,88 @@ definitions:
     name: "reviews"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Reviews Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          title:
+            type:
+              - "null"
+              - string
+          incentive_type:
+            type:
+              - "null"
+              - string
+          content:
+            type:
+              - "null"
+              - string
+          score:
+            type:
+              - "null"
+              - number
+          votes_up:
+            type:
+              - "null"
+              - number
+          votes_down:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          sentiment:
+            type:
+              - "null"
+              - number
+          sku:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          reviewer_type:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - boolean
+          archived:
+            type:
+              - "null"
+              - boolean
+          escalated:
+            type:
+              - "null"
+              - boolean
+          is_incentivized:
+            type:
+              - "null"
+              - boolean
   email_analytics_stream:
     $parameters:
       extractorPath: "date_series_points"
@@ -82,6 +164,31 @@ definitions:
     $ref: "#/definitions/yotpo_base_without_pagination"
     name: "email_analytics"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Email Analytics
+        additionalProperties: true
+        type: object
+        properties:
+          since:
+            type:
+              - "null"
+              - string
+          until:
+            type:
+              - "null"
+              - string
+          values:
+            type:
+              - "null"
+              - object
+            properties:
+              done:
+                type:
+                  - "null"
+                  - boolean
   raw_data_stream:
     $parameters:
       extractorPath: "records"
@@ -90,6 +197,98 @@ definitions:
     $ref: "#/definitions/yotpo_base_without_pagination"
     name: "raw_data"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Raw Data Schema
+        additionalProperties: true
+        type: object
+        properties:
+          email_address:
+            type:
+              - "null"
+              - string
+          order_id:
+            type:
+              - "null"
+              - string
+          order_timestamp:
+            type:
+              - "null"
+              - string
+          product_id:
+            type:
+              - "null"
+              - string
+          sku:
+            type:
+              - "null"
+              - number
+          email_type:
+            type:
+              - "null"
+              - string
+          reminder_num:
+            type:
+              - "null"
+              - number
+          trr_bundle_id:
+            type:
+              - "null"
+              - string
+          trr_bundle_subject:
+            type:
+              - "null"
+              - string
+          review_type:
+            type:
+              - "null"
+              - string
+          coupon_code:
+            type:
+              - "null"
+              - number
+          email_sent_timestamp:
+            type:
+              - "null"
+              - string
+          opened_timestamp:
+            type:
+              - "null"
+              - string
+          clicked_through_timestamp:
+            type:
+              - "null"
+              - string
+          content_creation_timestamp:
+            type:
+              - "null"
+              - string
+          platform:
+            type:
+              - "null"
+              - string
+          invalid_address_timestamp:
+            type:
+              - "null"
+              - string
+          failed_timestamp:
+            type:
+              - "null"
+              - string
+          unsubscribed_timestamp:
+            type:
+              - "null"
+              - string
+          marked_spam_timestamp:
+            type:
+              - "null"
+              - string
+          arrived_early_timestamp:
+            type:
+              - "null"
+              - string
   unsubscribers_stream:
     $parameters:
       extractorPath: |
@@ -99,6 +298,30 @@ definitions:
     $ref: "#/definitions/yotpo_base"
     name: "unsubscribers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Unsubscribers Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          user_email:
+            type:
+              - "null"
+              - string
+          email_type_id:
+            type:
+              - "null"
+              - number
+          unsubscribed_by_name:
+            type:
+              - "null"
+              - string
   webhook_events_stream:
     $parameters:
       extractorPath: |
@@ -108,6 +331,22 @@ definitions:
     $ref: "#/definitions/yotpo_base_without_pagination"
     name: "webhook_events"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Webhook events Schema
+        additionalProperties: true
+        type: object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
   webhooks_stream:
     $parameters:
       extractorPath: |
@@ -117,6 +356,36 @@ definitions:
     $ref: "#/definitions/yotpo_base_without_pagination"
     name: "webhooks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Webhooks Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          webhook_event_id:
+            type:
+              - "null"
+              - number
+          webhook_event_name:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          version:
+            type:
+              - "null"
+              - number
 streams:
   - "#/definitions/email_analytics_stream"
   - "#/definitions/raw_data_stream"

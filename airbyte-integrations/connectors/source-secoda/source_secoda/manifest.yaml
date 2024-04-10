@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
       field_path: ["results"]
@@ -45,12 +42,86 @@ definitions:
       name: "tables"
       primary_key: "id"
       path: "/table/tables/"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            type: string
+          published:
+            type: boolean
+          pii:
+            type: boolean
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          tags:
+            type: array
+          name:
+            type: string
+          schema:
+            type: string
+          cluster:
+            type: string
+          database:
+            type: string
+          owners:
+            type: array
+          description:
+            type:
+              - "null"
+              - string
+          columns:
+            type: array
+          parent_id:
+            type: string
+          integration:
+            type: string
+          entity_type:
+            type: string
+          pristine:
+            type: boolean
+          verified:
+            type: boolean
   terms_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "terms"
       primary_key: "id"
       path: "/dictionary/terms/"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          title:
+            type: string
+          description:
+            type: string
+          collections:
+            type: array
+          owners:
+            type: array
+          published:
+            type: boolean
+          pristine:
+            type: boolean
+          viewers_delta:
+            type: object
+          entity_type:
+            type: string
   collections_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -58,6 +129,36 @@ definitions:
       primary_key: "id"
       path: "/collection/collections/"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          entity_type:
+            type: string
+          title:
+            type: string
+          description:
+            type: string
+          definition:
+            type: string
+          workspace_id:
+            type: string
+          published:
+            type: boolean
+          archived:
+            type: boolean
+          pii:
+            type: boolean
+          verified:
+            type: boolean
 streams:
   - "#/definitions/tables_stream"
   - "#/definitions/terms_stream"

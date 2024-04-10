@@ -3,10 +3,6 @@ definitions:
   page_size: 50
   step: "P30D"
 
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
-
   requester:
     type: HttpRequester
     url_base: "https://api.sendgrid.com"
@@ -71,8 +67,6 @@ definitions:
 
   base_stream:
     type: DeclarativeStream
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -93,6 +87,28 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the list.
+            type: string
+          name:
+            description: The name of the list.
+            type: string
+          contact_count:
+            description: The total number of contacts in the list.
+            type: integer
+          _metadata:
+            description: Metadata information for the list.
+            type: object
+            properties:
+              self:
+                description: The URL for fetching details of the current list.
+                type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "campaigns"
@@ -103,12 +119,150 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the campaign
+            type: string
+          name:
+            description: The name of the campaign
+            type: string
+          created_at:
+            description: The date and time the campaign was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          status:
+            description: The current status of the campaign
+            type: string
+          updated_at:
+            description: The date and time the campaign was last updated
+            type:
+              - string
+              - "null"
+            format: date-time
+          is_abtest:
+            description: Indicates if the campaign is an A/B test
+            type: boolean
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "contacts"
       primary_key: "id"
       path: "/v3/marketing/contacts"
       field_path: ["result"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          address_line_1:
+            description: First line of the contact's address
+            type:
+              - string
+              - "null"
+          address_line_2:
+            description: Second line of the contact's address
+            type:
+              - string
+              - "null"
+          alternate_emails:
+            description: Additional email addresses for the contact
+            type:
+              - "null"
+              - array
+          city:
+            description: City where the contact resides
+            type:
+              - string
+              - "null"
+          country:
+            description: Country where the contact resides
+            type:
+              - string
+              - "null"
+          email:
+            description: Primary email address of the contact
+            type:
+              - string
+              - "null"
+          first_name:
+            description: First name of the contact
+            type:
+              - string
+              - "null"
+          contact_id:
+            description: Unique identifier for the contact
+            type:
+              - string
+              - "null"
+          last_name:
+            description: Last name of the contact
+            type:
+              - string
+              - "null"
+          postal_code:
+            description: Postal code of the contact's address
+            type:
+              - string
+              - "null"
+          state_province_region:
+            description: State, province, or region where the contact resides
+            type:
+              - string
+              - "null"
+          list_ids:
+            description: List identifiers the contact belongs to
+            type:
+              - "null"
+              - array
+          created_at:
+            description: Timestamp of when the contact was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          updated_at:
+            description: Timestamp of when the contact was last updated
+            type:
+              - string
+              - "null"
+            format: date-time
+          custom_fields:
+            description: Custom fields related to the contact
+            type:
+              - object
+              - "null"
+          phone_number:
+            description: Phone number of the contact
+            type:
+              - string
+              - "null"
+          whatsapp:
+            description: WhatsApp number of the contact
+            type:
+              - string
+              - "null"
+          line:
+            description: Unknown field. Please verify its purpose.
+            type:
+              - string
+              - "null"
+          facebook:
+            description: Facebook profile link of the contact
+            type:
+              - string
+              - "null"
+          unique_name:
+            description: Unique name associated with the contact
+            type:
+              - string
+              - "null"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "stats_automations"
@@ -119,12 +273,116 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the automation statistics
+            type: string
+          stats:
+            type: object
+            properties:
+              bounce_drops:
+                description: The number of emails that were dropped due to a hard bounce
+                type: integer
+              bounces:
+                description: The total number of emails that bounced
+                type: integer
+              clicks:
+                description: The total number of clicks on links within the emails
+                type: integer
+              delivered:
+                description: The total number of emails delivered successfully
+                type: integer
+              invalid_emails:
+                description: The number of emails that were invalid and not sent
+                type: integer
+              opens:
+                description: The total number of times emails were opened
+                type: integer
+              requests:
+                description: The total number of requests made for sending emails
+                type: integer
+              spam_report_drops:
+                description: The number of emails that were dropped due to spam reports
+                type: integer
+              spam_reports:
+                description: The total number of spam reports received for the emails
+                type: integer
+              unique_clicks:
+                description: The number of unique clicks on links within the emails
+                type: integer
+              unique_opens:
+                description: The number of unique times emails were opened
+                type: integer
+              unsubscribes:
+                description: The total number of email recipients who unsubscribed
+                type: integer
+          aggregation:
+            description:
+              The type of aggregation for the stats data (e.g., daily, weekly,
+              monthly)
+            type: string
+          step_id:
+            description: The unique identifier for the step in the automation flow
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "segments"
       primary_key: "id"
       path: "/v3/marketing/segments"
       field_path: ["results"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the segment.
+            type: string
+          name:
+            description: The name of the segment.
+            type: string
+          contact_count:
+            description: The total number of contacts in the segment.
+            type: integer
+          sample_updated_at:
+            description:
+              The date and time when the sample contacts in the segment were
+              last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          next_sample_update:
+            description:
+              The date and time for the next scheduled sample update of the
+              segment.
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_at:
+            description: The date and time when the segment was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          updated_at:
+            description: The date and time when the segment was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          parent_list_id:
+            description: The identifier of the parent list to which the segment belongs.
+            type:
+              - string
+              - "null"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "single_sends"
@@ -135,6 +393,66 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the single send campaign.
+            type: string
+            format: uuid
+          ab_phase:
+            description: The A/B testing phase of the single send campaign.
+            type: string
+          ab_variation:
+            description:
+              The specific variation used for the A/B testing within the
+              campaign.
+            type: string
+          aggregation:
+            description: The method used to aggregate the data for reporting purposes.
+            type: string
+          stats:
+            type: object
+            properties:
+              bounce_drops:
+                description: Number of emails dropped due to bounces.
+                type: integer
+              bounces:
+                description: Total number of bounced emails.
+                type: integer
+              clicks:
+                description: Total number of clicks on the email links.
+                type: integer
+              unique_clicks:
+                description: Number of unique recipients who clicked on the email links.
+                type: integer
+              delivered:
+                description: Total number of successfully delivered emails.
+                type: integer
+              invalid_emails:
+                description: Number of emails marked as invalid or undeliverable.
+                type: integer
+              opens:
+                description: Total number of times the email was opened by recipients.
+                type: integer
+              unique_opens:
+                description: Number of unique recipients who opened the email.
+                type: integer
+              requests:
+                description: Total number of email requests made to send the campaign.
+                type: integer
+              spam_report_drops:
+                description: Number of emails dropped due to being reported as spam.
+                type: integer
+              spam_reports:
+                description: Total number of emails reported as spam by recipients.
+                type: integer
+              unsubscribes:
+                description: Total number of recipients who unsubscribed from the campaign.
+                type: integer
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "templates"
@@ -149,6 +467,36 @@ streams:
           generations: "legacy,dynamic"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the template
+            type:
+              - string
+          name:
+            description: Name of the template
+            type:
+              - "null"
+              - string
+          generation:
+            description: Type of generation for the template data
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp of when the template was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          versions:
+            description: List of versions associated with the template
+            type:
+              - array
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "bounces"
@@ -162,6 +510,24 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created:
+            description: The timestamp when the bounce was created
+            type: integer
+          email:
+            description: The email address that bounced
+            type: string
+          reason:
+            description: The reason for the bounce
+            type: string
+          status:
+            description: The status of the bounce (e.g., soft or hard bounce)
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "global_suppressions"
@@ -175,6 +541,22 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created:
+            description:
+              Date and time when the email address was added to the global
+              suppressions list
+            type: integer
+          email:
+            description:
+              The email address that has been globally suppressed from receiving
+              emails
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "blocks"
@@ -188,12 +570,47 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created:
+            description: The date and time when the block record was created.
+            type: integer
+          email:
+            description: The email address that has been blocked.
+            type: string
+          reason:
+            description: The reason provided for blocking the email address.
+            type: string
+          status:
+            description:
+              The status of the block record, indicating the current state
+              of the block.
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "suppression_groups"
       primary_key: "id"
       path: "/v3/asm/groups"
       field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          description: The description of the suppression group.
+          id:
+            type: integer
+          name:
+            type: string
+          is_default:
+            type: boolean
+          unsubscribes:
+            type: integer
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "suppression_group_members"
@@ -204,6 +621,26 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          email:
+            description: The email address belonging to the suppression group member.
+            type: string
+          group_id:
+            description:
+              The unique identifier for the suppression group to which this
+              member belongs.
+            type: integer
+          group_name:
+            description: The name of the suppression group to which this member belongs.
+            type: string
+          created_at:
+            description: The timestamp when this suppression group member was created.
+            type: integer
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "invalid_emails"
@@ -217,6 +654,21 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created:
+            description: The timestamp when the email address was marked as invalid.
+            type: integer
+          email:
+            description: The email address that has been identified as invalid.
+            type: string
+          reason:
+            description: The reason why the email address is considered invalid.
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "spam_reports"
@@ -230,6 +682,21 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created:
+            description: The timestamp when the spam report was created.
+            type: integer
+          email:
+            description: The email address reported as spam.
+            type: string
+          ip:
+            description: The IP address associated with the spam report.
+            type: string
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "messages"
@@ -245,13 +712,53 @@ streams:
         $ref: "#/definitions/requester"
         request_parameters:
           limit: "1000"
-          query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
+          query:
+            'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND
+            TIMESTAMP "{{stream_slice.end_time}}"'
+    schema_loader: {}
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "unsubscribe_groups"
       primary_key: "id"
       path: "/v3/asm/groups"
       field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the unsubscribe group.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the unsubscribe group.
+            type:
+              - "null"
+              - string
+          description:
+            description: Brief description of the unsubscribe group.
+            type:
+              - "null"
+              - string
+          last_email_sent_at:
+            description: Timestamp for the last email sent to this unsubscribe group.
+            type:
+              - "null"
+              - integer
+          is_default:
+            description: Indicates if the group is the default one for unsubscribes.
+            type:
+              - "null"
+              - boolean
+          unsubscribes:
+            description: List of email addresses that have unsubscribed from this group.
+            type:
+              - "null"
+              - integer
 check:
   type: CheckStream
   stream_names: ["lists"]

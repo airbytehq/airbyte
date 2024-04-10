@@ -16,9 +16,12 @@ spec:
         type: string
         title: API token
         description: >-
-          Personal API token of your Apify account. In Apify Console, you can find your API token in the
-          <a href="https://console.apify.com/account/integrations">Settings section under the Integrations tab</a>
-          after you login. See the <a href="https://docs.apify.com/platform/integrations/api#api-token">Apify Docs</a>
+          Personal API token of your Apify account. In Apify Console, you can find
+          your API token in the
+          <a href="https://console.apify.com/account/integrations">Settings section
+          under the Integrations tab</a>
+          after you login. See the <a href="https://docs.apify.com/platform/integrations/api#api-token">Apify
+          Docs</a>
           for more information.
         examples:
           - apify_api_PbVwb1cBbuvbfg2jRmAIHZKgx3NQyfEMG7uk
@@ -27,9 +30,12 @@ spec:
         type: string
         title: Dataset ID
         description: >-
-          ID of the dataset you would like to load to Airbyte. In Apify Console, you can view your datasets in the
-          <a href="https://console.apify.com/storage/datasets">Storage section under the Datasets tab</a>
-          after you login. See the <a href="https://docs.apify.com/platform/storage/dataset">Apify Docs</a>
+          ID of the dataset you would like to load to Airbyte. In Apify Console, you
+          can view your datasets in the
+          <a href="https://console.apify.com/storage/datasets">Storage section under
+          the Datasets tab</a>
+          after you login. See the <a href="https://docs.apify.com/platform/storage/dataset">Apify
+          Docs</a>
           for more information.
         examples:
           - rHuMdwm6xCFt6WiGU
@@ -66,8 +72,90 @@ streams:
     $parameters:
       path: "datasets"
     schema_loader:
-      type: JsonFileSchemaLoader
+      type: InlineSchemaLoader
       file_path: "./source_apify_dataset/schemas/dataset_collection.json"
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Collection of datasets schema
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          userId:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            type:
+              - "null"
+              - string
+          accessedAt:
+            type:
+              - "null"
+              - string
+          itemCount:
+            type:
+              - "null"
+              - number
+          username:
+            type:
+              - "null"
+              - string
+          stats:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              readCount:
+                type:
+                  - "null"
+                  - number
+              storageBytes:
+                type:
+                  - "null"
+                  - number
+              writeCount:
+                type:
+                  - "null"
+                  - number
+          schema:
+            type:
+              - "null"
+              - string
+          cleanItemCount:
+            type:
+              - "null"
+              - number
+          actId:
+            type:
+              - "null"
+              - string
+          actRunId:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          fields:
+            anyOf:
+              - type: "null"
+              - type: array
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -82,8 +170,87 @@ streams:
     $parameters:
       path: "datasets/{{ config['dataset_id'] }}"
     schema_loader:
-      type: JsonFileSchemaLoader
+      type: InlineSchemaLoader
       file_path: "./source_apify_dataset/schemas/dataset.json"
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Individual datasets schema
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          userId:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+          stats:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              readCount:
+                type:
+                  - "null"
+                  - number
+              storageBytes:
+                type:
+                  - "null"
+                  - number
+              writeCount:
+                type:
+                  - "null"
+                  - number
+          schema:
+            type:
+              - "null"
+              - string
+              - object
+          modifiedAt:
+            type:
+              - "null"
+              - string
+          accessedAt:
+            type:
+              - "null"
+              - string
+          itemCount:
+            type:
+              - "null"
+              - number
+          cleanItemCount:
+            type:
+              - "null"
+              - number
+          actId:
+            type:
+              - "null"
+              - string
+          actRunId:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          fields:
+            anyOf:
+              - type: "null"
+              - type: array
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -97,8 +264,80 @@ streams:
     $parameters:
       path: "datasets/{{ config['dataset_id'] }}/items"
     schema_loader:
-      type: JsonFileSchemaLoader
+      type: InlineSchemaLoader
       file_path: "./source_apify_dataset/schemas/item_collection_wcc.json"
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Item collection - Website Content Crawler (WCC)
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          crawl:
+            additionalProperties: true
+            properties:
+              depth:
+                type:
+                  - "null"
+                  - number
+              httpStatusCode:
+                type:
+                  - "null"
+                  - number
+              loadedTime:
+                type:
+                  - "null"
+                  - string
+              loadedUrl:
+                type:
+                  - "null"
+                  - string
+              referrerUrl:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          markdown:
+            type:
+              - "null"
+              - string
+          metadata:
+            additionalProperties: true
+            properties:
+              canonicalUrl:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              languageCode:
+                type:
+                  - "null"
+                  - string
+              title:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          text:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          screenshotUrl:
+            type:
+              - "null"
+              - string
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -112,8 +351,21 @@ streams:
     $parameters:
       path: "datasets/{{ config['dataset_id'] }}/items"
     schema_loader:
-      type: JsonFileSchemaLoader
+      type: InlineSchemaLoader
       file_path: "./source_apify_dataset/schemas/item_collection.json"
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Item collection
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          data:
+            additionalProperties: true
+            type:
+              - "null"
+              - object
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:

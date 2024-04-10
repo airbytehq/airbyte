@@ -23,7 +23,9 @@ definitions:
     request_headers: {}
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: 'OAuth oauth_consumer_key="{{ config[''key''] }}", oauth_token="{{ config[''token''] }}"'
+      api_token:
+        'OAuth oauth_consumer_key="{{ config[''key''] }}", oauth_token="{{
+        config[''token''] }}"'
       inject_into:
         type: RequestOption
         field_name: Authorization
@@ -78,6 +80,333 @@ definitions:
           since: "{{ config['start_date'] }}"
       record_selector:
         $ref: "#/definitions/boards_selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          desc:
+            type:
+              - "null"
+              - string
+          descData:
+            type:
+              - "null"
+              - string
+          closed:
+            type:
+              - "null"
+              - boolean
+          idOrganization:
+            type:
+              - "null"
+              - string
+          idEnterprise:
+            type:
+              - "null"
+              - string
+          limits:
+            type:
+              - "null"
+              - object
+            properties:
+              attachments:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perBoard:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+          pinned:
+            type:
+              - "null"
+              - boolean
+          shortLink:
+            type:
+              - "null"
+              - string
+          dateLastActivity:
+            type:
+              - "null"
+              - string
+            format: date-time
+          datePluginDisable:
+            type:
+              - "null"
+              - string
+            format: date-time
+          creationMethod:
+            type:
+              - "null"
+              - string
+          ixUpdate:
+            type:
+              - "null"
+              - string
+          enterpriseOwned:
+            type:
+              - "null"
+              - boolean
+          idBoardSource:
+            type:
+              - "null"
+              - string
+          id:
+            type: string
+          starred:
+            type:
+              - "null"
+              - boolean
+          url:
+            type:
+              - "null"
+              - string
+          powerUps:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          premiumFeatures:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idTags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          prefs:
+            type:
+              - "null"
+              - object
+            properties:
+              permissionLevel:
+                type:
+                  - "null"
+                  - string
+              hideVotes:
+                type:
+                  - "null"
+                  - boolean
+              voting:
+                type:
+                  - "null"
+                  - string
+              comments:
+                type:
+                  - "null"
+                  - string
+              invitations:
+                type:
+                  - "null"
+                  - string
+              selfJoin:
+                type:
+                  - "null"
+                  - boolean
+              cardCovers:
+                type:
+                  - "null"
+                  - boolean
+              isTemplate:
+                type:
+                  - "null"
+                  - boolean
+              cardAging:
+                type:
+                  - "null"
+                  - string
+              calendarFeedEnabled:
+                type:
+                  - "null"
+                  - boolean
+              background:
+                type:
+                  - "null"
+                  - string
+              backgroundImage:
+                type:
+                  - "null"
+                  - string
+              backgroundImageScaled:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    width:
+                      type:
+                        - "null"
+                        - integer
+                    height:
+                      type:
+                        - "null"
+                        - integer
+                    url:
+                      type:
+                        - "null"
+                        - string
+              backgroundTile:
+                type:
+                  - "null"
+                  - boolean
+              backgroundBrightness:
+                type:
+                  - "null"
+                  - string
+              backgroundBottomColor:
+                type:
+                  - "null"
+                  - string
+              backgroundTopColor:
+                type:
+                  - "null"
+                  - string
+              canBePublic:
+                type:
+                  - "null"
+                  - boolean
+              canBeEnterprise:
+                type:
+                  - "null"
+                  - boolean
+              canBeOrg:
+                type:
+                  - "null"
+                  - boolean
+              canBePrivate:
+                type:
+                  - "null"
+                  - boolean
+              canInvite:
+                type:
+                  - "null"
+                  - boolean
+          subscribed:
+            type:
+              - "null"
+              - boolean
+          labelNames:
+            type:
+              - "null"
+              - object
+            properties:
+              green:
+                type:
+                  - "null"
+                  - string
+              yellow:
+                type:
+                  - "null"
+                  - string
+              orange:
+                type:
+                  - "null"
+                  - string
+              red:
+                type:
+                  - "null"
+                  - string
+              purple:
+                type:
+                  - "null"
+                  - string
+              blue:
+                type:
+                  - "null"
+                  - string
+              sky:
+                type:
+                  - "null"
+                  - string
+              lime:
+                type:
+                  - "null"
+                  - string
+              pink:
+                type:
+                  - "null"
+                  - string
+              black:
+                type:
+                  - "null"
+                  - string
+          dateLastView:
+            type:
+              - "null"
+              - string
+            format: date-time
+          shortUrl:
+            type:
+              - "null"
+              - string
+          templateGallery:
+            type:
+              - "null"
+              - string
+          memberships:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  type:
+                    - "null"
+                    - boolean
   organizations_stream:
     type: DeclarativeStream
     name: organizations
@@ -91,6 +420,221 @@ definitions:
           since: "{{ config['start_date'] }}"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          credits:
+            type: array
+          displayName:
+            type:
+              - "null"
+              - string
+          desc:
+            type:
+              - "null"
+              - string
+          descData:
+            type: object
+            properties:
+              emoji:
+                type: object
+          domainName:
+            type:
+              - "null"
+              - string
+          idBoards:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          idMemberCreator:
+            type:
+              - "null"
+              - string
+          invited:
+            type:
+              - "null"
+              - boolean
+          invitations:
+            type: array
+          limits:
+            type: object
+            properties:
+              orgs:
+                type: object
+                properties:
+                  totalMembersPerOrg:
+                    type: object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+                  freeBoardsPerOrg:
+                    type: object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+          memberships:
+            type: array
+            items:
+              type: object
+              properties:
+                idMember:
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  type:
+                    - "null"
+                    - boolean
+                id:
+                  type:
+                    - "null"
+                    - string
+          membersCount:
+            type:
+              - "null"
+              - integer
+          prefs:
+            type: object
+            properties:
+              permissionLevel:
+                type:
+                  - "null"
+                  - string
+              orgInviteRestrict:
+                type: array
+              boardInviteRestrict:
+                type:
+                  - "null"
+                  - string
+              externalMembersDisabled:
+                type:
+                  - "null"
+                  - boolean
+              googleAppsVersion:
+                type:
+                  - "null"
+                  - integer
+              boardVisibilityRestrict:
+                type: object
+                properties:
+                  private:
+                    type:
+                      - "null"
+                      - string
+                  org:
+                    type:
+                      - "null"
+                      - string
+                  enterprise:
+                    type:
+                      - "null"
+                      - string
+                  public:
+                    type:
+                      - "null"
+                      - string
+              boardDeleteRestrict:
+                type: object
+                properties:
+                  private:
+                    type:
+                      - "null"
+                      - string
+                  org:
+                    type:
+                      - "null"
+                      - string
+                  enterprise:
+                    type:
+                      - "null"
+                      - string
+                  public:
+                    type:
+                      - "null"
+                      - string
+          powerUps:
+            type: array
+          products:
+            type: array
+          billableMemberCount:
+            type:
+              - "null"
+              - integer
+          activeBillableMemberCount:
+            type:
+              - "null"
+              - integer
+          billableCollaboratorCount:
+            type:
+              - "null"
+              - integer
+          url:
+            type:
+              - "null"
+              - string
+          premiumFeatures:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          promotions:
+            type: array
+          enterpriseJoinRequest:
+            type: object
+          ixUpdate:
+            type:
+              - "null"
+              - string
+          newLicenseInviteRestrict:
+            type:
+              - "null"
+              - string
+          newLicenseInviteRestrictUrl:
+            type:
+              - "null"
+              - string
   actions_stream:
     type: DeclarativeStream
     name: actions
@@ -124,6 +668,395 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          idMemberCreator:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - "null"
+              - object
+            properties:
+              card:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    type:
+                      - "null"
+                      - string
+                  pos:
+                    type:
+                      - "null"
+                      - number
+                  desc:
+                    type:
+                      - "null"
+                      - string
+                  closed:
+                    type:
+                      - "null"
+                      - boolean
+                  idList:
+                    type:
+                      - "null"
+                      - string
+                  idMembers:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+              list:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  pos:
+                    type:
+                      - "null"
+                      - number
+                  closed:
+                    type:
+                      - "null"
+                      - boolean
+              board:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  shortLink:
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      background:
+                        type:
+                          - "null"
+                          - string
+              old:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  pos:
+                    type:
+                      - "null"
+                      - number
+                  desc:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  closed:
+                    type:
+                      - "null"
+                      - boolean
+                  idList:
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      background:
+                        type:
+                          - "null"
+                          - string
+                  idMembers:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+              listBefore:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              listAfter:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              memberType:
+                type:
+                  - "null"
+                  - string
+              idMemberAdded:
+                type:
+                  - "null"
+                  - string
+              cardSource:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    type:
+                      - "null"
+                      - string
+              idMemberInviter:
+                type:
+                  - "null"
+                  - string
+              method:
+                type:
+                  - "null"
+                  - string
+              idMember:
+                type:
+                  - "null"
+                  - string
+              member:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              deactivated:
+                type:
+                  - "null"
+                  - boolean
+              text:
+                type:
+                  - "null"
+                  - string
+              organization:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+          type:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          memberCreator:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              username:
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                type:
+                  - "null"
+                  - string
+              fullName:
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                type:
+                  - "null"
+                  - string
+              initials:
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                type:
+                  - "null"
+                  - boolean
+          member:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              username:
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                type:
+                  - "null"
+                  - string
+              fullName:
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                type:
+                  - "null"
+                  - string
+              initials:
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                type:
+                  - "null"
+                  - boolean
+          limits:
+            type:
+              - "null"
+              - object
+            properties:
+              reactions:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perAction:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+                  uniquePerAction:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
   cards_stream:
     type: DeclarativeStream
     name: cards
@@ -147,6 +1080,334 @@ definitions:
         $ref: "#/definitions/paginator"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          start:
+            type:
+              - "null"
+              - string
+          customFieldItems:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idValue:
+                  type:
+                    - "null"
+                    - string
+                idCustomField:
+                  type:
+                    - "null"
+                    - string
+                idModel:
+                  type:
+                    - "null"
+                    - string
+                modelType:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    checked:
+                      type:
+                        - "null"
+                        - string
+                    date:
+                      type:
+                        - "null"
+                        - string
+                    number:
+                      type:
+                        - "null"
+                        - string
+                    text:
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      type:
+                        - "null"
+                        - string
+          idMembersVoted:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          checkItemStates:
+            type:
+              - "null"
+              - array
+            items: {}
+          closed:
+            type:
+              - "null"
+              - boolean
+          dateLastActivity:
+            type:
+              - "null"
+              - string
+            format: date-time
+          desc:
+            type:
+              - "null"
+              - string
+          descData:
+            type:
+              - "null"
+              - object
+            properties:
+              emoji:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+          dueReminder:
+            type:
+              - "null"
+              - string
+          idBoard:
+            type:
+              - "null"
+              - string
+          idList:
+            type:
+              - "null"
+              - string
+          idShort:
+            type:
+              - "null"
+              - integer
+          idAttachmentCover:
+            type:
+              - "null"
+              - string
+          manualCoverAttachment:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          pos:
+            type:
+              - "null"
+              - number
+          shortLink:
+            type:
+              - "null"
+              - string
+          isTemplate:
+            type:
+              - "null"
+              - boolean
+          badges:
+            type:
+              - "null"
+              - object
+            properties:
+              attachmentsByType:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  trello:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      board:
+                        type:
+                          - "null"
+                          - integer
+                      card:
+                        type:
+                          - "null"
+                          - integer
+              location:
+                type:
+                  - "null"
+                  - boolean
+              votes:
+                type:
+                  - "null"
+                  - integer
+              viewingMemberVoted:
+                type:
+                  - "null"
+                  - boolean
+              subscribed:
+                type:
+                  - "null"
+                  - boolean
+              fogbugz:
+                type:
+                  - "null"
+                  - string
+              checkItems:
+                type:
+                  - "null"
+                  - integer
+              checkItemsChecked:
+                type:
+                  - "null"
+                  - integer
+              checkItemsEarliestDue:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              comments:
+                type:
+                  - "null"
+                  - integer
+              attachments:
+                type:
+                  - "null"
+                  - integer
+              description:
+                type:
+                  - "null"
+                  - boolean
+              due:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              dueComplete:
+                type:
+                  - "null"
+                  - boolean
+          dueComplete:
+            type:
+              - "null"
+              - boolean
+          due:
+            type:
+              - "null"
+              - string
+            format: date-time
+          shortUrl:
+            type:
+              - "null"
+              - string
+          subscribed:
+            type:
+              - "null"
+              - boolean
+          url:
+            type:
+              - "null"
+              - string
+          cover:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              idAttachment:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              idUploadedBackground:
+                type:
+                  - "null"
+                  - string
+              size:
+                type:
+                  - "null"
+                  - string
+              brightness:
+                type:
+                  - "null"
+                  - string
+              edgeColor:
+                type:
+                  - "null"
+                  - string
+              sharedSourceUrl:
+                type:
+                  - "null"
+                  - string
+              idPlugin:
+                type:
+                  - "null"
+                  - string
+          idChecklists:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idMembers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idLabels:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          labels:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idBoard:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                color:
+                  type:
+                    - "null"
+                    - string
   checklists_stream:
     type: DeclarativeStream
     name: checklists
@@ -164,6 +1425,727 @@ definitions:
         $ref: "#/definitions/selector"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          idMemberCreator:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - "null"
+              - object
+            properties:
+              old:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  closed:
+                    type:
+                      - "null"
+                      - boolean
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      selfJoin:
+                        type:
+                          - "null"
+                          - boolean
+                      permissionLevel:
+                        type:
+                          - "null"
+                          - string
+                  dueComplete:
+                    type:
+                      - "null"
+                      - boolean
+                  due:
+                    type:
+                      - "null"
+                      - string
+              card:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  closed:
+                    type:
+                      - "null"
+                      - boolean
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    type:
+                      - "null"
+                      - string
+                  dueComplete:
+                    type:
+                      - "null"
+                      - boolean
+                  due:
+                    type:
+                      - "null"
+                      - string
+              board:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  shortLink:
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      selfJoin:
+                        type:
+                          - "null"
+                          - boolean
+                      permissionLevel:
+                        type:
+                          - "null"
+                          - string
+              list:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              checklist:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              organization:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+              creationMethod:
+                type:
+                  - "null"
+                  - string
+          type:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          memberCreator:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              username:
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                type:
+                  - "null"
+                  - string
+              fullName:
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                type:
+                  - "null"
+                  - string
+              initials:
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                type:
+                  - "null"
+                  - boolean
+          name:
+            type:
+              - "null"
+              - string
+          desc:
+            type:
+              - "null"
+              - string
+          descData:
+            type:
+              - "null"
+              - string
+          closed:
+            type:
+              - "null"
+              - boolean
+          idOrganization:
+            type:
+              - "null"
+              - string
+          idEnterprise:
+            type:
+              - "null"
+              - string
+          limits:
+            type:
+              - "null"
+              - object
+            properties:
+              checkItems:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perChecklist:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+          pinned:
+            type:
+              - "null"
+              - string
+          shortLink:
+            type:
+              - "null"
+              - string
+          dateLastActivity:
+            type:
+              - "null"
+              - string
+          datePluginDisable:
+            type:
+              - "null"
+              - string
+          creationMethod:
+            type:
+              - "null"
+              - string
+          ixUpdate:
+            type:
+              - "null"
+              - string
+          enterpriseOwned:
+            type:
+              - "null"
+              - boolean
+          idBoardSource:
+            type:
+              - "null"
+              - string
+          starred:
+            type:
+              - "null"
+              - boolean
+          url:
+            type:
+              - "null"
+              - string
+          prefs:
+            type:
+              - "null"
+              - object
+            properties:
+              permissionLevel:
+                type:
+                  - "null"
+                  - string
+              hideVotes:
+                type:
+                  - "null"
+                  - boolean
+              voting:
+                type:
+                  - "null"
+                  - string
+              comments:
+                type:
+                  - "null"
+                  - string
+              invitations:
+                type:
+                  - "null"
+                  - string
+              selfJoin:
+                type:
+                  - "null"
+                  - boolean
+              cardCovers:
+                type:
+                  - "null"
+                  - boolean
+              isTemplate:
+                type:
+                  - "null"
+                  - boolean
+              cardAging:
+                type:
+                  - "null"
+                  - string
+              calendarFeedEnabled:
+                type:
+                  - "null"
+                  - boolean
+              background:
+                type:
+                  - "null"
+                  - string
+              backgroundImage:
+                type:
+                  - "null"
+                  - string
+              backgroundImageScaled:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    width:
+                      type:
+                        - "null"
+                        - integer
+                    height:
+                      type:
+                        - "null"
+                        - integer
+                    url:
+                      type:
+                        - "null"
+                        - string
+              backgroundTile:
+                type:
+                  - "null"
+                  - boolean
+              backgroundBrightness:
+                type:
+                  - "null"
+                  - string
+              backgroundColor:
+                type:
+                  - "null"
+                  - string
+              backgroundBottomColor:
+                type:
+                  - "null"
+                  - string
+              backgroundTopColor:
+                type:
+                  - "null"
+                  - string
+              canBePublic:
+                type:
+                  - "null"
+                  - boolean
+              canBeEnterprise:
+                type:
+                  - "null"
+                  - boolean
+              canBeOrg:
+                type:
+                  - "null"
+                  - boolean
+              canBePrivate:
+                type:
+                  - "null"
+                  - boolean
+              canInvite:
+                type:
+                  - "null"
+                  - boolean
+          subscribed:
+            type:
+              - "null"
+              - boolean
+          labelNames:
+            type:
+              - "null"
+              - object
+            properties:
+              green:
+                type:
+                  - "null"
+                  - string
+              yellow:
+                type:
+                  - "null"
+                  - string
+              orange:
+                type:
+                  - "null"
+                  - string
+              red:
+                type:
+                  - "null"
+                  - string
+              purple:
+                type:
+                  - "null"
+                  - string
+              blue:
+                type:
+                  - "null"
+                  - string
+              sky:
+                type:
+                  - "null"
+                  - string
+              lime:
+                type:
+                  - "null"
+                  - string
+              pink:
+                type:
+                  - "null"
+                  - string
+              black:
+                type:
+                  - "null"
+                  - string
+          dateLastView:
+            type:
+              - "null"
+              - string
+          shortUrl:
+            type:
+              - "null"
+              - string
+          templateGallery:
+            type:
+              - "null"
+              - string
+          memberships:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  type:
+                    - "null"
+                    - boolean
+          checkItemStates:
+            type:
+              - "null"
+              - string
+          dueReminder:
+            type:
+              - "null"
+              - string
+          idBoard:
+            type:
+              - "null"
+              - string
+          idList:
+            type:
+              - "null"
+              - string
+          idShort:
+            type:
+              - "null"
+              - integer
+          idAttachmentCover:
+            type:
+              - "null"
+              - string
+          manualCoverAttachment:
+            type:
+              - "null"
+              - boolean
+          pos:
+            type:
+              - "null"
+              - number
+          isTemplate:
+            type:
+              - "null"
+              - boolean
+          badges:
+            type:
+              - "null"
+              - object
+            properties:
+              attachmentsByType:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  trello:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      board:
+                        type:
+                          - "null"
+                          - integer
+                      card:
+                        type:
+                          - "null"
+                          - integer
+              location:
+                type:
+                  - "null"
+                  - boolean
+              votes:
+                type:
+                  - "null"
+                  - integer
+              viewingMemberVoted:
+                type:
+                  - "null"
+                  - boolean
+              subscribed:
+                type:
+                  - "null"
+                  - boolean
+              fogbugz:
+                type:
+                  - "null"
+                  - string
+              checkItems:
+                type:
+                  - "null"
+                  - integer
+              checkItemsChecked:
+                type:
+                  - "null"
+                  - integer
+              checkItemsEarliestDue:
+                type:
+                  - "null"
+                  - string
+              comments:
+                type:
+                  - "null"
+                  - integer
+              attachments:
+                type:
+                  - "null"
+                  - integer
+              description:
+                type:
+                  - "null"
+                  - boolean
+              due:
+                type:
+                  - "null"
+                  - string
+              dueComplete:
+                type:
+                  - "null"
+                  - boolean
+          dueComplete:
+            type:
+              - "null"
+              - boolean
+          due:
+            type:
+              - "null"
+              - string
+          idChecklists:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          cover:
+            type:
+              - "null"
+              - object
+            properties:
+              idAttachment:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              idUploadedBackground:
+                type:
+                  - "null"
+                  - string
+              size:
+                type:
+                  - "null"
+                  - string
+              brightness:
+                type:
+                  - "null"
+                  - string
+          username:
+            type:
+              - "null"
+              - string
+          fullName:
+            type:
+              - "null"
+              - string
+          softLimit:
+            type:
+              - "null"
+              - string
+          idCard:
+            type:
+              - "null"
+              - string
+          checkItems:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                idChecklist:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                nameData:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                pos:
+                  type:
+                    - "null"
+                    - number
+                creationMethod:
+                  type:
+                    - "null"
+                    - string
+                due:
+                  type:
+                    - "null"
+                    - string
   lists_stream:
     type: DeclarativeStream
     name: lists
@@ -179,6 +2161,41 @@ definitions:
         $ref: "#/definitions/selector"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          closed:
+            type:
+              - "null"
+              - boolean
+          pos:
+            type:
+              - "null"
+              - number
+          softLimit:
+            type:
+              - "null"
+              - integer
+          idBoard:
+            type:
+              - "null"
+              - string
+          subscribed:
+            type:
+              - "null"
+              - boolean
   users_stream:
     type: DeclarativeStream
     name: users
@@ -195,6 +2212,27 @@ definitions:
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - string
+          boardId:
+            type:
+              - string
+          username:
+            type:
+              - "null"
+              - string
+          fullName:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/boards_stream"
   - "#/definitions/organizations_stream"
@@ -219,20 +2257,26 @@ spec:
       key:
         type: string
         title: API key
-        description: Trello API key. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a> for instructions on how to generate it.
+        description: Trello API key. See the <a
+          href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+          for instructions on how to generate it.
         airbyte_secret: true
         order: 0
       token:
         type: string
         title: API token
-        description: Trello API token. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a> for instructions on how to generate it.
+        description: Trello API token. See the <a
+          href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+          for instructions on how to generate it.
         airbyte_secret: true
         order: 1
       start_date:
         type: string
         title: Start Date
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
         examples:
           - "2021-03-01T00:00:00Z"
         format: date-time
@@ -243,7 +2287,12 @@ spec:
           type: string
           pattern: "^[0-9a-fA-F]{24}$"
         title: Trello Board IDs
-        description: IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will be replicated. Please note that this is not the 8-character ID in the board's shortLink (URL of the board). Rather, what is required here is the 24-character ID usually returned by the API
+        description:
+          IDs of the boards to replicate data from. If left empty, data
+          from all boards to which you have access will be replicated. Please note
+          that this is not the 8-character ID in the board's shortLink (URL of the
+          board). Rather, what is required here is the 24-character ID usually returned
+          by the API
         order: 3
   advanced_auth:
     auth_flow_type: oauth2.0

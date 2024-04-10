@@ -40,6 +40,37 @@ definitions:
     $parameters:
       path: "/account/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
   app_collections_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -51,6 +82,50 @@ definitions:
       path: "/account/apps"
       path_extractor: apps
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          title_normalized:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          count_apps:
+            type:
+              - "null"
+              - integer
+          languages:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          countries:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
   apps_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -84,6 +159,58 @@ definitions:
       path: "/account/apps/app"
       path_extractor: apps_app
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          app:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          has_reply_integration:
+            type:
+              - "null"
+              - integer
+          created:
+            type:
+              - "null"
+              - string
+          is_favorite:
+            type:
+              - "null"
+              - integer
+          count_whatsnew:
+            type:
+              - "null"
+              - integer
+          store:
+            type:
+              - "null"
+              - string
+          watch_url:
+            type:
+              - "null"
+              - string
+          ext_id:
+            type:
+              - "null"
+              - string
+          app_id:
+            type:
+              - "null"
+              - integer
+          count_reviews:
+            type:
+              - "null"
+              - integer
+          app_collection_id:
+            type:
+              - "null"
+              - integer
   ext_id_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -105,6 +232,55 @@ definitions:
     $parameters:
       path: "/reviews/stats"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          store:
+            type:
+              - "null"
+              - string
+          reviews_stat:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              store:
+                type:
+                  - "null"
+                  - string
+              title:
+                type:
+                  - "null"
+                  - string
+              reviews:
+                type:
+                  - "null"
+                  - integer
+              from:
+                type:
+                  - "null"
+                  - string
+              to:
+                type:
+                  - "null"
+                  - string
+              app_id:
+                type:
+                  - "null"
+                  - integer
+              replies:
+                type:
+                  - "null"
+                  - integer
+          ext_id:
+            type:
+              - "null"
+              - string
   ratings_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -123,6 +299,51 @@ definitions:
     $parameters:
       path: "/meta/ratings"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          ratings:
+            list:
+              type:
+                - "null"
+                - array
+              items:
+                properties:
+                  stars2:
+                    type: integer
+                  version:
+                    type: string
+                  stars1:
+                    type: integer
+                  stars_total:
+                    type: integer
+                  country:
+                    type: string
+                  date:
+                    type: string
+                  stars4:
+                    type: integer
+                  stars5:
+                    type: integer
+                  stars3:
+                    type: integer
+                  rating:
+                    type: number
+                type:
+                  - "null"
+                  - object
+            ext_id:
+              type:
+                - "null"
+                - string
+            store:
+              type:
+                - "null"
+                - string
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/app_collections_stream"

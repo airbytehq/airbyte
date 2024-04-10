@@ -46,6 +46,77 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          emailAddress:
+            type:
+              - "null"
+              - string
+          trustedEmailAddress:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          active:
+            type:
+              - "null"
+              - boolean
+          emailAliases:
+            type:
+              - "null"
+              - array
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          phoneNumber:
+            type:
+              - "null"
+              - string
+          extension:
+            type:
+              - "null"
+              - string
+          personalMeetingUrls:
+            type:
+              - "null"
+              - array
+          settings:
+            type:
+              - "null"
+              - object
+          managerId:
+            type:
+              - "null"
+              - string
+          meetingConsentPageUrl:
+            type:
+              - "null"
+              - string
+          spokenLanguages:
+            type:
+              - "null"
+              - array
   calls_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -53,6 +124,94 @@ definitions:
       primary_key: "id"
       path: "/calls"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          scheduled:
+            type:
+              - "null"
+              - string
+            format: date-time
+          started:
+            type:
+              - "null"
+              - string
+            format: date-time
+          duration:
+            type:
+              - "null"
+              - integer
+          primaryUserId:
+            type:
+              - "null"
+              - string
+          direction:
+            type:
+              - "null"
+              - string
+          system:
+            type:
+              - "null"
+              - string
+          scope:
+            type:
+              - "null"
+              - string
+          media:
+            type:
+              - "null"
+              - string
+          language:
+            type:
+              - "null"
+              - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+          sdrDisposition:
+            type:
+              - "null"
+              - string
+          clientUniqueId:
+            type:
+              - "null"
+              - string
+          customData:
+            type:
+              - "null"
+              - string
+          purpose:
+            type:
+              - "null"
+              - string
+          meetingUrl:
+            type:
+              - "null"
+              - string
+          isPrivate:
+            type:
+              - "null"
+              - boolean
+          calendarEventId:
+            type:
+              - "null"
+              - string
   scorecards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -60,6 +219,81 @@ definitions:
       primary_key: "scorecardId"
       path: "/settings/scorecards"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          scorecardId:
+            type:
+              - "null"
+              - string
+          scorecardName:
+            type:
+              - "null"
+              - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+          enabled:
+            type:
+              - "null"
+              - boolean
+          updaterUserId:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+          questions:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  type:
+                    - "null"
+                    - string
+                questionRevisionId:
+                  type:
+                    - "null"
+                    - string
+                questionText:
+                  type:
+                    - "null"
+                    - string
+                isOverall:
+                  type:
+                    - "null"
+                    - boolean
+                updaterUserId:
+                  type:
+                    - "null"
+                    - string
+                created:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                updated:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
   answered_scorecards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -83,6 +317,83 @@ definitions:
         request_body_json:
           filter: '{"callFromDate": "{{ config["start_date"] }}"}'
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          answeredScorecardId:
+            type:
+              - "null"
+              - string
+          scorecardId:
+            type:
+              - "null"
+              - string
+          scorecardName:
+            type:
+              - "null"
+              - string
+          callId:
+            type:
+              - "null"
+              - string
+          callStartTime:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reviewedUserId:
+            type:
+              - "null"
+              - string
+          reviewerUserId:
+            type:
+              - "null"
+              - string
+          reviewTime:
+            type:
+              - "null"
+              - string
+            format: date-time
+          visibilityType:
+            type:
+              - "null"
+              - string
+          answers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  type:
+                    - "null"
+                    - string
+                questionRevisionId:
+                  type:
+                    - "null"
+                    - string
+                isOverall:
+                  type:
+                    - "null"
+                    - boolean
+                score:
+                  type:
+                    - "null"
+                    - integer
+                answerText:
+                  type:
+                    - "null"
+                    - string
+                notApplicable:
+                  type:
+                    - "null"
+                    - boolean
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/calls_stream"

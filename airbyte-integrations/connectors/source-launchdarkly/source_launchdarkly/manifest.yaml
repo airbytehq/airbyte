@@ -39,6 +39,36 @@ definitions:
       name: "projects"
       primary_key: "_id"
       path: "/projects"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          key:
+            type:
+              - "null"
+              - string
+          includeInSnippetByDefault:
+            type:
+              - "null"
+              - boolean
+          defaultClientSideAvailability:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
   project_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -59,6 +89,68 @@ definitions:
         path: "/projects/{{ stream_slice.project_key }}/environments"
       partition_router:
         $ref: "#/definitions/project_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _pubnub:
+            type:
+              - "null"
+              - object
+          key:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          apiKey:
+            type:
+              - "null"
+              - string
+          mobileKey:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          defaultTtl:
+            type:
+              - "null"
+              - integer
+          secureMode:
+            type:
+              - "null"
+              - boolean
+          defaultTrackEvents:
+            type:
+              - "null"
+              - boolean
+          requireComments:
+            type:
+              - "null"
+              - boolean
+          confirmChanges:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+          approvalSettings:
+            type:
+              - "null"
+              - object
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,18 +165,220 @@ definitions:
         path: "/metrics/{{ stream_slice.project_key }}"
       partition_router:
         $ref: "#/definitions/project_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          key:
+            type:
+              - "null"
+              - string
+          experimentCount:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          _attachedFlagCount:
+            type:
+              - "null"
+              - integer
+          _links:
+            type:
+              - "null"
+              - object
+          _site:
+            type:
+              - "null"
+              - object
+          _access:
+            type:
+              - "null"
+              - object
+          tags:
+            type:
+              - "null"
+              - array
+          _creationDate:
+            type:
+              - "null"
+              - integer
+          lastModified:
+            type:
+              - "null"
+              - object
+          maintainerId:
+            type:
+              - "null"
+              - string
+          _maintainer:
+            type:
+              - "null"
+              - object
+          description:
+            type:
+              - "null"
+              - string
+          isNumeric:
+            type:
+              - "null"
+              - boolean
+          successCriteria:
+            type:
+              - "null"
+              - string
+          unit:
+            type:
+              - "null"
+              - string
+          eventKey:
+            type:
+              - "null"
+              - string
   members_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "members"
       primary_key: "_id"
       path: "/members"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          _pendingInvite:
+            type:
+              - "null"
+              - boolean
+          _verified:
+            type:
+              - "null"
+              - boolean
+          isBeta:
+            type:
+              - "null"
+              - boolean
+          customRoles:
+            type:
+              - "null"
+              - array
+          mfa:
+            type:
+              - "null"
+              - string
+          excludedDashboards:
+            type:
+              - "null"
+              - array
+          _lastSeen:
+            type:
+              - "null"
+              - integer
+          _lastSeenMetadata:
+            type:
+              - "null"
+              - object
+          creationDate:
+            type:
+              - "null"
+              - integer
+          oauthProviders:
+            type:
+              - "null"
+              - array
   audit_log_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "auditlog"
       primary_key: "_id"
       path: "/auditlog"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _id:
+            type:
+              - "null"
+              - string
+          _accountId:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - integer
+          accesses:
+            type:
+              - "null"
+              - array
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          shortDescription:
+            type:
+              - "null"
+              - string
+          comment:
+            type:
+              - "null"
+              - string
+          member:
+            type:
+              - "null"
+              - object
+          titleVerb:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
   flags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -100,6 +394,84 @@ definitions:
       partition_router:
         $ref: "#/definitions/project_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          _maintainer:
+            type:
+              - "null"
+              - object
+          _version:
+            type:
+              - "null"
+              - integer
+          archived:
+            type:
+              - "null"
+              - boolean
+          clientSideAvailability:
+            type:
+              - "null"
+              - object
+          creationDate:
+            type:
+              - "null"
+              - integer
+          customProperties:
+            type:
+              - "null"
+              - object
+          description:
+            type:
+              - "null"
+              - string
+          environments:
+            type:
+              - "null"
+              - object
+          experiments:
+            type:
+              - "null"
+              - object
+          goalIds:
+            type:
+              - "null"
+              - array
+          includeInSnippet:
+            type:
+              - "null"
+              - boolean
+          key:
+            type:
+              - "null"
+              - string
+          maintainerId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          temporary:
+            type:
+              - "null"
+              - boolean
+          variationJsonSchema:
+            type:
+              - "null"
+              - object
+          variations:
+            type:
+              - "null"
+              - array
 streams:
   - "#/definitions/projects_stream"
   - "#/definitions/environments_stream"

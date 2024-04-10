@@ -32,7 +32,237 @@ definitions:
     $parameters:
       name: "archive"
       primary_key: "_id"
-      path: "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1] | int }}.json"
+      path:
+        "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1]
+        | int }}.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          web_url:
+            type:
+              - "null"
+              - string
+            description: Article URL.
+          snippet:
+            type:
+              - "null"
+              - string
+          print_page:
+            type:
+              - "null"
+              - string
+            description: Page in print (e.g. 1).
+          print_section:
+            type:
+              - "null"
+              - string
+            description: Section in print (e.g. A).
+          source:
+            type:
+              - "null"
+              - string
+          multimedia:
+            type: array
+            items:
+              type: object
+              properties:
+                rank:
+                  type:
+                    - "null"
+                    - integer
+                subtype:
+                  type:
+                    - "null"
+                    - string
+                caption:
+                  type:
+                    - "null"
+                    - string
+                credit:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+                height:
+                  type:
+                    - "null"
+                    - integer
+                width:
+                  type:
+                    - "null"
+                    - integer
+                legacy:
+                  type: object
+                  properties:
+                    xlarge:
+                      type:
+                        - "null"
+                        - string
+                    xlargewidth:
+                      type:
+                        - "null"
+                        - integer
+                    xlargeheight:
+                      type:
+                        - "null"
+                        - integer
+                crop_name:
+                  type:
+                    - "null"
+                    - string
+          headline:
+            type: object
+            properties:
+              main:
+                type:
+                  - "null"
+                  - string
+              kicker:
+                type:
+                  - "null"
+                  - string
+              content_kicker:
+                type:
+                  - "null"
+                  - string
+              print_headline:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              seo:
+                type:
+                  - "null"
+                  - string
+              sub:
+                type:
+                  - "null"
+                  - string
+          keywords:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
+                rank:
+                  type:
+                    - "null"
+                    - integer
+                major:
+                  type:
+                    - "null"
+                    - string
+          pub_date:
+            type:
+              - "null"
+              - string
+            description: Publication date.
+          document_type:
+            type:
+              - "null"
+              - string
+            description: Document type (article, multimedia).
+          news_desk:
+            type:
+              - "null"
+              - string
+            description:
+              Desk in the newsroom that worked on the story (Foreign, Metro,
+              Sports, ...).
+          section_name:
+            type:
+              - "null"
+              - string
+            description:
+              Section that the article appeared in (New York, Sports, World,
+              ...).
+          byline:
+            type: object
+            properties:
+              original:
+                type:
+                  - "null"
+                  - string
+              person:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    firstname:
+                      type:
+                        - "null"
+                        - string
+                    middlename:
+                      type:
+                        - "null"
+                        - string
+                    lastname:
+                      type:
+                        - "null"
+                        - string
+                    qualifier:
+                      type:
+                        - "null"
+                        - string
+                    title:
+                      type:
+                        - "null"
+                        - string
+                    role:
+                      type:
+                        - "null"
+                        - string
+                    organization:
+                      type:
+                        - "null"
+                        - string
+                    rank:
+                      type:
+                        - "null"
+                        - integer
+              organization:
+                type:
+                  - "null"
+                  - string
+          type_of_material:
+            type:
+              - "null"
+              - string
+            description: Type of asset (Correction, News, Op-Ed, Review, Video, ...).
+          _id:
+            type:
+              - "null"
+              - string
+          word_count:
+            type:
+              - "null"
+              - integer
+            description: Number of words in the article.
+          uri:
+            type:
+              - "null"
+              - string
+            description: Uniquely identifies an asset.
   most_popular_emailed_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -43,6 +273,184 @@ definitions:
       name: "most_popular_emailed"
       primary_key: "id"
       path: "/mostpopular/v2/emailed/{{ config['period'] }}.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          url:
+            type:
+              - "null"
+              - string
+            description: Article's URL.
+          adx_keywords:
+            type:
+              - "null"
+              - string
+            description: Semicolon separated list of keywords.
+          subsection:
+            type:
+              - "null"
+              - string
+            description: Article's subsection (e.g. Politics). Can be empty string.
+          column:
+            type:
+              - "null"
+              - string
+            description: Deprecated. Set to null.
+          eta_id:
+            type:
+              - "null"
+              - integer
+            description: Deprecated. Set to 0.
+          section:
+            type:
+              - "null"
+              - string
+            description: Article's section (e.g. Sports).
+          id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          asset_id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          nytdsection:
+            type:
+              - "null"
+              - string
+            description: Article's section (e.g. sports).
+          byline:
+            type:
+              - "null"
+              - string
+            description: Article's byline (e.g. By Thomas L. Friedman).
+          type:
+            type:
+              - "null"
+              - string
+            description: Asset type (e.g. Article, Interactive, ...).
+          title:
+            type:
+              - "null"
+              - string
+            description:
+              Article's headline (e.g. When the Cellos Play, the Cows Come
+              Home).
+          abstract:
+            type:
+              - "null"
+              - string
+            description: Brief summary of the article.
+          published_date:
+            type:
+              - "null"
+              - string
+            description: When the article was published on the web (e.g. 2021-04-19).
+          source:
+            type:
+              - "null"
+              - string
+            description: Publisher (e.g. New York Times).
+          updated:
+            type:
+              - "null"
+              - string
+            description: When the article was last updated (e.g. 2021-05-12 06:32:03).
+          des_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of description facets (e.g. Quarantine (Life and Culture)).
+          org_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of organization facets (e.g. Sullivan Street Bakery).
+          per_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of person facets (e.g. Bittman, Mark).
+          geo_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of geographic facets (e.g. Canada).
+          media:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset type (e.g. image).
+                subtype:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset subtype (e.g. photo).
+                caption:
+                  type:
+                    - "null"
+                    - string
+                  description: Media caption.
+                copyright:
+                  type:
+                    - "null"
+                    - string
+                  description: Media credit.
+                approved_for_syndication:
+                  type:
+                    - "null"
+                    - integer
+                  description: Whether media is approved for syndication.
+                media-metadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's URL.
+                      format:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's crop name.
+                      height:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's height (e.g. 293).
+                      width:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's width (e.g. 440).
+                  description: Media metadata (url, width, height, ...).
+            description: Array of images.
+          uri:
+            type:
+              - "null"
+              - string
+            description: An article's globally unique identifier.
   most_popular_shared_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -52,7 +460,187 @@ definitions:
     $parameters:
       name: "most_popular_shared"
       primary_key: "id"
-      path: "/mostpopular/v2/shared/{{ config['period'] }}{% if 'share_type' in config %}/{{ config['share_type'] }}{% endif %}.json"
+      path:
+        "/mostpopular/v2/shared/{{ config['period'] }}{% if 'share_type' in config
+        %}/{{ config['share_type'] }}{% endif %}.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          url:
+            type:
+              - "null"
+              - string
+            description: Article's URL.
+          adx_keywords:
+            type:
+              - "null"
+              - string
+            description: Semicolon separated list of keywords.
+          subsection:
+            type:
+              - "null"
+              - string
+            description: Article's subsection (e.g. Politics). Can be empty string.
+          column:
+            type:
+              - "null"
+              - string
+            description: Deprecated. Set to null.
+          eta_id:
+            type:
+              - "null"
+              - integer
+            description: Deprecated. Set to 0.
+          section:
+            type:
+              - "null"
+              - string
+            description: Article's section (e.g. Sports).
+          id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          asset_id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          nytdsection:
+            type:
+              - "null"
+              - string
+            description: Article's section (e.g. sports).
+          byline:
+            type:
+              - "null"
+              - string
+            description: Article's byline (e.g. By Thomas L. Friedman).
+          type:
+            type:
+              - "null"
+              - string
+            description: Asset type (e.g. Article, Interactive, ...).
+          title:
+            type:
+              - "null"
+              - string
+            description:
+              Article's headline (e.g. When the Cellos Play, the Cows Come
+              Home).
+          abstract:
+            type:
+              - "null"
+              - string
+            description: Brief summary of the article.
+          published_date:
+            type:
+              - "null"
+              - string
+            description: When the article was published on the web (e.g. 2021-04-19).
+          source:
+            type:
+              - "null"
+              - string
+            description: Publisher (e.g. New York Times).
+          updated:
+            type:
+              - "null"
+              - string
+            description: When the article was last updated (e.g. 2021-05-12 06:32:03).
+          des_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of description facets (e.g. Quarantine (Life and Culture)).
+          org_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of organization facets (e.g. Sullivan Street Bakery).
+          per_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of person facets (e.g. Bittman, Mark).
+          geo_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of geographic facets (e.g. Canada).
+          media:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset type (e.g. image).
+                subtype:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset subtype (e.g. photo).
+                caption:
+                  type:
+                    - "null"
+                    - string
+                  description: Media caption.
+                copyright:
+                  type:
+                    - "null"
+                    - string
+                  description: Media credit.
+                approved_for_syndication:
+                  type:
+                    - "null"
+                    - integer
+                  description: Whether media is approved for syndication.
+                media-metadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's URL.
+                      format:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's crop name.
+                      height:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's height (e.g. 293).
+                      width:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's width (e.g. 440).
+                  description: Media metadata (url, width, height, ...).
+            description: Array of images.
+          uri:
+            type:
+              - "null"
+              - string
+            description: An article's globally unique identifier.
   most_popular_viewed_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -64,6 +652,164 @@ definitions:
       primary_key: "id"
       path: "/mostpopular/v2/viewed/{{ config['period'] }}.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          url:
+            type:
+              - "null"
+              - string
+            description: Article's URL.
+          adx_keywords:
+            type:
+              - "null"
+              - string
+            description: Semicolon separated list of keywords.
+          column:
+            type:
+              - "null"
+              - string
+            description: Deprecated. Set to null.
+          section:
+            type:
+              - "null"
+              - string
+            description: Article's section (e.g. Sports).
+          byline:
+            type:
+              - "null"
+              - string
+            description: Article's byline (e.g. By Thomas L. Friedman).
+          type:
+            type:
+              - "null"
+              - string
+            description: Asset type (e.g. Article, Interactive, ...).
+          title:
+            type:
+              - "null"
+              - string
+            description:
+              Article's headline (e.g. When the Cellos Play, the Cows Come
+              Home).
+          abstract:
+            type:
+              - "null"
+              - string
+            description: Brief summary of the article.
+          published_date:
+            type:
+              - "null"
+              - string
+            description: When the article was published on the web (e.g. 2021-04-19).
+          source:
+            type:
+              - "null"
+              - string
+            description: Publisher (e.g. New York Times).
+          id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          asset_id:
+            type:
+              - "null"
+              - integer
+            description: Asset ID number (e.g. 100000007772696).
+          des_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of description facets (e.g. Quarantine (Life and Culture)).
+          org_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of organization facets (e.g. Sullivan Street Bakery).
+          per_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of person facets (e.g. Bittman, Mark).
+          geo_facet:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+            description: Array of geographic facets (e.g. Canada).
+          media:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset type (e.g. image).
+                subtype:
+                  type:
+                    - "null"
+                    - string
+                  description: Asset subtype (e.g. photo).
+                caption:
+                  type:
+                    - "null"
+                    - string
+                  description: Media caption.
+                copyright:
+                  type:
+                    - "null"
+                    - string
+                  description: Media credit.
+                approved_for_syndication:
+                  type:
+                    - "null"
+                    - integer
+                  description: Whether media is approved for syndication.
+                media-metadata:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      url:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's URL.
+                      format:
+                        type:
+                          - "null"
+                          - string
+                        description: Image's crop name.
+                      height:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's height (e.g. 293).
+                      width:
+                        type:
+                          - "null"
+                          - integer
+                        description: Image's width (e.g. 440).
+                  description: Media metadata (url, width, height, ...).
+            description: Array of images.
+          uri:
+            type:
+              - "null"
+              - string
+            description: An article's globally unique identifier.
 streams:
   - "#/definitions/archive_stream"
   - "#/definitions/most_popular_emailed_stream"

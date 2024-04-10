@@ -28,7 +28,127 @@ definitions:
     $parameters:
       name: "sms"
       primary_key: "requestId"
-      path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
+      path:
+        "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{
+        config['message'] or ''}}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          doneDate:
+            type:
+              - "null"
+              - string
+          errorCode:
+            type:
+              - "null"
+              - string
+          errorReason:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          mccmnc:
+            type:
+              - "null"
+              - string
+          parts:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                currency:
+                  type:
+                    - "null"
+                    - string
+                deliveryState:
+                  type:
+                    - "null"
+                    - string
+                doneDate:
+                  type:
+                    - "null"
+                    - string
+                errorCode:
+                  type:
+                    - "null"
+                    - string
+                partId:
+                  type:
+                    - "null"
+                    - string
+                price:
+                  type:
+                    - "null"
+                    - string
+                priceEffective:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                sendDate:
+                  type:
+                    - "null"
+                    - string
+                statusText:
+                  type:
+                    - "null"
+                    - string
+          overallPrice:
+            type:
+              - "null"
+              - string
+          priceEffective:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reference:
+            type:
+              - "null"
+              - string
+          requestId:
+            type:
+              - "null"
+              - string
+          sentDate:
+            type:
+              - "null"
+              - string
+          size:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          submitDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          to:
+            type:
+              - "null"
+              - string
+          ttid:
+            type:
+              - "null"
+              - string
   sms_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -50,25 +170,268 @@ definitions:
         path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
       partition_router:
         $ref: "#/definitions/sms_partition_router"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          doneDate:
+            type:
+              - "null"
+              - string
+          errorCode:
+            type:
+              - "null"
+              - string
+          errorReason:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          mccmnc:
+            type:
+              - "null"
+              - string
+          parts:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                currency:
+                  type:
+                    - "null"
+                    - string
+                deliveryState:
+                  type:
+                    - "null"
+                    - string
+                doneDate:
+                  type:
+                    - "null"
+                    - string
+                errorCode:
+                  type:
+                    - "null"
+                    - string
+                partId:
+                  type:
+                    - "null"
+                    - string
+                price:
+                  type:
+                    - "null"
+                    - string
+                priceEffective:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                sendDate:
+                  type:
+                    - "null"
+                    - string
+                statusText:
+                  type:
+                    - "null"
+                    - string
+          overallPrice:
+            type:
+              - "null"
+              - string
+          priceEffective:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reference:
+            type:
+              - "null"
+              - string
+          requestId:
+            type:
+              - "null"
+              - string
+          sentDate:
+            type:
+              - "null"
+              - string
+          size:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          submitDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          to:
+            type:
+              - "null"
+              - string
+          ttid:
+            type:
+              - "null"
+              - string
   contacts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "contacts"
       path: "/byon/contacts/v1"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          contacts:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                companyAddress:
+                  type:
+                    - "null"
+                    - string
+                companyName:
+                  type:
+                    - "null"
+                    - string
+                contactEmail:
+                  type:
+                    - "null"
+                    - string
+                contactName:
+                  type:
+                    - "null"
+                    - string
+                contactPhone:
+                  type:
+                    - "null"
+                    - string
+                contactTitle:
+                  type:
+                    - "null"
+                    - string
+                friendlyName:
+                  type:
+                    - "null"
+                    - string
+          size:
+            type:
+              - "null"
+              - integer
   phones_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "phones"
       path: "/byon/phonebook/v1/numbers"
-  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          provisioningRequests:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                accountId:
+                  type:
+                    - "null"
+                    - string
+                contactId:
+                  type:
+                    - "null"
+                    - string
+                friendlyName:
+                  type:
+                    - "null"
+                    - string
+                requestId:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+          size:
+            type:
+              - "null"
+              - integer
   registrations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "registrations"
       path: "/byon/provisioning/v1"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          provisioningRequests:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                accountId:
+                  type:
+                    - "null"
+                    - string
+                contactId:
+                  type:
+                    - "null"
+                    - string
+                friendlyName:
+                  type:
+                    - "null"
+                    - string
+                requestId:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+          size:
+            type:
+              - "null"
+              - integer
 streams:
   - "#/definitions/sms_stream"
   - "#/definitions/messages_stream"

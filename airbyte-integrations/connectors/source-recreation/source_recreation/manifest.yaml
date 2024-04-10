@@ -47,6 +47,20 @@ definitions:
       primary_key: "ActivityID"
       path: "/activities"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ActivityID:
+            type: integer
+          ActivityLevel:
+            type: integer
+          ActivityName:
+            type: string
+          ActivityParentID:
+            type: integer
   campsites_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -54,6 +68,89 @@ definitions:
       primary_key: "CampsiteID"
       path: "/campsites"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CampsiteID:
+            type: string
+          FacilityID:
+            type: string
+          CampsiteName:
+            type: string
+          CampsiteType:
+            type: string
+          TypeOfUse:
+            type: string
+          Loop:
+            type: string
+          CampsiteAccessible:
+            type: boolean
+          CampsiteLongitude:
+            type: number
+          CampsiteLatitude:
+            type: number
+          CreatedDate:
+            type: string
+          LastUpdatedDate:
+            type: string
+          ATTRIBUTES:
+            type: array
+            items:
+              type: object
+              properties:
+                AttributeID:
+                  type: integer
+                AttributeName:
+                  type: string
+                AttributeValue:
+                  type: string
+          PERMITTEDEQUIPMENT:
+            type: array
+            items:
+              type: object
+              properties:
+                EquipmentName:
+                  type: string
+                MaxLength:
+                  type: integer
+          ENTITYMEDIA:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityMediaID:
+                  type: string
+                MediaType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Subtitle:
+                  type: string
+                Description:
+                  type: string
+                EmbedCode:
+                  type: string
+                Height:
+                  type: integer
+                Width:
+                  type: integer
+                IsPrimary:
+                  type: boolean
+                IsPreview:
+                  type: boolean
+                IsGallery:
+                  type: boolean
+                URL:
+                  type: string
+                Credits:
+                  type: string
   events_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -61,6 +158,18 @@ definitions:
       primary_key: "EventID"
       path: "/events"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          EventID:
+            type: string
+          EventName:
+            type: string
+          ResourceLink:
+            type: string
   facilities_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -68,6 +177,246 @@ definitions:
       primary_key: "FacilityID"
       path: "/facilities"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          FacilityID:
+            type: string
+          LegacyFacilityID:
+            type: string
+          OrgFacilityID:
+            type: string
+          ParentOrgID:
+            type: string
+          ParentRecAreaID:
+            type: string
+          FacilityName:
+            type: string
+          FacilityDescription:
+            type: string
+          FacilityTypeDescription:
+            type: string
+          FacilityUseFeeDescription:
+            type: string
+          FacilityDirections:
+            type: string
+          FacilityPhone:
+            type: string
+          FacilityEmail:
+            type: string
+          FacilityReservationURL:
+            type: string
+          FacilityMapURL:
+            type: string
+          FacilityAdaAccess:
+            type: string
+          GEOJSON:
+            type: object
+            properties:
+              TYPE:
+                type: string
+              COORDINATES:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - number
+                    - "null"
+          FacilityLongitude:
+            type: number
+          FacilityLatitude:
+            type: number
+          StayLimit:
+            type: string
+          Keywords:
+            type: string
+          Reservable:
+            type: boolean
+          Enabled:
+            type: boolean
+          LastUpdatedDate:
+            type: string
+          CAMPSITE:
+            type: array
+            items:
+              type: object
+              properties:
+                CampsiteID:
+                  type: string
+                CampsiteName:
+                  type: string
+                ResourceLink:
+                  type: string
+          PERMITENTRANCE:
+            type: array
+            items:
+              type: object
+              properties:
+                PermitEntranceID:
+                  type: string
+                PermitEntranceName:
+                  type: string
+                ResourceLink:
+                  type: string
+          TOUR:
+            type: array
+            items:
+              type: object
+              properties:
+                TourID:
+                  type: string
+                TourName:
+                  type: string
+                ResourceLink:
+                  type: string
+          ORGANIZATION:
+            type: array
+            items:
+              type: object
+              properties:
+                OrgID:
+                  type: string
+                OrgName:
+                  type: string
+                OrgImageURL:
+                  type: string
+                OrgURLText:
+                  type: string
+                OrgURLAddress:
+                  type: string
+                OrgType:
+                  type: string
+                OrgAbbrevName:
+                  type: string
+                OrgJurisdictionType:
+                  type: string
+                OrgParentID:
+                  type: string
+                LastUpdatedDate:
+                  type: string
+          RECAREA:
+            type: array
+            items:
+              type: object
+              properties:
+                RecAreaID:
+                  type: string
+                RecAreaName:
+                  type: string
+                ResourceLink:
+                  type: string
+          FACILITYADDRESS:
+            type: array
+            items:
+              type: object
+              properties:
+                FacilityAddressID:
+                  type: string
+                FacilityID:
+                  type: string
+                FacilityAddressType:
+                  type: string
+                FacilityStreetAddress1:
+                  type: string
+                FacilityStreetAddress2:
+                  type: string
+                FacilityStreetAddress3:
+                  type: string
+                City:
+                  type: string
+                PostalCode:
+                  type: string
+                AddressStateCode:
+                  type: string
+                AddressCountryCode:
+                  type: string
+                LastUpdatedDate:
+                  type: string
+          ACTIVITY:
+            type: array
+            items:
+              type: object
+              properties:
+                ActivityID:
+                  type: string
+                FacilityID:
+                  type: string
+                ActivityName:
+                  type: string
+                FacilityActivityDescription:
+                  type: string
+                FacilityActivityFeeDescription:
+                  type: string
+          EVENT:
+            type: array
+            items:
+              type: object
+              properties:
+                EventID:
+                  type: string
+                EventName:
+                  type: string
+                ResourceLink:
+                  type: string
+          LINK:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityLinkID:
+                  type: string
+                LinkType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Description:
+                  type: string
+                URL:
+                  type: string
+          MEDIA:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityMediaID:
+                  type: string
+                MediaType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Subtitle:
+                  type: string
+                Description:
+                  type: string
+                EmbedCode:
+                  type: string
+                Height:
+                  type: integer
+                Width:
+                  type: integer
+                IsPrimary:
+                  type: boolean
+                IsPreview:
+                  type: boolean
+                IsGallery:
+                  type: boolean
+                URL:
+                  type: string
+                Credits:
+                  type: string
   facilityaddresses_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -75,6 +424,34 @@ definitions:
       primary_key: "FacilityAddressID"
       path: "/facilityaddresses"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          FacilityAddressID:
+            type: string
+          FacilityID:
+            type: string
+          FacilityAddressType:
+            type: string
+          FacilityStreetAddress1:
+            type: string
+          FacilityStreetAddress2:
+            type: string
+          FacilityStreetAddress3:
+            type: string
+          City:
+            type: string
+          PostalCode:
+            type: string
+          AddressStateCode:
+            type: string
+          AddressCountryCode:
+            type: string
+          LastUpdatedDate:
+            type: string
   links_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -82,6 +459,26 @@ definitions:
       primary_key: "EntityLinkID"
       path: "/links"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          EntityLinkID:
+            type: string
+          LinkType:
+            type: string
+          EntityID:
+            type: string
+          EntityType:
+            type: string
+          Title:
+            type: string
+          Description:
+            type: string
+          URL:
+            type: string
   media_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -89,6 +486,42 @@ definitions:
       primary_key: "EntityMediaID"
       path: "/media"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          EntityMediaID:
+            type: string
+          MediaType:
+            type: string
+          EntityID:
+            type: string
+          EntityType:
+            type: string
+          Title:
+            type: string
+          Subtitle:
+            type: string
+          Description:
+            type: string
+          EmbedCode:
+            type: string
+          Height:
+            type: integer
+          Width:
+            type: integer
+          IsPrimary:
+            type: boolean
+          IsPreview:
+            type: boolean
+          IsGallery:
+            type: boolean
+          URL:
+            type: string
+          Credits:
+            type: string
   organizations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -96,6 +529,32 @@ definitions:
       primary_key: "OrgID"
       path: "/organizations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          OrgID:
+            type: string
+          OrgName:
+            type: string
+          OrgImageURL:
+            type: string
+          OrgURLText:
+            type: string
+          OrgURLAddress:
+            type: string
+          OrgType:
+            type: string
+          OrgAbbrevName:
+            type: string
+          OrgJurisdictionType:
+            type: string
+          OrgParentID:
+            type: string
+          LastUpdatedDate:
+            type: string
   permits_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -103,6 +562,98 @@ definitions:
       primary_key: "PermitEntranceID"
       path: "/permits"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          PermitEntranceID:
+            type: string
+          FacilityID:
+            type: string
+          PermitEntranceName:
+            type: string
+          PermitEntranceDescription:
+            type: string
+          District:
+            type: string
+          Town:
+            type: string
+          PermitEntranceAccessible:
+            type: boolean
+          Longitude:
+            type: integer
+          Latitude:
+            type: integer
+          GEOSJON:
+            type: object
+            properties:
+              TYPE:
+                type: string
+              COORDINATES:
+                type: array
+                items:
+                  type: number
+          CreatedDate:
+            type: string
+          LastUpdatedDate:
+            type: string
+          ATTRIBUTES:
+            type: array
+            items:
+              type: object
+              properties:
+                AttributeID:
+                  type: integer
+                AttributeName:
+                  type: string
+                AttributeValue:
+                  type: string
+          ENTITYMEDIA:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityMediaID:
+                  type: string
+                MediaType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Subtitle:
+                  type: string
+                Description:
+                  type: string
+                EmbedCode:
+                  type: string
+                Height:
+                  type: integer
+                Width:
+                  type: integer
+                IsPrimary:
+                  type: boolean
+                IsPreview:
+                  type: boolean
+                IsGallery:
+                  type: boolean
+                URL:
+                  type: string
+                Credits:
+                  type: string
+          ZONES:
+            type: array
+            items:
+              type: object
+              properties:
+                PermitEntranceZoneID:
+                  type: string
+                Zone:
+                  type: string
   recreationareas_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -110,6 +661,207 @@ definitions:
       primary_key: "RecAreaID"
       path: "/recareas"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          RecAreaID:
+            type: string
+          OrgRecAreaID:
+            type: string
+          ParentOrgID:
+            type: string
+          RecAreaName:
+            type: string
+          RecAreaDescription:
+            type: string
+          RecAreaFeeDescription:
+            type: string
+          RecAreaDirections:
+            type: string
+          RecAreaPhone:
+            type: string
+          RecAreaEmail:
+            type: string
+          RecAreaReservationURL:
+            type: string
+          RecAreaMapURL:
+            type: string
+          GEOJSON:
+            type: object
+            properties:
+              TYPE:
+                type: string
+              COORDINATES:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - number
+                    - "null"
+          RecAreaLongitude:
+            type: number
+          RecAreaLatitude:
+            type: number
+          StayLimit:
+            type: string
+          Keywords:
+            type: string
+          Reservable:
+            type: boolean
+          Enabled:
+            type: boolean
+          LastUpdatedDate:
+            type: string
+          ORGANIZATION:
+            type: array
+            items:
+              type: object
+              properties:
+                OrgID:
+                  type: string
+                OrgName:
+                  type: string
+                OrgImageURL:
+                  type: string
+                OrgURLText:
+                  type: string
+                OrgURLAddress:
+                  type: string
+                OrgType:
+                  type: string
+                OrgAbbrevName:
+                  type: string
+                OrgJurisdictionType:
+                  type: string
+                OrgParentID:
+                  type: string
+                LastUpdatedDate:
+                  type: string
+          FACILITY:
+            type: array
+            items:
+              type: object
+              properties:
+                FacilityID:
+                  type: string
+                FacilityName:
+                  type: string
+                ResourceLink:
+                  type: string
+          RECAREAADDRESS:
+            type: array
+            items:
+              type: object
+              properties:
+                RecAreaAddressID:
+                  type: string
+                RecAreaID:
+                  type: string
+                RecAreaAddressType:
+                  type: string
+                RecAreaStreetAddress1:
+                  type: string
+                RecAreaStreetAddress2:
+                  type: string
+                RecAreaStreetAddress3:
+                  type: string
+                City:
+                  type: string
+                PostalCode:
+                  type: string
+                AddressStateCode:
+                  type: string
+                AddressCountryCode:
+                  type: string
+                LastUpdatedDate:
+                  type: string
+          ACTIVITY:
+            type: array
+            items:
+              type: object
+              properties:
+                ActivityID:
+                  type: string
+                ActivityParentID:
+                  type: string
+                RecAreaID:
+                  type: string
+                ActivityName:
+                  type: string
+                RecAreaActivityDescription:
+                  type: string
+                RecAreaActivityFeeDescription:
+                  type: string
+          EVENT:
+            type: array
+            items:
+              type: object
+              properties:
+                EventID:
+                  type: string
+                EventName:
+                  type: string
+                ResourceLink:
+                  type: string
+          MEDIA:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityMediaID:
+                  type: string
+                MediaType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Subtitle:
+                  type: string
+                Description:
+                  type: string
+                EmbedCode:
+                  type: string
+                Height:
+                  type: integer
+                Width:
+                  type: integer
+                IsPrimary:
+                  type: boolean
+                IsPreview:
+                  type: boolean
+                IsGallery:
+                  type: boolean
+                URL:
+                  type: string
+                Credits:
+                  type: string
+          LINK:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityLinkID:
+                  type: string
+                LinkType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Description:
+                  type: string
+                URL:
+                  type: string
   recreationareaaddresses_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -117,6 +869,34 @@ definitions:
       primary_key: "RecAreaAddressID"
       path: "/recareaaddresses"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          RecAreaAddressID:
+            type: string
+          RecAreaID:
+            type: string
+          RecAreaAddressType:
+            type: string
+          RecAreaStreetAddress1:
+            type: string
+          RecAreaStreetAddress2:
+            type: string
+          RecAreaStreetAddress3:
+            type: string
+          City:
+            type: string
+          PostalCode:
+            type: string
+          AddressStateCode:
+            type: string
+          AddressCountryCode:
+            type: string
+          LastUpdatedDate:
+            type: string
   tours_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -124,6 +904,88 @@ definitions:
       primary_key: "TourID"
       path: "/tours"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          TourID:
+            type: string
+          FacilityID:
+            type: string
+          TourName:
+            type: string
+          TourType:
+            type: string
+          TourDescription:
+            type: string
+          TourDuration:
+            type: integer
+          TourAccessible:
+            type: boolean
+          CreatedDate:
+            type: string
+          LastUpdatedDate:
+            type: string
+          ATTRIBUTES:
+            type: array
+            items:
+              type: object
+              properties:
+                AttributeID:
+                  type: integer
+                AttributeName:
+                  type: string
+                AttributeValue:
+                  type: string
+          ENTITYMEDIA:
+            type: array
+            items:
+              type: object
+              properties:
+                EntityMediaID:
+                  type: string
+                MediaType:
+                  type: string
+                EntityID:
+                  type: string
+                EntityType:
+                  type: string
+                Title:
+                  type: string
+                Subtitle:
+                  type: string
+                Description:
+                  type: string
+                EmbedCode:
+                  type: string
+                Height:
+                  type: integer
+                Width:
+                  type: integer
+                IsPrimary:
+                  type: boolean
+                IsPreview:
+                  type: boolean
+                IsGallery:
+                  type: boolean
+                URL:
+                  type: string
+                Credits:
+                  type: string
+          MEMBERTOURS:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                MemberTourID:
+                  type:
+                    - string
+                    - integer
+                    - "null"
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/media_stream"

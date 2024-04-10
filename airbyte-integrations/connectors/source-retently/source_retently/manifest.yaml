@@ -68,6 +68,41 @@ definitions:
       path_extractor: "campaigns"
       path: "campaigns"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          isActive:
+            type:
+              - "null"
+              - boolean
+          templateId:
+            type:
+              - "null"
+              - string
+          metric:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          channel:
+            type:
+              - "null"
+              - string
   companies_stream:
     $ref: "#/definitions/base_stream"
     name: "companies"
@@ -76,6 +111,66 @@ definitions:
       path_extractor: "companies"
       path: "companies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+          domain:
+            type:
+              - "null"
+              - string
+          companyName:
+            type:
+              - "null"
+              - string
+          industryName:
+            type:
+              - "null"
+              - string
+          tags:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          cxMetrics:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              NPS:
+                type:
+                  - "null"
+                  - number
+              CSAT:
+                type:
+                  - "null"
+                  - number
+              CES:
+                type:
+                  - "null"
+                  - number
+              STAR:
+                type:
+                  - "null"
+                  - number
+          contactsCount:
+            type:
+              - "null"
+              - number
   customers_stream:
     $ref: "#/definitions/base_stream"
     name: "customers"
@@ -84,6 +179,72 @@ definitions:
       path_extractor: "subscribers"
       path: "nps/customers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          companyName:
+            type:
+              - "null"
+              - string
+          companyId:
+            type:
+              - "null"
+              - string
+          tags:
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+          properties:
+            type: array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                label:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - string
   feedback_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -104,6 +265,138 @@ definitions:
       path_extractor: "responses"
       path: "feedback"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          customerId:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          companyName:
+            type:
+              - "null"
+              - string
+          companyId:
+            type:
+              - "null"
+              - string
+          jobTitle:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          tags:
+            type: array
+            items:
+              type: string
+          customProps:
+            type: array
+            items:
+              type: object
+          campaignId:
+            type:
+              - "null"
+              - string
+          campaignName:
+            type:
+              - "null"
+              - string
+          createdDate:
+            type:
+              - "null"
+              - string
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+          score:
+            type:
+              - "null"
+              - number
+          comment:
+            type:
+              - "null"
+              - string
+          checkbox:
+            type:
+              - "null"
+              - boolean
+          additionalQuestions:
+            type: array
+            items:
+              type: object
+          feedbackTopics:
+            type: array
+            items:
+              type: object
+          feedbackTags:
+            type: array
+            items:
+              type: string
+          feedbackTagsNew:
+            type: array
+            items:
+              type: string
+          notes:
+            type: array
+            items:
+              type: object
+          status:
+            type:
+              - string
+              - "null"
+          assigned:
+            type:
+              - "null"
+              - string
+          ratingCategory:
+            type:
+              - "null"
+              - string
+          resolved:
+            type:
+              - "null"
+              - boolean
+          channel:
+            type:
+              - "null"
+              - string
+          metricsType:
+            type:
+              - "null"
+              - string
+          isBogus:
+            type:
+              - "null"
+              - boolean
   outbox_stream:
     $ref: "#/definitions/base_stream"
     name: "outbox"
@@ -111,6 +404,165 @@ definitions:
       path_extractor: "surveys"
       path: "nps/outbox"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          customerId:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          companyName:
+            type:
+              - "null"
+              - string
+          companyId:
+            type:
+              - "null"
+              - string
+          sentDate:
+            type:
+              - "null"
+              - string
+            format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+          channel:
+            type:
+              - "null"
+              - string
+          personTags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          campaign:
+            type:
+              - "null"
+              - string
+          campaignId:
+            type:
+              - "null"
+              - string
+          surveyTemplateId:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          sentBy:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          attributes:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              customerTags:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+              customProps:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    label:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      type:
+                        - "null"
+                        - string
+          detailedStatus:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              isOpened:
+                type:
+                  - "null"
+                  - boolean
+              openedDate:
+                format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+                type:
+                  - "null"
+                  - string
+              isResponded:
+                type:
+                  - "null"
+                  - boolean
+              respondedDate:
+                format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+                type:
+                  - "null"
+                  - string
+              hasFeedback:
+                type:
+                  - "null"
+                  - boolean
+              isOptedOut:
+                type:
+                  - "null"
+                  - boolean
+              isBounced:
+                type:
+                  - "null"
+                  - boolean
+          mandrillMessageId:
+            type:
+              - "null"
+              - string
+          additionalRecipients:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+            mandrillMessageId:
+              type:
+                - "null"
+                - string
   reports_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -124,6 +576,110 @@ definitions:
       path_extractor: "data"
       path: "reports"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          campaignId:
+            type:
+              - "null"
+              - string
+          questionsStats:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              additionalProperties: true
+          trend:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                day:
+                  type:
+                    - "null"
+                    - string
+                promoters:
+                  type:
+                    - "null"
+                    - number
+                passives:
+                  type:
+                    - "null"
+                    - number
+                detractors:
+                  type:
+                    - "null"
+                    - number
+                total:
+                  type:
+                    - "null"
+                    - number
+                score:
+                  type:
+                    - "null"
+                    - number
+          last:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              promoters:
+                type:
+                  - "null"
+                  - number
+              passives:
+                type:
+                  - "null"
+                  - number
+              detractors:
+                type:
+                  - "null"
+                  - number
+              total:
+                type:
+                  - "null"
+                  - number
+              score:
+                type:
+                  - "null"
+                  - number
+          deliveryStats:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              totalCount:
+                type:
+                  - "null"
+                  - number
+              opened:
+                type:
+                  - "null"
+                  - number
+              responded:
+                type:
+                  - "null"
+                  - number
+              optedOut:
+                type:
+                  - "null"
+                  - number
+              isBounced:
+                type:
+                  - "null"
+                  - number
   nps_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -137,6 +693,53 @@ definitions:
       path_extractor: "data"
       path: "nps/score"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          score:
+            type:
+              - "null"
+              - integer
+          scoreSum:
+            type:
+              - "null"
+              - integer
+          metricsType:
+            type:
+              - "null"
+              - string
+          promoters:
+            type:
+              - "null"
+              - integer
+          passives:
+            type:
+              - "null"
+              - integer
+          detractors:
+            type:
+              - "null"
+              - integer
+          promotersCount:
+            type:
+              - "null"
+              - integer
+          passivesCount:
+            type:
+              - "null"
+              - integer
+          detractorsCount:
+            type:
+              - "null"
+              - integer
+          totalResponses:
+            type:
+              - "null"
+              - integer
   templates_stream:
     $ref: "#/definitions/base_stream"
     name: "templates"
@@ -149,6 +752,29 @@ definitions:
       path_extractor: "data"
       path: "templates"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          channel:
+            type:
+              - "null"
+              - string
+          metric:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"

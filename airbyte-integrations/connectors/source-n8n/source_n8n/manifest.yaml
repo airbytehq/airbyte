@@ -41,6 +41,44 @@ definitions:
       primary_key: "id"
       path: "/executions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - integer
+          finished:
+            type:
+              - boolean
+          mode:
+            type:
+              - string
+          retryOf:
+            type:
+              - "null"
+              - string
+          retrySuccessId:
+            type:
+              - "null"
+              - integer
+          startedAt:
+            type:
+              - string
+          stoppedAt:
+            type:
+              - "null"
+              - string
+          workflowId:
+            type:
+              - "null"
+              - string
+          waitTill:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/executions_stream"
 

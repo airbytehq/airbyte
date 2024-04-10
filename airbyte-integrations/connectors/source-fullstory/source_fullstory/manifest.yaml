@@ -38,6 +38,56 @@ definitions:
       path: "/operations/v1"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Operations Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          details:
+            type:
+              - "null"
+              - object
+          results:
+            type:
+              - "null"
+              - object
+          state:
+            type:
+              - "null"
+              - string
+          errorDetails:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          finishedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          estimatePctComplete:
+            type:
+              - "null"
+              - integer
+          step:
+            type:
+              - "null"
+              - string
   sessions_stream:
     type: DeclarativeStream
     $parameters:
@@ -45,6 +95,33 @@ definitions:
       path: "/sessions/v2?{{ 'uid=' ~ config['uid'] }}"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Sessions Schema
+        additionalProperties: true
+        type: object
+        properties:
+          userId:
+            type:
+              - "null"
+              - integer
+              - string
+          sessionId:
+            type:
+              - "null"
+              - integer
+              - string
+          createdTime:
+            type:
+              - "null"
+              - integer
+              - string
+          fsUrl:
+            type:
+              - "null"
+              - string
   segments_stream:
     type: DeclarativeStream
     $parameters:
@@ -52,6 +129,34 @@ definitions:
       path: "/segments/v1"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Segments Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          creator:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
   blockrules_stream:
     type: DeclarativeStream
     $parameters:
@@ -59,6 +164,32 @@ definitions:
       path: "/settings/recording/v1/blocking"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: BlockRules Schema
+        additionalProperties: true
+        type: object
+        properties:
+          blockedIps:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          blockedUas:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          blockedAppIds:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
   domainsettings_stream:
     type: DeclarativeStream
     $parameters:
@@ -66,6 +197,35 @@ definitions:
       path: "/settings/recording/v1/domain"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: DomainSettings Schema
+        additionalProperties: true
+        type: object
+        properties:
+          onlyRecordKnownDomains:
+            type:
+              - "null"
+              - boolean
+          domains:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                disabled:
+                  type:
+                    - "null"
+                    - boolean
+                domain:
+                  type:
+                    - "null"
+                    - string
   geosettings_stream:
     type: DeclarativeStream
     $parameters:
@@ -73,6 +233,24 @@ definitions:
       path: "/settings/recording/v1/geo"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: GeoSettings Schema
+        additionalProperties: true
+        type: object
+        properties:
+          record_geo_mode:
+            type:
+              - "null"
+              - string
+          record_geo_zones:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
   recordingfeatures_stream:
     type: DeclarativeStream
     $parameters:
@@ -80,6 +258,34 @@ definitions:
       path: "/settings/recording/v1/features"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: RecordingFeatures Schema
+        additionalProperties: true
+        type: object
+        properties:
+          enabled:
+            type:
+              - "null"
+              - boolean
+          consoleWatcher:
+            type:
+              - "null"
+              - boolean
+          ajaxWatcher:
+            type:
+              - "null"
+              - boolean
+          resourceUploading:
+            type:
+              - "null"
+              - boolean
+          recordingShutoff:
+            type:
+              - "null"
+              - boolean
   targetrules_stream:
     type: DeclarativeStream
     $parameters:
@@ -87,6 +293,7 @@ definitions:
       path: "/settings/recording/v1/targeting"
     $ref: "#/definitions/base_stream"
 
+    schema_loader: {}
   webhooks_stream:
     type: DeclarativeStream
     $parameters:
@@ -94,6 +301,60 @@ definitions:
       path: "/webhooks/v1/endpoints"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Webhooks Schema
+        additionalProperties: true
+        type: object
+        properties:
+          endpoints:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                created:
+                  type:
+                    - "null"
+                    - string
+                modified:
+                  type:
+                    - "null"
+                    - string
+                enabled:
+                  type:
+                    - "null"
+                    - boolean
+                url:
+                  type:
+                    - "null"
+                    - string
+                event_types:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      event_name:
+                        type:
+                          - "null"
+                          - string
+                      subcategory:
+                        type:
+                          - "null"
+                          - string
   event-types_stream:
     type: DeclarativeStream
     $parameters:
@@ -101,6 +362,26 @@ definitions:
       path: "/webhooks/v1/event-types"
     $ref: "#/definitions/base_stream"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: EventTypes Schema
+        type: object
+        additionalProperties: true
+        properties:
+          eventName:
+            type:
+              - "null"
+              - string
+          displayName:
+            type:
+              - "null"
+              - string
+          hasSubcategories:
+            type:
+              - "null"
+              - boolean
 streams:
   - "#/definitions/sessions_stream"
   - "#/definitions/segments_stream"

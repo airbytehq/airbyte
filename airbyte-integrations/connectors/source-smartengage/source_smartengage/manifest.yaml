@@ -28,6 +28,31 @@ definitions:
       name: "avatars"
       primary_key: "avatar_id"
       path: "/avatars/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          brand_name:
+            type:
+              - string
+              - "null"
+          avatar_id:
+            type: string
+          brand_image:
+            type:
+              - string
+              - "null"
+          user_role:
+            type:
+              - string
+              - "null"
+          facebook_page_id:
+            type:
+              - string
+              - "null"
+        required:
+          - avatar_id
   avatars_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -49,7 +74,20 @@ definitions:
           avatar_id: "{{ stream_slice.avatar_id }}"
       partition_router:
         $ref: "#/definitions/avatars_partition_router"
-  # API Docs: https://smartengage.com/docs/#list-all-custom-fields
+    # API Docs: https://smartengage.com/docs/#list-all-custom-fields
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          tag_id:
+            type: string
+          tag_name:
+            type:
+              - string
+              - "null"
+        required:
+          - tag_id
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -64,7 +102,20 @@ definitions:
           avatar_id: "{{ stream_slice.avatar_id }}"
       partition_router:
         $ref: "#/definitions/avatars_partition_router"
-  # API Docs: https://smartengage.com/docs/#list-all-sequences
+    # API Docs: https://smartengage.com/docs/#list-all-sequences
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          custom_field_id:
+            type: string
+          custom_field_name:
+            type:
+              - string
+              - "null"
+        required:
+          - custom_field_id
   sequences_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -80,6 +131,19 @@ definitions:
       partition_router:
         $ref: "#/definitions/avatars_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          sequence_id:
+            type: string
+          sequence_name:
+            type:
+              - string
+              - "null"
+        required:
+          - sequence_id
 streams:
   - "#/definitions/avatars_stream"
   - "#/definitions/tags_stream"

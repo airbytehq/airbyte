@@ -49,16 +49,9 @@ definitions:
     record_selector:
       $ref: "#/definitions/user_field_selector"
 
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_instatus/schemas/{{ parameters['name'] }}.json"
-
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-
   status_pages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -66,6 +59,147 @@ definitions:
       primary_key: "id"
       path: "v2/pages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          subdomain:
+            type:
+              - "null"
+              - string
+          logoUrl:
+            type:
+              - "null"
+              - string
+          faviconUrl:
+            type:
+              - "null"
+              - string
+          websiteUrl:
+            type:
+              - "null"
+              - string
+          customDomain:
+            type:
+              - "null"
+              - string
+          publicEmail:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          subscribeBySms:
+            type:
+              - "null"
+              - boolean
+          language:
+            type:
+              - "null"
+              - string
+          useLargeHeader:
+            type:
+              - "null"
+              - boolean
+          brandColor:
+            type:
+              - "null"
+              - string
+          okColor:
+            type:
+              - "null"
+              - string
+          disruptedColor:
+            type:
+              - "null"
+              - string
+          degradedColor:
+            type:
+              - "null"
+              - string
+          downColor:
+            type:
+              - "null"
+              - string
+          noticeColor:
+            type:
+              - "null"
+              - string
+          unknownColor:
+            type:
+              - "null"
+              - string
+          googleAnalytics:
+            type:
+              - "null"
+              - string
+          smsService:
+            type:
+              - "null"
+              - string
+          htmlInMeta:
+            type:
+              - "null"
+              - string
+          htmlAboveHeader:
+            type:
+              - "null"
+              - string
+          htmlBelowHeader:
+            type:
+              - "null"
+              - string
+          htmlAboveFooter:
+            type:
+              - "null"
+              - string
+          htmlBelowFooter:
+            type:
+              - "null"
+              - string
+          htmlBelowSummary:
+            type:
+              - "null"
+              - string
+          cssGlobal:
+            type:
+              - "null"
+              - string
+          onboarded:
+            type:
+              - "null"
+              - boolean
+          launchDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
   user_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,6 +207,32 @@ definitions:
       primary_key: "id"
       path: "v1/user"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          slug:
+            type:
+              - "null"
+              - string
+          avatar:
+            type:
+              - "null"
+              - string
   page_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -93,6 +253,194 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          uniqueEmail:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          showUptime:
+            type:
+              - "null"
+              - boolean
+          order:
+            type:
+              - "null"
+              - integer
+          group:
+            type:
+              - "null"
+              - object
+            properties:
+              closed:
+                type:
+                  - "null"
+                  - boolean
+              createdAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              description:
+                type:
+                  - "null"
+                  - string
+              descriptionHtml:
+                type:
+                  - "null"
+                  - string
+              descriptionTranslationId:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              importedFromStatuspage:
+                type:
+                  - "null"
+                  - boolean
+              name:
+                type:
+                  - "null"
+                  - string
+              nameHtml:
+                type:
+                  - "null"
+                  - string
+              nameHtmlTranslationId:
+                type:
+                  - "null"
+                  - string
+              order:
+                type:
+                  - "null"
+                  - integer
+              showUptime:
+                type:
+                  - "null"
+                  - boolean
+              siteId:
+                type:
+                  - "null"
+                  - string
+              titled:
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              translations:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  description:
+                    type:
+                      - "null"
+                      - string
+          incidents:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                started:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                status:
+                  type:
+                    - "null"
+                    - string
+                components:
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      showUptime:
+                        type:
+                          - "null"
+                          - boolean
+          updates:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              message:
+                type:
+                  - "null"
+                  - string
+              messageHtml:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - "null"
+                  - string
+              started:
+                type:
+                  - "null"
+                  - string
+                format: date-time
   incidents_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -111,6 +459,140 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          started:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type:
+              - "null"
+              - string
+          resolved:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updates_ids:
+            type:
+              - "null"
+              - array
+          updates:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                message:
+                  type:
+                    - "null"
+                    - string
+                messageHtml:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                notify:
+                  type:
+                    - "null"
+                    - boolean
+                started:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                ended:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                duration:
+                  type:
+                    - "null"
+                    - integer
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          components:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      type:
+                        - "null"
+                        - boolean
+                    logoUrl:
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      type:
+                        - "null"
+                        - string
   incident_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
@@ -127,10 +609,135 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/api_error_handler_requester"
-        path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
+        path:
+          "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id
+          }}/incident-updates/{{ stream_slice.incident_update_id }}"
       partition_router:
         $ref: "#/definitions/incident_updates_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          messageHtml:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          notify:
+            type:
+              - "null"
+              - boolean
+          started:
+            type:
+              - "null"
+              - string
+            format: date-time
+          incident:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              started:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              status:
+                type:
+                  - "null"
+                  - string
+              components:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      type:
+                        - "null"
+                        - string
+                    showUptime:
+                      type:
+                        - "null"
+                        - boolean
+                    site:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        subdomain:
+                          type:
+                            - "null"
+                            - string
+                        logoUrl:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        slackIntegrations:
+                          type:
+                            - "null"
+                            - array
+                        subscribers:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              name:
+                                type:
+                                  - "null"
+                                  - string
+                    subscribers:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          name:
+                            type:
+                              - "null"
+                              - object
   maintenances_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -149,6 +756,159 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          start:
+            type:
+              - "null"
+              - string
+            format: date-time
+          duration:
+            type:
+              - "null"
+              - integer
+          notifyStart:
+            type:
+              - "null"
+              - boolean
+          notifyEnd:
+            type:
+              - "null"
+              - boolean
+          notifyEarly:
+            type:
+              - "null"
+              - boolean
+          notifyMinutes:
+            type:
+              - "null"
+              - integer
+          autoStart:
+            type:
+              - "null"
+              - boolean
+          autoEnd:
+            type:
+              - "null"
+              - boolean
+          updates:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                message:
+                  type:
+                    - "null"
+                    - string
+                messageHtml:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                notify:
+                  type:
+                    - "null"
+                    - boolean
+                started:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                ended:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                duration:
+                  type:
+                    - "null"
+                    - integer
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          components:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      type:
+                        - "null"
+                        - boolean
+                    logoUrl:
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      type:
+                        - "null"
+                        - string
   maintenance_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
@@ -165,10 +925,119 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/api_error_handler_requester"
-        path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
+        path:
+          "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id
+          }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
       partition_router:
         $ref: "#/definitions/maintenance_updates_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          messageHtml:
+            type:
+              - "null"
+              - string
+          notify:
+            type:
+              - "null"
+              - boolean
+          started:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type:
+              - "null"
+              - string
+          maintenance:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              start:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              status:
+                type:
+                  - "null"
+                  - string
+              components:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      type:
+                        - "null"
+                        - string
+                    showUptime:
+                      type:
+                        - "null"
+                        - boolean
+                    site:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        subdomain:
+                          type:
+                            - "null"
+                            - string
+                        color:
+                          type:
+                            - "null"
+                            - string
+                        logoUrl:
+                          type:
+                            - "null"
+                            - string
+                        publicEmail:
+                          type:
+                            - "null"
+                            - string
   templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -182,6 +1051,137 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          nameTranslationId:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          messageTranslationId:
+            type:
+              - "null"
+              - string
+          messageHtml:
+            type:
+              - "null"
+              - string
+          messageHtmlTranslationId:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          notify:
+            type:
+              - "null"
+              - boolean
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          siteId:
+            type:
+              - "null"
+              - string
+          importedFromStatuspage:
+            type:
+              - "null"
+              - boolean
+          deletedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          components:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      type:
+                        - "null"
+                        - string
+                    logoUrl:
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      type:
+                        - "null"
+                        - string
+          translations:
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              message:
+                type:
+                  - "null"
+                  - string
   team_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -195,6 +1195,28 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          avatar:
+            type:
+              - "null"
+              - string
   subscribers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -208,6 +1230,90 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          webhook:
+            type:
+              - "null"
+              - string
+          webhookEmail:
+            type:
+              - "null"
+              - string
+          confirmed:
+            type:
+              - "null"
+              - boolean
+          all:
+            type:
+              - "null"
+              - boolean
+          components:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - "null"
+                  - string
+              showUptime:
+                type:
+                  - "null"
+                  - boolean
+              site:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  subdomain:
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    type:
+                      - "null"
+                      - boolean
+                  logoUrl:
+                    type:
+                      - "null"
+                      - boolean
+                  publicEmail:
+                    type:
+                      - "null"
+                      - boolean
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -221,6 +1327,50 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          order:
+            type:
+              - "null"
+              - integer
+          suffix:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                properties:
+                  timestamp:
+                    type:
+                      - "null"
+                      - integer
+                  value:
+                    type:
+                      - "null"
+                      - number
   page_url_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -240,6 +1390,87 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_url_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          page:
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              status:
+                type:
+                  - "null"
+                  - string
+          activeIncidents:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                started:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                impact:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+          activeMaintenances:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                start:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                duration:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
 streams:
   - "#/definitions/status_pages_stream"
   - "#/definitions/page_components_stream"

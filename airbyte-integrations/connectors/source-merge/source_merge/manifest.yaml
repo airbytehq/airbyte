@@ -57,6 +57,51 @@ definitions:
     $parameters:
       path: "/account-details"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Account Details
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          integration:
+            type:
+              - "null"
+              - string
+          integration_slug:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          end_user_origin_id:
+            type:
+              - "null"
+              - string
+          end_user_organization_name:
+            type:
+              - "null"
+              - string
+          end_user_email_address:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          webhook_listener_url:
+            type:
+              - "null"
+              - string
+          is_duplicate: {}
   activities_stream:
     $ref: "#/definitions/base_stream"
     name: "activities"
@@ -64,6 +109,94 @@ definitions:
     $parameters:
       path: "/activities"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Activities Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          user:
+            type:
+              - "null"
+              - string
+          remote_created_at:
+            type:
+              - "null"
+              - string
+          activity_type:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          body:
+            type:
+              - "null"
+              - string
+          visibility:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   applications_stream:
     $ref: "#/definitions/base_stream"
     name: "applications"
@@ -71,6 +204,102 @@ definitions:
     $parameters:
       path: "/applications"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Applications Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          candidate:
+            type:
+              - "null"
+              - string
+          job:
+            type:
+              - "null"
+              - string
+          applied_at:
+            type:
+              - "null"
+              - string
+          rejected_at:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          credited_to:
+            type:
+              - "null"
+              - string
+          current_stage:
+            type:
+              - "null"
+              - string
+          reject_reason:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "attachments"
@@ -78,6 +307,84 @@ definitions:
     $parameters:
       path: "/attachments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Attachments Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          file_name:
+            type:
+              - "null"
+              - string
+          file_url:
+            type:
+              - "null"
+              - string
+          candidate:
+            type:
+              - "null"
+              - string
+          attachment_type:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type: array
+                  items:
+                    type:
+                      - "null"
+                      - string
   candidates_stream:
     $ref: "#/definitions/base_stream"
     name: "candidates"
@@ -85,6 +392,189 @@ definitions:
     $parameters:
       path: "/candidates"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Candidates Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          remote_created_at:
+            type:
+              - "null"
+              - string
+          remote_updated_at:
+            type:
+              - "null"
+              - string
+          last_interaction_at:
+            type:
+              - "null"
+              - string
+          is_private:
+            type:
+              - "null"
+              - boolean
+          can_email:
+            type:
+              - "null"
+              - boolean
+          locations:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          phone_numbers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                value:
+                  type:
+                    - "null"
+                    - string
+                phone_number_type:
+                  type:
+                    - "null"
+                    - string
+          email_addresses:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                value:
+                  type:
+                    - "null"
+                    - string
+                email_address_type:
+                  type:
+                    - "null"
+                    - string
+          urls:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                value:
+                  type:
+                    - "null"
+                    - string
+                url_type:
+                  type:
+                    - "null"
+                    - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          applications:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          attachments:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   departments_stream:
     $ref: "#/definitions/base_stream"
     name: "departments"
@@ -92,6 +582,73 @@ definitions:
     $parameters:
       path: "/departments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Departments Schema
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   eeocs_stream:
     $ref: "#/definitions/base_stream"
     name: "eeocs"
@@ -99,6 +656,94 @@ definitions:
     $parameters:
       path: "/eeocs"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Eeocs Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          candidate:
+            type:
+              - "null"
+              - string
+          submitted_at:
+            type:
+              - "null"
+              - string
+          race:
+            type:
+              - "null"
+              - string
+          gender:
+            type:
+              - "null"
+              - string
+          veteran_status:
+            type:
+              - "null"
+              - string
+          disability_status:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   interviews_stream:
     $ref: "#/definitions/base_stream"
     name: "interviews"
@@ -106,6 +751,114 @@ definitions:
     $parameters:
       path: "/interviews"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Interviews Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          application:
+            type:
+              - "null"
+              - string
+          job_interview_stage:
+            type:
+              - "null"
+              - string
+          organizer:
+            type:
+              - "null"
+              - string
+          interviewers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          location:
+            type:
+              - "null"
+              - string
+          start_at:
+            type:
+              - "null"
+              - string
+          end_at:
+            type:
+              - "null"
+              - string
+          remote_created_at:
+            type:
+              - "null"
+              - string
+          remote_updated_at:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   job-interview-stages_stream:
     $ref: "#/definitions/base_stream"
     name: "job_interview_stages"
@@ -113,6 +866,82 @@ definitions:
     $parameters:
       path: "/job-interview-stages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Job-interview-stages Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          modified_at:
+            type:
+              - "null"
+              - string
+          job:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   jobs_stream:
     $ref: "#/definitions/base_stream"
     name: "jobs"
@@ -120,6 +949,147 @@ definitions:
     $parameters:
       path: "/jobs"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Jobs Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          code:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          job_posting_urls:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                value:
+                  type:
+                    - "null"
+                    - string
+                url_type:
+                  type:
+                    - "null"
+                    - string
+          remote_created_at:
+            type:
+              - "null"
+              - string
+          remote_updated_at:
+            type:
+              - "null"
+              - string
+          confidential:
+            type:
+              - "null"
+              - boolean
+          departments:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          offices:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          hiring_managers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          recruiters:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   offices_stream:
     $ref: "#/definitions/base_stream"
     name: "offices"
@@ -127,6 +1097,78 @@ definitions:
     $parameters:
       path: "/offices"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Offices Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   offers_stream:
     $ref: "#/definitions/base_stream"
     name: "offers"
@@ -134,6 +1176,98 @@ definitions:
     $parameters:
       path: "/offers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Offers Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_id:
+            type:
+              - "null"
+              - string
+          application:
+            type:
+              - "null"
+              - string
+          creator:
+            type:
+              - "null"
+              - string
+          remote_created_at:
+            type:
+              - "null"
+              - string
+          closed_at:
+            type:
+              - "null"
+              - string
+          sent_at:
+            type:
+              - "null"
+              - string
+          start_date:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              organization_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+              linked_account_defined_targets:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  custom_key:
+                    type:
+                      - "null"
+                      - string
+          remote_data:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  type:
+                    - "null"
+                    - string
+                data:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
   sync_status_stream:
     $ref: "#/definitions/base_stream"
     name: "sync_status"
@@ -141,6 +1275,35 @@ definitions:
     $parameters:
       path: "/sync-status"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Sync-status Schema
+        additionalProperties: true
+        type: object
+        properties:
+          model_name:
+            type:
+              - "null"
+              - string
+          model_id:
+            type:
+              - "null"
+              - string
+          last_sync_start:
+            type:
+              - "null"
+              - string
+          next_sync_start: {}
+          status:
+            type:
+              - "null"
+              - string
+          is_initial_sync:
+            type:
+              - "null"
+              - boolean
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
@@ -148,6 +1311,80 @@ definitions:
     $parameters:
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Users Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          remote_data:
+            type:
+              - "null"
+              - string
+          modified_at:
+            type:
+              - "null"
+              - string
+          field_mappings:
+            type:
+              - "null"
+              - object
+            properties:
+              linked_account_defined_targets: {}
+          remote_id:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          disabled:
+            type:
+              - "null"
+              - boolean
+          remote_created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          access_role:
+            type:
+              - "null"
+              - string
+          remote_was_deleted:
+            type:
+              - "null"
+              - boolean
+        field_mappings:
+          type:
+            - "null"
+            - object
+          properties:
+            organization_defined_targets:
+              type:
+                - "null"
+                - object
+              properties: {}
+            linked_account_defined_targets:
+              type:
+                - "null"
+                - object
+              properties: {}
 streams:
   - "#/definitions/account_details_stream"
   - "#/definitions/activities_stream"

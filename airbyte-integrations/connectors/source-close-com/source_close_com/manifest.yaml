@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_close_com/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -19,7 +16,9 @@ definitions:
   incremental_query_requester:
     $ref: "#/definitions/requester"
     request_parameters:
-      query: "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated <= {{ stream_slice['end_time'] }}"
+      query:
+        "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated
+        <= {{ stream_slice['end_time'] }}"
   offset_paginator:
     type: DefaultPaginator
     page_size_option:
@@ -109,8 +108,6 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     primary_key: "id"
   full_refresh_stream:
     $ref: "#/definitions/base_stream"
@@ -181,18 +178,245 @@ definitions:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "created_activities"
       path: "activity/created"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          import_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
   note_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "note_activities"
       path: "activity/note"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
   email_thread_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "email_thread_activities"
       path: "activity/emailthread"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          latest_normalized_subject:
+            type:
+              - "null"
+              - string
+          participants:
+            type:
+              - "null"
+              - array
+          activity_at:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          latest_emails:
+            type:
+              - "null"
+              - array
+          n_emails:
+            type:
+              - "null"
+              - number
   email_activities_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -200,36 +424,1010 @@ definitions:
     $parameters:
       name: "email_activities"
       path: "activity/email"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cc:
+            type:
+              - "null"
+              - array
+          attachments:
+            type:
+              - "null"
+              - array
+          email_account_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          has_reply:
+            type:
+              - "null"
+              - boolean
+          thread_id:
+            type:
+              - "null"
+              - string
+          message_ids:
+            type:
+              - "null"
+              - array
+          created_by:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          sequence_name:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          body_html:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          body_text:
+            type:
+              - "null"
+              - string
+          opens_summary:
+            type:
+              - "null"
+              - string
+          template_name:
+            type:
+              - "null"
+              - string
+          date_scheduled:
+            type:
+              - "null"
+              - string
+          sequence_id:
+            type:
+              - "null"
+              - string
+          to:
+            type:
+              - "null"
+              - array
+          sender:
+            type:
+              - "null"
+              - string
+          direction:
+            type:
+              - "null"
+              - string
+          bcc:
+            type:
+              - "null"
+              - array
+          lead_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          body_text_quoted:
+            type:
+              - "null"
+              - array
+          send_as_id:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          followup_sequence_id:
+            type:
+              - "null"
+              - string
+          template_id:
+            type:
+              - "null"
+              - string
+          body_preview:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          in_reply_to_id:
+            type:
+              - "null"
+              - string
+          send_attempts:
+            type:
+              - "null"
+              - array
+          envelope:
+            type:
+              - "null"
+              - object
+          followup_sequence_delay:
+            type:
+              - "null"
+              - string
+          opens:
+            type:
+              - "null"
+              - array
+          status:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          need_smtp_credentials:
+            type:
+              - "null"
+              - boolean
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          bulk_email_action_id:
+            type:
+              - "null"
+              - string
+          sequence_subscription_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          date_sent:
+            type:
+              - "null"
+              - string
+          body_html_quoted:
+            type:
+              - "null"
+              - array
+          references:
+            type:
+              - "null"
+              - array
   sms_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "sms_activities"
       path: "activity/sms"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          attachments:
+            type:
+              - "null"
+              - array
+          date_scheduled:
+            type:
+              - "null"
+              - string
+          error_message:
+            type:
+              - "null"
+              - string
+          local_phone_formatted:
+            type:
+              - "null"
+              - string
+          sequence_id:
+            type:
+              - "null"
+              - string
+          sequence_name:
+            type:
+              - "null"
+              - string
+          sequence_subscription_id:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          template_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          date_sent:
+            type:
+              - "null"
+              - string
+          direction:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          cost:
+            type:
+              - "null"
+              - string
+          local_phone:
+            type:
+              - "null"
+              - string
+          local_country_iso:
+            type:
+              - "null"
+              - string
+          remote_phone:
+            type:
+              - "null"
+              - string
+          remote_phone_formatted:
+            type:
+              - "null"
+              - string
+          remote_country_iso:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
   call_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "call_activities"
       path: "activity/call"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          source:
+            type:
+              - "null"
+              - string
+          forwarded_to:
+            type:
+              - "null"
+              - string
+          is_forwarded:
+            type:
+              - "null"
+              - boolean
+          note_html:
+            type:
+              - "null"
+              - string
+          parent_meeting_id:
+            type:
+              - "null"
+              - string
+          recording_duration:
+            type:
+              - "null"
+              - string
+          sequence_id:
+            type:
+              - "null"
+              - string
+          sequence_name:
+            type:
+              - "null"
+              - string
+          sequence_subscription_id:
+            type:
+              - "null"
+              - string
+          remote_phone_formatted:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          date_updated:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          local_phone:
+            type:
+              - "null"
+              - string
+          voicemail_duration:
+            type:
+              - "null"
+              - number
+          remote_phone:
+            type:
+              - "null"
+              - string
+          date_answered:
+            type:
+              - "null"
+              - string
+          disposition:
+            type:
+              - "null"
+              - string
+          remote_country_iso:
+            type:
+              - "null"
+              - string
+          recording_expires_at:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          transferred_to_user_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          local_country_iso:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          has_recording:
+            type:
+              - "null"
+              - boolean
+          coach_legs:
+            type:
+              - "null"
+              - array
+          dialer_saved_search_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          local_phone_formatted:
+            type:
+              - "null"
+              - string
+          is_to_group_number:
+            type:
+              - "null"
+              - boolean
+          recording_url:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          voicemail_url:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          transferred_from:
+            type:
+              - "null"
+              - string
+          is_joinable:
+            type:
+              - "null"
+              - boolean
+          transferred_from_user_id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          updated_by:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          call_method:
+            type:
+              - "null"
+              - string
+          dialer_id:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          cost:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          transferred_to:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          direction:
+            type:
+              - "null"
+              - string
   meeting_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "meeting_activities"
       path: "activity/meeting"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          notetaker_id:
+            type:
+              - "null"
+              - string
+          provider_calendar_event_id:
+            type:
+              - "null"
+              - string
+          provider_calendar_type:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          user_note:
+            type:
+              - "null"
+              - string
+          user_note_date_updated:
+            type:
+              - "null"
+              - string
+          user_note_html:
+            type:
+              - "null"
+              - string
+          provider_calendar_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          integrations:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          calendar_event_uids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          conference_links:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - number
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          attendees:
+            type:
+              - "null"
+              - array
+          title:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          calendar_event_link:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          user_id:
+            type:
+              - "null"
+              - string
+          ends_at:
+            type:
+              - "null"
+              - string
+          is_recurring:
+            type:
+              - "null"
+              - boolean
+          connected_account_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          starts_at:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
   lead_status_change_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "lead_status_change_activities"
       path: "activity/status_change/lead"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          new_status_label:
+            type:
+              - "null"
+              - string
+          old_status_label:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          old_status_id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          user_id:
+            type:
+              - "null"
+              - string
+          new_status_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
   opportunity_status_change_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "opportunity_status_change_activities"
       path: "activity/status_change/opportunity"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          organization_id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          new_pipeline_name:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          opportunity_value_period:
+            type:
+              - "null"
+              - string
+          old_pipeline_name:
+            type:
+              - "null"
+              - string
+          opportunity_confidence:
+            type:
+              - "null"
+              - integer
+          date_updated:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          new_status_id:
+            type:
+              - "null"
+              - string
+          new_status_label:
+            type:
+              - "null"
+              - string
+          new_status_type:
+            type:
+              - "null"
+              - string
+          new_pipeline_id:
+            type:
+              - "null"
+              - string
+          old_status_id:
+            type:
+              - "null"
+              - string
+          old_status_label:
+            type:
+              - "null"
+              - string
+          old_status_type:
+            type:
+              - "null"
+              - string
+          old_pipeline_id:
+            type:
+              - "null"
+              - string
+          opportunity_date_won:
+            type:
+              - "null"
+              - string
+          opportunity_id:
+            type:
+              - "null"
+              - string
+          opportunity_value:
+            type:
+              - "null"
+              - number
+          opportunity_value_formatted:
+            type:
+              - "null"
+              - string
+          opportunity_value_currency:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
   task_completed_activities_stream:
     $ref: "#/definitions/activities_base_stream"
     $parameters:
@@ -237,64 +1435,755 @@ definitions:
       name: "task_completed_activities"
       path: "activity/task_completed"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _type:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          activity_at:
+            type:
+              - "null"
+              - string
+          task_assigned_to:
+            type:
+              - "null"
+              - string
+          task_assigned_to_name:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          task_id:
+            type:
+              - "null"
+              - string
+          task_text:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
   lead_custom_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "lead_custom_fields"
       path: "custom_field/lead"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status_id:
+            date_updated:
+              - "null"
+              - string
+          description:
+            date_updated:
+              - "null"
+              - string
+          back_reference_is_visible:
+            date_updated:
+              - "null"
+              - string
+          date_updated:
+            date_updated:
+              - "null"
+              - string
+          referenced_custom_type_id:
+            date_updated:
+              - "null"
+              - string
+          name:
+            date_updated:
+              - "null"
+              - string
+          accepts_multiple_values:
+            date_updated:
+              - "null"
+              - boolean
+          choices:
+            date_updated:
+              - "null"
+              - array
+          editable_with_roles:
+            date_updated:
+              - "null"
+              - array
+          created_by:
+            date_updated:
+              - "null"
+              - string
+          updated_by:
+            date_updated:
+              - "null"
+              - string
+          type:
+            date_updated:
+              - "null"
+              - string
+          organization_id:
+            date_updated:
+              - "null"
+              - string
+          is_shared:
+            date_updated:
+              - "null"
+              - boolean
+          id:
+            date_updated:
+              - "null"
+              - string
+          date_created:
+            date_updated:
+              - "null"
+              - string
   contact_custom_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "contact_custom_fields"
       path: "custom_field/contact"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          description:
+            date_updated:
+              - "null"
+              - string
+          name:
+            date_updated:
+              - "null"
+              - string
+          back_reference_is_visible:
+            date_updated:
+              - "null"
+              - string
+          is_shared:
+            date_updated:
+              - "null"
+              - boolean
+          referenced_custom_type_id:
+            date_updated:
+              - "null"
+              - string
+          choices:
+            date_updated:
+              - "null"
+              - array
+          editable_with_roles:
+            date_updated:
+              - "null"
+              - array
+          created_by:
+            date_updated:
+              - "null"
+              - string
+          updated_by:
+            date_updated:
+              - "null"
+              - string
+          type:
+            date_updated:
+              - "null"
+              - string
+          organization_id:
+            date_updated:
+              - "null"
+              - string
+          accepts_multiple_values:
+            date_updated:
+              - "null"
+              - boolean
+          id:
+            date_updated:
+              - "null"
+              - string
+          date_created:
+            date_updated:
+              - "null"
+              - string
+          date_updated:
+            date_updated:
+              - "null"
+              - string
   opportunity_custom_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "opportunity_custom_fields"
       path: "custom_field/opportunity"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          description:
+            date_updated:
+              - "null"
+              - string
+          name:
+            date_updated:
+              - "null"
+              - string
+          back_reference_is_visible:
+            date_updated:
+              - "null"
+              - string
+          is_shared:
+            date_updated:
+              - "null"
+              - boolean
+          referenced_custom_type_id:
+            date_updated:
+              - "null"
+              - string
+          choices:
+            date_updated:
+              - "null"
+              - array
+          editable_with_roles:
+            date_updated:
+              - "null"
+              - array
+          created_by:
+            date_updated:
+              - "null"
+              - string
+          updated_by:
+            date_updated:
+              - "null"
+              - string
+          type:
+            date_updated:
+              - "null"
+              - string
+          organization_id:
+            date_updated:
+              - "null"
+              - string
+          accepts_multiple_values:
+            date_updated:
+              - "null"
+              - boolean
+          id:
+            date_updated:
+              - "null"
+              - string
+          date_created:
+            date_updated:
+              - "null"
+              - string
+          date_updated:
+            date_updated:
+              - "null"
+              - string
   activity_custom_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "activity_custom_fields"
       path: "custom_field/activity"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          description:
+            date_updated:
+              - "null"
+              - string
+          back_reference_is_visible:
+            date_updated:
+              - "null"
+              - boolean
+          choices:
+            date_updated:
+              - "null"
+              - array
+          is_shared:
+            date_updated:
+              - "null"
+              - boolean
+          referenced_custom_type_id:
+            date_updated:
+              - "null"
+              - string
+          name:
+            date_updated:
+              - "null"
+              - string
+          custom_activity_type_id:
+            date_updated:
+              - "null"
+              - string
+          required:
+            date_updated:
+              - "null"
+              - boolean
+          editable_with_roles:
+            date_updated:
+              - "null"
+              - array
+          created_by:
+            date_updated:
+              - "null"
+              - string
+          updated_by:
+            date_updated:
+              - "null"
+              - string
+          type:
+            date_updated:
+              - "null"
+              - string
+          organization_id:
+            date_updated:
+              - "null"
+              - string
+          accepts_multiple_values:
+            date_updated:
+              - "null"
+              - boolean
+          id:
+            date_updated:
+              - "null"
+              - string
+          date_created:
+            date_updated:
+              - "null"
+              - string
+          date_updated:
+            date_updated:
+              - "null"
+              - string
   users_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "users"
       path: "user"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          organizations:
+            type:
+              - "null"
+              - array
+          id:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          image:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          email_verification_token_generated_at:
+            type:
+              - "null"
+              - string
+          email_verified_at:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          last_used_timezone:
+            type:
+              - "null"
+              - string
   contacts_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "contacts"
       path: "contact"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          phones:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                phone_formatted:
+                  type:
+                    - "null"
+                    - string
+                country:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                phone:
+                  type:
+                    - "null"
+                    - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          emails:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                email:
+                  type:
+                    - "null"
+                    - string
+          display_name:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          urls:
+            type:
+              - "null"
+              - array
+          updated_by:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          integration_links:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+          date_created:
+            type:
+              - "null"
+              - string
   roles_stream:
     $ref: "#/definitions/full_refresh_cursor_stream"
     $parameters:
       name: "roles"
       path: "role"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          editable:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          permissions:
+            type:
+              - "null"
+              - array
+          visibility_user_lcf_behavior:
+            type:
+              - "null"
+              - string
+          visibility_user_lcf_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   lead_statuses_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "lead_statuses"
       path: "status/lead"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          label:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
   opportunity_statuses_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "opportunity_statuses"
       path: "status/opportunity"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          label:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          pipeline_id:
+            type:
+              - "null"
+              - string
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "pipelines"
       path: "pipeline"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          created_by:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          statuses:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                label:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
   email_templates_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
@@ -302,12 +2191,146 @@ definitions:
       path: "email_template"
       items_per_page: 100
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - "null"
+              - array
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          body:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          is_shared:
+            type:
+              - "null"
+              - boolean
+          date_created:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          is_archived:
+            type:
+              - "null"
+              - boolean
   events_stream:
     $ref: "#/definitions/incremental_cursor_based_stream"
     $parameters:
       name: "events"
       path: "event"
       items_per_page: 50
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          action:
+            type:
+              - "null"
+              - string
+          api_key_id:
+            type:
+              - "null"
+              - string
+          oauth_client_id:
+            type:
+              - "null"
+              - string
+          oauth_scope:
+            type:
+              - "null"
+              - string
+          changed_fields:
+            type:
+              - "null"
+              - array
+          data:
+            type:
+              - "null"
+              - object
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          meta:
+            type:
+              - "null"
+              - object
+          object_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          previous_data:
+            type:
+              - "null"
+              - object
+          request_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
   leads_steam:
     $ref: "#/definitions/incremental_stream"
     incremental_sync:
@@ -320,6 +2343,400 @@ definitions:
       name: "leads"
       path: "lead"
       items_per_page: 200
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status_id:
+            type:
+              - "null"
+              - string
+          opportunities:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                contact_name:
+                  type:
+                    - "null"
+                    - string
+                status_id:
+                  type:
+                    - "null"
+                    - string
+                lead_id:
+                  type:
+                    - "null"
+                    - string
+                user_id:
+                  type:
+                    - "null"
+                    - string
+                annualized_expected_value:
+                  type:
+                    - "null"
+                    - integer
+                id:
+                  type:
+                    - "null"
+                    - string
+                updated_by_name:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - integer
+                date_created:
+                  type:
+                    - "null"
+                    - string
+                integration_links:
+                  type:
+                    - "null"
+                    - array
+                created_by:
+                  type:
+                    - "null"
+                    - string
+                status_display_name:
+                  type:
+                    - "null"
+                    - string
+                value_currency:
+                  type:
+                    - "null"
+                    - string
+                created_by_name:
+                  type:
+                    - "null"
+                    - string
+                status_type:
+                  type:
+                    - "null"
+                    - string
+                date_lost:
+                  type:
+                    - "null"
+                    - string
+                value_period:
+                  type:
+                    - "null"
+                    - string
+                note:
+                  type:
+                    - "null"
+                    - string
+                confidence:
+                  type:
+                    - "null"
+                    - integer
+                status_label:
+                  type:
+                    - "null"
+                    - string
+                user_name:
+                  type:
+                    - "null"
+                    - string
+                value_formatted:
+                  type:
+                    - "null"
+                    - string
+                updated_by:
+                  type:
+                    - "null"
+                    - string
+                organization_id:
+                  type:
+                    - "null"
+                    - string
+                contact_id:
+                  type:
+                    - "null"
+                    - string
+                lead_name:
+                  type:
+                    - "null"
+                    - string
+                date_won:
+                  type:
+                    - "null"
+                    - string
+                expected_value:
+                  type:
+                    - "null"
+                    - integer
+                annualized_value:
+                  type:
+                    - "null"
+                    - integer
+                date_updated:
+                  type:
+                    - "null"
+                    - string
+          id:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          status_label:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          integration_links:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+          html_url:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          custom:
+            type:
+              - "null"
+              - object
+            properties:
+              Current Vendor/Software:
+                type:
+                  - "null"
+                  - string
+              Industry:
+                type:
+                  - "null"
+                  - string
+              Lead Owner:
+                type:
+                  - "null"
+                  - string
+              Referral Source:
+                type:
+                  - "null"
+                  - string
+          addresses:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                country:
+                  type:
+                    - "null"
+                    - string
+                city:
+                  type:
+                    - "null"
+                    - string
+                label:
+                  type:
+                    - "null"
+                    - string
+                address_2:
+                  type:
+                    - "null"
+                    - string
+                address_1:
+                  type:
+                    - "null"
+                    - string
+                zipcode:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+          display_name:
+            type:
+              - "null"
+              - string
+          tasks:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties: {}
+          description:
+            type:
+              - "null"
+              - string
+          contacts:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                display_name:
+                  type:
+                    - "null"
+                    - string
+                lead_id:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                urls:
+                  type:
+                    - "null"
+                    - array
+                date_created:
+                  type:
+                    - "null"
+                    - string
+                integration_links:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      url:
+                        type:
+                          - "null"
+                          - string
+                updated_by:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                organization_id:
+                  type:
+                    - "null"
+                    - string
+                created_by:
+                  type:
+                    - "null"
+                    - string
+                phones:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      country:
+                        type:
+                          - "null"
+                          - string
+                      phone:
+                        type:
+                          - "null"
+                          - string
+                      phone_formatted:
+                        type:
+                          - "null"
+                          - string
+                      type:
+                        type:
+                          - "null"
+                          - string
+                title:
+                  type:
+                    - "null"
+                    - string
+                emails:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      email:
+                        type:
+                          - "null"
+                          - string
+                      type:
+                        type:
+                          - "null"
+                          - string
+                date_updated:
+                  type:
+                    - "null"
+                    - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
   opportunities_stream:
     $ref: "#/definitions/incremental_stream"
     retriever:
@@ -333,48 +2750,920 @@ definitions:
       path: "opportunity"
       items_per_page: 250
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          integration_links:
+            type:
+              - "null"
+              - array
+          contact_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          value_currency:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          annualized_value:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          status_type:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          expected_value:
+            type:
+              - "null"
+              - number
+          date_updated:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          date_lost:
+            type:
+              - "null"
+              - string
+          status_id:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          user_name:
+            type:
+              - "null"
+              - string
+          confidence:
+            type:
+              - "null"
+              - number
+          value_period:
+            type:
+              - "null"
+              - string
+          status_display_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+          status_label:
+            type:
+              - "null"
+              - string
+          date_won:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          annualized_expected_value:
+            type:
+              - "null"
+              - number
+          date_created:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          value_formatted:
+            type:
+              - "null"
+              - string
   lead_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "lead_tasks"
       task_type: "lead"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_updated:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          is_dateless:
+            type:
+              - "null"
+              - boolean
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          due_date:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          object_id:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
   incoming_email_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "incoming_email_tasks"
       task_type: "incoming_email"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          contact_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          cleared_followups:
+            type:
+              - "null"
+              - array
+          date_created:
+            type:
+              - "null"
+              - string
+          body_preview:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          created_by:
+            type:
+              - "null"
+              - string
+          emails:
+            type:
+              - "null"
+              - array
+          date_updated:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          "view ":
+            type:
+              - "null"
+              - string
   email_followup_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "email_followup_tasks"
       task_type: "email_followup"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _type:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          total_emails_count_in_thread:
+            type:
+              - "null"
+              - integer
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          email_id:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          object_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
+          body_preview:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          "updated_by_name ":
+            type:
+              - "null"
+              - string
+          "total_emails_count_in_thread ":
+            type:
+              - "null"
+              - integer
   missed_call_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "missed_call_tasks"
       task_type: "missed_call"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _type:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          object_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          assigned_to:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          phone_formatted:
+            type:
+              - "null"
+              - string
+          phone_number_description:
+            type:
+              - "null"
+              - string
+          local_phone:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
   answered_detached_call_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "answered_detached_call_tasks"
       task_type: "answered_detached_call"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _type:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          recording_url:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          assigned_to:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          phone_formatted:
+            type:
+              - "null"
+              - string
+          phone_number_description:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          object_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
   voicemail_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "voicemail_tasks"
       task_type: "voicemail"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          created_by:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          phone_formatted:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          object_type:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          voicemail_duration:
+            type:
+              - "null"
+              - number
+          object_id:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          phone_number_description:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          local_phone:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          voicemail_url:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
   opportunity_due_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
       $ref: "#/definitions/tasks_base_stream/$parameters"
       name: "opportunity_due_tasks"
       task_type: "opportunity_due"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          object_id:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          created_by_name:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
+          opportunity_value_period:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          opportunity_note:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          opportunity_value:
+            type:
+              - "null"
+              - number
+          lead_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          opportunity_value_formatted:
+            type:
+              - "null"
+              - string
   incoming_sms_tasks_stream:
     $ref: "#/definitions/tasks_base_stream"
     $parameters:
@@ -382,18 +3671,197 @@ definitions:
       name: "incoming_sms_tasks"
       task_type: "incoming_sms"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _type:
+            type:
+              - "null"
+              - string
+          view:
+            type:
+              - "null"
+              - string
+          object_id:
+            type:
+              - "null"
+              - string
+          object_type:
+            type:
+              - "null"
+              - string
+          is_complete:
+            type:
+              - "null"
+              - boolean
+          local_phone:
+            type:
+              - "null"
+              - string
+          remote_phone:
+            type:
+              - "null"
+              - string
+          remote_phone_description:
+            type:
+              - "null"
+              - string
+          remote_phone_formatted:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          assigned_to:
+            type:
+              - "null"
+              - string
+          assigned_to_name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lead_id:
+            type:
+              - "null"
+              - string
+          lead_name:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - string
+          contact_name:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
+          created_by_name:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          updated_by_name:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
   google_connected_accounts_stream:
     $ref: "#/definitions/connected_accounts_base_stream"
     $parameters:
       $ref: "#/definitions/connected_accounts_base_stream/$parameters"
       name: "google_connected_accounts"
       connected_accounts_type: "google"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          identities:
+            type:
+              - "null"
+              - array
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          synced_calendars:
+            type:
+              - "null"
+              - array
+          _type:
+            type:
+              - "null"
+              - string
   custom_email_connected_accounts_stream:
     $ref: "#/definitions/connected_accounts_base_stream"
     $parameters:
       $ref: "#/definitions/connected_accounts_base_stream/$parameters"
       name: "custom_email_connected_accounts"
       connected_accounts_type: "custom_email"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          identities:
+            type:
+              - "null"
+              - array
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          smtp:
+            type:
+              - "null"
+              - object
+          _type:
+            type:
+              - "null"
+              - string
+          imap:
+            type:
+              - "null"
+              - object
   zoom_connected_accounts_stream:
     $ref: "#/definitions/connected_accounts_base_stream"
     $parameters:
@@ -401,65 +3869,701 @@ definitions:
       name: "zoom_connected_accounts"
       connected_accounts_type: "zoom"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          identities:
+            type:
+              - "null"
+              - array
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          _type:
+            type:
+              - "null"
+              - string
   send_as_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "send_as"
       path: "send_as"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          allowed_user_id:
+            type:
+              - "null"
+              - string
+          allowing_user_id:
+            type:
+              - "null"
+              - string
   email_sequences_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "email_sequences"
       path: "sequence"
       items_per_page: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          schedule_id:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+          steps:
+            type:
+              - "null"
+              - array
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          created_by_id:
+            type:
+              - "null"
+              - string
+          updated_by_id:
+            type:
+              - "null"
+              - string
+          allow_manual_enrollment:
+            type:
+              - "null"
+              - boolean
+          trigger_query:
+            type:
+              - "null"
+              - string
   dialer_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "dialer"
       path: "dialer"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          users:
+            type:
+              - "null"
+              - array
+          source_value:
+            type:
+              - "null"
+              - string
+          source_type:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          caller_id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          ring_mode:
+            type:
+              - "null"
+              - string
+          is_user_dependent:
+            type:
+              - "null"
+              - boolean
+          date_created:
+            type:
+              - "null"
+              - string
+          music_preference:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          visibility_mode:
+            type:
+              - "null"
+              - string
   smart_views_stream:
     $ref: "#/definitions/full_refresh_cursor_stream"
     $parameters:
       name: "smart_views"
       path: "saved_search"
-  #      items_per_page: 600
+    #      items_per_page: 600
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          query:
+            type:
+              - "null"
+              - string
+          s_query:
+            type:
+              - "null"
+              - object
+          type:
+            type:
+              - "null"
+              - string
+          user_id:
+            type:
+              - "null"
+              - string
+          is_shared:
+            type:
+              - "null"
+              - boolean
+          is_user_dependent:
+            type:
+              - "null"
+              - boolean
   email_bulk_actions_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "email_bulk_actions"
       path: "bulk_action/email"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - "null"
+              - string
+          query:
+            type:
+              - "null"
+              - string
+          template_id:
+            type:
+              - "null"
+              - string
+          contact_preference:
+            type:
+              - "null"
+              - string
+          n_leads:
+            type:
+              - "null"
+              - number
+          n_leads_processed:
+            type:
+              - "null"
+              - number
+          send_done_email:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
   sequence_subscription_bulk_actions_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "sequence_subscription_bulk_actions"
       path: "bulk_action/sequence_subscription"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - "null"
+              - string
+          query:
+            type:
+              - "null"
+              - string
+          action_type:
+            type:
+              - "null"
+              - string
+          sequence_id:
+            type:
+              - "null"
+              - string
+          sender_account_id:
+            type:
+              - "null"
+              - string
+          sender_name:
+            type:
+              - "null"
+              - string
+          sender_email:
+            type:
+              - "null"
+              - string
+          contact_preference:
+            type:
+              - "null"
+              - string
+          n_leads:
+            type:
+              - "null"
+              - number
+          n_leads_processed:
+            type:
+              - "null"
+              - number
+          send_done_email:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
   delete_bulk_actions_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "delete_bulk_actions"
       path: "bulk_action/delete"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          status:
+            type:
+              - "null"
+              - string
+          query:
+            type:
+              - "null"
+              - string
+          n_leads:
+            type:
+              - "null"
+              - number
+          n_leads_processed:
+            type:
+              - "null"
+              - number
+          send_done_email:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
   edit_bulk_actions_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "edit_bulk_actions"
       path: "bulk_action/edit"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          custom_field_name:
+            type:
+              - "null"
+              - string
+          custom_field_value:
+            type:
+              - "null"
+              - string
+          lead_status_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          query:
+            type:
+              - "null"
+              - string
+          n_leads:
+            type:
+              - "null"
+              - number
+          n_leads_processed:
+            type:
+              - "null"
+              - number
+          n_objects:
+            type:
+              - "null"
+              - number
+          n_objects_processed:
+            type:
+              - "null"
+              - number
+          send_done_email:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
   integration_links_stream:
     $ref: "#/definitions/full_refresh_stream"
     $parameters:
       name: "integration_links"
       path: "integration_link"
       items_per_page: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          date_created:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          updated_by:
+            type:
+              - "null"
+              - string
+          organization_id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created_by:
+            type:
+              - "null"
+              - string
   custom_activities_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "custom_activities"
       path: "custom_activity"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          api_create_only:
+            type:
+              - "null"
+              - boolean
+          created_by:
+            type:
+              - "null"
+              - string
+          date_created:
+            type:
+              - "null"
+              - string
+          date_updated:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          editable_with_roles:
+            type:
+              - "null"
+              - array
+          fields:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                accepts_multiple_values:
+                  type:
+                    - "null"
+                    - boolean
+                converting_to_type:
+                  type:
+                    - "null"
+                    - string
+                description:
+                  type:
+                    - "null"
+                    - string
+                editable_with_roles:
+                  type:
+                    - "null"
+                    - array
+                id:
+                  type:
+                    - "null"
+                    - string
+                is_shared:
+                  type:
+                    - "null"
+                    - boolean
+                name:
+                  type:
+                    - "null"
+                    - string
+                required:
+                  type:
+                    - "null"
+                    - boolean
+                type:
+                  type:
+                    - "null"
+                    - string
 streams:
   - "#/definitions/created_activities_stream"
   - "#/definitions/note_activities_stream"

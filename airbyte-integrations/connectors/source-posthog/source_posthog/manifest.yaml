@@ -50,6 +50,33 @@ definitions:
       name: "projects"
       path: "projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: number
+          uuid:
+            type: string
+          organization:
+            type: string
+          api_token:
+            type: string
+          name:
+            type: string
+          completed_snippet_onboarding:
+            type: boolean
+          ingested_event:
+            type: boolean
+          is_demo:
+            type: boolean
+          timezone:
+            type: string
+          access_control:
+            type: boolean
+          effective_membership_level:
+            type: number
   base_slicing_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -70,30 +97,402 @@ definitions:
       name: "cohorts"
       path: "cohorts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          groups:
+            type:
+              - array
+              - object
+            items:
+              type: object
+              properties:
+                days:
+                  type:
+                    - string
+                    - "null"
+                action_id:
+                  type:
+                    - string
+                    - "null"
+                properties:
+                  type:
+                    - array
+                  items:
+                    type: object
+          deleted:
+            type: boolean
+          is_calculating:
+            type: boolean
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              uuid:
+                type: string
+              distinct_id:
+                type: string
+              first_name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          last_calculation:
+            type:
+              - string
+              - "null"
+          errors_calculating:
+            type: integer
+          count:
+            type:
+              - integer
+              - "null"
+          is_static:
+            type: boolean
   feature_flags_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "feature_flags"
       path: "feature_flags"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          key:
+            type: string
+          rollout_percentage:
+            type:
+              - integer
+              - "null"
+          filters:
+            type: object
+            properties:
+              properties:
+                type: array
+                items:
+                  type: object
+          deleted:
+            type: boolean
+          active:
+            type: boolean
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              distinct_id:
+                type: string
+              first_name:
+                type: string
+              email:
+                type: string
+          created_at:
+            type: string
+            format: date-time
   persons_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "persons"
       path: "persons"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          distinct_ids:
+            type: array
+            items:
+              type: string
+          created_at:
+            type: string
+            format: date-time
   annotations_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "annotations"
       path: "annotations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          content:
+            type:
+              - string
+              - "null"
+          date_marker:
+            type:
+              - string
+              - "null"
+            format: date-time
+          creation_type:
+            type:
+              - string
+              - "null"
+          dashboard_item:
+            type:
+              - string
+              - "null"
+          created_by:
+            type: object
+            properties:
+              id:
+                type: integer
+              uuid:
+                type: string
+              distinct_id:
+                type: string
+              first_name:
+                type: string
+              email:
+                type: string
+          created_at:
+            type: string
+            format: date-time
+          updated_at:
+            type: string
+            format: date-time
+          deleted:
+            type: boolean
+          scope:
+            type: string
   insights_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "insights"
       path: "insights"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+          short_id:
+            type:
+              - string
+              - "null"
+          name:
+            derived_name:
+              - string
+              - "null"
+          filters:
+            type:
+              - object
+              - "null"
+            properties:
+              display:
+                type:
+                  - string
+                  - "null"
+              insight:
+                type:
+                  - string
+                  - "null"
+              interval:
+                type:
+                  - string
+                  - "null"
+              date_from:
+                type:
+                  - string
+                  - "null"
+          filters_hash:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          last_refresh:
+            type:
+              - string
+              - "null"
+          refreshing:
+            type:
+              - boolean
+              - "null"
+          result:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                action_id:
+                  type:
+                    - string
+                    - "null"
+                average_conversion_time:
+                  type:
+                    - string
+                    - "null"
+                converted_people_url:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+                custom_name:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                median_conversion_time:
+                  type:
+                    - string
+                    - "null"
+                order:
+                  type:
+                    - number
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              uuid:
+                type:
+                  - string
+                  - "null"
+              distinct_id:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+          description:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          favorited:
+            type:
+              - boolean
+              - "null"
+          saved:
+            type:
+              - boolean
+              - "null"
+          last_modified_at:
+            type:
+              - string
+              - "null"
+          last_modified_by:
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_id:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              uuid:
+                type:
+                  - string
+                  - "null"
+          is_sample:
+            type:
+              - boolean
+              - "null"
+          effective_restriction_level:
+            type:
+              - number
+              - "null"
+          effective_privilege_level:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
   events_stream:
     $parameters:
       name: "events"
@@ -130,7 +529,40 @@ definitions:
             field_name: before
             inject_into: request_parameter
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: string
+          distinct_id:
+            type: string
+          properties:
+            type: object
+          event:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          person:
+            type: object
+            properties:
+              is_identified:
+                type: boolean
+              distinct_ids:
+                type: array
+                items:
+                  type: string
+              properties:
+                type: object
+          elements:
+            type: array
+            items:
+              type:
+                - string
+                - object
+          elements_chain:
+            type: string
     retriever:
       transformations:
         - class_name: "source_posthog.components.EventsSimpleRetriever"

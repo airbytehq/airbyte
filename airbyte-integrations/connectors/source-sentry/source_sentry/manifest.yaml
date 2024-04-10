@@ -1,9 +1,6 @@
 version: "0.29.0"
 definitions:
   page_size: 50
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -39,8 +36,6 @@ streams:
       # https://docs.sentry.io/api/events/list-a-projects-events/
       name: "events"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -52,12 +47,461 @@ streams:
           full: "true"
       paginator:
         $ref: "#/definitions/paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          type:
+            description: Type of the event
+            type:
+              - "null"
+              - string
+          eventID:
+            description: ID of the event
+            type:
+              - string
+              - "null"
+          tags:
+            description: Tags associated with the event
+            type:
+              - array
+              - "null"
+            items:
+              description: A key-value pair for a tag
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  description: Value of the tag
+                  type:
+                    - string
+                    - "null"
+                key:
+                  description: Key of the tag
+                  type:
+                    - string
+                    - "null"
+          dateCreated:
+            description: Date and time when the event was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          user:
+            description: User information related to the event
+            type:
+              - "null"
+              - object
+            properties:
+              username:
+                description: Username of the user
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the user
+                type:
+                  - "null"
+                  - string
+              ip_address:
+                description: IP address of the user
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              data:
+                description: Additional user data
+                type:
+                  - "null"
+                  - object
+                properties:
+                  isStaff:
+                    description: Indicates if the user is staff
+                    type:
+                      - boolean
+                      - "null"
+              id:
+                description: ID of the user
+                type:
+                  - string
+                  - "null"
+          message:
+            description: The message associated with the event
+            type:
+              - string
+              - "null"
+          id:
+            description: ID of the event
+            type:
+              - string
+              - "null"
+          platform:
+            description: Platform information for the event
+            type:
+              - string
+              - "null"
+          event.type:
+            description: Type of the event
+            type:
+              - string
+              - "null"
+          groupID:
+            description: ID of the group associated with the event
+            type:
+              - string
+              - "null"
+          title:
+            description: Title of the event
+            type:
+              - string
+              - "null"
+          _meta:
+            description: Metadata related to the event
+            type:
+              - "null"
+              - object
+            properties:
+              context:
+                description: The context of the event
+                type:
+                  - "null"
+                  - string
+              contexts:
+                description: Contexts specific to different environments or technologies
+                type:
+                  - "null"
+                  - string
+              entries:
+                description: Log entries related to the event
+                type:
+                  - "null"
+                  - object
+              message:
+                description: The message associated with the event
+                type:
+                  - "null"
+                  - string
+              packages:
+                description: Packages related to the event
+                type:
+                  - "null"
+                  - string
+              sdk:
+                description: Software Development Kit information
+                type:
+                  - "null"
+                  - string
+              tags:
+                description: Tags associated with the event
+                type:
+                  - "null"
+                  - object
+              user:
+                description: User information related to the event
+                type:
+                  - "null"
+                  - string
+          context:
+            description: Contextual information of the event
+            type:
+              - "null"
+              - object
+            properties:
+              emptyList:
+                description: An empty list
+                type:
+                  - "null"
+                  - array
+              emptyMap:
+                description: An empty map
+                type:
+                  - "null"
+                  - object
+              length:
+                description: Length of the context
+                type:
+                  - "null"
+                  - integer
+              results:
+                description: Results associated with the context
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - integer
+                    - "null"
+              session:
+                description: Session information
+                type:
+                  - "null"
+                  - object
+                properties:
+                  foo:
+                    description: Placeholder property
+                    type:
+                      - "null"
+                      - string
+              unauthorized:
+                description: Indicates if the context is unauthorized
+                type:
+                  - "null"
+                  - boolean
+              url:
+                description: URL associated with the context
+                type:
+                  - "null"
+                  - string
+          contexts:
+            description: Specific contexts for different environments
+            type:
+              - "null"
+              - object
+            properties:
+              browser:
+                description: Browser information
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  version:
+                    type:
+                      - "null"
+                      - string
+              client_os:
+                description: Client operating system information
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  version:
+                    type:
+                      - "null"
+                      - string
+          crashFile:
+            description: Crash file associated with the event
+            type:
+              - "null"
+              - string
+          culprit:
+            description: The main cause or source of the event
+            type:
+              - "null"
+              - string
+          dateReceived:
+            description: Date and time when the event was received
+            type:
+              - "null"
+              - string
+            format: date-time
+          dist:
+            description: Distribution information related to the event
+            type:
+              - "null"
+              - string
+          entries:
+            description: Log entries for the event
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+            properties:
+              data:
+                description: Data related to the log entry
+                type:
+                  - "null"
+                  - object
+                properties:
+                  formatted:
+                    description: Formatted data
+                    type:
+                      - "null"
+                      - string
+                  frames:
+                    description: Stack frames of the log entry
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      absPath:
+                        type:
+                          - "null"
+                          - string
+                      colNo:
+                        type:
+                          - "null"
+                          - string
+                      context:
+                        type:
+                          - "null"
+                          - array
+                      filename:
+                        type:
+                          - "null"
+                          - string
+                      function:
+                        type:
+                          - "null"
+                          - string
+                      inApp:
+                        type:
+                          - "null"
+                          - boolean
+                      lineNo:
+                        type:
+                          - "null"
+                          - integer
+                      lock:
+                        type:
+                          - "null"
+                          - integer
+                      module:
+                        type:
+                          - "null"
+                          - string
+                      package:
+                        type:
+                          - "null"
+                          - string
+                      platform:
+                        type:
+                          - "null"
+                          - string
+                      rawFunction:
+                        type:
+                          - "null"
+                          - string
+                      sourceLink:
+                        type:
+                          - "null"
+                          - string
+                      symbol:
+                        type:
+                          - "null"
+                          - string
+                      symbolAddr:
+                        type:
+                          - "null"
+                          - string
+                      trust:
+                        type:
+                          - "null"
+                          - string
+              type:
+                description: Type of log entry
+                type:
+                  - "null"
+                  - string
+          errors:
+            description: Errors associated with the event
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          fingerprints:
+            description: Fingerprints related to the event
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          groupingConfig:
+            description: Configuration for grouping similar events
+            type:
+              - "null"
+              - object
+            properties:
+              enhancements:
+                description: Enhancements related to grouping
+                type:
+                  - "null"
+                  - string
+              id:
+                description: ID of the grouping configuration
+                type:
+                  - "null"
+                  - string
+          location:
+            description: Location information related to the event
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional metadata for the event
+            type:
+              - "null"
+              - object
+            properties:
+              in_app_frame_mix:
+                description: Mix of in-app frames
+                type:
+                  - "null"
+                  - string
+              title:
+                description: Title of the metadata
+                type:
+                  - "null"
+                  - string
+          occurrence:
+            description: Number of occurrences of the event
+            type:
+              - "null"
+              - string
+          packages:
+            description: Packages associated with the event
+            type:
+              - "null"
+              - object
+          projectID:
+            description: ID of the project
+            type:
+              - "null"
+              - string
+          sdk:
+            description: Software Development Kit information related to the event
+            type:
+              - "null"
+              - string
+          size:
+            description: Size of the event data
+            type:
+              - "null"
+              - integer
   - type: DeclarativeStream
     $parameters:
       name: "issues"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -70,12 +514,233 @@ streams:
           query: ""
       paginator:
         $ref: "#/definitions/paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          annotations:
+            description: List of annotations associated with the issue
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          assignedTo:
+            description: User assigned to this issue
+            type:
+              - "null"
+              - object
+          count:
+            description: Total count of occurrences of this issue
+            type:
+              - string
+              - "null"
+          culprit:
+            description: Identified culprit responsible for the issue
+            type:
+              - string
+              - "null"
+          firstSeen:
+            description: Timestamp of when the issue was first seen
+            type:
+              - string
+              - "null"
+          hasSeen:
+            description: Flag indicating if the current user has seen this issue
+            type:
+              - boolean
+              - "null"
+          id:
+            description: Unique identifier of the issue
+            type:
+              - string
+              - "null"
+          isBookmarked:
+            description: Flag indicating if the issue is bookmarked
+            type:
+              - boolean
+              - "null"
+          isPublic:
+            description: Flag indicating if the issue is public
+            type:
+              - boolean
+              - "null"
+          isSubscribed:
+            description: Flag indicating if the current user is subscribed to this issue
+            type:
+              - boolean
+              - "null"
+          lastSeen:
+            description: Timestamp of when the issue was last seen
+            type:
+              - string
+              - "null"
+          level:
+            description: Severity level of the issue
+            type:
+              - string
+              - "null"
+          logger:
+            description: Logger associated with the issue
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional metadata related to the issue
+            anyOf:
+              - type:
+                  - object
+                  - "null"
+                properties:
+                  title:
+                    type:
+                      - string
+                      - "null"
+              - type:
+                  - object
+                  - "null"
+                properties:
+                  filename:
+                    type:
+                      - string
+                      - "null"
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+          numComments:
+            description: Number of comments on the issue
+            type:
+              - integer
+              - "null"
+          permalink:
+            description:
+              Permanent link to access the detailed information about the
+              issue
+            type:
+              - string
+              - "null"
+          project:
+            description: Project information associated with the issue
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier of the project
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the project
+                type:
+                  - string
+                  - "null"
+              slug:
+                description: Slug of the project
+                type:
+                  - string
+                  - "null"
+          shareId:
+            description: Unique share identifier of the issue
+            type:
+              - "null"
+              - string
+          shortId:
+            description: Short identifier of the issue
+            type:
+              - string
+              - "null"
+          stats:
+            description: Statistics related to the issue
+            type:
+              - object
+              - "null"
+            properties:
+              24h:
+                description: Stats for the last 24 hours
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - number
+                      - "null"
+          status:
+            description: Current status of the issue
+            type:
+              - string
+              - "null"
+            enum:
+              - resolved
+              - unresolved
+              - ignored
+          statusDetails:
+            description: Additional details about the issue status
+            type:
+              - object
+              - "null"
+          subscriptionDetails:
+            description: Details related to user subscriptions for the issue
+            type:
+              - "null"
+              - object
+          title:
+            description: Title or summary of the issue
+            type:
+              - string
+              - "null"
+          type:
+            description: Type of the issue
+            type:
+              - string
+              - "null"
+          userCount:
+            description: Total number of users affected by this issue
+            type:
+              - integer
+              - "null"
+          isUnhandled:
+            description: Flag indicating if the issue is unhandled
+            type:
+              - "null"
+              - boolean
+          issueCategory:
+            description: Category of the issue
+            type:
+              - "null"
+              - string
+          issueType:
+            description: Type of the issue
+            type:
+              - "null"
+              - string
+          platform:
+            description: Platform where the issue occurs
+            type:
+              - "null"
+              - string
+          substatus:
+            description: Substatus of the issue
+            type:
+              - "null"
+              - string
   - type: DeclarativeStream
     $parameters:
       name: "projects"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -85,12 +750,284 @@ streams:
         path: "projects/"
       paginator:
         $ref: "#/definitions/paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          avatar:
+            description: Details related to the avatar of the project.
+            type:
+              - object
+              - "null"
+            properties:
+              avatarType:
+                description: Type of avatar.
+                type:
+                  - string
+                  - "null"
+              avatarUuid:
+                description: UUID of the avatar.
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                description: URL of the avatar image.
+                type:
+                  - "null"
+                  - string
+          color:
+            description: Color associated with the project.
+            type:
+              - string
+              - "null"
+          dateCreated:
+            description: Date and time when the project was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          features:
+            description: List of features enabled for the project.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          firstEvent:
+            description: Details about the first event recorded for the project.
+            type:
+              - "null"
+              - string
+          hasAccess:
+            description: Flag indicating if the user has access to the project.
+            type:
+              - boolean
+              - "null"
+          id:
+            description: Unique identifier for the project.
+            type:
+              - string
+              - "null"
+          isBookmarked:
+            description: Flag indicating if the project is bookmarked by the user.
+            type:
+              - boolean
+              - "null"
+          isInternal:
+            description: Flag indicating if the project is for internal purposes.
+            type:
+              - boolean
+              - "null"
+          isMember:
+            description: Flag indicating if the user is a member of the project.
+            type:
+              - boolean
+              - "null"
+          isPublic:
+            description: Flag indicating if the project is public.
+            type:
+              - boolean
+              - "null"
+          name:
+            description: Name of the project.
+            type:
+              - string
+              - "null"
+          organization:
+            description: Details about the organization associated with the project.
+            type:
+              - object
+              - "null"
+            properties:
+              avatar:
+                description: Details related to the avatar of the organization.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  avatarType:
+                    description: Type of avatar.
+                    type:
+                      - string
+                      - "null"
+                  avatarUuid:
+                    description: UUID of the avatar.
+                    type:
+                      - "null"
+                      - string
+                  avatarUrl:
+                    description: URL of the avatar image.
+                    type:
+                      - string
+                      - "null"
+              dateCreated:
+                description: Date and time when the organization was created.
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              id:
+                description: Unique identifier for the organization.
+                type:
+                  - string
+                  - "null"
+              isEarlyAdopter:
+                description: Flag indicating if the organization is an early adopter.
+                type:
+                  - boolean
+                  - "null"
+              hasAuthProvider:
+                description:
+                  Flag indicating if an external authorization provider is
+                  linked.
+                type:
+                  - boolean
+                  - "null"
+              links:
+                description: Links related to the organization.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  organizationUrl:
+                    description: URL of the organization.
+                    type:
+                      - string
+                      - "null"
+                  regionUrl:
+                    description: URL related to the region of the organization.
+                    type:
+                      - string
+                      - "null"
+              name:
+                description: Name of the organization.
+                type:
+                  - string
+                  - "null"
+              require2FA:
+                description: Flag indicating if two-factor authentication is required.
+                type:
+                  - boolean
+                  - "null"
+              slug:
+                description: Unique identifier associated with the organization.
+                type:
+                  - string
+                  - "null"
+              status:
+                description: Status of the organization.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    description: Unique identifier for the status.
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    description: Name of the status.
+                    type:
+                      - string
+                      - "null"
+              requireEmailVerification:
+                description: Flag indicating if email verification is necessary.
+                type:
+                  - boolean
+                  - "null"
+              features:
+                description: List of features enabled for the organization.
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          platform:
+            description: The platform on which the project is running.
+            type:
+              - "null"
+              - string
+          slug:
+            description: Unique slug associated with the project.
+            type:
+              - string
+              - "null"
+          status:
+            description: Status of the project.
+            type:
+              - string
+              - "null"
+            enum:
+              - active
+              - disabled
+              - pending_deletion
+              - deletion_in_progress
+          access:
+            description: Information about access permissions for the project.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          firstTransactionEvent:
+            description: Details about the first transaction event.
+            type:
+              - "null"
+              - boolean
+          hasMonitors:
+            description: Flag indicating if monitors are set up for the project.
+            type:
+              - "null"
+              - boolean
+          hasProfiles:
+            description: Flag indicating if profiles are available for the project.
+            type:
+              - "null"
+              - boolean
+          hasReplays:
+            description: Flag indicating if replay functionality is enabled.
+            type:
+              - "null"
+              - boolean
+          hasSessions:
+            description: Flag indicating if session tracking is active for the project.
+            type:
+              - "null"
+              - boolean
+          hasFeedbacks:
+            description:
+              Flag indicating if feedback functionality is available for
+              the project.
+            type:
+              - "null"
+              - boolean
+          hasNewFeedbacks:
+            description: Flag indicating if there are new feedback entries.
+            type:
+              - "null"
+              - boolean
+          hasCustomMetrics:
+            description: Flag indicating if custom metrics are enabled for the project.
+            type:
+              - "null"
+              - boolean
+          hasMinifiedStackTrace:
+            description: Flag indicating if minified stack trace feature is enabled.
+            type:
+              - "null"
+              - boolean
   - type: DeclarativeStream
     $parameters:
       name: "project_detail"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -100,6 +1037,828 @@ streams:
         path: "projects/{{config.organization}}/{{config.project}}/"
       paginator:
         type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          allowedDomains:
+            description: Domains allowed to access the project.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          avatar:
+            description: Project avatar information.
+            type:
+              - object
+              - "null"
+            properties:
+              avatarType:
+                description: Type of avatar.
+                type:
+                  - string
+                  - "null"
+              avatarUuid:
+                description: UUID of the avatar.
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                description: URL of the avatar.
+                type:
+                  - "null"
+                  - string
+          color:
+            description: Color associated with the project.
+            type:
+              - string
+              - "null"
+          dataScrubber:
+            description: Settings for scrubbing data.
+            type:
+              - boolean
+              - "null"
+          dataScrubberDefaults:
+            description: Default settings for data scrubbing.
+            type:
+              - boolean
+              - "null"
+          dateCreated:
+            description: Date when the project was created.
+            type:
+              - string
+              - "null"
+          defaultEnvironment:
+            description: Default environment for the project.
+            type:
+              - "null"
+              - string
+          digestsMaxDelay:
+            description: Maximum delay for digests.
+            type:
+              - integer
+              - "null"
+          digestsMinDelay:
+            description: Minimum delay for digests.
+            type:
+              - integer
+              - "null"
+          features:
+            description: Features enabled for the project.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          firstEvent:
+            description: Details of the first event in the project.
+            type:
+              - "null"
+              - string
+          hasAccess:
+            description: Indicates if the user has access to the project.
+            type:
+              - boolean
+              - "null"
+          id:
+            description: Unique identifier for the project.
+            type:
+              - string
+              - "null"
+          isBookmarked:
+            description: Indicates if the project is bookmarked.
+            type:
+              - boolean
+              - "null"
+          isInternal:
+            description: Indicates if the project is internal.
+            type:
+              - boolean
+              - "null"
+          isMember:
+            description: Indicates if the user is a member of the project.
+            type:
+              - boolean
+              - "null"
+          isPublic:
+            description: Indicates if the project is public.
+            type:
+              - boolean
+              - "null"
+          latestRelease:
+            description: Information about the latest release of the project.
+            type:
+              - "null"
+              - object
+            properties:
+              authors:
+                description: Authors of the release.
+                type:
+                  - array
+                  - "null"
+                items:
+                  description: Author information.
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      description: Name of the author.
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      description: Email of the author.
+                      type:
+                        - string
+                        - "null"
+              commitCount:
+                description: Number of commits in the latest release.
+                type:
+                  - integer
+                  - "null"
+              data:
+                description: Data related to the latest release.
+                type:
+                  - object
+                  - "null"
+              dateCreated:
+                description: Date when the release was created.
+                type:
+                  - string
+                  - "null"
+              dateReleased:
+                description: Date when the release was released.
+                type:
+                  - "null"
+                  - string
+              deployCount:
+                description: Number of deploys for the latest release.
+                type:
+                  - integer
+                  - "null"
+              firstEvent:
+                description: Details of first event in the latest release.
+                type:
+                  - "null"
+                  - string
+              lastCommit:
+                description: Details of the last commit in the latest release.
+                type:
+                  - "null"
+                  - object
+              lastDeploy:
+                description: Details of the last deploy for the latest release.
+                type:
+                  - "null"
+                  - object
+              lastEvent:
+                description: Details of the last event in the latest release.
+                type:
+                  - "null"
+                  - string
+              newGroups:
+                description: New groups added in the latest release.
+                type:
+                  - integer
+                  - "null"
+              owner:
+                description: Owner of the latest release.
+                type:
+                  - "null"
+                  - string
+              projects:
+                description: Projects associated with the latest release.
+                type:
+                  - array
+                  - "null"
+                items:
+                  description: Project information.
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      description: Name of the project.
+                      type:
+                        - string
+                        - "null"
+                    slug:
+                      description: Slug of the project.
+                      type:
+                        - string
+                        - "null"
+              ref:
+                description: Reference related to the latest release.
+                type:
+                  - "null"
+                  - string
+              shortVersion:
+                description: Short version of the latest release.
+                type:
+                  - string
+                  - "null"
+              url:
+                description: URL related to the latest release.
+                type:
+                  - "null"
+                  - string
+              version:
+                description: Version of the latest release.
+                type:
+                  - string
+                  - "null"
+          name:
+            description: Name of the project.
+            type:
+              - string
+              - "null"
+          options:
+            description: Options related to the project.
+            type:
+              - object
+              - "null"
+            properties:
+              feedback:branding:
+                description: Feedback branding options.
+                type:
+                  - boolean
+                  - "null"
+              filters:blacklisted_ips:
+                description: Filters for blacklisted IPs.
+                type:
+                  - string
+                  - "null"
+              filters:error_messages:
+                description: Filters for error messages.
+                type:
+                  - string
+                  - "null"
+              filters:releases:
+                description: Filters for releases.
+                type:
+                  - string
+                  - "null"
+              sentry:csp_ignored_sources:
+                description: Sentry specific CSP ignored sources.
+                type:
+                  - string
+                  - "null"
+              sentry:csp_ignored_sources_defaults:
+                description: Default CSP ignored sources for Sentry.
+                type:
+                  - boolean
+                  - "null"
+              sentry:reprocessing_active:
+                description: Flag indicating if reprocessing is active.
+                type:
+                  - boolean
+                  - "null"
+          organization:
+            description: Organization information associated with the project.
+            type:
+              - object
+              - "null"
+            properties:
+              avatar:
+                description: Avatar for the organization.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  avatarType:
+                    description: Type of avatar.
+                    type:
+                      - string
+                      - "null"
+                  avatarUuid:
+                    description: UUID of the avatar.
+                    type:
+                      - "null"
+                      - string
+                  avatarUrl:
+                    description: URL of the avatar.
+                    type:
+                      - "null"
+                      - string
+              dateCreated:
+                description: Date when the organization was created.
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              id:
+                description: Unique identifier for the organization.
+                type:
+                  - string
+                  - "null"
+              isEarlyAdopter:
+                description: Indicates if the organization is an early adopter.
+                type:
+                  - boolean
+                  - "null"
+              name:
+                description: Name of the organization.
+                type:
+                  - string
+                  - "null"
+              require2FA:
+                description: Indicates if two-factor authentication is required.
+                type:
+                  - boolean
+                  - "null"
+              slug:
+                description: Slug of the organization.
+                type:
+                  - string
+                  - "null"
+              status:
+                description: Status of the organization.
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    description: ID of the status.
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    description: Name of the status.
+                    type:
+                      - string
+                      - "null"
+          platform:
+            description: Platform of the project.
+            type:
+              - "null"
+              - string
+          platforms:
+            description: Platforms supported by the project.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          plugins:
+            description: Plugins installed for the project.
+            type:
+              - array
+              - "null"
+            items:
+              description: Plugin information.
+              type:
+                - object
+                - "null"
+              properties:
+                altIsSentryApp:
+                  description: Alternative Sentry app flag.
+                assets:
+                  description: Assets related to the plugin.
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                author:
+                  description: Author information for the plugin.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: Name of the author.
+                      type:
+                        - string
+                        - "null"
+                    url:
+                      description: URL of the author.
+                      type:
+                        - string
+                        - "null"
+                canDisable:
+                  description: Indicates if the plugin can be disabled.
+                  type:
+                    - boolean
+                    - "null"
+                contexts:
+                  description: Contexts supported by the plugin.
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                description:
+                  description: Description of the plugin.
+                  type:
+                    - string
+                    - "null"
+                deprecationDate:
+                  description: Date of deprecation for the plugin.
+                doc:
+                  description: Documentation related to the plugin.
+                  type:
+                    - string
+                    - "null"
+                enabled:
+                  description: Indicates if the plugin is enabled.
+                  type:
+                    - boolean
+                    - "null"
+                features:
+                  description: Features supported by the plugin.
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                featureDescriptions:
+                  description: Descriptions of features supported by the plugin.
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                firstPartyAlternative:
+                  description: First party alternative for the plugin.
+                hasConfiguration:
+                  description: Indicates if the plugin has configuration options.
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  description: Unique identifier for the plugin.
+                  type:
+                    - string
+                    - "null"
+                isDeprecated:
+                  description: Indicates if the plugin is deprecated.
+                  type:
+                    - boolean
+                    - "null"
+                isHidden:
+                  description: Indicates if the plugin is hidden.
+                  type:
+                    - boolean
+                    - "null"
+                isTestable:
+                  description: Indicates if the plugin is testable.
+                  type:
+                    - boolean
+                    - "null"
+                metadata:
+                  description: Metadata associated with the plugin.
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: true
+                name:
+                  description: Name of the plugin.
+                  type:
+                    - string
+                    - "null"
+                resourceLinks:
+                  description: Links related to the plugin.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    description: Resource link information.
+                    type:
+                      - object
+                      - "null"
+                    additionalProperties: true
+                    properties:
+                      title:
+                        description: Title of the resource link.
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        description: URL of the resource link.
+                        type:
+                          - string
+                          - "null"
+                shortName:
+                  description: Short name of the plugin.
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  description: Slug of the plugin.
+                  type:
+                    - string
+                    - "null"
+                status:
+                  description: Status of the plugin.
+                  type:
+                    - string
+                    - "null"
+                type:
+                  description: Type of the plugin.
+                  type:
+                    - string
+                    - "null"
+                version:
+                  description: Version of the plugin.
+                  type:
+                    - "null"
+                    - string
+          processingIssues:
+            description: Issues related to event processing.
+            type:
+              - integer
+              - "null"
+          relayPiiConfig:
+            description: Configuration for Relay PII.
+            type:
+              - "null"
+              - string
+          resolveAge:
+            description: Age at which resolution occurs.
+            type:
+              - integer
+              - "null"
+          safeFields:
+            description: Fields considered safe.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          scrapeJavaScript:
+            description: JavaScript scraping settings.
+            type:
+              - boolean
+              - "null"
+          scrubIPAddresses:
+            description: Settings for scrubbing IP addresses.
+            type:
+              - boolean
+              - "null"
+          securityToken:
+            description: Security token for the project.
+            type:
+              - string
+              - "null"
+          securityTokenHeader:
+            description: Header for the security token.
+            type:
+              - "null"
+              - string
+          sensitiveFields:
+            description: Fields considered sensitive.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          slug:
+            description: Slug of the project.
+            type:
+              - string
+              - "null"
+          status:
+            description: Status of the project.
+            type:
+              - string
+              - "null"
+          storeCrashReports:
+            description: Setting for storing crash reports.
+            type:
+              - "null"
+              - boolean
+          subjectPrefix:
+            description: Prefix for subjects.
+            type:
+              - string
+              - "null"
+          subjectTemplate:
+            description: Template for subjects.
+            type:
+              - string
+              - "null"
+          team:
+            description: Team information associated with the project.
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the team.
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the team.
+                type:
+                  - string
+                  - "null"
+              slug:
+                description: Slug of the team.
+                type:
+                  - string
+                  - "null"
+          teams:
+            description: Teams associated with the project.
+            type:
+              - array
+              - "null"
+            items:
+              description: Team information.
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  description: Unique identifier for the team.
+                  type:
+                    - string
+                    - "null"
+                name:
+                  description: Name of the team.
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  description: Slug of the team.
+                  type:
+                    - string
+                    - "null"
+          verifySSL:
+            description: Flag indicating SSL verification status.
+            type:
+              - boolean
+              - "null"
+          access:
+            description: Access control settings for the project.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          builtinSymbolSources:
+            description: Built-in symbol sources for the project.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          dynamicSamplingBiases:
+            description: Biases for dynamic sampling.
+            type:
+              - "null"
+              - array
+            items:
+              description: Item containing dynamic sampling bias information.
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the dynamic sampling bias.
+                  type:
+                    - "null"
+                    - string
+                active:
+                  description: Indicates if the dynamic sampling bias is active.
+                  type:
+                    - "null"
+                    - boolean
+          eventProcessing:
+            description: Settings for event processing.
+            type:
+              - "null"
+              - object
+            properties:
+              symbolicationDegraded:
+                description: Flag for symbolication degradation.
+                type:
+                  - "null"
+                  - boolean
+          fingerprintingRules:
+            description: Rules for fingerprinting.
+            type:
+              - "null"
+              - string
+          firstTransactionEvent:
+            description: Details of the first transaction event in the project.
+            type:
+              - "null"
+              - boolean
+          groupingAutoUpdate:
+            description: Auto-update settings for grouping.
+            type:
+              - "null"
+              - boolean
+          groupingConfig:
+            description: Configuration settings for grouping.
+            type:
+              - "null"
+              - string
+          groupingEnhancements:
+            description: Enhancements made to grouping in the project.
+            type:
+              - "null"
+              - string
+          groupingEnhancementsBase:
+            description: Base enhancements for grouping in the project.
+            type:
+              - "null"
+              - string
+          hasMinifiedStackTrace:
+            description: Indicates if minified stack trace is available.
+            type:
+              - "null"
+              - boolean
+          hasMonitors:
+            description: Indicates if monitoring features are available.
+            type:
+              - "null"
+              - boolean
+          hasProfiles:
+            description: Indicates if profiles are available.
+            type:
+              - "null"
+              - boolean
+          hasReplays:
+            description: Indicates if replay functionality is available.
+            type:
+              - "null"
+              - boolean
+          hasSessions:
+            description: Indicates if session management features are available.
+            type:
+              - "null"
+              - boolean
+          hasFeedbacks:
+            description: Indicates if feedback functionality is available.
+            type:
+              - "null"
+              - boolean
+          hasNewFeedbacks:
+            description: Indicates if new feedbacks are available.
+            type:
+              - "null"
+              - boolean
+          hasCustomMetrics:
+            description: Indicates if custom metrics are available.
+            type:
+              - "null"
+              - boolean
+          recapServerUrl:
+            description: URL of the recap server.
+            type:
+              - "null"
+              - string
+          secondaryGroupingConfig:
+            description: Secondary grouping configuration.
+            type:
+              - "null"
+              - string
+          secondaryGroupingExpiry:
+            description: Expiry settings for secondary grouping.
+            type:
+              - "null"
+              - integer
+          symbolSources:
+            description: Sources of symbol information.
+            type:
+              - "null"
+              - string
+          stats:
+            description: Statistics related to the project.
+          transactionStats:
+            description: Statistics related to transactions.
+          sessionStats:
+            description: Statistics related to session management.
 check:
   type: CheckStream
   stream_names: ["project_detail"]

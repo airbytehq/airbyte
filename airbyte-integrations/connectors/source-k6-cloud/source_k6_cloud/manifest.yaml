@@ -47,6 +47,36 @@ definitions:
       name: "organizations"
       primary_key: "id"
       path: "/v3/organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          owner_id:
+            type: integer
+          description:
+            type: string
+          billing_address:
+            type: string
+          billing_country:
+            type: string
+          billing_email:
+            type: string
+          vat_number:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+          is_default:
+            type: boolean
+          is_saml_org:
+            type: boolean
   organizations_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -67,6 +97,26 @@ definitions:
         $ref: "#/definitions/organizations_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          description:
+            type: string
+          organization_id:
+            type: integer
+          created:
+            type: string
+          updated:
+            type: string
+          is_default:
+            type: boolean
   tests_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -81,6 +131,30 @@ definitions:
       primary_key: "id"
       path: "loadtests/v2/tests"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: integer
+          project_id:
+            type: integer
+          user_id:
+            type: integer
+          name:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+          last_test_run_id:
+            type: string
+          test_run_ids:
+            type: array
+          script:
+            type: string
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/projects_stream"

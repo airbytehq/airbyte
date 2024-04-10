@@ -54,19 +54,34 @@ definitions:
     requester:
       $ref: "#/definitions/top_requester"
   per_article_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
     incremental_sync:
       $ref: "#/definitions/per_article_incremental_sync"
     retriever:
       $ref: "#/definitions/per_article_retriever"
     $parameters:
       name: "per-article"
-  top_stream:
     schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          project:
+            type: string
+          access:
+            type: string
+          article:
+            type: string
+          agent:
+            type: string
+          granularity:
+            type: string
+          timestamp:
+            type: string
+          views:
+            type: integer
+            format: int64
+        $schema: http://json-schema.org/schema#
+  top_stream:
     incremental_sync:
       $ref: "#/definitions/top_incremental_sync"
     retriever:
@@ -74,6 +89,35 @@ definitions:
     $parameters:
       name: "top"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          project:
+            type: string
+          access:
+            type: string
+          year:
+            type: string
+          month:
+            type: string
+          day:
+            type: string
+          articles:
+            type: array
+            items:
+              type: object
+              properties:
+                rank:
+                  type: integer
+                  format: int32
+                article:
+                  type: string
+                views:
+                  type: integer
+                  format: int64
+        $schema: http://json-schema.org/schema#
 streams:
   - "#/definitions/per_article_stream"
   - "#/definitions/top_stream"

@@ -60,6 +60,493 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/datetime_cursor"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          comments:
+            items:
+              properties:
+                comment:
+                  type:
+                    - string
+                    - "null"
+                created:
+                  type:
+                    - string
+                    - "null"
+                createdISO:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                owner:
+                  properties:
+                    avatar:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      items:
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type: array
+                    name:
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                tags:
+                  type:
+                    - array
+                    - "null"
+                thread:
+                  items:
+                    properties:
+                      comment:
+                        type:
+                          - string
+                          - "null"
+                      created:
+                        type:
+                          - string
+                          - "null"
+                      createdISO:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        properties:
+                          avatar:
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          groups:
+                            type:
+                              - array
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      tags:
+                        items:
+                          properties:
+                            tag:
+                              type:
+                                - string
+                                - "null"
+                            user:
+                              properties:
+                                avatar:
+                                  type:
+                                    - string
+                                    - "null"
+                                email:
+                                  type:
+                                    - string
+                                    - "null"
+                                groups:
+                                  items:
+                                    properties:
+                                      id:
+                                        type:
+                                          - string
+                                          - "null"
+                                      name:
+                                        type:
+                                          - string
+                                          - "null"
+                                    type:
+                                      - object
+                                      - "null"
+                                  type:
+                                    - array
+                                    - "null"
+                                name:
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                          type:
+                            - object
+                            - "null"
+                        type:
+                          - array
+                          - "null"
+                      thread:
+                        type:
+                          - array
+                          - "null"
+                      updated:
+                        type:
+                          - string
+                          - "null"
+                      updatedISO:
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                updated:
+                  type:
+                    - string
+                    - "null"
+                updatedISO:
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          createdAtISO:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          externalUrl:
+            type:
+              - string
+              - "null"
+          lastUpdatedISO:
+            type:
+              - string
+              - "null"
+          reviews:
+            items:
+              properties:
+                comment:
+                  type:
+                    - "null"
+                    - string
+                created:
+                  type:
+                    - string
+                    - "null"
+                createdISO:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                ratings:
+                  items:
+                    properties:
+                      categoryId:
+                        type:
+                          - string
+                          - "null"
+                      categoryName:
+                        type:
+                          - string
+                          - "null"
+                      cause:
+                        type: "null"
+                      critical:
+                        type:
+                          - boolean
+                          - "null"
+                      score:
+                        type:
+                          - integer
+                          - "null"
+                      weight:
+                        type:
+                          - number
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                received:
+                  type:
+                    - boolean
+                    - "null"
+                reviewTime:
+                  type:
+                    - string
+                    - "null"
+                reviewee:
+                  properties:
+                    avatar:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      items:
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                reviewer:
+                  properties:
+                    avatar:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      items:
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                score:
+                  type:
+                    - number
+                    - "null"
+                scorecard:
+                  type: "null"
+                tags:
+                  type:
+                    - array
+                    - "null"
+                thread:
+                  items:
+                    properties:
+                      comment:
+                        type:
+                          - string
+                          - "null"
+                      created:
+                        type:
+                          - string
+                          - "null"
+                      createdISO:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        properties:
+                          avatar:
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          groups:
+                            items:
+                              properties:
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                                name:
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                            type:
+                              - array
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      tags:
+                        items:
+                          properties:
+                            tag:
+                              type:
+                                - string
+                                - "null"
+                            user:
+                              properties:
+                                avatar:
+                                  type:
+                                    - string
+                                    - "null"
+                                email:
+                                  type:
+                                    - string
+                                    - "null"
+                                groups:
+                                  items:
+                                    properties:
+                                      id:
+                                        type:
+                                          - string
+                                          - "null"
+                                      name:
+                                        type:
+                                          - string
+                                          - "null"
+                                    type:
+                                      - object
+                                      - "null"
+                                  type:
+                                    - array
+                                    - "null"
+                                name:
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                          type:
+                            - object
+                            - "null"
+                        type:
+                          - array
+                          - "null"
+                      thread:
+                        type:
+                          - array
+                          - "null"
+                      updated:
+                        type:
+                          - string
+                          - "null"
+                      updatedISO:
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                updated:
+                  type:
+                    - string
+                    - "null"
+                updatedISO:
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          sourceType:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          workspaceId:
+            type:
+              - string
+              - "null"
   users_stream:
     type: DeclarativeStream
     $parameters:
@@ -71,6 +558,25 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
   categories_stream:
     type: DeclarativeStream
     $parameters:
@@ -82,6 +588,65 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          critical:
+            type:
+              - boolean
+              - "null"
+          archived:
+            type:
+              - boolean
+              - "null"
+          weight:
+            type:
+              - number
+              - "null"
+          maxRating:
+            type:
+              - integer
+              - "null"
+          scorecards:
+            type: array
+            items:
+              type: string
+          rootCauses:
+            type: array
+            items:
+              type: string
+          position:
+            type:
+              - integer
+              - "null"
+          groupId:
+            type:
+              - string
+              - "null"
+          groupName:
+            type:
+              - string
+              - "null"
+          groupPosition:
+            type:
+              - integer
+              - "null"
 streams:
   - "#/definitions/reviews_stream"
   - "#/definitions/users_stream"
