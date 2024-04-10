@@ -9,14 +9,13 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://cloudtrail.{{ config['aws_region_name'] }}.amazonaws.com"
+    url_base: "https://cloudtrail.us-east-1.amazonaws.com"
     http_method: "POST"
     authenticator:
       type: CustomAuthenticator
       class_name: source_aws_cloudtrail.components.CustomAuthenticator
       aws_key_id: "{{config['aws_key_id']}}"
       aws_secret_key: "{{config['aws_secret_key']}}"
-      aws_region_name: "{{config['aws_region_name']}}"
 
   incremental_sync_base:
     type: DatetimeBasedCursor

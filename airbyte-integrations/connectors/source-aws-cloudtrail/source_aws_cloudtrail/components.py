@@ -20,13 +20,12 @@ class CustomAuthenticator(NoAuth):
     config: Config
     aws_key_id: Union[InterpolatedString, str]
     aws_secret_key: Union[InterpolatedString, str]
-    aws_region_name: Union[InterpolatedString, str]
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._aws_key_id = InterpolatedString.create(self.aws_key_id, parameters=parameters).eval(self.config)
         self._aws_secret_key = InterpolatedString.create(self.aws_secret_key, parameters=parameters).eval(self.config)
-        self._aws_region_name = InterpolatedString.create(self.aws_region_name, parameters=parameters).eval(self.config)
         self.path = "/"
+        self.aws_region_name = "us-east-1"
         self.service = "cloudtrail"
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
@@ -34,7 +33,7 @@ class CustomAuthenticator(NoAuth):
         self.headers = {
             "Content-Type": "application/x-amz-json-1.1",
             "Accept": "application/json",
-            "Host": f"cloudtrail.{self._aws_region_name}.amazonaws.com",
+            "Host": f"cloudtrail.us-east-1.amazonaws.com",
         }
         # StartTime and EndTime should be Unix timestamps with integer type
         request_body_json = json.loads(request.body.decode("utf-8"))
@@ -44,7 +43,7 @@ class CustomAuthenticator(NoAuth):
         # Sign the AWS Request and update headers with timestamp
         authorization_header, amz_date = self.sign_aws_request(
             self.service,
-            self._aws_region_name,
+            self.aws_region_name,
             request.method,
             self.path,
             self.headers,
