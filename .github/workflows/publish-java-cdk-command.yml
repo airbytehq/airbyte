@@ -82,6 +82,7 @@ jobs:
             exit 1
           fi
           echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
+          echo "FORCE=$FORCE, DRY_RUN=$DRY_RUN"
 
       - name: Setup Java
         uses: actions/setup-java@v3
