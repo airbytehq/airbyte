@@ -1,7 +1,7 @@
 # Migrate connector to use Poetry and base Docker Image
 
 1. Remove the `Dockerfile` and `.dockerignore`
-2. Include the `baseImage` to the `metadata.yaml` file, example:
+2. Include the `baseImage` to the `metadata.yaml` file. For now, look for `baseImage` to find examples:
 ```yaml
 data:
   allowedHosts:
