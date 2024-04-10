@@ -374,7 +374,7 @@
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: yuanrui2014/source-github
   dockerImageTag: 0.2.46
-  documentationUrl: hhttps://docs.daspire.com/setup-guide/sources/github
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/github
   icon: github.svg
   sourceType: api
   releaseStage: generally_available
@@ -1396,6 +1396,7 @@
   dockerRepository: yuanrui2014/source-feishu
   dockerImageTag: 0.0.3
   documentationUrl: https://docsurl.com
+  icon: feishu.png
   sourceType: api
   releaseStage: alpha
   public: true
