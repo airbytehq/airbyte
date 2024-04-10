@@ -365,9 +365,11 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-                upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
-                results.append(upload_dependencies_step)
+            # Temporarily disabling it until we find the correct schema that the data team can ingest
+
+            # if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+            #     upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
+            #     results.append(upload_dependencies_step)
 
             built_connector_platform_variants = list(build_connector_results.output.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)

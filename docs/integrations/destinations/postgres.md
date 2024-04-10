@@ -236,6 +236,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.8   | 2024-04-10 | [\#36805](https://github.com/airbytehq/airbyte/pull/36805) | Adopt CDK 0.29.10 to improve long column name handling                                                   |
 | 2.0.7   | 2024-04-08 | [\#36768](https://github.com/airbytehq/airbyte/pull/36768) | Adopt CDK 0.29.7 to improve destination state handling                                                   |
 | 2.0.6   | 2024-04-05 | [\#36620](https://github.com/airbytehq/airbyte/pull/36620) | Adopt CDK 0.29.3 to use Kotlin CDK                                                                       |
 | 2.0.5   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.27.3; Bugfix for case-senstive table names in v1-v2 migration, `_airbyte_meta` in raw tables |
