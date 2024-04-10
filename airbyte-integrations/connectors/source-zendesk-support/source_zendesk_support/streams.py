@@ -657,7 +657,7 @@ class TicketAudits(IncrementalZendeskSupportStream):
         data = response.json().get(self.response_list_name)
         created_at = data[0].get(self.cursor_field)
         cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
-        return created_at > cursor_date
+        return created_at >= cursor_date
 
     def _read_pages(
         self,

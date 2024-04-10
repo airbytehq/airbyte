@@ -7,7 +7,7 @@ import calendar
 import copy
 import re
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qsl, urlparse
 
 import freezegun
@@ -1111,3 +1111,19 @@ def test_read_ticket_audits_504_error(requests_mock, caplog):
     )
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+@pytest.mark.parametrize(
+    "start_date, stream_state, audits_response, expected",
+    [
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "2020-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+    ]
+)
+def test_validate_response(start_date, stream_state, audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date=start_date)
+    response_mock = Mock()
+    response_mock.json.return_value = {"audits": audits_response}
+    assert stream._validate_response(response_mock, stream_state) == expected
