@@ -213,13 +213,15 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         return streams
 
     def _wrap_for_concurrency(self, config, stream, state_manager):
-        stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
-        if hasattr(stream, "set_cursor"):
-            stream.set_cursor(stream_slicer_cursor)
-        elif hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
-            stream.parent.set_cursor(stream_slicer_cursor)
+        stream_slicer_cursor = None
+        if stream.cursor_field:
+            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
+            if hasattr(stream, "set_cursor"):
+                stream.set_cursor(stream_slicer_cursor)
+            elif hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
+                stream.parent.set_cursor(stream_slicer_cursor)
 
-        if self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
+        if not stream_slicer_cursor or self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
             cursor = FinalStateCursor(
                 stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
             )
