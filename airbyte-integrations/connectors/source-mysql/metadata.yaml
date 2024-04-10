@@ -19,8 +19,12 @@ data:
   name: MySQL
   registries:
     cloud:
+      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
+      dockerImageTag: 3.3.13
       enabled: true
     oss:
+      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
+      dockerImageTag: 3.3.13
       enabled: true
   releaseStage: generally_available
   releases:
