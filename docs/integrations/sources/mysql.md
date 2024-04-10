@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.16  | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)   | Update to connector's metadat definition.                                                                                                       |
 | 3.3.15  | 2024-04-05 | [36577](https://github.com/airbytehq/airbyte/pull/36577)   | Config error will not send out system trace message                                                                                             |
 | 3.3.14  | 2024-04-04 | [36742](https://github.com/airbytehq/airbyte/pull/36742)   | To use new kotlin CDK                                                                                                                           |
 | 3.3.13  | 2024-02-29 | [35529](https://github.com/airbytehq/airbyte/pull/35529)   | Refactor state iterator messages.                                                                                                               |
