@@ -88,175 +88,175 @@ definitions:
     properties:
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       observed:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       public:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       country:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uuid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       weekday:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           date:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               numeric:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           observed:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               numeric:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
 
   countries_schema:
     $schema: http://json-schema.org/draft-07/schema#
     title: Countries Schema
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       code:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       codes:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           alpha-2:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           alpha-3:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           numeric:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       languages:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       currencies:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             alpha:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       flag:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subdivisions:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             code:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             languages:
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
               items:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
       weekend:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             numeric:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
 
   languages_schema:
     $schema: http://json-schema.org/draft-07/schema#
     title: Languages schema
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       code:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
 streams:
   - "#/definitions/holidays_stream"
@@ -269,3 +269,30 @@ check:
     - "holidays"
     - "countries"
     - "languages"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/holiday-api
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Holiday Api Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+    properties:
+      api_key:
+        title: API Key
+        type: string
+        description: API Key available at the dashboard, ref - https://holidayapi.com/dashboard
+        airbyte-secret: true
+      country:
+        title: Country
+        type: string
+        description: Country code to pass as parameter for different streams (ref - https://holidayapi.com/countries)
+        default: "US"
+      year:
+        title: Year
+        type: string
+        description: Year to pass as parameter for different streams, which is 4 digit year in ISO 8601 format (ref - https://en.wikipedia.org/wiki/ISO_8601#Years).
+        default: "2023"

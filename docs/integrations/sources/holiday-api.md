@@ -63,4 +63,4 @@ Holiday API [API reference](https://holidayapi.com/v1) has v1 at present. The co
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-09-14 | [Init](https://github.com/airbytehq/airbyte/pull/*****)| Initial commit |
+| 0.1.0   | 2024-04-30 | [36917](https://github.com/airbytehq/airbyte/pull/36917)| Initial commit |
