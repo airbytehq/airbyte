@@ -183,15 +183,15 @@ definitions:
     url_base: https://api.outreach.io/api/v2
     http_method: GET
     request_parameters:
-      count: 'false'
+      count: "false"
       sort: updatedAt
-      page[size]: '1000'
+      page[size]: "1000"
     request_headers: {}
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config[''client_id''] }}'
-      client_secret: '{{ config[''client_secret''] }}'
-      refresh_token: '{{ config[''refresh_token''] }}'
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: "{{ config['refresh_token'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://api.outreach.io/oauth/token
       grant_type: refresh_token
@@ -232,13 +232,13 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_outreach.components.CustomIncrementalSync
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       cursor_field: updatedAt
       is_data_feed: true
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   accounts_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -249,769 +249,769 @@ definitions:
         type: integer
       assignedTeams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       assignedUsers:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       batches:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       buyerIntentScore:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       companyType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       custom1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom10:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom100:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom101:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom102:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom103:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom104:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom105:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom106:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom107:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom108:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom109:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom11:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom110:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom111:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom112:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom113:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom114:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom115:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom116:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom117:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom118:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom119:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom12:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom120:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom121:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom122:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom123:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom124:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom125:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom126:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom127:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom128:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom129:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom13:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom130:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom131:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom132:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom133:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom134:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom135:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom136:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom137:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom138:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom139:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom14:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom140:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom141:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom142:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom143:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom144:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom145:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom146:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom147:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom148:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom149:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom15:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom150:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom16:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom17:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom18:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom19:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom20:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom21:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom22:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom23:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom24:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom25:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom26:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom27:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom28:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom29:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom30:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom31:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom32:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom33:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom34:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom35:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom36:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom37:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom38:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom39:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom4:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom40:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom41:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom42:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom43:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom44:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom45:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom46:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom47:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom48:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom49:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom5:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom50:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom51:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom52:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom53:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom54:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom55:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom56:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom57:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom58:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom59:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom6:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom60:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom61:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom62:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom63:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom64:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom65:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom66:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom67:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom68:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom69:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom7:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom70:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom71:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom72:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom73:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom74:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom75:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom76:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom77:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom78:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom79:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom8:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom80:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom81:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom82:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom83:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom84:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom85:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom86:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom87:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom88:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom89:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom9:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom90:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom91:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom92:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom93:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom94:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom95:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom96:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom97:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom98:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom99:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       customId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       defaultPluginMapping:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       domain:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       externalSource:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       favorites:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       followers:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       foundedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       industry:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       linkedInEmployees:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       linkedInUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       locality:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       named:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       naturalName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       numberOfEmployees:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sharingTeamId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       touchedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       trashedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       websiteUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospects:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   call_dispositions_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1022,46 +1022,46 @@ definitions:
         type: integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       defaultForOutboundVoicemail:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       outcome:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       order:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   call_purposes_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1072,38 +1072,38 @@ definitions:
         type: integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       order:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   calls_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1114,199 +1114,199 @@ definitions:
         type: integer
       batches:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       externalVendor:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       direction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       from:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       outboundVoicemail:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       outcome:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       phone:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       recordingUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sequenceAction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       state:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       shouldRecordCall:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       to:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       userCallType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       vendorCallId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       voicemailRecordingUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       answeredAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       completedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       dialedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       returnedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       stateChangedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       callDisposition:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       callPurpose:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunity:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       phoneNumber:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospect:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       recordingDeletionReason:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceState:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStep:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       task:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       user:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   mailboxes_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1317,257 +1317,257 @@ definitions:
         type: integer
       authId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       editable:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailHash:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailProvider:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailSignature:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ewsCustomSearchFolder:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ewsDelegateSync:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ewsEndpoint:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ewsImpersonation:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ewsSslVerifyMode:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       exchangeVersion:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       imapHost:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       imapPort:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       imapSsl:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       maxEmailsPerDay:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       maxMailingsPerDay:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       maxMailingsPerWeek:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optOutMessage:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       optOutSignature:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       prospectEmailExclusions:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       providerId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       providerType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sendDisabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       sendErroredAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       sendMaxRetries:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sendMethod:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sendPeriod:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sendPermanentErrorAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       sendRequiresSync:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       sendSuccessAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       sendThreshold:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sendgridWebhookUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smtpHost:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smtpPort:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       smtpSsl:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       smtpUsername:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       syncActiveFrequency:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       syncDisabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       syncErroredAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       syncFinishedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       syncMethod:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       syncOutreachFolder:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       syncPassiveFrequency:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       syncPermanentErrorAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       syncSuccessAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       userId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       username:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailAliases:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       user:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   mailings_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1578,317 +1578,317 @@ definitions:
         type: integer
       attachments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       attributableSequenceId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       attributableSequenceName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bodyHtml:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bodyText:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bouncedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       calendar:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       clickedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       deliveredAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       desiredAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       errorBacktrace:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       errorReason:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       followUpTaskScheduledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       followUpTaskType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mailboxAddress:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mailingType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       markedAsSpamAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       meetingDescription:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       meetingDuration:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       meetingLocation:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       meetingTitle:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       messageId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       notifyThreadCondition:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       notifyThreadScheduledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       notifyThreadStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       openedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       optimizedScheduledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       overrideSafetySettings:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       references:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       repliedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       replySentiment:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       retryAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       retryCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       retryInterval:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       schedule:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       scheduleId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scheduledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       state:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stateChangedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       subject:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       trackLinks:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       trackOpens:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       unsubscribedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       followUpSequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       followUpSequenceId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       followUpSequenceName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       followUpSequenceStartingDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       mailbox:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunity:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospect:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       recipients:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceState:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStep:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       task:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       template:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       user:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   opportunities_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -1899,789 +1899,789 @@ definitions:
         type: integer
       assignedTeams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       assignedUsers:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       amount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       closeDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       currencyType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom10:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom100:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom101:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom102:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom103:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom104:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom105:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom106:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom107:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom108:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom109:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom11:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom110:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom111:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom112:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom113:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom114:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom115:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom116:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom117:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom118:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom119:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom12:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom120:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom121:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom122:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom123:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom124:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom125:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom126:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom127:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom128:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom129:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom13:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom130:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom131:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom132:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom133:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom134:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom135:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom136:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom137:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom138:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom139:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom14:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom140:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom141:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom142:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom143:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom144:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom145:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom146:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom147:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom148:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom149:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom15:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom150:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom16:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom17:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom18:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom19:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom20:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom21:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom22:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom23:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom24:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom25:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom26:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom27:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom28:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom29:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom30:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom31:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom32:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom33:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom34:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom35:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom36:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom37:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom38:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom39:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom4:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom40:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom41:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom42:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom43:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom44:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom45:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom46:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom47:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom48:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom49:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom5:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom50:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom51:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom52:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom53:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom54:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom55:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom56:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom57:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom58:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom59:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom6:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom60:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom61:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom62:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom63:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom64:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom65:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom66:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom67:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom68:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom69:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom7:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom70:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom71:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom72:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom73:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom74:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom75:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom76:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom77:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom78:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom79:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom8:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom80:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom81:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom82:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom83:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom84:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom85:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom86:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom87:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom88:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom89:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom9:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom90:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom91:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom92:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom93:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom94:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom95:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom96:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom97:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom98:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom99:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       defaultPluginMapping:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       externalCreator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       externalCreatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       favorites:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       healthCategory:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       healthScore:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       mapLink:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mapNextSteps:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mapNumberOfOverdueTasks:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       mapStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       nextStep:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       opportunityHealthFactors:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       opportunityType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       primaryProspect:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       probability:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       prospectingRepId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sharingTeamId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       touchedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       account:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunityStage:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospects:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       stage:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   personas_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -2692,30 +2692,30 @@ definitions:
         type: integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       prospects:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   prospects_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -2726,761 +2726,761 @@ definitions:
         type: integer
       accountName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       assignedTeams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       assignedUsers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       addedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       addressCity:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       addressCountry:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       addressState:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       addressStreet:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       addressStreet2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       addressZip:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       angelListUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       availableAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       batches:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       callOptedOut:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       callsOptStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       callsOptedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       campaignName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       company:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyFollowers:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       companyFoundedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyIndustry:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyLinkedIn:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyLinkedInEmployees:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyLocality:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyNatural:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companySize:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       companyStartDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       companyType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contactHistogram:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: array
           items:
             type: integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       custom1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom10:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom100:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom101:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom102:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom103:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom104:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom105:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom106:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom107:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom108:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom109:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom11:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom110:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom111:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom112:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom113:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom114:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom115:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom116:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom117:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom118:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom119:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom12:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom120:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom121:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom122:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom123:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom124:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom125:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom126:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom127:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom128:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom129:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom13:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom130:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom131:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom132:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom133:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom134:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom135:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom136:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom137:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom138:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom139:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom14:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom140:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom141:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom142:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom143:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom144:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom145:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom146:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom147:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom148:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom149:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom15:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom150:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom16:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom17:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom18:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom19:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom20:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom21:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom22:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom23:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom24:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom25:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom26:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom27:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom28:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom29:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom30:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom31:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom32:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom33:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom34:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom35:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom36:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom37:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom38:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom39:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom4:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom40:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom41:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom42:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom43:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom44:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom45:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom46:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom47:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom48:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom49:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom5:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom50:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom51:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom52:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom53:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom54:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom55:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom56:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom57:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom58:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom59:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom6:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom60:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom61:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom62:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom63:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom64:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom65:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom66:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom67:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom68:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom69:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom7:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom70:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom71:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom72:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom73:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom74:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom75:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom76:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom77:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom78:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom79:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom8:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom80:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom81:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom82:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom83:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom84:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom85:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom86:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom87:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom88:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom89:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom9:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom90:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom91:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom92:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom93:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom94:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom95:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom96:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom97:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom98:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom99:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       dateOfBirth:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       defaultPluginMapping:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       degree:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailOptedOut:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       emails:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       emailContacts:
@@ -3489,478 +3489,478 @@ definitions:
           properties:
             bounced_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             created_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             domain_hash:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             email:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             email_hash:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             email_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             id:
               type:
-              - 'null'
-              - integer
+                - "null"
+                - integer
             order:
               type:
-              - 'null'
-              - integer
+                - "null"
+                - integer
             prospect_id:
               type:
-              - 'null'
-              - integer
+                - "null"
+                - integer
             status:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             status_changed_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             unsubscribed_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             updated_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       emailsOptStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       emailsOptedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       engagedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       engagedScore:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       eventName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       externalId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       externalOwner:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       externalSource:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       facebookUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       firstName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       gender:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       githubUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       githubUsername:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       googlePlusUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       graduationDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       homePhones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       jobStartDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       lastName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       linkedInConnections:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       linkedInId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       linkedInSlug:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       linkedInUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       middleName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       mobilePhones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       nickname:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       occupation:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optedOut:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       optedOutAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       otherPhones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       personaName:
-        type: 'null'
+        type: "null"
       personalNote1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       personalNote2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       preferredContact:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       quoraUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       region:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       replyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       school:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       score:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       sharingTeamId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smsOptStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smsOptedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       smsOptedOut:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       source:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       specialties:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stackOverflowId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stackOverflowUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stageName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       timeZone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       timeZoneIana:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       timeZoneInferred:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       touchedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       trashedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       trashedByAccount:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       twitterUrl:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       twitterUsername:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updaterId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updaterType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       voipPhones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       websiteUrl1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       websiteUrl2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       websiteUrl3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       workPhones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       account:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       activeSequenceStates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       emailAddresses:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       favorites:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunities:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunityProspectRoles:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       persona:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       phoneNumbers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       stage:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   sequence_states_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -3971,186 +3971,186 @@ definitions:
         type: integer
       activeAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       bounceCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       callCompletedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       deliverCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       errorReason:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       failureCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       negativeReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       neutralReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optOutCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       pauseReason:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       positiveReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       repliedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       replyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scheduleCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       state:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stateChangedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       account:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       activeStepMailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       activeStepTasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailbox:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunity:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospect:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStep:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   sequence_steps_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4161,137 +4161,137 @@ definitions:
         type: integer
       bounceCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       deliverCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       displayName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       failureCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       interval:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       negativeReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       neutralReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optOutCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       order:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       positiveReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       replyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scheduleCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       stepType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       taskAutoDisplay:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       callPurpose:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - string
-          - integer
+            - string
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       sequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       sequenceTemplates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       taskPriority:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: integer
 
@@ -4304,262 +4304,262 @@ definitions:
         type: integer
       automationPercentage:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       bounceCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       deliverCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       durationInDays:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       enabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       enabledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       failureCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       finishOnReply:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       lastUsedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       locked:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       lockedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       maxActivations:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       negativeReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       neutralReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       numContactedProspects:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       numRepliedProspects:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optOutCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       positiveReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       primaryReplyAction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       primaryReplyPauseDuration:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       replyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       schedule:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       scheduleCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scheduleIntervalType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       secondaryReplyAction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       secondaryReplyPauseDuration:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sequenceStepCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sequenceType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       shareType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       throttleCapacity:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       throttleMaxAddsPerDay:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       throttlePaused:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       throttlePausedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       transactional:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       contentCategoryMemberships:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       ruleset:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceSteps:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       tasks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   snippets_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4570,66 +4570,66 @@ definitions:
         type: integer
       bodyHtml:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bodyText:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       shareType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       contentCategoryMemberships:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   stages_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4640,50 +4640,50 @@ definitions:
         type: integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       order:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       color:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospects:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   tasks_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4694,279 +4694,279 @@ definitions:
         type: integer
       action:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       autoskipAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       compiledSequenceTemplateHtml:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       completed:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       completedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       defaultPluginMapping:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       dueAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       opportunityAssociation:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       scheduledAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       state:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       stateChangedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       taskType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       account:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       call:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       calls:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       completer:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailing:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       opportunity:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospect:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       prospectAccount:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       prospectContacts:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       prospectOwner:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       prospectPhoneNumbers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       prospectStage:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       sequence:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceSequenceSteps:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceState:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceStateSequenceStep:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       sequenceStateSequenceStepOverrides:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       sequenceStateStartingTemplate:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       sequenceStepOverrideTemplates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       sequenceStep:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceTemplate:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceTemplateTemplate:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       subject:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       taskPriority:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       taskTheme:
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       template:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   templates_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -4977,164 +4977,164 @@ definitions:
         type: integer
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       archivedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       bccRecipients:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bodyHtml:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bodyText:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bounceCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       ccRecipients:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       clickCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       deliverCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       failureCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       lastUsedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       negativeReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       neutralReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       openCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       optOutCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       positiveReplyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       replyCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scheduleCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       shareType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subject:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       toRecipients:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       trackLinks:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       trackOpens:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       contentCategoryMemberships:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       owner:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       recipients:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       sequenceTemplates:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
   users_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -5145,539 +5145,539 @@ definitions:
         type: integer
       accountsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       activityNotificationsDisabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       activeProspectsCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       batches:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       batchesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       bounceWarningEmailEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       bridgePhone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       bridgePhoneExtension:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       buyerLanguagePreference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       calendar:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       calendarEventsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       callsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       contentCategoryOwnerships:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       controlledTabDefault:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       createdAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       currentSignInAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       custom1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom4:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom5:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       dailyDigestEmailEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       defaultScheduleId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       defaultRulesetId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       duties:
         items:
           properties:
             duty_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             id:
               type:
-              - 'null'
-              - integer
+                - "null"
+                - integer
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
           type: object
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       dutiesSetAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       enableVoiceRecordings:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       engagementEmailsEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       favorites:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       firstName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       globalId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       importsViewId:
-        type: 'null'
+        type: "null"
       inboundBridgePhone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundBridgePhoneExtension:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundCallBehavior:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundPhoneType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundVoicemailCustomMessageText:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundVoicemailMessageTextVoice:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       inboundVoicemailPromptType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       jobRole:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       kaiaRecordingsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       keepBridgePhoneConnected:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       languagePreference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lastName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       linkToSequenceStateInTaskFlow:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       liveListenViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       lastSignInAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       locked:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       mailboxErrorEmailEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       mailingsDeliveredCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       mailingsRepliedCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       mailingsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       meetingEngagementNotificationEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       meetingTypesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       notificationsEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceClickToDialEverywhere:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceGmailToolbar:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceGmailTrackingState:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       oceSalesforceEmailDecorating:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceSalesforcePhoneDecorating:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceUniversalTaskFlow:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       oceWindowMode:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       onboardedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       opportunitiesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       orcaStandaloneEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       outboundVoicemails:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       passwordExpiresAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       phone:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       phoneCountryCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       phoneNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       phoneType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       phones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       phonesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       prospectDetailDefault:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       pluginAlertNotificationEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       preferredVoiceRegion:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       prefersLocalPresence:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       primaryTimezone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       prospectsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       reportsSequencePerformanceViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       reportsTeamPerfViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       reportsTeamPerformanceIntradayViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       reportsTeamPerformanceViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       reportsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       scimExternalId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       scimSource:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       secondaryTimezone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sendInviteFallback:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       senderNotificationsExcluded:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       sequenceStatesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       sequencesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       smsPhone:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       snippetsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       tasksDueCount:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       tasksViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       teamsViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       templatesViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       tertiaryTimezone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       textingEmailNotifications:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       unknownReplyEmailEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       updatedAt:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       userGuid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       username:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       usersViewId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       voicemailPrompts:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       voicemailNotificationEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       weeklyDigestEmailEnabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       contentCategories:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       creator:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailbox:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       mailboxes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       profile:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       recipients:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       role:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       teams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
       useSalesNavigatorForLinkedInTasks:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       updater:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - integer
+            - "null"
+            - integer
 
 check:
   type: CheckStream
@@ -5692,11 +5692,11 @@ spec:
     title: Source Outreach Spec
     type: object
     required:
-    - client_id
-    - client_secret
-    - refresh_token
-    - redirect_uri
-    - start_date
+      - client_id
+      - client_secret
+      - refresh_token
+      - redirect_uri
+      - start_date
     additionalProperties: true
     properties:
       client_id:
@@ -5716,15 +5716,17 @@ spec:
       redirect_uri:
         type: string
         title: Redirect URI
-        description: A Redirect URI is the location where the authorization server sends
+        description:
+          A Redirect URI is the location where the authorization server sends
           the user once the app has been successfully authorized and granted an authorization
           code or access token.
       start_date:
         type: string
         title: Start Date
-        description: The date from which you'd like to replicate data for Outreach API,
+        description:
+          The date from which you'd like to replicate data for Outreach API,
           in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
           be replicated.
         examples:
-        - '2020-11-16T00:00:00Z'
+          - "2020-11-16T00:00:00Z"
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
