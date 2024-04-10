@@ -7,7 +7,7 @@ import logging
 import re
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Callable
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
