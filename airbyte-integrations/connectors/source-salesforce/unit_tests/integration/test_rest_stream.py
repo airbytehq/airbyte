@@ -15,6 +15,8 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from config_builder import ConfigBuilder
+from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
+from integration.utils import given_stream
 from source_salesforce import SourceSalesforce
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
 from source_salesforce.streams import LOOKBACK_SECONDS
@@ -26,6 +28,7 @@ _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
 _CURSOR_FIELD = "SystemModstamp"
 _INSTANCE_URL = "https://instance.salesforce.com"
+_BASE_URL = f"{_INSTANCE_URL}/services/data/{_API_VERSION}"
 _LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
@@ -63,17 +66,6 @@ def _given_authentication(http_mocker: HttpMocker, client_id: str, client_secret
     )
 
 
-def _given_stream(http_mocker: HttpMocker, stream_name: str, fields: List[Dict[str, Any]]) -> None:
-    http_mocker.get(
-        HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/sobjects"),
-        HttpResponse(json.dumps({"sobjects": [{"name": stream_name, "queryable": True}]})),
-    )
-    http_mocker.get(
-        HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/sobjects/AcceptedEventRelation/describe"),
-        HttpResponse(json.dumps({"fields": fields})),
-    )
-
-
 def _create_field(name: str, _type: Optional[str] = None) -> Dict[str, Any]:
     return {"name": name, "type": _type if _type else "string"}
 
@@ -101,7 +93,7 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_error_on_fetch_chunk_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
         _given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN)
-        _given_stream(http_mocker, _STREAM_NAME, [_create_field(_A_FIELD_NAME)])
+        given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         http_mocker.get(
             HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME}+FROM+{_STREAM_NAME}+"),
             [
@@ -124,7 +116,7 @@ class IncrementalTest(TestCase):
         self._http_mocker.__enter__()
 
         _given_authentication(self._http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN)
-        _given_stream(self._http_mocker, _STREAM_NAME, [_create_field(_A_FIELD_NAME), _create_field(_CURSOR_FIELD, "datetime")])
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime"))
 
     def tearDown(self) -> None:
         self._http_mocker.__exit__(None, None, None)
