@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.e2e_test.logging;
 
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -53,6 +53,8 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
       LOGGER.info("Emitting state: {}", message);
       outputRecordCollector.accept(message);
       return;
+    } else if (message.getType() != Type.TRACE) {
+      LOGGER.info("Received a trace: {}", message);
     } else if (message.getType() != Type.RECORD) {
       return;
     }

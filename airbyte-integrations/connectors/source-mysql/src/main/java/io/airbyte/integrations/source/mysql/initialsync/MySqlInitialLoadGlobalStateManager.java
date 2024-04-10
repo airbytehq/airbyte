@@ -5,34 +5,31 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadStateManager {
+public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateManager {
 
-  private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPrimaryKeyLoadStatus;
-  // Map of pair to the primary key info (field name & data type) associated with it.
-  private final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo;
   private final CdcState cdcState;
 
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
@@ -40,12 +37,12 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   // have completed the snapshot.
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
-  MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
-                                     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
-                                     final CdcState cdcState,
-                                     final ConfiguredAirbyteCatalog catalog) {
+  public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
+                                            final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
+                                            final CdcState cdcState,
+                                            final ConfiguredAirbyteCatalog catalog) {
     this.cdcState = cdcState;
-    this.pairToPrimaryKeyLoadStatus = initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
+    this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
   }
@@ -63,24 +60,18 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     return streamsThatHaveCompletedSnapshot;
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(
-                                                                                                             final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
-    final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> map = new HashMap<>();
-    pairToPkStatus.forEach((pair, pkStatus) -> {
-      final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
-      map.put(updatedPair, pkStatus);
-    });
-    return map;
-  }
-
-  public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
+  @Override
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream airbyteStream) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
 
     });
-    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkLoadStatus))));
+    AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    var pkStatus = getPrimaryKeyLoadStatus(pair);
+    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
@@ -95,7 +86,10 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
   }
 
-  public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
+  @Override
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
+    AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {

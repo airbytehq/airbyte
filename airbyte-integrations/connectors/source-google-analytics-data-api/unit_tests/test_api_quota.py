@@ -9,10 +9,10 @@ from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
 TEST_QUOTA_INSTANCE: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 
-@pytest.fixture(name='expected_quota_list')
+@pytest.fixture(name="expected_quota_list")
 def expected_quota_list():
-    """ The Quota were currently handle """
-    return ['concurrentRequests', 'tokensPerProjectPerHour', 'potentiallyThresholdedRequestsPerHour']
+    """The Quota were currently handle"""
+    return ["concurrentRequests", "tokensPerProjectPerHour", "potentiallyThresholdedRequestsPerHour"]
 
 
 def test_check_initial_quota_is_empty():
@@ -28,106 +28,90 @@ def test_check_initial_quota_is_empty():
         # Full Quota
         (
             {
-                'propertyQuota': {
-                    'concurrentRequests': {
-                        'consumed': 0,
-                        'remaining': 10
-                    },
-                    'tokensPerProjectPerHour': {
-                        'consumed': 1,
-                        'remaining': 1735
-                    },
-                    'potentiallyThresholdedRequestsPerHour': {
-                        'consumed': 1,
-                        'remaining': 26
-                    }
+                "propertyQuota": {
+                    "concurrentRequests": {"consumed": 0, "remaining": 10},
+                    "tokensPerProjectPerHour": {"consumed": 1, "remaining": 1735},
+                    "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            False, True, None, True, False,
+            False,
+            True,
+            None,
+            True,
+            False,
         ),
         # Partial Quota
         (
             {
-                'propertyQuota': {
-                    'concurrentRequests': {
-                        'consumed': 0,
-                        'remaining': 10
-                    },
-                    'tokensPerProjectPerHour': {
-                        'consumed': 5,
-                        'remaining': 955
-                    },
-                    'potentiallyThresholdedRequestsPerHour': {
-                        'consumed': 3,
-                        'remaining': 26
-                    }
+                "propertyQuota": {
+                    "concurrentRequests": {"consumed": 0, "remaining": 10},
+                    "tokensPerProjectPerHour": {"consumed": 5, "remaining": 955},
+                    "potentiallyThresholdedRequestsPerHour": {"consumed": 3, "remaining": 26},
                 }
             },
-            True, True, None, True, False,
+            True,
+            True,
+            None,
+            True,
+            False,
         ),
         # Running out `tokensPerProjectPerHour`
         (
             {
-                'propertyQuota': {
-                    'concurrentRequests': {
-                        'consumed': 2,
-                        'remaining': 8
-                    },
-                    'tokensPerProjectPerHour': {
-                        'consumed': 5,
+                "propertyQuota": {
+                    "concurrentRequests": {"consumed": 2, "remaining": 8},
+                    "tokensPerProjectPerHour": {
+                        "consumed": 5,
                         # ~9% from original quota is left
-                        'remaining': 172
+                        "remaining": 172,
                     },
-                    'potentiallyThresholdedRequestsPerHour': {
-                        'consumed': 3,
-                        'remaining': 26
-                    }
+                    "potentiallyThresholdedRequestsPerHour": {"consumed": 3, "remaining": 26},
                 }
             },
-            True, True, 1800, False, False,
+            True,
+            True,
+            1800,
+            False,
+            False,
         ),
         # Running out `concurrentRequests`
         (
             {
-                'propertyQuota': {
-                    'concurrentRequests': {
-                        'consumed': 9,
+                "propertyQuota": {
+                    "concurrentRequests": {
+                        "consumed": 9,
                         # 10% from original quota is left
-                        'remaining': 1
+                        "remaining": 1,
                     },
-                    'tokensPerProjectPerHour': {
-                        'consumed': 5,
-                        'remaining': 935
-                    },
-                    'potentiallyThresholdedRequestsPerHour': {
-                        'consumed': 1,
-                        'remaining': 26
-                    }
+                    "tokensPerProjectPerHour": {"consumed": 5, "remaining": 935},
+                    "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            True, True, 30, False, False,
+            True,
+            True,
+            30,
+            False,
+            False,
         ),
         # Running out `potentiallyThresholdedRequestsPerHour`
         (
             {
-                'propertyQuota': {
-                    'concurrentRequests': {
-                        'consumed':1,
-                        'remaining': 9
-                    },
-                    'tokensPerProjectPerHour': {
-                        'consumed': 5,
-                        'remaining': 935
-                    },
-                    'potentiallyThresholdedRequestsPerHour': {
+                "propertyQuota": {
+                    "concurrentRequests": {"consumed": 1, "remaining": 9},
+                    "tokensPerProjectPerHour": {"consumed": 5, "remaining": 935},
+                    "potentiallyThresholdedRequestsPerHour": {
                         # 7% from original quota is left
-                        'consumed': 26,
-                        'remaining': 2
-                    }
+                        "consumed": 26,
+                        "remaining": 2,
+                    },
                 }
             },
-            True, True, 1800, False, False,
-        )
+            True,
+            True,
+            1800,
+            False,
+            False,
+        ),
     ],
     ids=[
         "Full",
@@ -135,7 +119,7 @@ def test_check_initial_quota_is_empty():
         "Running out tokensPerProjectPerHour",
         "Running out concurrentRequests",
         "Running out potentiallyThresholdedRequestsPerHour",
-    ]
+    ],
 )
 def test_check_full_quota(
     requests_mock,
@@ -166,7 +150,7 @@ def test_check_full_quota(
 
     # Check the CURRENT QUOTA is different from Initial
     if partial_quota:
-        current_quota = TEST_QUOTA_INSTANCE._get_known_quota_from_response(response.json().get('propertyQuota'))
+        current_quota = TEST_QUOTA_INSTANCE._get_known_quota_from_response(response.json().get("propertyQuota"))
         assert not current_quota == TEST_QUOTA_INSTANCE.initial_quota
 
     # Check the scenario is applied based on Quota Values

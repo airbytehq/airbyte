@@ -8,7 +8,21 @@ import subprocess
 import sys
 
 import pytest
+from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+def test_given_exception_is_traced_exception_when_assemble_uncaught_exception_then_return_same_exception():
+    exception = AirbyteTracedException()
+    assembled_exception = assemble_uncaught_exception(type(exception), exception)
+    assert exception == assembled_exception
+
+
+def test_given_exception_not_traced_exception_when_assemble_uncaught_exception_then_return_traced_exception():
+    exception = ValueError("any error")
+    assembled_exception = assemble_uncaught_exception(type(exception), exception)
+    assert isinstance(assembled_exception, AirbyteTracedException)
 
 
 def test_uncaught_exception_handler():

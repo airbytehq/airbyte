@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -16,9 +16,9 @@ import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashSet;

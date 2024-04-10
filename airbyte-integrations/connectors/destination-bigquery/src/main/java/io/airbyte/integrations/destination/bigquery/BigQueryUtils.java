@@ -19,6 +19,7 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
@@ -35,10 +36,11 @@ import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -93,7 +95,9 @@ public class BigQueryUtils {
 
   static Job waitForQuery(final Job queryJob) {
     try {
-      return queryJob.waitFor();
+      final Job job = queryJob.waitFor();
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
+      return job;
     } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
@@ -103,14 +107,12 @@ public class BigQueryUtils {
   public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
                                                   final Set<String> existingSchemas,
                                                   final String schemaName,
-                                                  final TableId tmpTableId,
                                                   final String datasetLocation,
                                                   final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tmpTableId, schema);
   }
 
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
@@ -158,13 +160,15 @@ public class BigQueryUtils {
         CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
+    // Use ids for BigQuery client to attempt idempotent retries.
+    // See https://github.com/airbytehq/airbyte/issues/33982
     try {
       final InsertAllResponse response =
           bigquery.insertAll(InsertAllRequest
               .newBuilder(test_connection_table_name)
-              .addRow(Map.of("id", 1, "name", "James"))
-              .addRow(Map.of("id", 2, "name", "Eugene"))
-              .addRow(Map.of("id", 3, "name", "Angelina"))
+              .addRow(RowToInsert.of("1", ImmutableMap.of("id", 1, "name", "James")))
+              .addRow(RowToInsert.of("2", ImmutableMap.of("id", 2, "name", "Eugene")))
+              .addRow(RowToInsert.of("3", ImmutableMap.of("id", 3, "name", "Angelina")))
               .build());
 
       if (response.hasErrors()) {
@@ -174,6 +178,7 @@ public class BigQueryUtils {
         }
       }
     } catch (final BigQueryException e) {
+      LOGGER.error("Dummy inserts in check failed", e);
       throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
     } finally {
       test_connection_table_name.delete();
@@ -246,12 +251,16 @@ public class BigQueryUtils {
             + "}"))
         .build());
 
-    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    // Do not log the gcsJsonNode to avoid accidentally emitting credentials (even at DEBUG/TRACE level)
     return gcsJsonNode;
   }
 
   public static GcsDestinationConfig getGcsAvroDestinationConfig(final JsonNode config) {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
+  }
+
+  public static GcsDestinationConfig getGcsCsvDestinationConfig(final JsonNode config) {
+    return GcsDestinationConfig.getGcsDestinationConfig(getGcsJsonNodeConfig(config));
   }
 
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
@@ -299,6 +308,14 @@ public class BigQueryUtils {
     } else {
       return "US";
     }
+  }
+
+  public static boolean getDisableTypeDedupFlag(final JsonNode config) {
+    if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
+      return config.get(BigQueryConsts.DISABLE_TYPE_DEDUPE).asBoolean(false);
+    }
+
+    return false;
   }
 
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
@@ -379,18 +396,6 @@ public class BigQueryUtils {
     }
   }
 
-  public static boolean isUsingJsonCredentials(final JsonNode config) {
-    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
-      return false;
-    }
-    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (json.isTextual()) {
-      return !json.asText().isEmpty();
-    } else {
-      return !Jsons.serialize(json).isEmpty();
-    }
-  }
-
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
   public static Integer getBigQueryClientChunkSize(final JsonNode config) {
     Integer chunkSizeFromConfig = null;
@@ -431,6 +436,7 @@ public class BigQueryUtils {
 
   public static void waitForJobFinish(final Job job) throws InterruptedException {
     if (job != null) {
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
       try {
         LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
         job.waitFor();

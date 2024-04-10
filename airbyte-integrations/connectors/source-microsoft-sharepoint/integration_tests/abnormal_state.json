@@ -1,0 +1,88 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_csv"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/TestFile.csv": "2130-11-17T13:52:35.000000Z",
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_folder_2/TestFileSharePoint.csv": "2130-12-15T17:34:08.000000Z",
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv": "2130-01-16T12:45:20.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-01-16T12:45:20.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_unstructured"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf": "2130-12-15T16:47:21.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-12-15T16:47:21.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_csv_gzip"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv.gz": "2130-01-18T11:24:38.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-01-18T11:24:38.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv.gz"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_parquet"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/test_parquet/simple_test.parquet": "2130-01-17T11:47:39.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-01-17T11:47:39.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/test_parquet/simple_test.parquet"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_avro"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/test_avro/test_sample.avro": "2130-01-17T11:46:55.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-01-17T11:46:55.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/test_avro/test_sample.avro"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_jsonl"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.jsonl": "2130-01-17T11:46:55.000000Z"
+        },
+        "_ab_source_file_last_modified": "2130-01-17T11:46:55.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.jsonl"
+      }
+    }
+  }
+]

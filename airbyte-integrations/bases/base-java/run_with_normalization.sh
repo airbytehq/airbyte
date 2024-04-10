@@ -36,9 +36,13 @@ then
 elif test "$NORMALIZATION_TECHNIQUE" = 'LEGACY' && test "$USE_1S1T_FORMAT" != "true"
 then
   echo '{"type": "LOG","log":{"level":"INFO","message":"Starting in-connector normalization"}}'
+  # Normalization tries to create this file from the connector config and crashes if it already exists
+  # so just nuke it and let normalization recreate it.
+  # Use -f to avoid error if it doesn't exist, since it's only created for certain SSL modes.
+  rm -f ca.crt
   # the args in a write command are `write --catalog foo.json --config bar.json`
   # so if we remove the `write`, we can just pass the rest directly into normalization
-  /airbyte/entrypoint.sh run ${@:2} --integration-type $AIRBYTE_NORMALIZATION_INTEGRATION | java -cp "/airbyte/lib/*" io.airbyte.integrations.destination.normalization.NormalizationLogParser
+  /airbyte/entrypoint.sh run ${@:2} --integration-type $AIRBYTE_NORMALIZATION_INTEGRATION | java -cp "/airbyte/lib/*" io.airbyte.cdk.integrations.destination.normalization.NormalizationLogParser
   normalization_exit_code=$?
   echo '{"type": "LOG","log":{"level":"INFO","message":"In-connector normalization done (exit code '"$normalization_exit_code"')"}}'
 else

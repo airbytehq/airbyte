@@ -19,14 +19,26 @@
     "email": {
       "type": ["null", "string"]
     },
+    "emailHash": {
+      "type": ["null", "string"]
+    },
     "emailProvider": {
       "type": ["null", "string"]
     },
     "emailSignature": {
       "type": ["null", "string"]
     },
+    "ewsCustomSearchFolder": {
+      "type": ["null", "boolean"]
+    },
+    "ewsDelegateSync": {
+      "type": ["null", "boolean"]
+    },
     "ewsEndpoint": {
       "type": ["null", "string"]
+    },
+    "ewsImpersonation": {
+      "type": ["null", "boolean"]
     },
     "ewsSslVerifyMode": {
       "type": ["null", "integer"]

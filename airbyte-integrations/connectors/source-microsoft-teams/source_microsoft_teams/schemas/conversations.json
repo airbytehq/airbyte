@@ -6,31 +6,25 @@
     "id": {
       "type": ["null", "string"]
     },
-    "group_id": {
+    "groupId": {
       "type": ["null", "string"]
     },
     "topic": {
       "type": ["null", "string"]
     },
-    "has_attachments": {
+    "hasAttachments": {
       "type": ["null", "boolean"]
     },
-    "last_delivered_date_time": {
+    "lastDeliveredDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "unique_senders": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "uniqueSenders": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "preview": {
       "type": ["null", "string"]

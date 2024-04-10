@@ -6,6 +6,18 @@
     "id": {
       "type": "integer"
     },
+    "accountName": {
+      "type": ["null", "string"]
+    },
+    "assignedTeams": {
+      "type": ["null", "array"]
+    },
+    "assignedUsers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
     "addedAt": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -35,6 +47,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "batches": {
+      "type": ["null", "array"]
+    },
     "callOptedOut": {
       "type": ["null", "boolean"]
     },
@@ -52,6 +67,36 @@
       "type": ["null", "integer"]
     },
     "company": {
+      "type": ["null", "string"]
+    },
+    "companyFollowers": {
+      "type": ["null", "integer"]
+    },
+    "companyFoundedAt": {
+      "type": ["null", "string"]
+    },
+    "companyIndustry": {
+      "type": ["null", "string"]
+    },
+    "companyLinkedIn": {
+      "type": ["null", "string"]
+    },
+    "companyLinkedInEmployees": {
+      "type": ["null", "string"]
+    },
+    "companyLocality": {
+      "type": ["null", "string"]
+    },
+    "companyNatural": {
+      "type": ["null", "string"]
+    },
+    "companySize": {
+      "type": ["null", "integer"]
+    },
+    "companyStartDate": {
+      "type": ["null", "string"]
+    },
+    "companyType": {
       "type": ["null", "string"]
     },
     "contactHistogram": {
@@ -352,6 +397,9 @@
     "custom49": {
       "type": ["null", "string"]
     },
+    "custom5": {
+      "type": ["null", "string"]
+    },
     "custom50": {
       "type": ["null", "string"]
     },
@@ -518,6 +566,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "defaultPluginMapping": {
+      "type": ["null", "array"]
+    },
     "degree": {
       "type": ["null", "string"]
     },
@@ -529,6 +580,54 @@
       "items": {
         "type": "string"
       }
+    },
+    "emailContacts": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "bounced_at": {
+            "type": ["null", "string"]
+          },
+          "created_at": {
+            "type": ["null", "string"]
+          },
+          "domain_hash": {
+            "type": ["null", "string"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          },
+          "email_hash": {
+            "type": ["null", "string"]
+          },
+          "email_type": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "order": {
+            "type": ["null", "integer"]
+          },
+          "prospect_id": {
+            "type": ["null", "integer"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          },
+          "status_changed_at": {
+            "type": ["null", "string"]
+          },
+          "unsubscribed_at": {
+            "type": ["null", "string"]
+          },
+          "updated_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
     },
     "emailsOptStatus": {
       "type": ["null", "string"]
@@ -637,6 +736,9 @@
         "type": "string"
       }
     },
+    "personaName": {
+      "type": "null"
+    },
     "personalNote1": {
       "type": ["null", "string"]
     },
@@ -664,6 +766,15 @@
     "sharingTeamId": {
       "type": ["null", "string"]
     },
+    "smsOptStatus": {
+      "type": ["null", "string"]
+    },
+    "smsOptedAt": {
+      "type": ["null", "string"]
+    },
+    "smsOptedOut": {
+      "type": ["null", "boolean"]
+    },
     "source": {
       "type": ["null", "string"]
     },
@@ -674,6 +785,9 @@
       "type": ["null", "string"]
     },
     "stackOverflowUrl": {
+      "type": ["null", "string"]
+    },
+    "stageName": {
       "type": ["null", "string"]
     },
     "tags": {
@@ -702,6 +816,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "trashedByAccount": {
+      "type": ["null", "array"]
+    },
     "twitterUrl": {
       "type": ["null", "string"]
     },
@@ -711,6 +828,12 @@
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "updaterId": {
+      "type": ["null", "integer"]
+    },
+    "updaterType": {
+      "type": ["null", "string"]
     },
     "voipPhones": {
       "type": ["null", "array"],

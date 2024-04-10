@@ -7,7 +7,6 @@ import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
-from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
@@ -24,7 +23,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
 from airbyte_protocol.models.airbyte_protocol import (
     AirbyteControlMessage,
     AirbyteLogMessage,
@@ -45,6 +44,32 @@ class MessageGrouper:
         self._max_slices = max_slices
         self._max_record_limit = max_record_limit
 
+    def _pk_to_nested_and_composite_field(self, field: Optional[Union[str, List[str], List[List[str]]]]) -> List[List[str]]:
+        if not field:
+            return [[]]
+
+        if isinstance(field, str):
+            return [[field]]
+
+        is_composite_key = isinstance(field[0], str)
+        if is_composite_key:
+            return [[i] for i in field]  # type: ignore  # the type of field is expected to be List[str] here
+
+        return field  # type: ignore  # the type of field is expected to be List[List[str]] here
+
+    def _cursor_field_to_nested_and_composite_field(self, field: Union[str, List[str]]) -> List[List[str]]:
+        if not field:
+            return [[]]
+
+        if isinstance(field, str):
+            return [[field]]
+
+        is_nested_key = isinstance(field[0], str)
+        if is_nested_key:
+            return [field]  # type: ignore  # the type of field is expected to be List[str] here
+
+        raise ValueError(f"Unknown type for cursor field `{field}")
+
     def get_message_groups(
         self,
         source: DeclarativeSource,
@@ -52,9 +77,13 @@ class MessageGrouper:
         configured_catalog: ConfiguredAirbyteCatalog,
         record_limit: Optional[int] = None,
     ) -> StreamRead:
-        if record_limit is not None and not (1 <= record_limit <= 1000):
-            raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
-        schema_inferrer = SchemaInferrer()
+        if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
+            raise ValueError(f"Record limit must be between 1 and {self._max_record_limit}. Got {record_limit}")
+        stream = source.streams(config)[0]  # The connector builder currently only supports reading from a single stream at a time
+        schema_inferrer = SchemaInferrer(
+            self._pk_to_nested_and_composite_field(stream.primary_key),
+            self._cursor_field_to_nested_and_composite_field(stream.cursor_field),
+        )
         datetime_format_inferrer = DatetimeFormatInferrer()
 
         if record_limit is None:
@@ -88,14 +117,20 @@ class MessageGrouper:
             else:
                 raise ValueError(f"Unknown message group type: {type(message_group)}")
 
+        try:
+            configured_stream = configured_catalog.streams[0]  # The connector builder currently only supports reading from a single stream at a time
+            schema = schema_inferrer.get_stream_schema(configured_stream.stream.name)
+        except SchemaValidationException as exception:
+            for validation_error in exception.validation_errors:
+                log_messages.append(LogMessage(validation_error, "ERROR"))
+            schema = exception.schema
+
         return StreamRead(
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
             auxiliary_requests=auxiliary_requests,
-            inferred_schema=schema_inferrer.get_stream_schema(
-                configured_catalog.streams[0].stream.name
-            ),  # The connector builder currently only supports reading from a single stream at a time
+            inferred_schema=schema,
             latest_config_update=self._clean_config(latest_config_update.connectorConfig.config) if latest_config_update else None,
             inferred_datetime_formats=datetime_format_inferrer.get_inferred_datetime_formats(),
         )
@@ -264,15 +299,12 @@ class MessageGrouper:
 
     @staticmethod
     def _create_request_from_log_message(json_http_message: Dict[str, Any]) -> HttpRequest:
-        url = urlparse(json_http_message.get("url", {}).get("full", ""))
-        full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
+        url = json_http_message.get("url", {}).get("full", "")
         request = json_http_message.get("http", {}).get("request", {})
-        parameters = parse_qs(url.query) or None
         return HttpRequest(
-            url=full_path,
+            url=url,
             http_method=request.get("method", ""),
             headers=request.get("headers"),
-            parameters=parameters,
             body=request.get("body", {}).get("content", ""),
         )
 

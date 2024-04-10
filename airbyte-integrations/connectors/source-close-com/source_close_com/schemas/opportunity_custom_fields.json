@@ -9,6 +9,15 @@
     "name": {
       "date_updated": ["null", "string"]
     },
+    "back_reference_is_visible": {
+      "date_updated": ["null", "string"]
+    },
+    "is_shared": {
+      "date_updated": ["null", "boolean"]
+    },
+    "referenced_custom_type_id": {
+      "date_updated": ["null", "string"]
+    },
     "choices": {
       "date_updated": ["null", "array"]
     },

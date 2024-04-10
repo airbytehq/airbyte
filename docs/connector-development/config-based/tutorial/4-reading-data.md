@@ -44,7 +44,7 @@ As an alternative to storing the stream's data schema to the `schemas/` director
 Reading from the source can be done by running the `read` operation
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The logs should show that 1 record was read from the stream.
@@ -57,7 +57,7 @@ The logs should show that 1 record was read from the stream.
 The `--debug` flag can be set to print out debug information, including the outgoing request and its associated response
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug
 ```
 
 ## Next steps

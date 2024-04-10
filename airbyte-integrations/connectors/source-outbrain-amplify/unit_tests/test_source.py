@@ -9,15 +9,11 @@ from source_outbrain_amplify.source import SourceOutbrainAmplify
 
 def test_check_connection(mocker):
     config = {
-        "credentials":
-        {
-            "type": "access_token",
-            "access_token" : "MTY1OTUyO"
-        },
+        "credentials": {"type": "access_token", "access_token": "MTY1OTUyO"},
         "report_granularity": "daily",
         "geo_location_breakdown": "region",
-        "start_date" : "2022-04-01",
-        "end_date" : "2022-04-30"
+        "start_date": "2022-04-01",
+        "end_date": "2022-04-30",
     }
     source = SourceOutbrainAmplify()
     cond = source.check_connection(True, config)[0]

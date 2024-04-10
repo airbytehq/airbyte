@@ -244,8 +244,10 @@ def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog
 def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
-        configured_catalog, None
+        logger,
+        {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
+        configured_catalog,
+        None,
     )
     result = list(result_iter)
     assert len(result) == 2

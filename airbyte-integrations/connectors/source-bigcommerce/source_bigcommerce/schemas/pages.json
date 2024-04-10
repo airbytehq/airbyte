@@ -58,6 +58,6 @@
     },
     "id": {
       "type": ["null", "integer"]
-    } 
+    }
   }
 }

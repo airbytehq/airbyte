@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -49,12 +49,22 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
   protected static final String CA_CERT_KEY = "ssl_ca_certificate";
 
+  protected static final String ENCRYPTDATA = "ENCRYPTDATA";
+
+  protected static final String ENCRYPTDATA_ON = "ON";
+
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new TeradataDestination()).run(args);
   }
 
   public TeradataDestination() {
     super(DRIVER_CLASS, new StandardNameTransformer(), new TeradataSqlOperations());
+  }
+
+  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+      out.print(fileValue);
+    }
   }
 
   @Override
@@ -69,13 +79,8 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
         additionalParameters.put(PARAM_SSLMODE, REQUIRE);
       }
     }
+    additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
     return additionalParameters;
-  }
-
-  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
-    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
-      out.print(fileValue);
-    }
   }
 
   private Map<String, String> obtainConnectionOptions(final JsonNode encryption) {

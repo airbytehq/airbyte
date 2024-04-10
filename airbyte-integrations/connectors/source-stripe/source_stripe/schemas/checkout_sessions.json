@@ -25,6 +25,13 @@
       "type": ["null", "object"],
       "properties": {
         "enabled": { "type": ["null", "boolean"] },
+        "liability": {
+          "type": ["null", "object"],
+          "properties": {
+            "account": { "type": ["null", "string"] },
+            "type": { "type": ["null", "string"] }
+          }
+        },
         "status": { "type": ["null", "string"] }
       }
     },
@@ -321,6 +328,14 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "terms_of_service": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     },
@@ -360,6 +375,17 @@
             },
             "footer": {
               "type": ["null", "string"]
+            },
+            "issuer": {
+              "type": ["null", "object"],
+              "properties": {
+                "account": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                }
+              }
             },
             "metadata": {
               "type": ["null", "object"]
@@ -440,6 +466,15 @@
         }
       }
     },
-    "status": { "type": ["null", "string"] }
+    "status": { "type": ["null", "string"] },
+    "payment_method_configuration_details": {
+      "$ref": "payment_method_configuration_details.json"
+    },
+    "client_secret": {
+      "type": ["null", "string"]
+    },
+    "ui_mode": {
+      "type": ["null", "string"]
+    }
   }
 }

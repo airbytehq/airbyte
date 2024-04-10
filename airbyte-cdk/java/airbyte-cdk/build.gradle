@@ -1,77 +1,69 @@
-plugins {
-    id 'java-library'
-    id 'maven-publish'
-}
+final var cdkVersion = {
+    var props = new Properties()
+    file("core/src/main/resources/version.properties").withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
 
-group 'io.airbyte'
+allprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
 
-// Version is dynamically loaded from version.properties file.
-def props = new Properties()
-file("src/main/resources/version.properties").withInputStream { props.load(it) }
-version = props.getProperty('version')
-description = "Airbyte Connector Development Kit (CDK) for Java."
+    group 'io.airbyte.cdk'
 
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
-}
+    project.version = cdkVersion
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'io.airbyte'
-            artifactId = 'airbyte-cdk'
-            from components.java
+    publishing {
+        publications {
+            cdk(MavenPublication) {
+                from components.java
+            }
         }
-    }
-    repositories {
-        maven {
-            name 'cloudrepo'
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            credentials {
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
+        // This repository is only defined and used in the context of an artifact publishing
+        // It's different from the 'airbyte-public-jars' defined in settings.graddle only in its omission
+        // of the 'public' directory. Any artifacts publish here will be available in the 'airbyte-public-jars' repo
+        repositories {
+            maven {
+                name 'airbyte-repo'
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/'
+                credentials {
+                    username System.getenv('CLOUDREPO_USER')
+                    password System.getenv('CLOUDREPO_PASSWORD')
+                }
             }
         }
     }
+
+    // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
+    spotbugsTest.omitVisitors = ['FindBadCast2']
 }
 
-// Adds publishToMavenLocal as final command in the list of 'build' tasks.
-tasks.named('build').configure {
-    dependsOn tasks.named('publishToMavenLocal')
+description = "Airbyte Connector Development Kit (CDK) for Java."
+
+tasks.register('cdkBuild').configure {
+    dependsOn subprojects.collect { it.tasks.named('build') }
 }
-
-publishToMavenLocal {
-    // Always re-publish the artifact to MavenLocal
-    outputs.upToDateWhen { false }
-
-    doFirst {
-        println "Running CDK publishToMavenLocal..."
-    }
+tasks.register('cdkPublish').configure {
+    dependsOn subprojects.collect { it.tasks.named('publish') }
+}
+tasks.register('assertCdkVersionNotPublished') {
     doLast {
-        println "Finished CDK publishToMavenLocal."
-    }
-}
 
+        var repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        var groupIdUrl = "${repoUrl}/io/airbyte/cdk"
+        var artifactUrl = "${groupIdUrl}/airbyte-cdk-core/${project.version}/airbyte-cdk-core-${project.version}.pom"
 
-// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-def publishSnapshotIfNeeded = tasks.register('publishSnapshotIfNeeded') {}
+        var connection = artifactUrl.toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("HEAD")
+        connection.connect()
 
-if (version.endsWith("-SNAPSHOT")) {
-    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-    publishSnapshotIfNeeded.configure {
-        dependsOn publishToMavenLocal
-    }
-} else {
-    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
-}
+        var responseCode = connection.getResponseCode()
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        exceptionFormat = 'full'
-        showExceptions = true
-        showCauses = true
-        showStackTraces = false
-        events = ['passed', 'skipped', 'failed']
+        if (responseCode == 200) {
+            throw new GradleException("Java CDK '${project.version}' already published at ${groupIdUrl}")
+        } else if (responseCode == 404) {
+            logger.lifecycle("Java CDK '${project.version}' not yet published at ${groupIdUrl}")
+        } else {
+            throw new GradleException("Unexpected HTTP response code ${responseCode} from ${artifactUrl} : expected either 200 or 404.")
+        }
     }
 }

@@ -6,6 +6,7 @@ import concurrent.futures
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
+import backoff
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.utils import AirbyteTracedException
@@ -51,7 +52,6 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "AppTabMember",
     "CollaborationGroupRecord",
     "ColorDefinition",
-    "ContentDocumentLink",
     "ContentFolderItem",
     "ContentFolderMember",
     "DataStatistics",
@@ -129,6 +129,19 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
+PARENT_SALESFORCE_OBJECTS = {
+    # parent_name - name of parent stream
+    # field - in each parent record, which is needed for stream slice
+    # schema_minimal - required for getting proper class name full_refresh/incremental, rest/bulk for parent stream
+    "ContentDocumentLink": {
+        "parent_name": "ContentDocument",
+        "field": "Id",
+        "schema_minimal": {
+            "properties": {"Id": {"type": ["string", "null"]}, "SystemModstamp": {"type": ["string", "null"], "format": "date-time"}}
+        },
+    }
+}
+
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
@@ -184,6 +197,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 UNSUPPORTED_FILTERING_STREAMS = [
     "ApiEvent",
     "BulkApiResultEventStore",
+    "ContentDocumentLink",
     "EmbeddedServiceDetail",
     "EmbeddedServiceLabel",
     "FormulaFunction",
@@ -287,7 +301,7 @@ class Salesforce:
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
-    @default_backoff_handler(max_tries=5, factor=5)
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 5})
     def _make_request(
         self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
     ) -> requests.models.Response:

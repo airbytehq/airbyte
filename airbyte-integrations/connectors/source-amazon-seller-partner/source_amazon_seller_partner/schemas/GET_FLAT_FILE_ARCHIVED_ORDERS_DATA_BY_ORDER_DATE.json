@@ -6,8 +6,8 @@
   "properties": {
     "amazon-order-id": { "type": ["null", "string"] },
     "merchant-order-id": { "type": ["null", "string"] },
-    "purchase-date": { "type": ["null", "string"] },
-    "last-updated-date": { "type": ["null", "string"] },
+    "purchase-date": { "type": ["null", "string"], "format": "date-time" },
+    "last-updated-date": { "type": ["null", "string"], "format": "date-time" },
     "order-status": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
     "sales-channel": { "type": ["null", "string"] },
@@ -34,6 +34,7 @@
     "is-business-order": { "type": ["null", "string"] },
     "purchase-order-number": { "type": ["null", "string"] },
     "price-designation": { "type": ["null", "string"] },
-    "is-replacement-order": { "type": ["null", "string"] }
+    "is-replacement-order": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

@@ -43,6 +43,10 @@
     "estimated-future-referral-fee-per-unit": { "type": ["null", "string"] },
     "current-fee-category": { "type": ["null", "string"] },
     "future-fee-category": { "type": ["null", "string"] },
-    "future-fee-category-effective-date": { "type": ["null", "string"] }
+    "future-fee-category-effective-date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

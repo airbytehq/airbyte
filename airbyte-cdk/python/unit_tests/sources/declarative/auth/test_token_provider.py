@@ -17,11 +17,18 @@ def create_session_token_provider():
     login_response.json.return_value = {"nested": {"token": "my_token"}}
     login_requester.send_request.return_value = login_response
 
-    return SessionTokenProvider(login_requester=login_requester, session_token_path=["nested", "token"], expiration_duration=parse_duration("PT1H"), parameters={"test": "test"})
+    return SessionTokenProvider(
+        login_requester=login_requester,
+        session_token_path=["nested", "token"],
+        expiration_duration=parse_duration("PT1H"),
+        parameters={"test": "test"},
+    )
 
 
 def test_interpolated_string_token_provider():
-    provider = InterpolatedStringTokenProvider(config={"config_key": "val"}, api_token="{{ config.config_key }}-{{ parameters.test }}", parameters={"test": "test"})
+    provider = InterpolatedStringTokenProvider(
+        config={"config_key": "val"}, api_token="{{ config.config_key }}-{{ parameters.test }}", parameters={"test": "test"}
+    )
     assert provider.get_token() == "val-test"
 
 

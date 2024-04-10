@@ -1,21 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "authorId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "text": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "taskId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "createdDate": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedDate": {

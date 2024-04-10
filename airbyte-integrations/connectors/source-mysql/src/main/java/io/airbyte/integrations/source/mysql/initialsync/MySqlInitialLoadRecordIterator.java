@@ -4,18 +4,16 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-
-import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
+import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,12 +36,13 @@ import org.slf4j.LoggerFactory;
  * from table where pk > pk_max_4 order by pk limit 1,800,000. Final query, since there are zero
  * records processed here.
  */
+@SuppressWarnings("try")
 public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
-  private final MySqlInitialLoadSourceOperations sourceOperations;
+  private final JdbcCompatibleSourceOperations<MysqlType> sourceOperations;
 
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
@@ -59,7 +58,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
-                                 final MySqlInitialLoadSourceOperations sourceOperations,
+                                 final JdbcCompatibleSourceOperations<MysqlType> sourceOperations,
                                  final String quoteString,
                                  final MySqlInitialLoadStateManager initialLoadStateManager,
                                  final List<String> columnNames,
@@ -121,7 +120,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String tableName = pair.getName();
       final String schemaName = pair.getNamespace();
       LOGGER.info("Preparing query for table: {}", tableName);
-      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
+      final String fullTableName = RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
@@ -130,7 +129,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
       if (pkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
-        final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values.
@@ -146,7 +145,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         return preparedStatement;
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
-        final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values. Furthermore, we have to issue a >=

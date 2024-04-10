@@ -10,62 +10,96 @@
     "fnsku": {
       "type": ["null", "string"]
     },
-    "product-name": {
+    "product_name": {
       "type": ["null", "string"]
     },
-    "fulfillment-center": {
+    "fulfillment_center": {
       "type": ["null", "string"]
     },
-    "country-code": {
+    "country_code": {
       "type": ["null", "string"]
     },
-    "longest-side": {
+    "longest_side": {
       "type": ["null", "string"]
     },
-    "median-side": {
+    "median_side": {
       "type": ["null", "string"]
     },
-    "shortest-side": {
+    "shortest_side": {
       "type": ["null", "string"]
     },
-    "measurement-units": {
+    "measurement_units": {
       "type": ["null", "string"]
     },
     "weight": {
       "type": ["null", "string"]
     },
-    "weight-units": {
+    "weight_units": {
       "type": ["null", "string"]
     },
-    "item-volume": {
+    "item_volume": {
       "type": ["null", "string"]
     },
-    "volume-units": {
+    "volume_units": {
       "type": ["null", "string"]
     },
-    "product-size-tier": {
+    "product_size_tier": {
       "type": ["null", "string"]
     },
-    "average-quantity-on-hand": {
+    "average_quantity_on_hand": {
       "type": ["null", "string"]
     },
-    "average-quantity-pending-removal": {
+    "average_quantity_pending_removal": {
       "type": ["null", "string"]
     },
-    "estimated-total-item-volume": {
+    "estimated_total_item_volume": {
       "type": ["null", "string"]
     },
-    "month-of-charge": {
+    "month_of_charge": {
       "type": ["null", "string"]
     },
-    "storage-rate": {
+    "storage_rate": {
       "type": ["null", "string"]
     },
-    "estimated-monthly-storage-fee": {
+    "estimated_monthly_storage_fee": {
       "type": ["null", "string"]
     },
     "currency": {
       "type": ["null", "string"]
+    },
+    "average_quantity_customer_orders": {
+      "type": ["null", "number"]
+    },
+    "base_rate": {
+      "type": ["null", "number"]
+    },
+    "breakdown_incentive_fee_amount": {
+      "type": ["null", "string"]
+    },
+    "dangerous_goods_storage_type": {
+      "type": ["null", "string"]
+    },
+    "eligible_for_inventory_discount": {
+      "type": ["null", "string"]
+    },
+    "qualifies_for_inventory_discount": {
+      "type": ["null", "string"]
+    },
+    "storage_utilization_ratio": {
+      "type": ["null", "number"]
+    },
+    "storage_utilization_ratio_units": {
+      "type": ["null", "string"]
+    },
+    "total_incentive_fee_amount": {
+      "type": ["null", "number"]
+    },
+    "utilization_surcharge_rate": {
+      "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

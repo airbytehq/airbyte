@@ -708,30 +708,6 @@ def test_read_incremental_with_records_start_date(config):
     [
         (
             ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            None,
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            None,
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
             SponsoredDisplayCampaigns,
         ),
         (
@@ -755,28 +731,51 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
     else:
         assert state_filter is None
 
+@pytest.mark.parametrize(
+    "state_filter, stream_class",
+    [
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            None,
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            None,
+            SponsoredProductCampaigns,
+        ),
+    ],
+)
+def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state_filter, stream_class):
+    profiles = make_profiles()
+    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = stream_class(config, profiles)
+    request_body = stream.request_body_json(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in request_body:
+        assert request_body["stateFilter"]["include"] == state_filter
+    else:
+        assert state_filter is None
+
 
 @responses.activate
 @pytest.mark.parametrize(
     "custom_record_types, flag_match_error",
-    [
-        (
-                ["campaigns"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                True
-        )
-    ]
+    [(["campaigns"], True), (["campaigns", "adGroups"], True), ([], False), (["invalid_record_type"], True)],
 )
 def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
     setup_responses(
@@ -791,7 +790,7 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
-        if record['recordType'] not in custom_record_types:
+        if record["recordType"] not in custom_record_types:
             if flag_match_error:
                 assert False
 
@@ -800,37 +799,13 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins_keywords"],
-                ["asins_keywords"],
-                True
-        ),
-        (
-                ["asins_targets"],
-                ["asins_targets"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins_keywords"], ["asins_keywords"], True),
+        (["asins_targets"], ["asins_targets"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_products_report_stream_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -846,7 +821,7 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
 
@@ -855,32 +830,12 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
 @pytest.mark.parametrize(
     "custom_record_types, expected_record_types, flag_match_error",
     [
-        (
-                ["campaigns"],
-                ["campaigns"],
-                True
-        ),
-        (
-                ["asins"],
-                ["asins"],
-                True
-        ),
-        (
-                ["campaigns", "adGroups"],
-                ["campaigns", "adGroups"],
-                True
-        ),
-        (
-                [],
-                [],
-                False
-        ),
-        (
-                ["invalid_record_type"],
-                [],
-                True
-        )
-    ]
+        (["campaigns"], ["campaigns"], True),
+        (["asins"], ["asins"], True),
+        (["campaigns", "adGroups"], ["campaigns", "adGroups"], True),
+        ([], [], False),
+        (["invalid_record_type"], [], True),
+    ],
 )
 def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
     setup_responses(
@@ -896,7 +851,7 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
-        if record['recordType'] not in expected_record_types:
+        if record["recordType"] not in expected_record_types:
             if flag_match_error:
                 assert False
 
@@ -906,8 +861,8 @@ def test_brands_video_report_with_custom_record_types(config_gen, custom_record_
     [
         ({"campaignId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}, "campaigns"),
         ({"campaignId": ""}, "campaigns"),
-        ({"campaignId": None}, "campaigns")
-    ]
+        ({"campaignId": None}, "campaigns"),
+    ],
 )
 def test_get_record_id_by_report_type(config, metric_object, record_type):
     """

@@ -64,17 +64,18 @@ python -m pytest unit_tests
 ### Locally running the connector docker image
 
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-python-http-tutorial:dev
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+```bash
+airbyte-ci connectors --name=source-python-http-tutorial build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/source-python-http-tutorial:dev`.
+
+**Via `docker build`:**
+```bash
+docker build -t airbyte/source-python-http-tutorial:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
+
 
 #### Run
 Then run any of the connector commands as follows:
@@ -85,18 +86,25 @@ docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-
 docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+## Testing
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-python-http-tutorial test
+```
+
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 
 ### Publishing a new version of the connector
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-python-http-tutorial test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/python-http-tutorial.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+

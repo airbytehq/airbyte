@@ -100,21 +100,93 @@
     },
     "author": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "author_id": {
       "type": ["null", "integer"]
     },
     "assignee": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "assignee_id": {
       "type": ["null", "integer"]
     },
     "closed_by": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        }
+      }
     },
     "closed_by_id": {
       "type": ["null", "integer"]
@@ -184,20 +256,32 @@
       }
     },
     "epic": {
-      "id": {
-        "type": ["null", "integer"]
-      },
-      "iid": {
-        "type": ["null", "integer"]
-      },
-      "title": {
-        "type": ["null", "string"]
-      },
-      "url": {
-        "type": ["null", "string"]
-      },
-      "group_id": {
-        "type": ["null", "integer"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
+        }
       }
     },
     "epic_iid": {

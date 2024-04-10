@@ -78,7 +78,7 @@ Normally under the CDC mode, the Postgres source will first run a full refresh s
 The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
 
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
-    - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
+    - Sync the data source more frequently.
     - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
 - When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
 
@@ -110,4 +110,14 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
+### (Advanced) WAL disk consumption and heartbeat action query
 
+In certain situations, WAL disk consumption increases. This can occur when there are a large volume of changes, but only a small percentage of them are being made to the databases, schemas and tables configured for capture.
+
+A workaround for this situation is to artificially add events to a heartbeat table that the Airbyte use has write access to. This will ensure that Airbyte can process the WAL and prevent disk space to spike. To configure this: 
+1. Create a table (e.g. `airbyte_heartbeat`) in the database and schema being tracked. 
+2. Add this table to the airbyte publication. 
+3. Configure the `heartbeat_action_query` property while setting up the source-postgres connector. This query will be periodically executed by Airbyte on the `airbyte_heartbeat` table. For example, this param can be set to a query like `INSERT INTO airbyte_heartbeat (text) VALUES ('heartbeat')`.
+
+
+See detailed documentation [here](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space).

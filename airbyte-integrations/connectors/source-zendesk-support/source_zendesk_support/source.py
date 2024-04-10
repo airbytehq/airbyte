@@ -24,7 +24,6 @@ from .streams import (
     AuditLogs,
     Brands,
     CustomRoles,
-    DeletedTickets,
     GroupMemberships,
     Groups,
     Macros,
@@ -88,7 +87,6 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
-
         # old authentication flow support
         auth_old = config.get("auth_method")
         if auth_old:
@@ -150,7 +148,6 @@ class SourceZendeskSupport(AbstractSource):
             ArticleCommentVotes(**args),
             ArticleVotes(**args),
             AuditLogs(**args),
-            DeletedTickets(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),

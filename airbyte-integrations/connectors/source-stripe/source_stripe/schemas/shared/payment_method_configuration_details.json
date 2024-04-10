@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "parent": {
+      "type": ["null", "string"]
+    }
+  }
+}

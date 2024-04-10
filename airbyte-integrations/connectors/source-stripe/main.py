@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_stripe import SourceStripe
+from source_stripe.run import run
 
 if __name__ == "__main__":
-    source = SourceStripe()
-    launch(source, sys.argv[1:])
+    run()

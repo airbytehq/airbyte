@@ -91,8 +91,17 @@
         "title": "View ID",
         "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>."
       },
-      "custom_reports": {
+      "end_date": {
         "order": 3,
+        "type": "string",
+        "title": "Replication End Date",
+        "description": "The date in the format YYYY-MM-DD. Any data after this date will not be replicated.",
+        "examples": ["2020-06-01"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$|[\\s\\S]+$",
+        "format": "date"
+      },
+      "custom_reports": {
+        "order": 4,
         "type": "string",
         "title": "Custom Reports",
         "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
@@ -103,7 +112,7 @@
         "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. ",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1,
-        "order": 4
+        "order": 5
       }
     }
   },

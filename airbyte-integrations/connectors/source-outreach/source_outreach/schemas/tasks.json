@@ -27,6 +27,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "defaultPluginMapping": {
+      "type": ["null", "array"]
+    },
     "dueAt": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -115,6 +118,33 @@
         "type": ["null", "integer"]
       }
     },
+    "prospectAccount": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
+    "prospectContacts": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
+    "prospectOwner": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
+    "prospectPhoneNumbers": {
+      "type": ["null", "array"]
+    },
+    "prospectStage": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
     "sequence": {
       "type": ["null", "array"],
       "items": {
@@ -133,6 +163,18 @@
         "type": ["null", "integer"]
       }
     },
+    "sequenceStateSequenceStep": {
+      "type": ["null", "array"]
+    },
+    "sequenceStateSequenceStepOverrides": {
+      "type": ["null", "array"]
+    },
+    "sequenceStateStartingTemplate": {
+      "type": ["null", "array"]
+    },
+    "sequenceStepOverrideTemplates": {
+      "type": ["null", "array"]
+    },
     "sequenceStep": {
       "type": ["null", "array"],
       "items": {
@@ -145,6 +187,9 @@
         "type": ["null", "integer"]
       }
     },
+    "sequenceTemplateTemplate": {
+      "type": ["null", "array"]
+    },
     "subject": {
       "type": ["null", "array"],
       "items": {
@@ -156,6 +201,12 @@
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "taskTheme": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
     },
     "template": {
       "type": ["null", "array"],

@@ -5,13 +5,13 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +83,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tableName)
       throws SQLException {
@@ -104,6 +104,14 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+  }
+
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase jdbcDatabase, final List<PartialAirbyteMessage> list, final String s, final String s1)
+      throws Exception {
+    // Snowflake doesn't have standard inserts... so we don't do this at real runtime.
+    // Intentionally do nothing. This method is called from the `check` method.
+    // It probably shouldn't be, but this is the easiest path to getting this working.
   }
 
   protected String generateFilesList(final List<String> files) {

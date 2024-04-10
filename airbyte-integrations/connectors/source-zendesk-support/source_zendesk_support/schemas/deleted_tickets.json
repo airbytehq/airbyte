@@ -6,13 +6,13 @@
     "actor": {
       "type": ["null", "object"],
       "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          }
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
         }
+      }
     },
     "id": {
       "type": ["null", "integer"]
@@ -23,7 +23,7 @@
     "description": {
       "type": ["null", "string"]
     },
-    "deleted_at":  {
+    "deleted_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },

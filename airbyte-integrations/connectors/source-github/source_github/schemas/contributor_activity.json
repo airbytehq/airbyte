@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Contributor Activity",
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "login": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "gravatar_id": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "html_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "followers_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "following_url": {
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "organizations_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "repos_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "events_url": {
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "type": ["null", "string"],
+      "format": "uri"
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "type": ["null", "boolean"]
+    },
+    "starred_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "total": {
+      "type": ["null", "integer"]
+    },
+    "weeks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "w": {
+            "type": ["null", "integer"],
+            "description": "Start of the week, given as a Unix timestamp."
+          },
+          "a": {
+            "type": ["null", "integer"],
+            "description": "Number of additions"
+          },
+          "d": {
+            "type": ["null", "integer"],
+            "description": "Number of deletions"
+          },
+          "c": {
+            "type": ["null", "integer"],
+            "description": "Number of commits"
+          }
+        }
+      }
+    }
+  }
+}

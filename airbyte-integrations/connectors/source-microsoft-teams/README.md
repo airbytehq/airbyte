@@ -1,7 +1,7 @@
-# Microsoft Teams Source 
+# Rabbitmq Destination
 
-This is the repository for the Microsoft Teams source connector, written in Python. 
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/microsoft-teams).
+This is the repository for the Rabbitmq destination connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/rabbitmq).
 
 ## Local development
 
@@ -29,72 +29,71 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
-#### Building via Gradle
-From the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-microsoft-teams:build
-```
-
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/microsoft-teams)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_microsoft_teams/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/rabbitmq)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_rabbitmq/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source microsoft-teams test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination rabbitmq test creds`
 and place them into `secrets/config.json`.
-
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-python -m pytest unit_tests
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
 
+
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-microsoft-teams:dev
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+```bash
+airbyte-ci connectors --name destination-rabbitmq build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/destination-rabbitmq:dev`.
+
+**Via `docker build`:**
+```bash
+docker build -t airbyte/destination-rabbitmq:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-microsoft-teams:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-microsoft-teams:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-microsoft-teams:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-microsoft-teams:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-microsoft-teams:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm airbyte/destination-rabbitmq:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-rabbitmq:dev check --config /secrets/config.json
+# messages.jsonl is a file containing line-separated JSON representing AirbyteMessages
+cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-rabbitmq:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-microsoft-teams:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+## Testing
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-microsoft-teams test
+```
+
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+We split dependencies between two groups, dependencies that are:
+* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
+* required for the testing need to go to `TEST_REQUIREMENTS` list
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-1. Create a Pull Request
-1. Pat yourself on the back for being an awesome contributor
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-microsoft-teams test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/microsoft-teams.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+

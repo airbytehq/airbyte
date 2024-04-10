@@ -5,6 +5,7 @@
 # mypy: ignore-errors
 
 import datetime
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.models import Level
@@ -27,6 +28,7 @@ from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamMod
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -37,6 +39,9 @@ from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelec
 from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
@@ -63,6 +68,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -229,7 +235,7 @@ spec:
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
-    assert stream.retriever.paginator.page_size_option.field_name == "page_size"
+    assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
@@ -237,12 +243,12 @@ spec:
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
     assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
-    assert stream.retriever.paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
-    assert stream.retriever.paginator.pagination_strategy.cursor_value.default == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester._http_method == HttpMethod.GET
+    assert stream.retriever.requester.http_method == HttpMethod.GET
     assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
@@ -300,16 +306,46 @@ def test_interpolate_config():
     )
 
     assert isinstance(authenticator, DeclarativeOauth2Authenticator)
-    assert authenticator.client_id.eval(input_config) == "some_client_id"
-    assert authenticator.client_secret.string == "some_client_secret"
-    assert authenticator.token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
-    assert authenticator.refresh_token.eval(input_config) == "verysecrettoken"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
+    assert authenticator._client_secret.string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body.mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
     assert authenticator.get_refresh_request_body() == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
 
 
+def test_interpolate_config_with_token_expiry_date_format():
+    content = """
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      token_expiry_date_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    authenticator = factory.create_component(
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config
+    )
+
+    assert isinstance(authenticator, DeclarativeOauth2Authenticator)
+    assert authenticator.token_expiry_date_format == "%Y-%m-%d %H:%M:%S.%f+00:00"
+    assert authenticator.token_expiry_is_time_of_expiration
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
+    assert authenticator._client_secret.string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+
+
 def test_single_use_oauth_branch():
-    single_use_input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"], "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"}}
+    single_use_input_config = {
+        "apikey": "verysecrettoken",
+        "repos": ["airbyte", "airbyte-cloud"],
+        "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"},
+    }
 
     content = """
     authenticator:
@@ -323,6 +359,9 @@ def test_single_use_oauth_branch():
         interpolated_body_field: "{{ config['apikey'] }}"
       refresh_token_updater:
         refresh_token_name: "the_refresh_token"
+        refresh_token_error_status_codes: [400]
+        refresh_token_error_key: "error"
+        refresh_token_error_values: ["invalid_grant"]
         refresh_token_config_path:
           - apikey
     """
@@ -345,6 +384,9 @@ def test_single_use_oauth_branch():
     # default values
     assert authenticator._access_token_config_path == ["credentials", "access_token"]
     assert authenticator._token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+    assert authenticator._refresh_token_error_status_codes == [400]
+    assert authenticator._refresh_token_error_key == "error"
+    assert authenticator._refresh_token_error_values == ["invalid_grant"]
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -389,7 +431,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     assert isinstance(partition_router, ListPartitionRouter)
     assert partition_router.values == ["airbyte", "airbyte-cloud"]
     assert partition_router.request_option.inject_into == RequestOptionType.header
-    assert partition_router.request_option.field_name == "repository"
+    assert partition_router.request_option.field_name.eval(config=input_config) == "repository"
 
 
 def test_create_substream_partition_router():
@@ -451,7 +493,7 @@ def test_create_substream_partition_router():
     assert partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert partition_router.parent_stream_configs[1].parent_key.eval({}) == "someid"
     assert partition_router.parent_stream_configs[1].partition_field.eval({}) == "word_id"
@@ -476,39 +518,39 @@ def test_datetime_based_cursor():
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: created[gte]
+          field_name: "since_{{ config['cursor_field'] }}"
         end_time_option:
           type: RequestOption
           inject_into: body_json
-          field_name: end_time
+          field_name: "before_{{ parameters['cursor_field'] }}"
         partition_field_start: star
         partition_field_end: en
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {"cursor_field": "created_at"})
 
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer._cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
-    assert stream_slicer.lookback_window.string == "P5D"
+    assert stream_slicer._lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer.start_time_option.field_name == "created[gte]"
+    assert stream_slicer.start_time_option.field_name.eval(config=input_config | {"cursor_field": "updated_at"}) == "since_updated_at"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
-    assert stream_slicer.end_time_option.field_name == "end_time"
-    assert stream_slicer.partition_field_start.eval({}) == "star"
-    assert stream_slicer.partition_field_end.eval({}) == "en"
+    assert stream_slicer.end_time_option.field_name.eval({}) == "before_created_at"
+    assert stream_slicer._partition_field_start.eval({}) == "star"
+    assert stream_slicer._partition_field_end.eval({}) == "en"
 
-    assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
+    assert isinstance(stream_slicer._start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 
-    assert isinstance(stream_slicer.end_datetime, MinMaxDatetime)
-    assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(stream_slicer._end_datetime, MinMaxDatetime)
+    assert stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
 
 
 def test_stream_with_incremental_and_retriever_with_partition_router():
@@ -603,17 +645,17 @@ list_stream:
 
     datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
-    assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
-    assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert isinstance(datetime_stream_slicer._end_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert datetime_stream_slicer.step == "P10D"
-    assert datetime_stream_slicer.cursor_field.string == "created"
+    assert datetime_stream_slicer._cursor_field.string == "created"
 
     list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
-    assert list_stream_slicer.cursor_field.string == "a_key"
+    assert list_stream_slicer._cursor_field.string == "a_key"
 
 
 def test_incremental_data_feed():
@@ -684,9 +726,7 @@ incremental_sync:
 
     with pytest.raises(ValueError):
         factory.create_component(
-            model_type=DatetimeBasedCursorModel,
-            component_definition=datetime_based_cursor_definition,
-            config=input_config
+            model_type=DatetimeBasedCursorModel, component_definition=datetime_based_cursor_definition, config=input_config
         )
 
 
@@ -713,7 +753,9 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
-    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config)
+    selector = factory.create_component(
+        model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config
+    )
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
@@ -796,7 +838,7 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert selector._http_method == HttpMethod.GET
+    assert selector.http_method == HttpMethod.GET
     assert selector.name == "name"
     assert selector._path.string == "/v3/marketing/lists"
     assert selector._url_base.string == "https://api.sendgrid.com"
@@ -898,7 +940,56 @@ requester:
     assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
     assert selector.authenticator.token_provider.session_token_path == ["id"]
     assert selector.authenticator.token_provider.login_requester._url_base.eval(input_config) == "https://api.sendgrid.com"
-    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {"username": "lists", "password": "verysecrettoken"}
+    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {
+        "username": "lists",
+        "password": "verysecrettoken",
+    }
+
+
+@pytest.mark.parametrize(
+    "input_config, expected_authenticator_class",
+    [
+        pytest.param(
+            {"auth": {"type": "token"}, "credentials": {"api_key": "some_key"}},
+            ApiKeyAuthenticator,
+            id="test_create_requester_with_selective_authenticator_and_token_selected",
+        ),
+        pytest.param(
+            {"auth": {"type": "oauth"}, "credentials": {"client_id": "ABC"}},
+            DeclarativeOauth2Authenticator,
+            id="test_create_requester_with_selective_authenticator_and_oauth_selected",
+        ),
+    ],
+)
+def test_create_requester_with_selective_authenticator(input_config, expected_authenticator_class):
+    content = """
+authenticator:
+  type: SelectiveAuthenticator
+  authenticator_selection_path:
+    - auth
+    - type
+  authenticators:
+    token:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "api_key={{ config['credentials']['api_key']  }}"
+    oauth:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: https://api.url.com
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: some_secret
+      refresh_token: some_token
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    authenticator = factory.create_component(
+        model_type=SelectiveAuthenticator, component_definition=authenticator_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(authenticator, expected_authenticator_class)
 
 
 def test_create_composite_error_handler():
@@ -995,7 +1086,7 @@ def test_config_with_defaults():
     assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester._http_method == HttpMethod.GET
+    assert stream.retriever.requester.http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
@@ -1037,11 +1128,11 @@ def test_create_default_paginator():
 
     assert isinstance(paginator.pagination_strategy, CursorPaginationStrategy)
     assert paginator.pagination_strategy.page_size == 50
-    assert paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
+    assert paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
 
     assert isinstance(paginator.page_size_option, RequestOption)
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
-    assert paginator.page_size_option.field_name == "page_size"
+    assert paginator.page_size_option.field_name.eval(config=input_config) == "page_size"
 
     assert isinstance(paginator.page_token_option, RequestPath)
 
@@ -1157,6 +1248,20 @@ def test_create_default_paginator():
             ValueError,
             id="test_create_custom_component_missing_required_field_emits_error",
         ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.NonExistingClass",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                },
+            },
+            "paginator",
+            None,
+            ValueError,
+            id="test_create_custom_component_non_existing_class_raises_value_error",
+        ),
     ],
 )
 def test_create_custom_components(manifest, field_name, expected_value, expected_error):
@@ -1214,7 +1319,7 @@ def test_custom_components_do_not_contain_extra_fields():
     assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
     assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
@@ -1263,7 +1368,7 @@ def test_parse_custom_component_fields_if_subcomponent():
     assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
     assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
     assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name.eval(config=input_config) == "repository_id"
 
     assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
     assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
@@ -1329,7 +1434,7 @@ class TestCreateTransformations:
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
         assert stream.retriever.record_selector.transformations == expected
 
-    def test_add_fields(self):
+    def test_add_fields_no_value_type(self):
         content = f"""
         the_stream:
             type: DeclarativeStream
@@ -1341,6 +1446,134 @@ class TestCreateTransformations:
                         - path: ["field1"]
                           value: "static_value"
         """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=None,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_string(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+                          value_type: string
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=str,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_number(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: number
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=float,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_integer(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: integer
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=int,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_boolean(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: False
+                          value_type: boolean
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="False", default="False", parameters={}),
+                        value_type=bool,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def _test_add_fields(self, content, expected):
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
@@ -1349,18 +1582,6 @@ class TestCreateTransformations:
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"],
-                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
-                        parameters={},
-                    )
-                ],
-                parameters={},
-            )
-        ]
         assert stream.retriever.record_selector.transformations == expected
 
     def test_default_schema_loader(self):
@@ -1504,10 +1725,10 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     if incremental and partition_router:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
-        if type(partition_router) == list and len(partition_router) > 1:
-            assert type(stream.retriever.stream_slicer._partition_router) == CartesianProductStreamSlicer
+        if isinstance(partition_router, list) and len(partition_router) > 1:
+            assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
-    elif partition_router and type(partition_router) == list and len(partition_router) > 1:
+    elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
@@ -1542,7 +1763,10 @@ def test_simple_retriever_emit_log_messages():
 
 def test_ignore_retry():
     requester_model = {
-        "type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api",
+        "type": "HttpRequester",
+        "name": "list",
+        "url_base": "orange.com",
+        "path": "/v1/api",
     }
 
     connector_builder_factory = ModelToComponentFactory(disable_retries=True)
@@ -1554,3 +1778,70 @@ def test_ignore_retry():
     )
 
     assert requester.max_retries == 0
+
+
+def test_create_page_increment():
+    model = PageIncrementModel(
+        type="PageIncrement",
+        page_size=10,
+        start_from_page=1,
+        inject_on_first_request=True,
+    )
+    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={}, config=input_config)
+
+    strategy = factory.create_page_increment(model, input_config)
+
+    assert strategy.page_size == expected_strategy.page_size
+    assert strategy.start_from_page == expected_strategy.start_from_page
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+
+
+def test_create_page_increment_with_interpolated_page_size():
+    model = PageIncrementModel(
+        type="PageIncrement",
+        page_size="{{ config['page_size'] }}",
+        start_from_page=1,
+        inject_on_first_request=True,
+    )
+    config = {
+        **input_config,
+        "page_size": 5
+    }
+    expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
+
+    strategy = factory.create_page_increment(model, config)
+
+    assert strategy.get_page_size() == expected_strategy.get_page_size()
+    assert strategy.start_from_page == expected_strategy.start_from_page
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+
+
+def test_create_offset_increment():
+    model = OffsetIncrementModel(
+        type="OffsetIncrement",
+        page_size=10,
+        inject_on_first_request=True,
+    )
+    expected_strategy = OffsetIncrement(page_size=10, inject_on_first_request=True, parameters={}, config=input_config)
+
+    strategy = factory.create_offset_increment(model, input_config)
+
+    assert strategy.page_size == expected_strategy.page_size
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+    assert strategy.config == input_config
+
+
+class MyCustomSchemaLoader(SchemaLoader):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Returns a mapping describing the stream's schema"""
+        return {}
+
+
+def test_create_custom_schema_loader():
+
+    definition = {
+        "type": "CustomSchemaLoader",
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+    }
+    component = factory.create_component(CustomSchemaLoaderModel, definition, {})
+    assert isinstance(component, MyCustomSchemaLoader)

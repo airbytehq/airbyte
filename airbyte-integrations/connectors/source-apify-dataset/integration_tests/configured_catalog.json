@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "datasets",
+        "name": "dataset_collection",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "item_collection",
+        "name": "item_collection_website_content_crawler",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

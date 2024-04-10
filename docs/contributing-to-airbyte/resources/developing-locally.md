@@ -2,8 +2,8 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 17`](https://jdk.java.net/archive/)
-2. `Node 16`
+1. [`Java 21`](https://jdk.java.net/archive/)
+2. `Node 20.`
 3. `Python 3.9`
 4. `Docker`
 5. `Jq`
@@ -68,7 +68,7 @@ A good rule of thumb is to set this to \(\# of cores - 1\).
 
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
 
-```text
+```bash
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ```
@@ -107,9 +107,11 @@ In your local `airbyte` repository, run the following command:
 ```
 
 - Then, build the connector image:
-```
-docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
-```
+  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+  - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+  - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
 
 :::info
 
@@ -131,7 +133,7 @@ Now when you run a sync with that connector, it will use your local docker image
 In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
 
 
-
+```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -154,35 +156,7 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-To format an individual connector in python, run the following command in your local `airbyte` repository:
-
-```
- ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
-```
-
-For instance:
-
-```
-./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
-```
-
-To format connectors in java, run `./gradlew format`
-
-### Connector Infrastructure
-
-Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run the following command in your local `airbyte` repository:
-
-```bash
-SUB_BUILD=CONNECTORS_BASE ./gradlew format
-```
-
-Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
-
-```python
-"""
-[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
-"""
-```
+To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 
 ### Develop on `airbyte-webapp`
 
@@ -202,11 +176,10 @@ cd airbyte-webapp
 nvm install
 ```
 
-- Install the `pnpm` package manager in the required version:
+- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
 
 ```bash
-# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
-npm install -g pnpm@<version>
+corepack enable && corepack install
 ```
 
 - Start up the react app.

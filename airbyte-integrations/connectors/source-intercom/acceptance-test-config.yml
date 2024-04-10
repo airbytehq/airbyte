@@ -5,34 +5,28 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_intercom/spec.json"
-      # Spec fix: advanced auth configuration contain `client_id` and `client_secret` fields but they were missing in spec.
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.1"
+      - spec_path: "source_intercom/spec.json"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      # Schema fix: update schemas with undeclared fields which is not breaking change
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.1"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/incremental_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

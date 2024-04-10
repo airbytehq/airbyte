@@ -1,9 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Accounts collection schema",
   "description": "A schema for retrieving the accounts of the chart of accounts.",
   "type": "object",
-  "restdocs": "http://restdocs.e-conomic.com/#get-accounts",
   "properties": {
     "accountNumber": {
       "type": "integer",
@@ -41,6 +40,12 @@
       "sortable": true,
       "filterable": true,
       "description": "Determines if the account can be manually updated with entries."
+    },
+    "department": {
+      "type": ["null", "object"]
+    },
+    "departmentalDistribution": {
+      "type": ["null", "object"]
     },
     "contraAccount": {
       "type": "object",
@@ -149,6 +154,19 @@
       "type": "string",
       "format": "uri",
       "description": "A unique reference to the account resource."
+    },
+    "openingAccount": {
+      "type": ["null", "object"],
+      "properties": {
+        "accountNumber": {
+          "type": "integer"
+        },
+        "self": {
+          "type": "string",
+          "format": "uri",
+          "description": "The unique self link of the VAT code."
+        }
+      }
     }
   }
 }

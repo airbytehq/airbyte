@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 
 public class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest extends AbstractSnowflakeTypingDedupingTest {
 

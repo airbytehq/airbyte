@@ -6,12 +6,12 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_kyve/spec.yaml"
-        config_path: "secrets/config.json"
+        config_path: "integration_tests/config.json"
   connection:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config.json"
         status: "succeed"
-      - config_path: "secrets/config_multiple_pools.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -19,12 +19,12 @@ acceptance_tests:
     bypass_reason: "Schema tests fail by default as the offset is not present in the data but important for the pagination."
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config.json"
         timeout_seconds: 60
-      - config_path: "secrets/config_multiple_pools.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
         timeout_seconds: 60
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config.json"
   incremental:
     bypass_reason: "Schema tests fail by default as as the offset is not present in the data but important for the pagination."

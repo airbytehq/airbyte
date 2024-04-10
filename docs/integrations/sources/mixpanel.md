@@ -43,6 +43,10 @@ Note: Incremental sync returns duplicated \(old records\) for the state date due
 - [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
 - [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
+### Primary key selection for Export stream
+
+Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key. However, note that some rows might lack an `insert_id` for certain users. Ensure you select a primary key that aligns with your data.
+
 ## Performance considerations
 
 Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
@@ -51,7 +55,16 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 0.1.39  | 2023-09-15 | [30469](https://github.com/airbytehq/airbyte/pull/30469) | Add default primary key `distinct_id` to `Export` stream   |
+| 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 2.1.0   | 2024-02-13 | [35203](https://github.com/airbytehq/airbyte/pull/35203) | Update stream Funnels schema with custom_event_id and custom_event fields                                   |
+| 2.0.2   | 2024-02-12 | [35151](https://github.com/airbytehq/airbyte/pull/35151) | Manage dependencies with Poetry.                                                                            |
+| 2.0.1   | 2024-01-11 | [34147](https://github.com/airbytehq/airbyte/pull/34147) | prepare for airbyte-lib                                                                                     |
+| 2.0.0   | 2023-10-30 | [31955](https://github.com/airbytehq/airbyte/pull/31955) | Delete the default primary key for the Export stream                                                        |
+| 1.0.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                             |
+| 1.0.0   | 2023-09-27 | [30025](https://github.com/airbytehq/airbyte/pull/30025) | Fix type of datetime field in engage stream; fix primary key for export stream.                             |
+| 0.1.41  | 2023-09-26 | [30149](https://github.com/airbytehq/airbyte/pull/30149) | Change config schema; set checkpointing interval; add suggested streams; add casting datetime fields.       |
+| 0.1.40  | 2022-09-20 | [30090](https://github.com/airbytehq/airbyte/pull/30090) | Handle 400 error when the credentials become expired                                                        |
+| 0.1.39  | 2023-09-15 | [30469](https://github.com/airbytehq/airbyte/pull/30469) | Add default primary key `distinct_id` to `Export` stream                                                    |
 | 0.1.38  | 2023-08-31 | [30028](https://github.com/airbytehq/airbyte/pull/30028) | Handle gracefully project timezone mismatch                                                                 |
 | 0.1.37  | 2023-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
 | 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |

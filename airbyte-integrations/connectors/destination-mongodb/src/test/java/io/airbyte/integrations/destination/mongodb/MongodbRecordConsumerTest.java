@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
-import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

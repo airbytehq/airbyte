@@ -5,6 +5,8 @@
     "id": { "type": ["null", "string"] },
     "checkout_session_id": { "type": ["null", "string"] },
     "checkout_session_expires_at": { "type": ["null", "integer"] },
+    "checkout_session_created": { "type": ["null", "integer"] },
+    "checkout_session_updated": { "type": ["null", "integer"] },
     "object": { "type": ["null", "string"] },
     "amount_subtotal": { "type": ["null", "integer"] },
     "amount_tax": { "type": ["null", "integer"] },

@@ -1,0 +1,317 @@
+{
+  "data": {
+    "repository": {
+      "name": "integration-test",
+      "owner": {
+        "login": "airbytehq"
+      },
+      "pullRequests": {
+        "nodes": [
+          {
+            "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NTA2",
+            "id": 721435506,
+            "number": 5,
+            "updated_at": "2021-08-27T15:53:14Z",
+            "changed_files": 5,
+            "deletions": 0,
+            "additions": 5,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 5
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDA3",
+            "id": 721435407,
+            "number": 2,
+            "updated_at": "2021-08-27T15:53:27Z",
+            "changed_files": 5,
+            "deletions": 0,
+            "additions": 5,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 5
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDQw",
+            "id": 721435440,
+            "number": 3,
+            "updated_at": "2021-08-27T16:02:49Z",
+            "changed_files": 5,
+            "deletions": 0,
+            "additions": 5,
+            "merged": true,
+            "mergeable": "UNKNOWN",
+            "can_be_rebased": false,
+            "maintainer_can_modify": false,
+            "merge_state_status": "UNKNOWN",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 5
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": {
+              "__typename": "User",
+              "node_id": "MDQ6VXNlcjc0MzkwMQ==",
+              "id": 743901,
+              "login": "gaart",
+              "avatar_url": "https://avatars.githubusercontent.com/u/743901?v=4",
+              "html_url": "https://github.com/gaart",
+              "site_admin": false
+            }
+          },
+          {
+            "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDY2",
+            "id": 721435466,
+            "number": 4,
+            "updated_at": "2021-08-31T12:01:15Z",
+            "changed_files": 5,
+            "deletions": 0,
+            "additions": 5,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 5
+            },
+            "review_comments": {
+              "totalCount": 3,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                },
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                },
+                {
+                  "comments": {
+                    "totalCount": 1
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "PR_kwDOF9hP9c4xmEi6",
+            "id": 832063674,
+            "number": 12,
+            "updated_at": "2022-01-26T03:46:56Z",
+            "changed_files": 1,
+            "deletions": 0,
+            "additions": 2,
+            "merged": true,
+            "mergeable": "UNKNOWN",
+            "can_be_rebased": false,
+            "maintainer_can_modify": false,
+            "merge_state_status": "UNKNOWN",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 1
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": {
+              "__typename": "User",
+              "node_id": "MDQ6VXNlcjUxNTQzMjI=",
+              "id": 5154322,
+              "login": "marcosmarxm",
+              "avatar_url": "https://avatars.githubusercontent.com/u/5154322?u=92c89b82271d48f41fad03923b0a24083e049038&v=4",
+              "html_url": "https://github.com/marcosmarxm",
+              "site_admin": false
+            }
+          },
+          {
+            "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1Mzcz",
+            "id": 721435373,
+            "number": 1,
+            "updated_at": "2022-03-31T11:06:06Z",
+            "changed_files": 5,
+            "deletions": 0,
+            "additions": 5,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 5
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "PR_kwDOF9hP9c46s2Qa",
+            "id": 984835098,
+            "number": 14,
+            "updated_at": "2022-10-04T17:41:29Z",
+            "changed_files": 1,
+            "deletions": 0,
+            "additions": 1,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 2
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "PR_kwDOF9hP9c41Vftv",
+            "id": 894827375,
+            "number": 13,
+            "updated_at": "2023-05-03T06:50:23Z",
+            "changed_files": 1,
+            "deletions": 1,
+            "additions": 1,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": true,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 0
+            },
+            "commits": {
+              "totalCount": 1
+            },
+            "review_comments": {
+              "totalCount": 0,
+              "nodes": []
+            },
+            "merged_by": null
+          },
+          {
+            "node_id": "PR_kwDOF9hP9c5PqZhG",
+            "id": 1336514630,
+            "number": 15,
+            "updated_at": "2023-05-04T10:07:46Z",
+            "changed_files": 1,
+            "deletions": 0,
+            "additions": 1,
+            "merged": false,
+            "mergeable": "MERGEABLE",
+            "can_be_rebased": false,
+            "maintainer_can_modify": false,
+            "merge_state_status": "BLOCKED",
+            "comments": {
+              "totalCount": 1
+            },
+            "commits": {
+              "totalCount": 1
+            },
+            "review_comments": {
+              "totalCount": 1,
+              "nodes": [
+                {
+                  "comments": {
+                    "totalCount": 0
+                  }
+                }
+              ]
+            },
+            "merged_by": null
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "Y3Vyc29yOnYyOpK5MjAyMy0wNS0wNFQxMzowNzo0NiswMzowMM5PqZhG"
+        }
+      }
+    }
+  }
+}

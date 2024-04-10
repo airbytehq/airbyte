@@ -83,14 +83,10 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
-        request_option=RequestOption(
-            inject_into=RequestOptionType.header,
-            field_name=header,
-            parameters={}
-        ),
+        request_option=RequestOption(inject_into=RequestOptionType.header, field_name=header, parameters=parameters),
         token_provider=token_provider,
         config=config,
-        parameters=parameters
+        parameters=parameters,
     )
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
@@ -107,15 +103,87 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
 @pytest.mark.parametrize(
     "test_name, field_name, token, expected_field_name, expected_field_value, inject_type, validation_fn",
     [
-        ("test_static_token", "Authorization", "test-token", "Authorization", "test-token", RequestOptionType.request_parameter, "get_request_params"),
-        ("test_token_from_config", "{{ config.header }}", "{{ config.username }}", "header", "user", RequestOptionType.request_parameter, "get_request_params"),
-        ("test_token_from_parameters", "{{ parameters.header }}", "{{ parameters.username }}", "header", "user", RequestOptionType.request_parameter, "get_request_params"),
-        ("test_static_token", "Authorization", "test-token", "Authorization", "test-token", RequestOptionType.body_data, "get_request_body_data"),
-        ("test_token_from_config", "{{ config.header }}", "{{ config.username }}", "header", "user", RequestOptionType.body_data, "get_request_body_data"),
-        ("test_token_from_parameters", "{{ parameters.header }}", "{{ parameters.username }}", "header", "user", RequestOptionType.body_data, "get_request_body_data"),
-        ("test_static_token", "Authorization", "test-token", "Authorization", "test-token", RequestOptionType.body_json, "get_request_body_json"),
-        ("test_token_from_config", "{{ config.header }}", "{{ config.username }}", "header", "user", RequestOptionType.body_json, "get_request_body_json"),
-        ("test_token_from_parameters", "{{ parameters.header }}", "{{ parameters.username }}", "header", "user", RequestOptionType.body_json, "get_request_body_json"),
+        (
+            "test_static_token",
+            "Authorization",
+            "test-token",
+            "Authorization",
+            "test-token",
+            RequestOptionType.request_parameter,
+            "get_request_params",
+        ),
+        (
+            "test_token_from_config",
+            "{{ config.header }}",
+            "{{ config.username }}",
+            "header",
+            "user",
+            RequestOptionType.request_parameter,
+            "get_request_params",
+        ),
+        (
+            "test_token_from_parameters",
+            "{{ parameters.header }}",
+            "{{ parameters.username }}",
+            "header",
+            "user",
+            RequestOptionType.request_parameter,
+            "get_request_params",
+        ),
+        (
+            "test_static_token",
+            "Authorization",
+            "test-token",
+            "Authorization",
+            "test-token",
+            RequestOptionType.body_data,
+            "get_request_body_data",
+        ),
+        (
+            "test_token_from_config",
+            "{{ config.header }}",
+            "{{ config.username }}",
+            "header",
+            "user",
+            RequestOptionType.body_data,
+            "get_request_body_data",
+        ),
+        (
+            "test_token_from_parameters",
+            "{{ parameters.header }}",
+            "{{ parameters.username }}",
+            "header",
+            "user",
+            RequestOptionType.body_data,
+            "get_request_body_data",
+        ),
+        (
+            "test_static_token",
+            "Authorization",
+            "test-token",
+            "Authorization",
+            "test-token",
+            RequestOptionType.body_json,
+            "get_request_body_json",
+        ),
+        (
+            "test_token_from_config",
+            "{{ config.header }}",
+            "{{ config.username }}",
+            "header",
+            "user",
+            RequestOptionType.body_json,
+            "get_request_body_json",
+        ),
+        (
+            "test_token_from_parameters",
+            "{{ parameters.header }}",
+            "{{ parameters.username }}",
+            "header",
+            "user",
+            RequestOptionType.body_json,
+            "get_request_body_json",
+        ),
     ],
 )
 def test_api_key_authenticator_inject(test_name, field_name, token, expected_field_name, expected_field_value, inject_type, validation_fn):
@@ -124,13 +192,9 @@ def test_api_key_authenticator_inject(test_name, field_name, token, expected_fie
     """
     token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
-        request_option=RequestOption(
-            inject_into=inject_type,
-            field_name=field_name,
-            parameters={}
-        ),
+        request_option=RequestOption(inject_into=inject_type, field_name=field_name, parameters=parameters),
         token_provider=token_provider,
         config=config,
-        parameters=parameters
+        parameters=parameters,
     )
     assert {expected_field_name: expected_field_value} == getattr(token_auth, validation_fn)()

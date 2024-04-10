@@ -10,20 +10,18 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITH_TI
 import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
 import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
-import org.jooq.DSLContext;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  protected PostgreSQLContainer<?> container;
-  protected JsonNode config;
-  protected DSLContext dslContext;
+  protected PostgresTestDatabase testdb;
+
   protected static final String SCHEMA_NAME = "test";
 
   @Override
@@ -37,8 +35,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
 
   @Override
@@ -189,8 +187,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "'2022/11/12'", "'1987.12.01'")
-              .addExpectedValues("1999-01-08", "1991-02-10 BC", "2022-11-12", "1987-12-01")
+              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "'2022/11/12'", "'1987.12.01'", "'-InFinITy'", "'InFinITy'")
+              .addExpectedValues("1999-01-08", "1991-02-10 BC", "2022-11-12", "1987-12-01", "-Infinity", "Infinity")
               .build());
     }
 
@@ -201,20 +199,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addInsertValues("null")
             .addExpectedValues((String) null)
             .build());
-
-    for (final String type : Set.of("double precision", "float", "float8")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
-              .addInsertValues("'123'", "'1234567890.1234567'", "null")
-              // Postgres source does not support these special values yet
-              // https://github.com/airbytehq/airbyte/issues/8902
-              // "'-Infinity'", "'Infinity'", "'NaN'", "null")
-              .addExpectedValues("123.0", "1.2345678901234567E9", null)
-              // "-Infinity", "Infinity", "NaN", null)
-              .build());
-    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -315,43 +299,38 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("33.345")
             .build());
 
+    // Verify that large integers are not deserialized into scientific notation
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMERIC(38)")
+            .addInsertValues("'70000'", "'853245'", "'900000000'")
+            .addExpectedValues("70000", "853245", "900000000")
+            .build());
+
     // case of a column type being a NUMERIC data type
     // with precision but no decimal
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .fullSourceDataType("NUMERIC(38)")
+            .fullSourceDataType("NUMERIC(38,0)")
             .airbyteType(JsonSchemaType.INTEGER)
-            .addInsertValues("'33'")
-            .addExpectedValues("33")
+            .addInsertValues("'33'", "'123'")
+            .addExpectedValues("33", "123")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("numeric")
-            .fullSourceDataType("NUMERIC(28,2)")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .addInsertValues(
-                "'123'", "null", "'14525.22'")
-            // Postgres source does not support these special values yet
-            // https://github.com/airbytehq/airbyte/issues/8902
-            // "'infinity'", "'-infinity'", "'nan'"
-            .addExpectedValues("123", null, "14525.22")
-            .build());
-
-    // Blocked by https://github.com/airbytehq/airbyte/issues/8902
-    for (final String type : Set.of("numeric", "decimal")) {
+    for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .fullSourceDataType("NUMERIC(20,7)")
               .airbyteType(JsonSchemaType.NUMBER)
-              .addInsertValues(
-                  "'123'", "null", "'1234567890.1234567'")
+              .addInsertValues("'123'", "'1234567890.1234567'", "null")
               // Postgres source does not support these special values yet
               // https://github.com/airbytehq/airbyte/issues/8902
-              // "'infinity'", "'-infinity'", "'nan'"
-              .addExpectedValues("123", null, "1.2345678901234567E9")
+              // "'-Infinity'", "'Infinity'", "'NaN'", "null")
+              .addExpectedValues("123.0", "1.2345678901234567E9", null)
+              // "-Infinity", "Infinity", "NaN", null)
               .build());
     }
 
@@ -473,14 +452,16 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP '0001-01-01 00:00:00.000000'",
                   // The last possible timestamp in BCE
                   "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
-                  "'epoch'")
+                  "'epoch'",
+                  "'-InFinITy'", "'InFinITy'")
               .addExpectedValues(
                   "2004-10-19T10:23:00.000000",
                   "2004-10-19T10:23:54.123456",
                   "3004-10-19T10:23:54.123456 BC",
                   "0001-01-01T00:00:00.000000",
                   "0001-12-31T23:59:59.999999 BC",
-                  "1970-01-01T00:00:00.000000")
+                  "1970-01-01T00:00:00.000000",
+                  "-Infinity", "Infinity")
               .build());
     }
 
@@ -495,8 +476,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .addExpectedValues((String) null)
               .build());
     }
-
-    addTimestampWithInfinityValuesTest();
 
     // timestamp with time zone
     for (final String fullSourceType : Set.of("timestamptz", "timestamp with time zone")) {
@@ -516,14 +495,14 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",
                   // The last possible timestamp in BCE (15:59-08 == 23:59Z)
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 15:59:59.999999-08 BC'",
-                  "null")
+                  "null", "'-InFinITy'", "'InFinITy'")
               .addExpectedValues(
                   "2004-10-19T18:23:00.000000Z",
                   "2004-10-19T18:23:54.123456Z",
                   "3004-10-19T18:23:54.123456Z BC",
                   "0001-01-01T00:00:00.000000Z",
                   "0001-12-31T23:59:59.999999Z BC",
-                  null)
+                  null, "-Infinity", "Infinity")
               .build());
     }
 
@@ -592,6 +571,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addTimeWithTimeZoneTest();
     addArraysTestData();
     addMoneyTest();
+    addNumericValuesTest();
   }
 
   protected void addHstoreTest() {
@@ -648,24 +628,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               // so 13:00:01 is returned as 13:00:01-07.
               .addExpectedValues(null, "13:00:01.123456-07:00", "13:00:01+08:00", "13:00:03-08:00", "13:00:04Z",
                   "13:00:05.012345-08:00", "13:00:06+08:00")
-              .build());
-    }
-  }
-
-  protected void addTimestampWithInfinityValuesTest() {
-    // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timestamp")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "'infinity'",
-                  "'-infinity'")
-              .addExpectedValues(
-                  "+292278994-08-16T23:00:00.000000",
-                  "+292269055-12-02T23:00:00.000000 BC")
               .build());
     }
   }
@@ -849,6 +811,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build())
+                .build())
+            .addInsertValues("ARRAY['{\"foo\":\"bar\"}'::JSONB, NULL]")
+            .addExpectedValues("[\"{\\\"foo\\\": \\\"bar\\\"}\",null]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("money_array")
             .fullSourceDataType("MONEY[]")
             .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
@@ -953,6 +926,37 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addInsertValues("'{null,2004-10-19 10:23:00,2004-10-19 10:23:54.123456,3004-10-19 10:23:54.123456 BC}'")
             .addExpectedValues("[null,\"2004-10-19T10:23:00.000000\",\"2004-10-19T10:23:54.123456\",\"3004-10-19T10:23:54.123456 BC\"]")
             .build());
+  }
+
+  protected void addNumericValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(28,2)")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "'123'", "null", "'14525.22'")
+            // Postgres source does not support these special values yet
+            // https://github.com/airbytehq/airbyte/issues/8902
+            // "'infinity'", "'-infinity'", "'nan'"
+            .addExpectedValues("123.0", null, "14525.22")
+            .build());
+
+    // Blocked by https://github.com/airbytehq/airbyte/issues/8902
+    for (final String type : Set.of("numeric", "decimal")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .fullSourceDataType("NUMERIC(20,7)")
+              .airbyteType(JsonSchemaType.NUMBER)
+              .addInsertValues(
+                  "'123'", "null", "'1234567890.1234567'")
+              // Postgres source does not support these special values yet
+              // https://github.com/airbytehq/airbyte/issues/8902
+              // "'infinity'", "'-infinity'", "'nan'"
+              .addExpectedValues("123.0", null, "1.2345678901234567E9")
+              .build());
+    }
   }
 
 }

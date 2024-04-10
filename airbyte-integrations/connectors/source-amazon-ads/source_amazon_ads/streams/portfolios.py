@@ -17,18 +17,18 @@ class Portfolios(AmazonAdsStream):
     primary_key = "portfolioId"
     model = Portfolio
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/portfolios/extended"
 
-    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
             self._current_profile_id = profile.profileId
-            yield from super().read_records(*args, **kvargs)
+            yield from super().read_records(*args, **kwargs)
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kvargs)
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = super().request_headers(*args, **kwargs)
         headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
         return headers

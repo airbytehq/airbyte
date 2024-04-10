@@ -24,6 +24,14 @@ class ErrorHandler:
         """
         pass
 
+    @property
+    @abstractmethod
+    def max_time(self) -> Union[int, None]:
+        """
+        Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """
+        pass
+
     @abstractmethod
     def interpret_response(self, response: requests.Response) -> ResponseStatus:
         """

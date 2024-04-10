@@ -3,59 +3,48 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_gitlab/spec.json"
+      - spec_path: "source_gitlab/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 1.8.0
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 3.0.0
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      timeout_seconds: 3600
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      ignored_fields:
-        jobs:
-        - name: "user"
-          bypass_reason: "User object contains local_time which will be different each time test is run"
-      fail_on_extra_columns: false
-    - config_path: "secrets/config_with_ids.json"
-      timeout_seconds: 3600
-      empty_streams:
-      - name: "epics"
-        bypass_reason: "Group in this config does not have epics. This stream is tested in the above TC."
-      - name: "epic_issues"
-        bypass_reason: "Group in this config does not have epics issues. This stream is tested in the above TC."
-      expect_records:
-        path: "integration_tests/expected_records_with_ids.jsonl"
-      ignored_fields:
-        jobs:
-        - name: "user"
-          bypass_reason: "User object contains local_time which will be different each time test is run"
-      fail_on_extra_columns: false
-    - config_path: "secrets/config_oauth.json"
-      timeout_seconds: 3600
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      ignored_fields:
-        jobs:
-        - name: "user"
-          bypass_reason: "User object contains local_time which will be different each time test is run"
-      fail_on_extra_columns: false
+      - config_path: "secrets/config.json"
+        timeout_seconds: 3600
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+      - config_path: "secrets/config_with_ids.json"
+        timeout_seconds: 3600
+        empty_streams:
+          - name: "epics"
+            bypass_reason: "Group in this config does not have epics. This stream is tested in the above TC."
+          - name: "epic_issues"
+            bypass_reason: "Group in this config does not have epics issues. This stream is tested in the above TC."
+        expect_records:
+          path: "integration_tests/expected_records_with_ids.jsonl"
+      - config_path: "secrets/config_oauth.json"
+        timeout_seconds: 3600
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
-    - config_path: "secrets/config_with_ids.json"
-      configured_catalog_path: "integration_tests/incremental_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config_with_ids.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -6,6 +6,9 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "code": {
       "type": ["null", "string"],
       "maxLength": 256
@@ -44,6 +47,48 @@
     },
     "auto_renew": {
       "type": ["null", "boolean"]
+    },
+    "pricing_model": {
+      "type": ["null", "string"]
+    },
+    "ramp_intervals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "starting_billing_cycle": {
+            "type": ["null", "integer"]
+          },
+          "currencies": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "currency": {
+                  "type": ["null", "string"]
+                },
+                "unit_amount": {
+                  "type": ["null", "number"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "accounting_code": {
       "type": ["null", "string"],

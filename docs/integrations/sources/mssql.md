@@ -1,4 +1,9 @@
 # Microsoft SQL Server (MSSQL)
+Airbyte's certified MSSQL connector offers the following features:
+* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
+* Incremental as well as Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+* Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+
 
 ## Features
 
@@ -14,18 +19,7 @@
 
 The MSSQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-## Troubleshooting
-
-You may run into an issue where the connector provides wrong values for some data types. See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
-
-Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check
-[this ticket](https://github.com/airbytehq/airbyte/issues/14411)
-
-## Getting Started \(Airbyte Cloud\)
-
-On Airbyte Cloud, only TLS connections to your MSSQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
-
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started
 
 #### Requirements
 
@@ -41,13 +35,14 @@ This is dependent on your networking setup. The easiest way to verify if Airbyte
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
-_Coming soon: suggestions on how to create this user._
-
 #### 3. Your database user should now be ready for use with Airbyte!
+
+#### Airbyte Cloud
+On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source configuration. You may either configure your connection using one of the supported SSL Methods or by using an SSH Tunnel.
 
 ## Change Data Capture \(CDC\)
 
-We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017) to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on cdc-enabled tables.
+We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017) with transaction logs to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on CDC-enabled tables.
 
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
@@ -60,27 +55,17 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 - If the limitations below prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
 - If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
-### CDC Config
-
-| Parameter                |                     Type                     |      Default       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| :----------------------- | :------------------------------------------: | :----------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data to Sync             | Enum: `Existing and New`, `New Changes Only` | `Existing and New` | What data should be synced under the CDC. `Existing and New` will read existing data as a snapshot, and sync new changes through CDC. `New Changes Only` will skip the initial snapshot, and only sync new changes through CDC. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode) for details. Under the hood, this parameter sets the `snapshot.mode` in Debezium. |
-| Snapshot Isolation Level |      Enum: `Snapshot`, `Read Committed`      |     `Snapshot`     | Mode to control which transaction isolation level is used and how long the connector locks tables that are designated for capture. If you don't know which one to choose, just use the default one. See documentation [here](https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode) for details. Under the hood, this parameter sets the `snapshot.isolation.mode` in Debezium.         |
-
 #### CDC Limitations
 
 - Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
-- There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
+- `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by Debezium). For more details please check
+[this ticket](https://github.com/airbytehq/airbyte/issues/14411)
 - CDC is only available for SQL Server 2016 Service Pack 1 \(SP1\) and later.
 - _db_owner_ \(or higher\) permissions are required to perform the [neccessary setup](mssql.md#setting-up-cdc-for-mssql) for CDC.
-- If you set `Initial Snapshot Isolation Level` to `Snapshot`, you must enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database\(s\) you want to sync. This is used for retrieving an initial snapshot without locking tables.
-- For SQL Server Always On read-only replica, only `Snapshot` initial snapshot isolation level is supported.
 - On Linux, CDC is not supported on versions earlier than SQL Server 2017 CU18 \(SQL Server 2019 is supported\).
 - Change data capture cannot be enabled on tables with a clustered columnstore index. \(It can be enabled on tables with a _non-clustered_ columnstore index\).
 - The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot enable CDC on the SQL Server master database.
 - Using variables with partition switching on databases or tables with change data capture \(CDC\) is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement
-- Our implementation has not been tested with managed instances, such as Azure SQL Database \(we welcome any feedback from users who try this!\)
-  - If you do want to try this, CDC can only be enabled on Azure SQL databases tiers above Standard 3 \(S3+\). Basic, S0, S1 and S2 tiers are not supported for CDC.
 - Our CDC implementation uses at least once delivery for all change records.
 - Read more on CDC limitations in the [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
@@ -109,7 +94,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   @source_schema = N'{schema name}',
   @source_name   = N'{table name}',
   @role_name     = N'{role name}',  [1]
-  @filegroup_name = N'{fiilegroup name}', [2]
+  @filegroup_name = N'{filegroup name}', [2]
   @supports_net_changes = 0 [3]
   GO
   ```
@@ -265,39 +250,39 @@ This produces the private key in pem format, and the public key remains in the s
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| MSSQL Type                                              | Resulting Type | Notes |
-| :------------------------------------------------------ | :------------- | :---- |
-| `bigint`                                                | number         |       |
-| `binary`                                                | string         |       |
-| `bit`                                                   | boolean        |       |
-| `char`                                                  | string         |       |
-| `date`                                                  | number         |       |
-| `datetime`                                              | string         |       |
-| `datetime2`                                             | string         |       |
-| `datetimeoffset`                                        | string         |       |
-| `decimal`                                               | number         |       |
-| `int`                                                   | number         |       |
-| `float`                                                 | number         |       |
-| `geography`                                             | string         |       |
-| `geometry`                                              | string         |       |
-| `money`                                                 | number         |       |
-| `numeric`                                               | number         |       |
-| `ntext`                                                 | string         |       |
-| `nvarchar`                                              | string         |       |
-| `nvarchar(max)`                                         | string         |       |
-| `real`                                                  | number         |       |
-| `smalldatetime`                                         | string         |       |
-| `smallint`                                              | number         |       |
-| `smallmoney`                                            | number         |       |
-| `sql_variant`                                           | string         |       |
-| `uniqueidentifier`                                      | string         |       |
-| `text`                                                  | string         |       |
-| `time`                                                  | string         |       |
-| `tinyint`                                               | number         |       |
-| `varbinary`                                             | string         |       |
-| `varchar`                                               | string         |       |
-| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string         |       |
-| `xml`                                                   | string         |       |
+| MSSQL Type                                              | Resulting Type          | Notes |
+| :------------------------------------------------------ |:------------------------| :---- |
+| `bigint`                                                | number                  |       |
+| `binary`                                                | string                  |       |
+| `bit`                                                   | boolean                 |       |
+| `char`                                                  | string                  |       |
+| `date`                                                  | date                    |       |
+| `datetime`                                              | timestamp               |       |
+| `datetime2`                                             | timestamp               |       |
+| `datetimeoffset`                                        | timestamp with timezone |       |
+| `decimal`                                               | number                  |       |
+| `int`                                                   | number                  |       |
+| `float`                                                 | number                  |       |
+| `geography`                                             | string                  |       |
+| `geometry`                                              | string                  |       |
+| `money`                                                 | number                  |       |
+| `numeric`                                               | number                  |       |
+| `ntext`                                                 | string                  |       |
+| `nvarchar`                                              | string                  |       |
+| `nvarchar(max)`                                         | string                  |       |
+| `real`                                                  | number                  |       |
+| `smalldatetime`                                         | timestamp               |       |
+| `smallint`                                              | number                  |       |
+| `smallmoney`                                            | number                  |       |
+| `sql_variant`                                           | string                  |       |
+| `uniqueidentifier`                                      | string                  |       |
+| `text`                                                  | string                  |       |
+| `time`                                                  | time                    |       |
+| `tinyint`                                               | number                  |       |
+| `varbinary`                                             | string                  |       |
+| `varchar`                                               | string                  |       |
+| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string                  |       |
+| `xml`                                                   | string                  |       |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
@@ -341,7 +326,42 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.8   | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)                                                          | Update to connector's metadat definition.                                                                                                       |
+| 4.0.7   | 2024-04-03 | [36772](https://github.com/airbytehq/airbyte/pull/36772)                                                          | Adopt latest CDK.                                                                                                                               |
+| 4.0.6   | 2024-03-25 | [36333](https://github.com/airbytehq/airbyte/pull/36333)                                                          | Deprecate Dbz state iterator.                                                                                                                   |
+| 4.0.5   | 2024-03-21 | [36364](https://github.com/airbytehq/airbyte/pull/36364)                                                          | Allow up to 40 minutes of wait for the an initial CDC record.                                                                                   |
+| 4.0.4   | 2024-03-20 | [36325](https://github.com/airbytehq/airbyte/pull/36325)                                                          | [Refactor] : Remove mssql initial source operations .                                                                                           |
+| 4.0.3   | 2024-03-19 | [36263](https://github.com/airbytehq/airbyte/pull/36263)                                                          | Fix a failure seen in CDC with tables containing default values.                                                                                |
+| 4.0.2   | 2024-03-06 | [35792](https://github.com/airbytehq/airbyte/pull/35792)                                                          | Initial sync will now send record count in state message.                                                                                       |
+| 4.0.1   | 2024-03-12 | [36011](https://github.com/airbytehq/airbyte/pull/36011)                                                          | Read correctly null values of columns with default value in CDC.                                                                                |
+| 4.0.0   | 2024-03-06 | [35873](https://github.com/airbytehq/airbyte/pull/35873)                                                          | Terabyte-sized tables support, reliability improvements, bug fixes.                                                                             |
+| 3.7.7   | 2024-03-06 | [35816](https://github.com/airbytehq/airbyte/pull/35816)                                                          | Fix query that was failing on a case sensitive server.                                                                                          |
+| 3.7.6   | 2024-03-04 | [35721](https://github.com/airbytehq/airbyte/pull/35721)                                                          | Fix tests                                                                                                                                       |
+| 3.7.5   | 2024-02-29 | [35739](https://github.com/airbytehq/airbyte/pull/35739)                                                          | Allow configuring the queue size used for cdc events.                                                                                           |
+| 3.7.4   | 2024-02-26 | [35566](https://github.com/airbytehq/airbyte/pull/35566)                                                          | Add config to throw an error on invalid CDC position.                                                                                           |
+| 3.7.3   | 2024-02-23 | [35596](https://github.com/airbytehq/airbyte/pull/35596)                                                          | Fix a logger issue                                                                                                                              |
+| 3.7.2   | 2024-02-21 | [35368](https://github.com/airbytehq/airbyte/pull/35368)                                                          | Change query syntax to make it compatible with Azure SQL Managed Instance.                                                                      |
+| 3.7.1   | 2024-02-20 | [35405](https://github.com/airbytehq/airbyte/pull/35405)                                                          | Change query syntax to make it compatible with Azure Synapse.                                                                                   |
+| 3.7.0   | 2024-01-30 | [33311](https://github.com/airbytehq/airbyte/pull/33311)                                                          | Source mssql with checkpointing initial sync.                                                                                                   |
+| 3.6.1   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573)                                                          | Adopt CDK v0.16.0.                                                                                                                              |
+| 3.6.0   | 2024-01-10 | [33700](https://github.com/airbytehq/airbyte/pull/33700)                                                          | Remove CDC config options for data_to_sync and snapshot isolation.                                                                              |
+| 3.5.1   | 2024-01-05 | [33510](https://github.com/airbytehq/airbyte/pull/33510)                                                          | Test-only changes.                                                                                                                              |
+| 3.5.0   | 2023-12-19 | [33071](https://github.com/airbytehq/airbyte/pull/33071)                                                          | Fix SSL configuration parameters                                                                                                                |
+| 3.4.1   | 2024-01-02 | [33755](https://github.com/airbytehq/airbyte/pull/33755)                                                          | Encode binary to base64 format                                                                                                                  |
+| 3.4.0   | 2023-12-19 | [33481](https://github.com/airbytehq/airbyte/pull/33481)                                                          | Remove LEGACY state flag                                                                                                                        |
+| 3.3.2   | 2023-12-14 | [33505](https://github.com/airbytehq/airbyte/pull/33505)                                                          | Using the released CDK.                                                                                                                         |
+| 3.3.1   | 2023-12-12 | [33225](https://github.com/airbytehq/airbyte/pull/33225)                                                          | extracting MsSql specific files out of the CDK.                                                                                                 |
+| 3.3.0   | 2023-12-12 | [33018](https://github.com/airbytehq/airbyte/pull/33018)                                                          | Migrate to Per-stream/Global states and away from Legacy states                                                                                 |
+| 3.2.1   | 2023-12-11 | [33330](https://github.com/airbytehq/airbyte/pull/33330)                                                          | Parse DatetimeOffset fields with the correct format when used as cursor                                                                         |
+| 3.2.0   | 2023-12-07 | [33225](https://github.com/airbytehq/airbyte/pull/33225)                                                          | CDC : Enable compression of schema history blob in state.                                                                                       |
+| 3.1.0   | 2023-11-28 | [32882](https://github.com/airbytehq/airbyte/pull/32882)                                                          | Enforce SSL on Airbyte Cloud.                                                                                                                   |
+| 3.0.2   | 2023-11-27 | [32573](https://github.com/airbytehq/airbyte/pull/32573)                                                          | Format Datetime and Datetime2 datatypes to 6-digit microsecond precision                                                                        |
+| 3.0.1   | 2023-11-22 | [32656](https://github.com/airbytehq/airbyte/pull/32656)                                                          | Adopt java CDK version 0.5.0.                                                                                                                   |
+| 3.0.0   | 2023-11-07 | [31531](https://github.com/airbytehq/airbyte/pull/31531)                                                          | Remapped date, smalldatetime, datetime2, time, and datetimeoffset datatype to their correct Airbyte types                                       |
+| 2.0.4   | 2023-11-06 | [#32193](https://github.com/airbytehq/airbyte/pull/32193)                                                         | Adopt java CDK version 0.4.1.                                                                                                                   |
+| 2.0.3   | 2023-10-31 | [32024](https://github.com/airbytehq/airbyte/pull/32024)                                                          | Upgrade to Debezium version 2.4.0.                                                                                                              |
+| 2.0.2   | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960)                                                          | Adopt java CDK version 0.2.0.                                                                                                                   |
 | 2.0.1   | 2023-08-24 | [29821](https://github.com/airbytehq/airbyte/pull/29821)                                                          | Set replication_method display_type to radio, update titles and descriptions, and make CDC the default choice                                   |
 | 2.0.0   | 2023-08-22 | [29493](https://github.com/airbytehq/airbyte/pull/29493)                                                          | Set a default cursor for Cdc mode                                                                                                               |
 | 1.1.1   | 2023-07-24 | [28545](https://github.com/airbytehq/airbyte/pull/28545)                                                          | Support Read Committed snapshot isolation level                                                                                                 |

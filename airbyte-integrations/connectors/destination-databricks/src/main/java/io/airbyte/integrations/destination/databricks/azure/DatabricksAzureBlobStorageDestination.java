@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.destination.databricks.azure;
 
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageConnectionChecker;
 import io.airbyte.integrations.destination.databricks.DatabricksExternalStorageBaseDestination;
 import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 
 public class DatabricksAzureBlobStorageDestination extends DatabricksExternalStorageBaseDestination {
 
