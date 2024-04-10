@@ -63,7 +63,7 @@ TelemetryConfig()
   if $telemetryEnabled; then
     telemetrySessionULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
 
-    if [[ telemetrySessionULID = "" ]]; then
+    if [[ $telemetrySessionULID = "" || ${#telemetrySessionULID} -ne 26 ]]; then
       # if we still don't have a ulid, give up on telemetry data
       telemetryEnabled=false
       return
@@ -74,9 +74,9 @@ TelemetryConfig()
       telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
     fi
     # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
-    if [[ $telemetryUserULID = "" ]]; then
+    if [[ $telemetryUserULID = "" || ${#$telemetryUserULID} -ne 26 ]]; then
       telemetryUserULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
-      if [[ $telemetryUserULID = "" ]]; then
+      if [[ $telemetryUserULID = "" || ${#$telemetryUserULID} -ne 26 ]]; then
         # if we still don't have a ulid, give up on telemetry data
         telemetryEnabled=false
       else
