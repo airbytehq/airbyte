@@ -250,11 +250,11 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         if not isinstance(cursor_field_key, str):
             raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
         cursor_field = CursorField(cursor_field_key)
-        legacy_state = state_manager.get_stream_state(stream.name, stream.namespace)
+        stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
         return ConcurrentCursor(
             stream.name,
             stream.namespace,
-            legacy_state,
+            stream_state,
             self.message_repository,
             state_manager,
             stream.state_converter,
