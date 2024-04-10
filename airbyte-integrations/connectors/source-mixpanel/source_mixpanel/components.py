@@ -1,36 +1,24 @@
 import base64
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, ApiKeyAuthenticator
-from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-
-from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union, Tuple, MutableMapping
-import dpath.util
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-# from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation, AddFields
-from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
-
+from functools import cache
 import dpath.util
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from typing import Any, Iterable, List, Mapping, Optional, Union, Tuple, MutableMapping
+from dataclasses import InitVar, dataclass
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 
 from .streams.engage import EngageSchema
-from .source import TokenAuthenticatorBase64
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
+
 
 @dataclass
 class CustomAuthenticator(ApiKeyAuthenticator):
@@ -50,6 +38,9 @@ class MixpanelHttpRequester(HttpRequester):
         if api_secret and 'Basic' not in api_secret:
             api_secret = base64.b64encode(api_secret.encode("utf8")).decode("utf8")
             self.config['credentials']['api_secret'] = f"Basic {api_secret}"
+            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+            print( self.config['credentials']['api_secret'])
 
     def get_url_base(self) -> str:
         """
@@ -265,11 +256,6 @@ class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
                     if empty_parent_slice:
                         yield from []
 
-class EngageDefaultPaginator(DefaultPaginator):
-    ...
-
-
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
 @dataclass
 class EngagePaginationStrategy(PageIncrement):
@@ -301,8 +287,19 @@ class EngagePaginationStrategy(PageIncrement):
             self._total = None
             return None
 
+
 class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
+    schema: Mapping[str, Any]
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        if not self.file_path:
+            self.file_path = _default_file_path()
+        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
+        self.schema = {}
+
     def get_json_schema(self) -> Mapping[str, Any]:
+
+        if self.schema:
+            return self.schema
 
         schema = super().get_json_schema()
 
@@ -322,7 +319,8 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
         if username and secret:
             authenticator = BasicHttpAuthenticator(username=username, password=secret)
         else:
-            authenticator = TokenAuthenticatorBase64(token=credentials["api_secret"])
+            token = credentials["api_secret"].replace("Basic ", "")
+            authenticator = TokenAuthenticator(token=token, auth_method="Basic")
 
         params = {
             "authenticator": authenticator,
@@ -347,5 +345,5 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
             # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
             if property_name not in schema["properties"]:
                 schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
-
+        self.schema = schema
         return schema
