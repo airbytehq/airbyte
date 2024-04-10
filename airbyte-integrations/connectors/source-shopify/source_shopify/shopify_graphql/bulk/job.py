@@ -33,6 +33,7 @@ class ShopifyBulkStatus(Enum):
 class ShopifyBulkManager:
     session: requests.Session
     base_url: str
+    stream_name: str
 
     # default logger
     logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
@@ -147,7 +148,7 @@ class ShopifyBulkManager:
             self.log_running_job_msg_count = 0
 
     def log_state(self) -> None:
-        self.logger.info(f"The BULK Job: `{self.job_id}` is {self.job_state}.")
+        self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` is {self.job_state}.")
 
     def job_get_state_args(self) -> Mapping[str, Any]:
         return {
@@ -223,7 +224,8 @@ class ShopifyBulkManager:
         # format Job state check args
         status_args = self.job_get_state_args()
         # re-use of `self._session(*, **)` to make BULK Job status checks
-        response = self.session.request(**status_args)
+        with self.session as track_running_job:
+            response = track_running_job.request(**status_args)
         # errors check
         errors = self.job_check_for_errors(response)
         if not errors:
@@ -267,18 +269,15 @@ class ShopifyBulkManager:
         return self.concurrent_attempt == self.concurrent_max_retry
 
     def job_retry_request(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
-        # retry current `request`
-        return self.session.send(request)
+        with self.session.send(request) as retried_request:
+            return retried_request
 
     def job_retry_concurrent(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
-        # increment attempt
         self.concurrent_attempt += 1
-        # try to execute previous request, it's handy because we can retry / each slice yielded
         self.logger.warning(
-            f"The BULK concurrency limit has reached. Waiting {self.concurrent_interval_sec} sec before retry, atttempt: {self.concurrent_attempt}.",
+            f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self.concurrent_interval_sec} sec before retry, atttempt: {self.concurrent_attempt}.",
         )
         sleep(self.concurrent_interval_sec)
-        # retry current `request`
         return self.job_healthcheck(self.job_retry_request(request))
 
     def job_get_id(self, response: requests.Response) -> Optional[str]:
@@ -286,7 +285,7 @@ class ShopifyBulkManager:
         bulk_response = response_data.get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
         if bulk_response and bulk_response.get("status") == ShopifyBulkStatus.CREATED.value:
             job_id = bulk_response.get("id")
-            self.logger.info(f"The BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
+            self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
             return job_id
         else:
             return None
@@ -315,6 +314,7 @@ class ShopifyBulkManager:
         except (ShopifyBulkExceptions.BulkJobBadResponse, ShopifyBulkExceptions.BulkJobUnknownError) as err:
             # sometimes we face with `HTTP-500 Internal Server Error`
             # we should retry such at least once
+            self.logger.info(f"Stream: `{self.stream_name}`, retrying Bad Request: {request.body}, error: {repr(err)}.")
             return self.job_retry_request(request)
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
@@ -338,7 +338,7 @@ class ShopifyBulkManager:
             raise bulk_job_error
         finally:
             job_current_elapsed_time = round((time() - job_started), 3)
-            self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {job_current_elapsed_time} sec.")
+            self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` time elapsed: {job_current_elapsed_time} sec.")
             # check whether or not we should expand or reduce the size of the slice
             self.__adjust_job_size(job_current_elapsed_time)
             # reset the state for COMPLETED job

@@ -597,7 +597,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # init BULK Query instance, pass `shop_id` from config
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
-        self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
+        self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
+            session=self._session,
+            base_url=f"{self.url_base}/{self.path()}",
+            stream_name=self.name,
+        )
         # overide the default job slice size, if provided (it's auto-adjusted, later on)
         self.bulk_window_in_days = config.get("bulk_window_in_days")
         if self.bulk_window_in_days:
