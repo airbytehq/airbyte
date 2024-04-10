@@ -525,16 +525,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 stream,
                 datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
                 timedelta(days=config["slice_range"]),
-                state_manager)
+                state_manager,
+            )
             for stream in streams
         ]
 
     def _to_concurrent(
-        self,
-        stream: Stream,
-        fallback_start: datetime,
-        slice_range: timedelta,
-        state_manager: ConnectorStateManager
+        self, stream: Stream, fallback_start: datetime, slice_range: timedelta, state_manager: ConnectorStateManager
     ) -> Stream:
         if stream.name in self._streams_configured_as_full_refresh:
             return StreamFacade.create_from_stream(
