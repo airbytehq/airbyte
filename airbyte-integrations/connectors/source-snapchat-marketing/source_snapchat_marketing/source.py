@@ -249,7 +249,14 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
         self.max_state = self.initial_state
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, action_report_time=self.action_report_time, swipe_up_attribution_window=self.swipe_up_attribution_window, view_attribution_window=self.view_attribution_window)
+        parent_stream = self.parent(
+            authenticator=self.authenticator,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            action_report_time=self.action_report_time,
+            swipe_up_attribution_window=self.swipe_up_attribution_window,
+            view_attribution_window=self.view_attribution_window,
+        )
         stream_slices = get_parent_ids(parent_stream)
 
         if stream_slices:
@@ -371,7 +378,14 @@ class Stats(SnapchatMarketingStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice represents each entity id from parent stream"""
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, action_report_time=self.action_report_time, swipe_up_attribution_window=self.swipe_up_attribution_window, view_attribution_window=self.view_attribution_window)
+        parent_stream = self.parent(
+            authenticator=self.authenticator,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            action_report_time=self.action_report_time,
+            swipe_up_attribution_window=self.swipe_up_attribution_window,
+            view_attribution_window=self.view_attribution_window,
+        )
         self.parent_name = parent_stream.name
         stream_slices = get_parent_ids(parent_stream)
 
