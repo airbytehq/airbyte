@@ -47,8 +47,8 @@ streams:
         path: Reports/activity
         http_method: GET
         request_parameters:
-          DateFrom: '{{ config[''start_date''] }}'
-          DateTo: '{{ today_utc() }}'
+          DateFrom: "{{ config['start_date'] }}"
+          DateTo: "{{ today_utc() }}"
         authenticator:
           $ref: "#/definitions/custom_authenticator"
       record_selector:
@@ -108,7 +108,7 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: clients
-    primary_key: 
+    primary_key:
       - id
     schema_loader:
       type: InlineSchemaLoader
@@ -145,56 +145,56 @@ definitions:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       dateArchived:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       active:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       accountOwner:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billableRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       admin:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       isProjectManager:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       roleType:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       customId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   clients_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -203,32 +203,32 @@ definitions:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       customId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contactName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       contactEmail:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       dateArchived:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   projects_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -237,104 +237,104 @@ definitions:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       dateArchived:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       dateCreated:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       clientName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       clientId:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       customId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       budgetAlertPercent:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetType:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       laborCost:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       totalTimeLogged:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetValue:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       totalAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       totalExpense:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       totalCost:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billableTimeLogged:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       totalBillableAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billable:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       roundType:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       roundInterval:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetSpentPercentage:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetTarget:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetPeriodType:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       budgetSpent:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
 
   tags_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -343,24 +343,24 @@ definitions:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       hexColor:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       dateArchived:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   time_logs_schema:
     $schema: http://json-schema.org/draft-07/schema#
@@ -369,253 +369,253 @@ definitions:
     properties:
       logId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       userId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       userName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       clientId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       clientName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       projectId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       projectName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       projectInvoiceMethod:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       taskId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       taskName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billable:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       inLockedPeriod:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       billableAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       amount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       laborCost:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       laborRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       laborDuration:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       logDuration:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       expense:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       cost:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       status:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       invoiceId:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       invoiced:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       billableHours:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       laborHours:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       customField1:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       customField2:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       customField3:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       monthOfYear:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       weekNo:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       weekOfYear:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       times:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - object
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             duration:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             startTime:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             endTime:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             running:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             deleted:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
       roundtype:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       attachments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       balance:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billableExpense:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       billableHoursLogBillable:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       clientCustomId:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       endTime:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       invoicedAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       logDurationBillable:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       startTime:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       startEndTime:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       teams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       teamsNames:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       taskListName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       taskDueDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       taskStartDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tagsData:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       uninvoicedAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/my-hours
@@ -624,9 +624,9 @@ spec:
     title: My Hours Spec
     type: object
     required:
-    - email
-    - password
-    - start_date
+      - email
+      - password
+      - start_date
     additionalProperties: true
     properties:
       email:
@@ -643,15 +643,15 @@ spec:
         title: Start Date
         description: Start date for collecting time logs
         examples:
-        - "%Y-%m-%d"
-        - '2016-01-01'
+          - "%Y-%m-%d"
+          - "2016-01-01"
         type: string
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       logs_batch_size:
         title: Time logs batch size
         description: Pagination size used for retrieving logs in days
         examples:
-        - 30
+          - 30
         type: integer
         minimum: 1
         maximum: 365

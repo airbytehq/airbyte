@@ -6,7 +6,9 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
+
 from .source import SourceMyHours
+
 
 def run():
     source = SourceMyHours()
