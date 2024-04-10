@@ -23,7 +23,7 @@ poetry install --with dev
 ### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/holiday-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_holiday_api/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` inside `manifest.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
