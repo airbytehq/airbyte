@@ -57,6 +57,6 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------|
-| 0.1.2 | 2024-03-28 | [0](https://github.com/airbytehq/airbyte/pull/0) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.2 | 2024-03-28 | [36592](https://github.com/airbytehq/airbyte/pull/36592) | Base image migration: Use the python-connector-base image  and poetry|
 | 0.1.1   | 2024-03-29 | [36592](https://github.com/airbytehq/airbyte/pull/36592) | Update CDK version      |
 | 0.1.0   | 2023-04-01 | [21008](https://github.com/airbytehq/airbyte/pull/21008) | Initial (alpha) release |
