@@ -29,6 +29,9 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: "templates"
             bypass_reason: "Sandbox account cannot seed the stream"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
   incremental:
     tests:
       - config_path: "secrets/config.json"
