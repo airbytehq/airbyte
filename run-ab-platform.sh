@@ -74,9 +74,9 @@ TelemetryConfig()
       telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
     fi
     # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
-    if [[ $telemetryUserULID = "" || ${#$telemetryUserULID} -ne 26 ]]; then
+    if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
       telemetryUserULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
-      if [[ $telemetryUserULID = "" || ${#$telemetryUserULID} -ne 26 ]]; then
+      if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
         # if we still don't have a ulid, give up on telemetry data
         telemetryEnabled=false
       else
@@ -107,10 +107,10 @@ TelemetryDockerUp()
     return
   fi
 
-  # for up to 600 seconds (10 minutes), check to see if the webapp services is in a running state
+  # for up to 600 seconds (10 minutes), check to see if the server services is in a running state
   end=$((SECONDS+600))
   while [ $SECONDS -lt $end ]; do
-    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep webapp | cut -d ":" -f2 | xargs)
+    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
       TelemetrySend "success" "install"
       break
