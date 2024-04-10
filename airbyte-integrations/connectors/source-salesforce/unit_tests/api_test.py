@@ -931,3 +931,37 @@ def test_request_params_substream(stream_config_date_format, stream_api):
     params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
+
+
+@freezegun.freeze_time("2023-03-20")
+def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
+    """Test BulkSalesforceSubStream for ContentDocumentLink (+ parent ContentDocument)
+    ContentDocument return 1 record for each slice request.
+    Given start/end date leads to 3 date slice for ContentDocument, thus 3 total records
+    ContentDocumentLink
+    It means that ContentDocumentLink should have 2 slices, with 2 and 1 records in each
+    """
+    stream_config["start_date"] = "2023-01-01"
+    stream: BulkSalesforceSubStream = generate_stream("ContentDocumentLink", stream_config, stream_api)
+    stream.SLICE_BATCH_SIZE = 2  # each ContentDocumentLink should contain 2 records from parent ContentDocument stream
+
+    job_id = "fake_job"
+    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    requests_mock.register_uri(
+        "GET",
+        stream.path() + f"/{job_id}/results",
+        [{"text": "Field1,LastModifiedDate,ID\ntest,2021-11-16,123", "headers": {"Sforce-Locator": "null"}}],
+    )
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
+
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    assert stream_slices == [
+        {
+            "parents": [
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+            ]
+        },
+        {"parents": [{"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"}]},
+    ]

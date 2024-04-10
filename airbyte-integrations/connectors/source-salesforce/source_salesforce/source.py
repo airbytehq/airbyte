@@ -216,6 +216,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
         if hasattr(stream, "set_cursor"):
             stream.set_cursor(stream_slicer_cursor)
+        elif hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
+            stream.parent.set_cursor(stream_slicer_cursor)
 
         if self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
             cursor = FinalStateCursor(
