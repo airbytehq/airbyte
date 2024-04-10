@@ -1,0 +1,777 @@
+version: 0.44.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - Assignments
+streams:
+  - type: DeclarativeStream
+    name: Assignments
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: assignments
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: Employees
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: employees
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: Hashtags
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: hash_tags
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationClients
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/clients
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationCompanyGroups
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/company_groups
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationDepartments
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/departments
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationIdentityProviders
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/identity_providers
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: OrganizationPositions
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/positions
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationRagScopes
+    primary_key:
+      - text
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/rag_scopes
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationRoles
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/roles
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationSeniorities
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/seniorities
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationTags
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/tags
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationTeams
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/teams
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: OrganizationTimeoffTypes
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: organization/timeoff_types
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: People
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: people
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: Projects
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: projects
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: ProjectsVacancies
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: projects_vacancies
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: RagRatings
+    primary_key:
+      - project_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: rag_ratings
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Skills
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: skills
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: Timeoffs
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: timeoffs
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+  - type: DeclarativeStream
+    name: Worklogs
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.primetric.com/beta/
+        path: worklogs
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.primetric.com/auth/token/
+          grant_type: client_credentials
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next", {}) }}'
+          stop_condition: '{{ not response.get("next", {}) }}'
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/primetric
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Primetric Spec
+    type: object
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: The Client ID of your Primetric developer application. The Client ID is visible <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        examples: ["1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"]
+        order: 0
+      client_secret:
+        type: string
+        title: Client Secret
+        description: The Client Secret of your Primetric developer application. You can manage your client's credentials <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        order: 1
+  type: Spec
+metadata:
+  autoImportSchema:
+    Assignments: true
+    Employees: true
+    Hashtags: true
+    OrganizationClients: true
+    OrganizationCompanyGroups: true
+    OrganizationDepartments: true
+    OrganizationIdentityProviders: true
+    OrganizationPositions: true
+    OrganizationRagScopes: true
+    OrganizationRoles: true
+    OrganizationSeniorities: true
+    OrganizationTags: true
+    OrganizationTeams: true
+    OrganizationTimeoffTypes: true
+    People: true
+    Projects: true
+    ProjectsVacancies: true
+    RagRatings: true
+    Skills: true
+    Timeoffs: true
+    Worklogs: true
