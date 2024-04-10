@@ -277,14 +277,17 @@
       "destination_sync_mode": "append"
     },
     {
-      "stream": {
-        "name": "uninvoiced",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "stream": {
+          "name": "uninvoiced",
+          "json_schema": {},
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "source_defined_cursor": true,
+          "default_cursor_field": ["to"]
+        },
+        "sync_mode": "incremental",
+        "cursor_field": ["to"],
+        "destination_sync_mode": "append"
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
     {
       "stream": {
         "name": "time_clients",
