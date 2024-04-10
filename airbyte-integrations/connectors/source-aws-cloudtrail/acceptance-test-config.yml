@@ -21,10 +21,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          exact_order: no
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
   incremental:
     # bypass_reason: "This connector does not implement incremental sync"
     tests:
