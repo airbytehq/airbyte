@@ -1,0 +1,19 @@
+name: Check Changelog Entries
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - edited
+      - reopened
+  env:
+    PR_DESCRIPTION: "${{ github.event.pull_request.body}}"
+  jobs:
+    check-entries:
+      name: Check PR for changelog entries
+      runs-on: ubuntu-latest
+      steps:
+        name: print variables
+        run: |
+          echo $PR_DESCRIPTION
+
