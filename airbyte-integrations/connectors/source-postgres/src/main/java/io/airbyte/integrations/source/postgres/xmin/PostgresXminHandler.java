@@ -114,9 +114,9 @@ public class PostgresXminHandler {
   }
 
   private AutoCloseableIterator<AirbyteRecordData> queryTableXmin(
-                                                         final List<String> columnNames,
-                                                         final String schemaName,
-                                                         final String tableName) {
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     final AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
