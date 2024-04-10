@@ -15,4 +15,4 @@ to ensure the most granular and flexible state management.
 This change will affect the `Channel Messages` stream.
 
 ## Migration Steps
-* The `reset` for `Channel Messages` stream is required after upgrading to this version.
+* A `reset` for `Channel Messages` stream is required after upgrading to this version.
