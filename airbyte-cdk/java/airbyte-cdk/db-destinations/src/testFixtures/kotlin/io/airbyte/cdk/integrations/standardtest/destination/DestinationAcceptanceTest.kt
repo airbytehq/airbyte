@@ -25,7 +25,6 @@ import io.airbyte.configoss.JobGetSpecConfig
 import io.airbyte.configoss.OperatorDbt
 import io.airbyte.configoss.StandardCheckConnectionInput
 import io.airbyte.configoss.StandardCheckConnectionOutput
-import io.airbyte.configoss.StandardCheckConnectionOutput.Status
 import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
@@ -64,9 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
-import kotlin.Comparator
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -345,7 +341,7 @@ abstract class DestinationAcceptanceTest {
         """This method is moved to the AdvancedTestDataComparator. Please move your destination
                 implementation of the method to your comparator implementation."""
     )
-    protected fun resolveIdentifier(identifier: String?): List<String?> {
+    protected open fun resolveIdentifier(identifier: String?): List<String?> {
         return java.util.List.of(identifier)
     }
 
@@ -429,6 +425,7 @@ abstract class DestinationAcceptanceTest {
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
             MoreResources.readResource(messagesFilename)
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
@@ -458,6 +455,7 @@ abstract class DestinationAcceptanceTest {
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
             MoreResources.readResource(messagesFilename)
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
@@ -515,6 +513,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize<io.airbyte.protocol.models.v0.AirbyteMessage>(
@@ -712,6 +711,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
                 .toList()
@@ -1406,6 +1406,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
@@ -2328,7 +2329,7 @@ abstract class DestinationAcceptanceTest {
         private fun readMessagesFromFile(
             messagesFilename: String
         ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
-            return MoreResources.readResource(messagesFilename).lines().map {
+            return MoreResources.readResource(messagesFilename).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
         }

@@ -29,7 +29,7 @@ protected constructor(
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
             val destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider())
-            val s3Client = destinationConfig!!.getS3Client()
+            val s3Client = destinationConfig.getS3Client()
 
             S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.bucketName)
             S3BaseChecks.testSingleUpload(
@@ -64,7 +64,7 @@ protected constructor(
         return S3ConsumerFactory()
             .create(
                 outputRecordCollector,
-                S3StorageOperations(nameTransformer, s3Config!!.getS3Client(), s3Config),
+                S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
                 nameTransformer,
                 getCreateFunction(
                     s3Config,
