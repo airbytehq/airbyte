@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.81.0
+Unpin airbyte-protocol-models library
+
+## 0.80.0
+Concurrent CDK: support partitioned states
+
+## 0.79.2
+Concurrent CDK: Print error messages properly so that they can be categorized
+
+## 0.79.1
+Dummy patch to test new publishing flow fixes
+
 ## 0.79.0
 Update release process of airbyte-cdk and source-declarative manifest
 

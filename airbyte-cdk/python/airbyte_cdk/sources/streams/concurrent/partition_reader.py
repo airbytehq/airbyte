@@ -3,6 +3,7 @@
 #
 from queue import Queue
 
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 
@@ -35,4 +36,5 @@ class PartitionReader:
                 self._queue.put(record)
             self._queue.put(PartitionCompleteSentinel(partition))
         except Exception as e:
-            self._queue.put(e)
+            self._queue.put(StreamThreadException(e, partition.stream_name()))
+            self._queue.put(PartitionCompleteSentinel(partition))
