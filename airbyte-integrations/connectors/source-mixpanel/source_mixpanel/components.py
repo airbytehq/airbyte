@@ -1,5 +1,4 @@
 import base64
-from functools import cache
 import dpath.util
 import requests
 from typing import Any, Iterable, List, Mapping, Optional, Union, Tuple, MutableMapping
@@ -38,9 +37,6 @@ class MixpanelHttpRequester(HttpRequester):
         if api_secret and 'Basic' not in api_secret:
             api_secret = base64.b64encode(api_secret.encode("utf8")).decode("utf8")
             self.config['credentials']['api_secret'] = f"Basic {api_secret}"
-            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-            print( self.config['credentials']['api_secret'])
 
     def get_url_base(self) -> str:
         """
@@ -289,7 +285,9 @@ class EngagePaginationStrategy(PageIncrement):
 
 
 class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
+
     schema: Mapping[str, Any]
+
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.file_path:
             self.file_path = _default_file_path()
@@ -297,6 +295,11 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
         self.schema = {}
 
     def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        Dynamically load additional properties from API
+        Add cache to reduce a number of API calls because get_json_schema()
+        is called for each extracted record
+        """
 
         if self.schema:
             return self.schema
