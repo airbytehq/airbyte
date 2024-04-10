@@ -64,7 +64,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             current_dir = directories.pop()
             try:
                 items = self.sftp_client.sftp_connection.listdir_attr(current_dir)
-            except FileNotFoundError:
+            except Exception as e:
+                logger.warning(f"Failed to list files in directory: {e}")
                 continue
 
             for item in items:
