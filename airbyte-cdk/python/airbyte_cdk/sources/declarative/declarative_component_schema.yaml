@@ -257,6 +257,7 @@ definitions:
             - "$ref": "#/definitions/BearerAuthenticator"
             - "$ref": "#/definitions/CustomAuthenticator"
             - "$ref": "#/definitions/OAuthAuthenticator"
+            - "$ref": "#/definitions/JwtAuthenticator"
             - "$ref": "#/definitions/NoAuth"
             - "$ref": "#/definitions/SessionTokenAuthenticator"
             - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
@@ -264,6 +265,7 @@ definitions:
           - authenticators:
               token: "#/definitions/ApiKeyAuthenticator"
               oauth: "#/definitions/OAuthAuthenticator"
+              jwt: "#/definitions/JwtAuthenticator"
       $parameters:
         type: object
         additionalProperties: true
@@ -833,6 +835,97 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  JwtAuthenticator:
+    title: JWT Authenticator
+    description: Authenticator for requests using JWT authentication flow.
+    type: object
+    required:
+      - type
+      - secret_key
+      - algorithm
+      - jwt_headers
+      - jwt_payload
+    properties:
+      type:
+        type: string
+        enum: [JwtAuthenticator]
+      secret_key:
+        type: string
+        description: Secret used to sign the JSON web token.
+        examples:
+          - "{{ config['secret_key'] }}"
+      algorithm:
+        type: string
+        description: Algorithm used to sign the JSON web token.
+        examples:
+          - "{{ config['algorithm'] }}"
+          - "HS256"
+      jwt_headers:
+        type: object
+        title: JWT Headers
+        description: JWT Headers used when signing JSON web token.
+        additionalProperties: true
+        properties:
+          alg:
+            type: string
+            description: Algorithm used to sign the JSON web token.\
+            examples:
+              - "{{ config['algorithm'] }}"
+              - "HS256"
+          typ:
+            type: string
+            default: "JWT"
+            examples:
+              - "JWT"
+          kid:
+            type: string
+            description: Key ID
+            examples:
+              - "{{ config['kid'] }}"
+      jwt_payload:
+        type: object
+        title: JWT Payload
+        description: JWT Payload used when signing JSON web token.
+        additionalProperties: true
+        properties:
+          iss:
+            type: string
+            title: Issued
+            examples:
+              - "{{ config['iss'] }}"
+          sub:
+            type: string
+            title: Subscriber
+            examples:
+              - "{{ config['sub'] }}"
+          aud:
+            type: string
+            title: Audience
+            examples:
+              - "{{ config['aud'] }}"
+          exp:
+            type: string
+            title: Expiration
+            examples:
+              - "{{ config['exp'] }}"
+          nbf:
+            type: string
+            title: Not Before
+            examples:
+              - "{{ config['nbf'] }}"
+          iat:
+            type: string
+            title: Issued At
+            examples:
+              - "{{ config['iat'] }}"
+          jti:
+            type: string
+            title: JWT ID
+            examples:
+              - "{{ config['jti'] }}"
+      $parameters:
+        type: object
+        additionalProperties: true
   OAuthAuthenticator:
     title: OAuth2
     description: Authenticator for requests using OAuth 2.0 authorization flow.
@@ -1311,6 +1404,7 @@ definitions:
           - "$ref": "#/definitions/BearerAuthenticator"
           - "$ref": "#/definitions/CustomAuthenticator"
           - "$ref": "#/definitions/OAuthAuthenticator"
+          - "$ref": "#/definitions/JwtAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
           - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
