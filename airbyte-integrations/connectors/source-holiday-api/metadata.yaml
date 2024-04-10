@@ -18,7 +18,7 @@ data:
   icon: holiday-api.svg
   license: MIT
   name: Holiday Api
-  releaseDate: 2023-09-06
+  releaseDate: 2024-04-30
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
