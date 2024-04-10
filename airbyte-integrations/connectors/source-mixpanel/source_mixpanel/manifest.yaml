@@ -8,8 +8,6 @@ definitions:
     file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
 
   api_token_auth:
-#    class_name: "source_mixpanel.components.CustomAuthenticator"
-#    type: CustomAuthenticator
     type: ApiKeyAuthenticator
     api_token: "{{ config['credentials']['api_secret'] }}"
     inject_into:
@@ -159,9 +157,12 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: page_size
-
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
+      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"

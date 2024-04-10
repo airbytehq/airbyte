@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 # from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation, AddFields
@@ -27,6 +28,9 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 
+from .streams.engage import EngageSchema
+from .source import TokenAuthenticatorBase64
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 
 @dataclass
 class CustomAuthenticator(ApiKeyAuthenticator):
@@ -270,27 +274,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_incre
 @dataclass
 class EngagePaginationStrategy(PageIncrement):
     """
-    Page increment strategy with subpages for the `items` stream.
-
-    From the `items` documentation https://developer.monday.com/api-reference/docs/items:
-        Please note that you cannot return more than 100 items per query when using items at the root.
-        To adjust your query, try only returning items on a specific board, nesting items inside a boards query,
-        looping through the boards on your account, or querying less than 100 items at a time.
-
-    This pagination strategy supports nested loop through `boards` on the top level and `items` on the second.
-    See boards documentation for more details: https://developer.monday.com/api-reference/docs/boards#queries.
+    Engage stream uses 2 params for pagination:
+    session_id - returned after first request
+    page - incremental page number
     """
-
-    # def __post_init__(self, parameters: Mapping[str, Any]):
-    #     # `self._page` corresponds to board page number
-    #     # `self._sub_page` corresponds to item page number within its board
-    #     super().__post_init__(self, parameters: Mapping[str, Any])
-    #     self.start_from_page = 1
-    #     self._page: Optional[int] = self.start_from_page
-    #     self._sub_page: Optional[int] = self.start_from_page
-    #     self._total: Optional[int] = 0
-
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Determines page and subpage numbers for the `items` stream
 
@@ -304,14 +292,7 @@ class EngagePaginationStrategy(PageIncrement):
         if total:
             self._total = total
 
-        # self._page_size = decoded_response.get("session_id")
-        # self.page_size = decoded_response.get("session_id")
-        # self.session_id = decoded_response.get("session_id")
-        # self._session_id = decoded_response.get("session_id")
-
         if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
-        # if self._total and page_number is not None:
-            # return page_number + 1
             return {
                 'session_id': decoded_response.get("session_id"),
                 "page": page_number + 1
@@ -319,3 +300,52 @@ class EngagePaginationStrategy(PageIncrement):
         else:
             self._total = None
             return None
+
+class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
+    def get_json_schema(self) -> Mapping[str, Any]:
+
+        schema = super().get_json_schema()
+
+        types = {
+            "boolean": {"type": ["null", "boolean"]},
+            "number": {"type": ["null", "number"], "multipleOf": 1e-20},
+            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
+            "datetime": {"type": ["null", "string"]},
+            "object": {"type": ["null", "object"], "additionalProperties": True},
+            "list": {"type": ["null", "array"], "required": False, "items": {}},
+            "string": {"type": ["null", "string"]},
+        }
+
+        credentials = self.config["credentials"]
+        username = credentials.get("username")
+        secret = credentials.get("secret")
+        if username and secret:
+            authenticator = BasicHttpAuthenticator(username=username, password=secret)
+        else:
+            authenticator = TokenAuthenticatorBase64(token=credentials["api_secret"])
+
+        params = {
+            "authenticator": authenticator,
+            "region": self.config.get('region'),
+            "project_timezone": self.config.get('project_timezone'),
+            "reqs_per_hour_limit": self.config.get('reqs_per_hour_limit'),
+        }
+        project_id = self.config.get('credentials', {}).get('project_id')
+        if project_id:
+            params["project_id"] = project_id
+
+        # read existing Engage schema from API
+        schema_properties = EngageSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
+        for property_entry in schema_properties:
+            property_name: str = property_entry["name"]
+            property_type: str = property_entry["type"]
+            if property_name.startswith("$"):
+                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
+                # from API: '$browser'
+                # to stream: 'browser'
+                property_name = property_name[1:]
+            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
+            if property_name not in schema["properties"]:
+                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
+
+        return schema
