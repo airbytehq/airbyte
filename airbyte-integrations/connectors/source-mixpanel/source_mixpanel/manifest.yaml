@@ -144,15 +144,13 @@ definitions:
       field_path: results
     retriever:
       $ref: "#/definitions/retriever"
-#      paginator:
-#        type: DefaultPaginator
-#        pagination_strategy:
-#          class_name: "source_mixpanel.components.EngagePaginationStrategy"
-#          type: "CustomPaginationStrategy"
       paginator:
         type: DefaultPaginator
-#        class_name: "source_mixpanel.components.EngagePaginationStrategy"
-#        type: CustomDefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: "source_mixpanel.components.EngagePaginationStrategy"
+          start_from_page: 1
+          page_size: 102
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
@@ -160,11 +158,8 @@ definitions:
         page_size_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: limit
-        pagination_strategy:
-          type: PageIncrement
-          start_from_page: 1
-          page_size: 1
+          field_name: page_size
+
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
 

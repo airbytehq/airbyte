@@ -66,6 +66,22 @@ class MixpanelHttpRequester(HttpRequester):
         project_id = self.config.get('credentials', {}).get('project_id')
         return {'project_id': project_id} if project_id else {}
 
+    def _request_params(
+        self,
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        extra_params: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        """
+        Flatten extra_params if it contains pagination information
+        """
+        next_page_token = None  # reset it, pagination data is in extra_params
+        if extra_params:
+            page = extra_params.pop('page', {})
+            extra_params.update(page)
+        return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
+
 class AnnotationsHttpRequester(MixpanelHttpRequester):
 
     def get_url_base(self) -> str:
@@ -251,7 +267,7 @@ class EngageDefaultPaginator(DefaultPaginator):
 
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
-
+@dataclass
 class EngagePaginationStrategy(PageIncrement):
     """
     Page increment strategy with subpages for the `items` stream.
@@ -265,13 +281,14 @@ class EngagePaginationStrategy(PageIncrement):
     See boards documentation for more details: https://developer.monday.com/api-reference/docs/boards#queries.
     """
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        # `self._page` corresponds to board page number
-        # `self._sub_page` corresponds to item page number within its board
-        self.start_from_page = 1
-        self._page: Optional[int] = self.start_from_page
-        self._sub_page: Optional[int] = self.start_from_page
-        self._total: Optional[int] = 0
+    # def __post_init__(self, parameters: Mapping[str, Any]):
+    #     # `self._page` corresponds to board page number
+    #     # `self._sub_page` corresponds to item page number within its board
+    #     super().__post_init__(self, parameters: Mapping[str, Any])
+    #     self.start_from_page = 1
+    #     self._page: Optional[int] = self.start_from_page
+    #     self._sub_page: Optional[int] = self.start_from_page
+    #     self._total: Optional[int] = 0
 
     def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Tuple[Optional[int], Optional[int]]]:
         """
@@ -287,10 +304,17 @@ class EngagePaginationStrategy(PageIncrement):
         if total:
             self._total = total
 
+        # self._page_size = decoded_response.get("session_id")
+        # self.page_size = decoded_response.get("session_id")
+        # self.session_id = decoded_response.get("session_id")
+        # self._session_id = decoded_response.get("session_id")
+
         if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
+        # if self._total and page_number is not None:
+            # return page_number + 1
             return {
-                "session_id": decoded_response.get("session_id"),
-                "page": page_number + 1,
+                'session_id': decoded_response.get("session_id"),
+                "page": page_number + 1
             }
         else:
             self._total = None
