@@ -61,7 +61,7 @@ TelemetryConfig()
 {
   # only attempt to do anything if telemetry is not disabled
   if $telemetryEnabled; then
-    telemetrySessionULID=$(curl -s https://ulid.truestamp.com/ | grep ulid | cut -d ":" -f2 | xargs)
+    telemetrySessionULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
 
     if [[ telemetrySessionULID = "" ]]; then
       # if we still don't have a ulid, give up on telemetry data
@@ -75,8 +75,7 @@ TelemetryConfig()
     fi
     # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
     if [[ $telemetryUserULID = "" ]]; then
-      # TODO: create our own ulid endpoint?
-      telemetryUserULID=$(curl -s https://ulid.truestamp.com/ | grep ulid | cut -d ":" -f2 | xargs)
+      telemetryUserULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
       if [[ $telemetryUserULID = "" ]]; then
         # if we still don't have a ulid, give up on telemetry data
         telemetryEnabled=false
