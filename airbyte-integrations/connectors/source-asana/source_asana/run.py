@@ -6,8 +6,9 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .config_migration import AsanaConfigMigration
 from source_asana import SourceAsana
+
+from .config_migration import AsanaConfigMigration
 
 
 def run():

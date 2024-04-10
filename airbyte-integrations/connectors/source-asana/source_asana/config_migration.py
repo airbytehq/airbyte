@@ -31,16 +31,13 @@ class AsanaConfigMigration:
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        return "access_token" in config     #if access_token is directly given in config, transform it into PAT credentials
+        return "access_token" in config  # if access_token is directly given in config, transform it into PAT credentials
 
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         if "credentials" not in config:
             if "personal_access_token" not in config:
-                config["credentials"] = {
-                    "option_title": "PAT Credentials",
-                    "personal_access_token": config["access_token"]
-                }
+                config["credentials"] = {"option_title": "PAT Credentials", "personal_access_token": config["access_token"]}
             else:
                 raise ValueError(f"Invalid config. got {config}")
         return config

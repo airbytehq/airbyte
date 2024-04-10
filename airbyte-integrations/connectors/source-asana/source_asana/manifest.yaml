@@ -9,10 +9,10 @@ definitions:
 
   oauth_authenticator:
     type: OAuthAuthenticator
-    client_id: '{{ config[''credentials''][''client_id''] }}'
-    client_secret: '{{ config[''credentials''][''client_secret''] }}'
-    refresh_token: '{{ config[''credentials''][''refresh_token''] }}'
-    token_refresh_endpoint: 'https://app.asana.com/-/oauth_token'
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://app.asana.com/-/oauth_token"
     grant_type: refresh_token
     access_token_name: access_token
 
@@ -32,7 +32,7 @@ definitions:
     url_base: https://app.asana.com/api/1.0/
     http_method: GET
     authenticator:
-      $ref: "#/definitions/selective_authenticator"   # Uncomment for development with low code
+      $ref: "#/definitions/selective_authenticator" # Uncomment for development with low code
       # $ref: "#/definitions/oauth_authenticator"         # Uncomment for developing with connector builder
     error_handler:
       type: CompositeErrorHandler
@@ -327,7 +327,7 @@ definitions:
         $ref: "#/definitions/paginator_base"
       requester:
         $ref: "#/definitions/requester"
-        request_parameters: 
+        request_parameters:
           parent: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
       partition_router:
         - type: SubstreamPartitionRouter
@@ -381,7 +381,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        request_parameters: 
+        request_parameters:
           owner: "{{ stream_slice['users_gid'] }}"
           workspace: "{{ stream_slice['workspace_gid'] }}"
       partition_router:
@@ -452,7 +452,7 @@ definitions:
       $ref: "#/definitions/retriever"
       partition_router:
         - type: ListPartitionRouter
-          values: '{{ config[''organization_export_ids'' ] }}'
+          values: "{{ config['organization_export_ids' ] }}"
           cursor_field: gid
 
   events_stream:
@@ -472,7 +472,7 @@ definitions:
         $ref: "#/definitions/token_paginator_base"
       requester:
         $ref: "#/definitions/requester"
-        request_parameters: 
+        request_parameters:
           resource: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
       partition_router:
         - type: SubstreamPartitionRouter
@@ -490,1932 +490,1932 @@ definitions:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       color:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       current_status:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           author:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           html_text:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           modified_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           text:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           created_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           created_by:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
       custom_field_settings:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       default_view:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       due_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       due_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       html_notes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_template:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       members:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       modified_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       notes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       public:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       start_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       workspace:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       custom_fields:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             display_value:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             enabled:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             enum_options:
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
               items:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   gid:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   resource_type:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   color:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   enabled:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   name:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             number_value:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             resource_subtype:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             text_value:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       followers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       icon:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       owner:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       permalink_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       team:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   sections_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   sections_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       project:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   tasks_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       approval_status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       completed:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       completed_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       completed_by:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       dependencies:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       dependents:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       due_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       due_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       external:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           data:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       hearted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       hearts:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             user:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       html_notes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_rendered_as_separator:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       liked:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       likes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             user:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       memberships:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             project:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
             section:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       modified_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       notes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       num_hearts:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       num_likes:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       num_subtasks:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       start_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date
       assignee:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       custom_fields:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             created_by:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
             currency_code:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             custom_label:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             custom_label_position:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             description:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             display_value:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             enabled:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             enum_options:
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
               items:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   gid:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   resource_type:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   color:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   enabled:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   name:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
             enum_value:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 color:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 enabled:
                   type:
-                  - 'null'
-                  - boolean
+                    - "null"
+                    - boolean
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
             format:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             has_notifications_enabled:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             is_global_to_workspace:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             number_value:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             precision:
               type:
-              - 'null'
-              - integer
+                - "null"
+                - integer
             resource_subtype:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             text_value:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       followers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       parent:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       permalink_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       projects:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       workspace:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   stories_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       created_by:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       text:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   stories_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       created_by:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       text:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       html_text:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_pinned:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       sticker_name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_editable:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       is_edited:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       liked:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       likes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             user:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 gid:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 resource_type:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       num_likes:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
 
   workspaces_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email_domains:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type: string
       is_organization:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
 
   tags_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       color:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       followers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       permalink_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       workspace:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   users_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       photo:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           image_128x128:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           image_21x21:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           image_27x27:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           image_36x36:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           image_60x60:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       workspaces:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
 
   teams_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       html_description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       organization:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       permalink_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   team_memberships_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_guest:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       team:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       user:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   attachments_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   attachments_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       download_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       permanent_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       host:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       parent:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_subtype:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           created_by:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
       size:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       view_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       connected_to_app:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
 
   portfolios_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   portfolios_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       color:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       created_by:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       current_status_update:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_subtype:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       due_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       members:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       owner:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       start_on:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       workspace:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       permalink_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       public:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       project_templates:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   custom_fields_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_by:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       currency_code:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom_label:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom_label_position:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       display_value:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       enabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       enum_options:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             gid:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             resource_type:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             color:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             enabled:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       enum_value:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           color:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           enabled:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       format:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       has_notifications_enabled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       is_global_to_workspace:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       number_value:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       precision:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       resource_subtype:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       text_value:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
 
   organization_exports_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       gid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       resource_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       download_url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       state:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       organization:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   events_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       user:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       resource:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       action:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       parent:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           gid:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           resource_type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       change:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           field:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           action:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           new_value:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           added_value:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           removed_value:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               gid:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               resource_type:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
 
 streams:
   - "#/definitions/projects_stream"
@@ -2456,52 +2456,53 @@ spec:
         description: Choose how to authenticate to Github
         type: object
         oneOf:
-        - type: object
-          title: Authenticate via Asana (Oauth)
-          required:
-          - client_id
-          - client_secret
-          - refresh_token
-          properties:
-            option_title:
-              type: string
-              title: Credentials title
-              description: OAuth Credentials
-              const: OAuth Credentials
-            client_id:
-              type: string
-              title: ''
-              description: ''
-              airbyte_secret: true
-            client_secret:
-              type: string
-              title: ''
-              description: ''
-              airbyte_secret: true
-            refresh_token:
-              type: string
-              title: ''
-              description: ''
-              airbyte_secret: true
-        - type: object
-          title: Authenticate with Personal Access Token
-          required:
-          - personal_access_token
-          properties:
-            option_title:
-              type: string
-              title: Credentials title
-              description: PAT Credentials
-              const: PAT Credentials
-            personal_access_token:
-              type: string
-              title: Personal Access Token
-              description: Asana Personal Access Token (generate yours <a href="https://app.asana.com/0/developer-console">here</a>).
-              airbyte_secret: true
+          - type: object
+            title: Authenticate via Asana (Oauth)
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              option_title:
+                type: string
+                title: Credentials title
+                description: OAuth Credentials
+                const: OAuth Credentials
+              client_id:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+          - type: object
+            title: Authenticate with Personal Access Token
+            required:
+              - personal_access_token
+            properties:
+              option_title:
+                type: string
+                title: Credentials title
+                description: PAT Credentials
+                const: PAT Credentials
+              personal_access_token:
+                type: string
+                title: Personal Access Token
+                description: Asana Personal Access Token (generate yours <a href="https://app.asana.com/0/developer-console">here</a>).
+                airbyte_secret: true
       test_mode:
         type: boolean
         title: Test Mode
-        description: This flag is used for testing purposes for certain streams that
+        description:
+          This flag is used for testing purposes for certain streams that
           return a lot of data. This flag is not meant to be enabled for prod.
         airbyte_hidden: true
       organization_export_ids:
@@ -2511,8 +2512,8 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
-    - credentials
-    - option_title
+      - credentials
+      - option_title
     predicate_value: OAuth Credentials
     oauth_config_specification:
       complete_oauth_output_specification:
@@ -2521,8 +2522,8 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config:
-            - credentials
-            - refresh_token
+              - credentials
+              - refresh_token
       complete_oauth_server_input_specification:
         type: object
         properties:
@@ -2536,13 +2537,13 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_id
+              - credentials
+              - client_id
           client_secret:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_secret
+              - credentials
+              - client_secret
 metadata:
   autoImportSchema:
     projects: false
