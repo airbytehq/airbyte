@@ -82,8 +82,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", SCHEMA_NAME),
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -94,8 +93,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", SCHEMA_NAME),
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)

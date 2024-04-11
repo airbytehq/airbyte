@@ -73,8 +73,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                testdb.getDatabaseName(),
+                STREAM_NAME, testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -85,8 +84,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                testdb.getDatabaseName(),
+                STREAM_NAME2, testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -166,8 +164,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                testdb.getDatabaseName(),
+                STREAM_NAME, testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER)
             /* no name field */)
                 .withSourceDefinedCursor(true)
@@ -178,8 +175,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                testdb.getDatabaseName(),
+                STREAM_NAME2, testdb.getDatabaseName(),
                 /* no name field */
                 Field.of("id", JsonSchemaType.NUMBER))
                 .withSourceDefinedCursor(true)
