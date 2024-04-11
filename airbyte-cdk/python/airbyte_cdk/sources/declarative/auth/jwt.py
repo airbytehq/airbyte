@@ -69,10 +69,11 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
         now = int(datetime.now().timestamp())
+        payload = {}
         if self._token_duration:
             exp = now + int(self._token_duration.eval(self.config))
+            payload["exp"] = exp
         nbf = now
-        payload = {}
         payload.update(self._additional_jwt_payload.eval(self.config))
         if self._iss:
             payload["iss"] = f"{self._iss.eval(self.config)}"
@@ -81,7 +82,6 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         if self._aud:
             payload["aud"] = self._aud
         payload["iat"] = now
-        payload["exp"] = exp
         payload["nbf"] = nbf
         return payload
 
