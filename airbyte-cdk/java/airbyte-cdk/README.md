@@ -144,6 +144,7 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.30.2  | 2024-04-12 | [\#37006](https://github.com/airbytehq/airbyte/pull/37006) | Destinations - add airbyte meta column to `SQLOperationsUtils`                                                                                                 |
 | 0.30.1  | 2024-04-11 | [\#36919](https://github.com/airbytehq/airbyte/pull/36919) | Fix regression in sources conversion of null values                                                                                                            |
 | 0.30.0  | 2024-04-11 | [\#36974](https://github.com/airbytehq/airbyte/pull/36974) | Destinations: Pass config to jdbc sqlgenerator; allow cascade drop                                                                                             |
 | 0.29.13 | 2024-04-10 | [\#36981](https://github.com/airbytehq/airbyte/pull/36981) | DB sources : Emit analytics for data type serialization errors.                                                                                                |
