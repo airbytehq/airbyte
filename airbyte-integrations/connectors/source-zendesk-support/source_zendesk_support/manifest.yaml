@@ -107,6 +107,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
 
+  # Paginators
   page_size_paginator:
     type: DefaultPaginator
     page_size_option:
@@ -118,6 +119,20 @@ definitions:
       page_size: 10
       cursor_value: "{{ response['links']['next'] }}"
       stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
+    page_token_option:
+      type: RequestPath
+
+  after_url_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("after_url") }}'
+      stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+      page_size: 100
+    page_size_option:
+      type: RequestOption
+      field_name: "per_page"
+      inject_into: request_parameter
     page_token_option:
       type: RequestPath
 
@@ -165,9 +180,8 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "schedules"
-      path: "schedules"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      path: "business_hours/schedules.json"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   sla_policies_stream:
@@ -248,18 +262,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 10
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "group_memberships"
       path: "group_memberships"
@@ -284,18 +287,7 @@ definitions:
           sort_by: "created_at"
           sort_order: "asc"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     incremental_sync:
       $ref: "#/definitions/semi_incremental_stream/incremental_sync"
     $parameters:
@@ -377,18 +369,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 10
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "satisfaction_ratings"
       path: "satisfaction_ratings"
@@ -478,18 +459,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 4
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
@@ -523,18 +493,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "ticket_metrics"
       path: "ticket_metrics"
@@ -550,18 +509,7 @@ definitions:
         request_parameters:
           sort_order: "desc"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "ticket_skips"
       path: "skips.json"
@@ -575,18 +523,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("after_url") }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
-          page_size: 100
-        page_size_option:
-          type: RequestOption
-          field_name: "per_page"
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/after_url_paginator"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -623,18 +560,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("after_url") }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
-          page_size: 100
-        page_size_option:
-          type: RequestOption
-          field_name: "per_page"
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/after_url_paginator"
     $parameters:
       name: "users"
       path: "incremental/users/cursor.json"
@@ -674,10 +600,3 @@ streams:
   - $ref: '#/definitions/ticket_skips_stream'
   - $ref: '#/definitions/tickets_stream'
   - $ref: '#/definitions/users_stream'
-  # Incremental substreams
-#  - $ref: '#/definitions/article_comment_votes_stream'
-#  - $ref: '#/definitions/article_comments_stream'
-#  - $ref: '#/definitions/article_votes_stream'
-#  - $ref: '#/definitions/post_comments_stream'
-#  - $ref: '#/definitions/post_comment_votes_stream'
-#  - $ref: '#/definitions/post_votes_stream'
