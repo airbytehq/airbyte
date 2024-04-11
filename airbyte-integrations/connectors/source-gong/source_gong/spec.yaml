@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - access_key
     - access_key_secret
-    - start_date
   additionalProperties: true
   properties:
     access_key:

@@ -77,7 +77,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.start_date or (now_utc() - duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
@@ -113,7 +113,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.start_date or (now_utc() - duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: body_json
