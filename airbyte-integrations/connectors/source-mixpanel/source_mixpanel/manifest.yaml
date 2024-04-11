@@ -123,9 +123,8 @@ definitions:
       type: RequestOption
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-
+      datetime: '{{ day_delta(-1, format="%Y-%m-%d") }}'
+      datetime_format: '%Y-%m-%d'
 
   # https://developer.mixpanel.com/reference/cohorts
   cohorts_stream:
