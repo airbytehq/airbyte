@@ -32,7 +32,6 @@ streams:
           token_duration: 1200
           jwt_headers:
             kid:  "{{ config['kid'] }}"
-            alg: ES256
             typ: "JWT"
           jwt_payload:
             iss: "{{ config['iss'] }}"
