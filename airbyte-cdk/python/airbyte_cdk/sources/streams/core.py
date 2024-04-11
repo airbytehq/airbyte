@@ -125,12 +125,11 @@ class Stream(ABC):
         state_manager,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
-        sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
         slices = self.stream_slices(
             cursor_field=cursor_field,
-            sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+            sync_mode=configured_stream.sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
             stream_state=stream_state,
         )
         logger.debug(f"Processing stream slices for {self.name}", extra={"stream_slices": slices})
@@ -142,7 +141,7 @@ class Stream(ABC):
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
             records = self.read_records(
-                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                sync_mode=configured_stream.sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
                 stream_slice=_slice,
                 stream_state=stream_state,
                 cursor_field=cursor_field or None,
