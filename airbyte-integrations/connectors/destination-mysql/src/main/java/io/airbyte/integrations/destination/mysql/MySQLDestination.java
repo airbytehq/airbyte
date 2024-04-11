@@ -140,7 +140,7 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
     throw new UnsupportedOperationException("mysql does not yet support DV2");
   }
 
