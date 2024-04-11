@@ -104,7 +104,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            extractColumnAsJson(column.getKey()),
+            extractColumnAsJson(column.getKey(), column.getValue()),
             column.getValue(),
             column.getKey().name(),
             useExpensiveSaferCasting))
@@ -188,7 +188,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   }
 
   private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final Field<Object> extract = extractColumnAsJson(column);
+    final Field<Object> extract = extractColumnAsJson(column, type);
     if (type instanceof Struct) {
       // If this field is a struct, verify that the raw data is an object or null.
       return case_()
@@ -225,7 +225,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn, null)).ne("null"));
   }
 
   @Override
@@ -249,8 +249,13 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   /**
    * Extract a raw field, leaving it as json
    */
-  private Field<Object> extractColumnAsJson(final ColumnId column) {
-    return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
+  private Field<Object> extractColumnAsJson(final ColumnId column, final AirbyteType type) {
+    if (type != null && type instanceof Array) {
+      String arrayPattern = String.format(":\\s*(\\[.*?\\])");
+      return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.originalName()), arrayPattern);
+    } else {
+        return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
+    }
   }
 
   private Field<String> jsonTypeof(Field<?> jsonField) {
