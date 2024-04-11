@@ -202,8 +202,10 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 ## 故障排除
 
-将MySQL的日期时间字段中的值映射到其他关系数据存储可能会出现问题。MySQL允许日期/时间为零值，而不是其他数据存储可能不接受的NULL。要解决此问题，您可以在源设置`zerodatetimebehavior=Converttonull`的JDBC接口中传递以下键值对。
+1. 将MySQL的日期时间字段中的值映射到其他关系数据存储可能会出现问题。MySQL允许日期/时间为零值，而不是其他数据存储可能不接受的NULL。要解决此问题，您可以在源设置`zerodatetimebehavior=Converttonull`的JDBC接口中传递以下键值对。
 
-一些用户报告说他们无法连接到Amazon RDS MySQL或MariaDB。这可以通过错误消息进行诊断：`Cannot create a PoolableConnectionFactory`。要解决此问题，请在JDBC参数中添加enabledTLSProtocols=TLSv1.2。
+2. 一些用户报告说他们无法连接到Amazon RDS MySQL或MariaDB。这可以通过错误消息进行诊断：`Cannot create a PoolableConnectionFactory`。要解决此问题，请在JDBC参数中添加enabledTLSProtocols=TLSv1.2。
 
-用户在尝试连接到Amazon RDS MySQL时报告的另一个错误是`Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`。很多时候这可能是由于VPC不允许公共流量。但是，我们建议查看[此AWS故障排除清单](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/)以确保已授予正确的权限/设置以允许连接到您的数据库。
+3. 用户在尝试连接到Amazon RDS MySQL时报告的另一个错误是`Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`。很多时候这可能是由于VPC不允许公共流量。但是，我们建议查看[此AWS故障排除清单](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/)以确保已授予正确的权限/设置以允许连接到您的数据库。
+
+4. 单次可同步的最大表数为6千张。如果由于达到最大表数而无法获取数据架构，我们建议您调整数据源设置。

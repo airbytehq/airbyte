@@ -19,7 +19,7 @@
 
 5. 在**数据复制方式**中，在**根据开始日期复制**或**周期性复制**中选择。
 
-6. 点击**设置数据源**。
+6. 点击**保存并测试**。
 
 ## 支持的同步模式
 
@@ -41,6 +41,10 @@ eBay数据源支持以下同步模式：
 * [广告系列（Campaigns）](https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaigns)
 * [促销（Promotions）](https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/getPromotions)
 * [促销报告（Promotion Reports）](https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_report/methods/getPromotionReports)
+
+## 故障排除
+
+单次可同步的最大表数为6千张。如果由于达到最大表数而无法获取数据架构，我们建议您调整数据源设置。
 
 ## 数据类型映射
 

@@ -26,6 +26,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 2. Go to **Setup** » **Company** » **Company Information**
 
 3. Copy your **Account ID**. Your account ID is your Realm. It will looks like **1234567** if you use regular account or **1234567\_SB2** if it is a Sandbox
+![NetSuite Realm](/docs/setup-guide/assets/images/netsuite-realm.jpg "NetSuite Realm")
 
 #### Step 1.2: Enable features
 
@@ -38,6 +39,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 4. Enable checkbox **TOKEN-BASED AUTHENTICATION**
 
 5. Save changes
+![NetSuite Token Based Auth](/docs/setup-guide/assets/images/netsuite-token-based-auth.jpg "NetSuite Token Based Auth")
 
 #### Step 1.3: Create Integration (obtain Consumer Key and Consumer Secret)
 
@@ -54,6 +56,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 6. Save changes
 
 7. After that, **Consumer Key** and **Consumer Secret** will be showed once, copy them.
+![NetSuite Integration](/docs/setup-guide/assets/images/netsuite-integration.jpg "NetSuite Integration")
 
 #### Step 1.4: Setup Role
 
@@ -61,9 +64,10 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 2. Fill the **Name** field.
 
-3. Scroll down to **Permissions** tab
+3. Scroll down to **Permissions** tab.
 
 4. You need to select manually each record on selection lists and give **Full** level access on next tabs: (Permissions, Reports, Lists, Setup, Custom Records). You strongly need to be careful and attentive on this point.
+![NetSuite Setup Role](/docs/setup-guide/assets/images/netsuite-setup-role.jpg "NetSuite Setup Role")
 
 #### Step 1.5: Setup User
 
@@ -78,6 +82,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 5. Select from dropdown list the role which you created in step **1.4**
 
 6. Save changes
+![NetSuite Setup User](/docs/setup-guide/assets/images/netsuite-setup-user.jpg "NetSuite Setup User")
 
 #### Step 1.6: Create Access Token for role
 
@@ -94,6 +99,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 6. Save changes
 
 7. After that, **Token ID** and **Token Secret** will be showed once, copy them
+![NetSuite Access Token](/docs/setup-guide/assets/images/netsuite-access-token.jpg "NetSuite Access Token")
 
 #### Step 1.7: Obtain default language for your company
 
@@ -102,6 +108,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 2. Click on **Languages** tab
 
 3. You will find the default lanaguge for your company here
+![NetSuite Default Company Language](/docs/setup-guide/assets/images/netsuite-default-company-language.jpg "NetSuite Default Company Language")
 
 #### Step 1.8: Summary
 
@@ -111,7 +118,7 @@ You have obtained the following parameters:
 * Consumer Key
 * Consumer Secret
 * Token ID
-* Token Secret
+* Token Secret 
 * Default language for your company
 * Also you have properly **Configured Account** with **Correct Permissions** and **Access Token** for User and Role you've created early.
 
@@ -135,7 +142,11 @@ You have obtained the following parameters:
 
 9. Add **Language**
 
-10. Click Set up source
+10. Add **Object Types**
+
+11. Add **Start Date**
+
+12. Click **Save & Test**
 
 ## Supported sync modes
 
@@ -150,10 +161,14 @@ The NetSuite source connector supports the following sync modes:
 
 ## Performance considerations
 
-1. The integration is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html). Sync might stop or fail if Concurrency Limit is reached.
+1. The integration is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html). Sync might stop or fail if Concurrency Limit is reached. 
 
-> You can find your Concurrency Limit per Integration in **Setup** » **Integration** » **Integration Goverance**. Under **Concurrency Usage** you can view the account concurrency limit and the unallocated concurrency limit.
+  > You can find your Concurrency Limit per Integration in **Setup** » **Integration** » **Integration Goverance**. Under **Concurrency Usage** you can view the account concurrency limit and the unallocated concurrency limit.
 
 2. If sync fails due to concurrency limit, you can try resync to see if it works.
 
 3. You can also contact NetSuite customer support to [change your Concurrency Limits](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_164095787873.html#:~:text=By%20default%2C%20NetSuite%20Connector%20limits,limit%2C%20contact%20NetSuite%20Customer%20Support).
+
+## Troubleshooting
+
+Max number of tables that can be synced at a time is 6,000. We advise you to adjust your settings if it fails to fetch schema due to max number of tables reached.

@@ -23,16 +23,16 @@
 1. 登录您的ShipStation账号。
 
 2. 点击屏幕右上角的设置按钮。
-![ShipStation settings](../../.gitbook/assets/shipstation-settings.jpg "ShipStation settings")
+![ShipStation settings](/docs/setup-guide/assets/images/shipstation-settings.jpg "ShipStation settings")
 
 3. 在左边的侧边栏中，点击**账号（Account）**，然后点击**API设置（API Settings）**.
-![ShipStation API settings](../../.gitbook/assets/shipstation-api-settings.jpg "ShipStation API settings")
+![ShipStation API settings](/docs/setup-guide/assets/images/shipstation-api-settings.jpg "ShipStation API settings")
 
 4. 复制下**API密钥（API Key）**和**API秘密（API Secret）**。
 
 > 如果您还没有生成过API密钥，点击**生成API密钥（Generate API Keys）**按钮以获取API密钥。您可能需要[联系ShipStation客户支持](mailto:support@shipstation.com)以激活此功能。
 
-![ShipStation API keys](../../.gitbook/assets/shipstation-api-keys.jpg "ShipStation API keys")
+![ShipStation API keys](/docs/setup-guide/assets/images/shipstation-api-keys.jpg "ShipStation API keys")
 
 5. 您已成功获取了所有在Daspire设置ShipStation所需的资料。
 

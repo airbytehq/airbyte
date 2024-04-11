@@ -24,6 +24,13 @@ This page contains the setup guide and reference information for Amazon Seller P
 
 7. Select your the **Region** of your store.
 
+  > Marketplace availability:
+  >
+  > * North America: United States (US), Canada (CA), Mexico (MX)
+  > * Europe: Belgium (BE), Germany (DE), Spain (ES), France (FR), Italy (IT), United Kingdom (UK), Netherlands (NL), Sweden (SE), Poland (PL), Turkey (TR)
+  > * Middle East: United Arab Emirates (AE), Saudi Arabia (SA), Egypt (EG)
+  > * Asia Pacific: Japan (JP), India (IN), Australia (AU), Singapore (SG)
+
 8. **End Date (optional)** - any data after this date will not be replicated.
 
 9. **Start Date** - Any data before this date will not be replicated.

@@ -53,15 +53,6 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 
 Before setting up MySQL destination in Daspire, you need to set the [local_infile](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile) system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` with a user with [SYSTEM\_VARIABLES\_ADMIN](https://dev.mysql.com/doc/refman/8.0/en/privileges-provided.html#priv_system-variables-admin) permission. This is required cause Daspire uses `LOAD DATA LOCAL INFILE` to load data into table.
 
-You should now have all the requirements needed to configure MySQL as a destination in the UI. You'll need the following information to configure the MySQL destination:
-
-* **Host**
-* **Port**
-* **Username**
-* **Password**
-* **Database**
-* **jdbc\_url\_params** (Optional)
-
 ### Default JDBC URL Parameters
 
 The following JDBC URL parameters are set by Daspire and cannot be overridden by the `jdbc_url_params` field:

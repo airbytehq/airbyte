@@ -18,6 +18,8 @@
 
 如果您在连接Daspire时遇到任何问题，请确保IP地址列表在允许列表中。
 
+### 从命令行操作
+
 要确定是否为您的帐户或特定用户设置了网络政策，请执行SHOW PARAMETERS命令。
 
 **账户**
@@ -30,11 +32,21 @@
 
 要了解更多信息，请查看官方[Snowflake文档](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
+### 从用户界面操作
+
+在侧边栏菜单中点击**Admin** -> **Security**，可查看帐户中现有的网络政策。
+![Snowflake New Network Policy](/docs/setup-guide/assets/images/snowflake-new-network-policy.jpg "Snowflake New Network Policy")
+
+如需添加新的网络政策，点击 **+ Network Policy**，添加政策名称及允许和/或阻止的IP地址。
+![Snowflake New Network Policy](/docs/setup-guide/assets/images/snowflake-new-network-policy.jpg "Snowflake New Network Policy")
+
 ## 设置指南
 
 ### 第1步：在Snowflake中设置特定于Daspire的实体
 
 要设置Snowflake目标连接器，您首先需要创建特定于Daspire的Snowflake实体（仓库、数据库、架构、用户和权限），并具有OWNERSHIP权限以将数据写入Snowflake、跟踪与Daspire相关的成本并控制权限在粒度级别。
+
+#### 从命令行操作
 
 您可以在新的[Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html)中使用以下脚本来创建实体：
 
@@ -117,7 +129,69 @@
 
 3. 使用 [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html)或[Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html)运行脚本。确保选中**All Queries**勾选框。
 
-### 第二步：设置数据加载方式
+#### 从用户界面操作
+
+##### 1. 创建Daspire角色
+
+在侧边栏菜单中点击**Admin** -> **Users & Roles**。点击**Roles**选项卡，然后点击 **+ Role**。
+![Snowflake Roles](/docs/setup-guide/assets/images/snowflake-roles.jpg "Snowflake Roles")
+
+输入角色的名称，例如 *DASPIRE_ROLE*，并授予**SYSADMIN**的权限。
+![Snowflake New Role](/docs/setup-guide/assets/images/snowflake-new-role.jpg "Snowflake New Role")
+
+##### 2. 创建Daspire用户
+
+创建Daspire角色后，切换到**Users**选项卡，然后点击 **+ User**。
+![Snowflake Users](/docs/setup-guide/assets/images/snowflake-users.jpg "Snowflake Users")
+
+输入用户名，例如 *DASPIRE_USER*。输入其他信息，并将您在步骤1中创建的角色（例如，**DASPIRE_ROLE**）分配给该用户。
+![Snowflake New User](/docs/setup-guide/assets/images/snowflake-new-user.jpg "Snowflake New User")
+ 
+##### 3. 创建Daspire数据仓库
+
+在侧边栏菜单中点击**Admin** -> **Warehouses**，然后点击 **+ Warehouse**。
+![Snowflake Warehouses](/docs/setup-guide/assets/images/snowflake-warehouse.jpg "Snowflake Warehouses")
+
+输入数据仓库名称，例如 *DASPIRE_WAREHOUSE*，并为选择相应的仓库大小。
+![Snowflake New Warehouse](/docs/setup-guide/assets/images/snowflake-new-warehouse.jpg "Snowflake New Warehouse")
+
+##### 4. 授予Daspire仓库访问权限
+
+创建Daspire仓库后，选中它，然后向下滚动到**Privileges**部分，然后点击 **+ Privilege**。
+![Snowflake Warehouse Privileges](/docs/setup-guide/assets/images/snowflake-warehouse-privileges.jpg "Snowflake Warehouse Privileges")
+
+选择您在第1步中创建的Daspire角色，然后在权限下拉列表中，选择**USAGE**，然后点击**Grant Privilege**。
+![Snowflake New Warehouse Privilege](/docs/setup-guide/assets/images/snowflake-warehouse-new-privilege.jpg "Snowflake New Warehouse Privilege")
+
+##### 5. 创建Daspire数据库
+
+在侧边栏菜单中点击**Data** -> **Databases**，然后点击 **+ Database**。
+![Snowflake Databases](/docs/setup-guide/assets/images/snowflake-databases.jpg "Snowflake Databases")
+
+输入数据库的名称，例如 *DASPIRE_DATABASE*，然后创建数据库。
+![Snowflake New Database](/docs/setup-guide/assets/images/snowflake-new-database.jpg "Snowflake New Database")
+
+##### 6. 授予Daspire数据库访问权限
+
+创建Daspire数据库后，选中它，然后点击 **+ Privilege**。
+![Snowflake Database Privileges](/docs/setup-guide/assets/images/snowflake-database-privilege.jpg "Snowflake Database Privileges")
+
+选择您在第1步中创建的Daspire角色，然后在权限下拉列表中，选择**OWNERSHIP**，然后点击**Grant Privilege**。
+![Snowflake Database New Privilege](/docs/setup-guide/assets/images/snowflake-warehouse-new-privilege.jpg "Snowflake Database New Privilege")
+
+##### 7. 创建Daspire数据架构
+
+在您的Daspire数据库中，点击 **+ Schema**。
+![Snowflake Database Schema](/docs/setup-guide/assets/images/snowflake-database-schema.jpg "Snowflake Database Schema")
+
+输入数据库架构的名称，例如 *DASPIRE_SCHEMA*，然后创建架构。
+![Snowflake Database New Schema](/docs/setup-guide/assets/images/snowflake-database-new-schema.jpg "Snowflake Database New Schema")
+
+##### 8. 总结
+
+您已获得在Daspire中设置 Snowflake的所需信息和正确权限。
+
+### 第2步：设置数据加载方式
 
 默认情况下，Daspire使用Snowflake的[内部暂存](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)加载数据。您还可以使用[Amazon S3存储桶](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)、 [谷歌云存储桶](https://cloud.google.com/storage/docs/introduction) 或 [Azure Blob存储](https://docs.microsoft.com/en-us/azure/storage/blobs/)。
 

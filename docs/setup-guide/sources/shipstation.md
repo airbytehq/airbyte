@@ -23,16 +23,16 @@ This page contains the setup guide and reference information for ShipStation.
 1. Login to your ShipStation account.
 
 2. Click the settings icon on the top right corner.
-![ShipStation settings](../../.gitbook/assets/shipstation-settings.jpg "ShipStation settings")
+![ShipStation settings](/docs/setup-guide/assets/images/shipstation-settings.jpg "ShipStation settings")
 
 3. In the left side menu, click **Account** and then click **API Settings**.
-![ShipStation API settings](../../.gitbook/assets/shipstation-api-settings.jpg "ShipStation API settings")
+![ShipStation API settings](/docs/setup-guide/assets/images/shipstation-api-settings.jpg "ShipStation API settings")
 
 4. Copy your **API Key** and **Secret Key**.
 
 > If you haven't generated API keys yet, click the **Generate API Keys** button to generate your API keys. You might need to [contact ShipStation support](mailto:support@shipstation.com) to activate this function.
 
-![ShipStation API keys](../../.gitbook/assets/shipstation-api-keys.jpg "ShipStation API keys")
+![ShipStation API keys](/docs/setup-guide/assets/images/shipstation-api-keys.jpg "ShipStation API keys")
 
 5. You're ready to set up ShipStation in Daspire!
 

@@ -24,15 +24,15 @@ This page contains the setup guide and reference information for Zendesk Chat.
 Follow these [instructions](https://support.zendesk.com/hc/en-us/articles/4408828740762-Chat-API-tutorial-Generating-an-OAuth-token-integrated-Chat-accounts-) or the below steps to **Add API client**. This process will produce the `client id` and `client secret` you will need to generate the `access token` needed to set up the source in Daspire.
 
 1. Inside your Zendesk Chat account in the left navbar, click **Settings**, then click **Account**.
-![Zendesk Chat API Client](/assets/images/zendesk-chat-api-client.jpg "Zendesk Chat API Client")
+![Zendesk Chat API Client](/docs/setup-guide/assets/images/zendesk-chat-api-client.jpg "Zendesk Chat API Client")
 
 2. Click **Add API client**.
 
 3. Enter a name for the client and company of your choosing, and for the Redirect URL. You can use `http://localhost:8080` as the Redirect URL. Once done, click **Create API client**.
-![Zendesk Chat Create API Token](/assets/images/zendesk-chat-create-api-token.jpg "Zendesk Chat Create API Token")
+![Zendesk Chat Create API Token](/docs/setup-guide/assets/images/zendesk-chat-create-api-token.jpg "Zendesk Chat Create API Token")
 
 4. You will be shown a popup with the **Client ID** and **Client secret**.
-![Zendesk Chat Client Details](/assets/images/zendesk-chat-client-details.jpg "Zendesk Chat Client Details")
+![Zendesk Chat Client Details](/docs/setup-guide/assets/images/zendesk-chat-client-details.jpg "Zendesk Chat Client Details")
 
   NOTE: The client secret is shown only once, so make a note of it for later use.
 
@@ -46,10 +46,10 @@ https://www.zopim.com/oauth2/authorizations/new?response_type=token&client_id=CL
 2. Paste it into a new browser tab, and press Enter.
 
 3. The call will be made, possibly asking you to log in and select **Allow** to generate the token.
-![Zendesk Chat OAuth](/assets/images/zendesk-chat-oauth.jpg "Zendesk Chat OAuth")
+![Zendesk Chat OAuth](/docs/setup-guide/assets/images/zendesk-chat-oauth.jpg "Zendesk Chat OAuth")
 
 4. If the call succeeds, your browser's address field will contain your **access_token**. Copy it.
-![Zendesk Chat Access Token](/assets/images/zendesk-chat-access-token.jpg "Zendesk Chat Access Token")
+![Zendesk Chat Access Token](/docs/setup-guide/assets/images/zendesk-chat-access-token.jpg "Zendesk Chat Access Token")
 
 ### Step 3: Set up Zendesk Chat in Daspire
 
