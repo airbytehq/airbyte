@@ -215,14 +215,14 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(cdcFieldsOmitted(recordMessages.get(0).getData()).equals(
-            mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
     JsonNode latestState = extractLatestState(stateMessages);
 
-    testdb.getDatabase().query(c ->
-            c.query("INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine')".formatted(SCHEMA_NAME, STREAM_NAME3))).execute();
+    testdb.getDatabase().query(c -> c.query("INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine')".formatted(SCHEMA_NAME, STREAM_NAME3)))
+        .execute();
 
     assert Objects.nonNull(latestState);
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState));
@@ -230,7 +230,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
     assertTrue(cdcFieldsOmitted(secondSyncRecords.get(0).getData()).equals(
-            mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}")));
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}")));
 
   }
 

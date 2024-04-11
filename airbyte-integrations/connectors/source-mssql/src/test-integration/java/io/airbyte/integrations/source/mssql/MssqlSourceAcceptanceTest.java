@@ -56,8 +56,8 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
             "(3, 'vash', '2124-03-04T01:01:01Z');")
         .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato'), (4, 'Argo');", SCHEMA_NAME, STREAM_NAME2)
-            .with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);", SCHEMA_NAME, STREAM_NAME3)
-            .with("INSERT INTO %s.%s (id, name) VALUES (4,'voyager');", SCHEMA_NAME, STREAM_NAME3);
+        .with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);", SCHEMA_NAME, STREAM_NAME3)
+        .with("INSERT INTO %s.%s (id, name) VALUES (4,'voyager');", SCHEMA_NAME, STREAM_NAME3);
 
   }
 
@@ -187,7 +187,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(recordMessages.get(0).getData().equals(
-            mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -203,7 +203,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
     assertTrue(secondSyncRecords.get(0).getData().equals(
-            mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
 
   }
 
@@ -211,4 +211,5 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
+
 }

@@ -456,20 +456,21 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         }
 
         @JvmStatic
-        public fun extractLatestState(stateMessages: List<AirbyteStateMessage>) : JsonNode? {
+        public fun extractLatestState(stateMessages: List<AirbyteStateMessage>): JsonNode? {
             var latestState: JsonNode? = null
             for (stateMessage in stateMessages) {
                 if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM) {
                     latestState = Jsons.jsonNode(stateMessages)
                     break
                 } else if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
-                    latestState = Jsons.jsonNode(java.util.List.of(Iterables.getLast(stateMessages)))
+                    latestState =
+                        Jsons.jsonNode(java.util.List.of(Iterables.getLast(stateMessages)))
                     break
                 } else {
                     throw RuntimeException("Unknown state type " + stateMessage.type)
                 }
             }
-            return latestState;
+            return latestState
         }
     }
 }
