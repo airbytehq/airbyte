@@ -1,11 +1,9 @@
-version: 0.79.0
+version: 0.44.0
 type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
     - holidays
-    - countries
-    - languages
 streams:
   - type: DeclarativeStream
     name: holidays
