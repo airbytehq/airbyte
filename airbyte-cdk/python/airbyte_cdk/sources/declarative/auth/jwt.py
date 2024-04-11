@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import jwt
-from datetime import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Union, Optional
+from datetime import datetime
+from typing import Any, Mapping, Optional, Union
 
+import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+
 
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
