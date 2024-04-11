@@ -137,6 +137,7 @@ class ConcurrentReadProcessor:
         2. Raise the exception
         """
         self._exceptions_per_stream_name.setdefault(exception.stream_name, []).append(exception.exception)
+        self._logger.exception(f"Exception while syncing stream {exception.stream_name}", exc_info=exception.exception)
         yield AirbyteTracedException.from_exception(exception).as_airbyte_message(
             stream_descriptor=StreamDescriptor(name=exception.stream_name)
         )
