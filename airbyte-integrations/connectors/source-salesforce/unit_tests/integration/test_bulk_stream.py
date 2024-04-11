@@ -1,8 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+import urllib.parse
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest import TestCase
 
 import freezegun
@@ -14,18 +15,25 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from config_builder import ConfigBuilder
+from integration.utils import given_stream
+from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce
-from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
 _ACCESS_TOKEN = "an_access_token"
 _API_VERSION = "v57.0"
 _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
+_CURSOR_FIELD = "SystemModstamp"
 _INSTANCE_URL = "https://instance.salesforce.com"
+_JOB_ID = "a-job-id"
+_LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
-_STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]
+_STREAM_NAME = "a_stream_name"
+
+_BASE_URL = f"{_INSTANCE_URL}/services/data/{_API_VERSION}"
 
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
@@ -39,11 +47,12 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
 def _read(
     sync_mode: SyncMode,
     config_builder: Optional[ConfigBuilder] = None,
+    state_builder: Optional[StateBuilder] = None,
     expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build() if config_builder else ConfigBuilder().build()
-    state = StateBuilder().build()
+    state = state_builder.build() if state_builder else StateBuilder().build()
     return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
@@ -58,15 +67,22 @@ def _given_authentication(http_mocker: HttpMocker, client_id: str, client_secret
     )
 
 
-def _given_stream(http_mocker: HttpMocker, stream_name: str, field_name: str) -> None:
-    http_mocker.get(
-        HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/sobjects"),
-        HttpResponse(json.dumps({"sobjects": [{"name": stream_name, "queryable": True}]})),
-    )
-    http_mocker.get(
-        HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/sobjects/AcceptedEventRelation/describe"),
-        HttpResponse(json.dumps({"fields": [{"name": field_name, "type": "string"}]})),
-    )
+def _create_field(name: str, _type: Optional[str] = None) -> Dict[str, Any]:
+    return {"name": name, "type": _type if _type else "string"}
+
+
+def _to_url(to_convert: datetime) -> str:
+    to_format = to_convert.isoformat(timespec="milliseconds")
+    return urllib.parse.quote_plus(to_format)
+
+
+def _to_partitioned_datetime(to_convert: datetime) -> str:
+    return to_convert.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
+def _calculate_start_time(start_time: datetime) -> datetime:
+    # the start is granular to the second hence why we have `0` in terms of milliseconds
+    return start_time.replace(microsecond=0)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -76,15 +92,20 @@ class FullRefreshTest(TestCase):
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
 
     @HttpMocker()
-    def test_given_error_on_fetch_chunk_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
+    def test_when_read_then_create_job_and_extract_records_from_result(self, http_mocker: HttpMocker) -> None:
         _given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN)
-        _given_stream(http_mocker, _STREAM_NAME, _A_FIELD_NAME)
+        given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        http_mocker.post(
+            HttpRequest(f"{_BASE_URL}/jobs/query", body=json.dumps({"operation": "queryAll", "query": "SELECT a_field FROM a_stream_name", "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"})),
+            HttpResponse(json.dumps({"id": _JOB_ID})),
+        )
         http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME}+FROM+{_STREAM_NAME}+"),
-            [
-                HttpResponse("", status_code=406),
-                HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
-            ]
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            HttpResponse(json.dumps({"state": "JobComplete"})),
+        )
+        http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(f"{_A_FIELD_NAME}\nfield_value"),
         )
 
         output = _read(SyncMode.full_refresh, self._config)

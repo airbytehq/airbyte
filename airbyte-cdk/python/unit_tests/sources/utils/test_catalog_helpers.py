@@ -27,4 +27,4 @@ def test_coerce_catalog_as_full_refresh():
         ]
     )
 
-    assert expected == CatalogHelper.coerce_catalog_as_full_refresh(input)
+    assert CatalogHelper.coerce_catalog_as_full_refresh(input) == expected

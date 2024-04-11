@@ -17,16 +17,18 @@
         "audiences": {
           "type": ["null", "object"],
           "additionalProperties": true,
-          "included": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "string"]
-            }
-          },
-          "excluded": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "string"]
+          "properties": {
+            "included": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "excluded": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
             }
           }
         },

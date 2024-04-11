@@ -50,9 +50,21 @@ import org.slf4j.LoggerFactory
 
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
+    private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations
+    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
+
+    constructor(
+        driverClass: String,
+        namingResolver: NamingConventionTransformer,
+        sqlOperations: SqlOperations,
+    ) : this(
+        driverClass,
+        JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
+        namingResolver,
+        sqlOperations
+    )
     protected val configSchemaKey: String
         get() = "schema"
 
@@ -176,7 +188,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     abstract fun toJdbcConfig(config: JsonNode): JsonNode
 
-    protected abstract val sqlGenerator: JdbcSqlGenerator
+    protected abstract fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator
 
     protected abstract fun getDestinationHandler(
         databaseName: String,
@@ -269,7 +281,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         defaultNamespace: String
     ): SerializedAirbyteMessageConsumer {
-        val sqlGenerator = sqlGenerator
+        val sqlGenerator = getSqlGenerator(config)
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
             rawNamespaceOverride
@@ -293,6 +305,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             defaultNamespace,
             typerDeduper,
             getDataTransformer(parsedCatalog, defaultNamespace),
+            optimalBatchSizeBytes,
         )
     }
 
@@ -301,6 +314,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         parsedCatalog: ParsedCatalog,
     ): TyperDeduper {
+        val sqlGenerator = getSqlGenerator(config)
         val databaseName = getDatabaseName(config)
         val v2TableMigrator = NoopV2TableMigrator()
         val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)

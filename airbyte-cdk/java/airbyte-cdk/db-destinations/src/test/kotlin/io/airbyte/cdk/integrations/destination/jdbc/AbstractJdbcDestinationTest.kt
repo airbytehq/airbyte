@@ -153,7 +153,7 @@ class AbstractJdbcDestinationTest {
             return config
         }
 
-        override val sqlGenerator: JdbcSqlGenerator = mock()
+        override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator = mock()
 
         override fun getDestinationHandler(
             databaseName: String,

@@ -28,9 +28,8 @@ import org.slf4j.LoggerFactory
  * type system.
  */
 abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
-    @JvmField val testDataHolders: MutableList<TestDataHolder> = ArrayList()
-
-    @JvmField var database: Database? = null
+    protected val testDataHolders: MutableList<TestDataHolder> = ArrayList()
+    protected var database: Database? = null
 
     protected val idColumnName: String
         /**

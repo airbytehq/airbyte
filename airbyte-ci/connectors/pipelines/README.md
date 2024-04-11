@@ -302,7 +302,7 @@ flowchart TD
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -649,6 +649,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.7.2   | [#36962](https://github.com/airbytehq/airbyte/pull/36962)  | Re-enable connector dependencies upload on publish.                                                                        |
 | 4.7.1   | [#36961](https://github.com/airbytehq/airbyte/pull/36961)  | Temporarily disable python connectors dependencies upload until we find a schema the data team can work with.              |
 | 4.7.0   | [#36892](https://github.com/airbytehq/airbyte/pull/36892)  | Upload Python connectors dependencies list to GCS on publish.                                                              |
 | 4.6.5   | [#36722](https://github.com/airbytehq/airbyte/pull/36527)  | Fix incorrect pipeline names                                                                                               |
