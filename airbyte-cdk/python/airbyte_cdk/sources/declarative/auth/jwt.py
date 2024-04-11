@@ -18,7 +18,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
     algorithm: Union[InterpolatedString, str]
-    token_duration: Union[InterpolatedString, str] = None
+    token_duration: Union[InterpolatedString, str] = 0
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = "JWT"
     iss: Union[InterpolatedString, str] = None
@@ -38,21 +38,9 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._sub = InterpolatedString.create(self.sub, parameters=parameters)
         self._aud = InterpolatedString.create(self.aud, parameters=parameters)
         self._cty = InterpolatedString.create(self.cty, parameters=parameters)
-        self._token_duration = InterpolatedString.create(self.token_duration, parameters=parameters)
+        self._token_duration = InterpolatedString.create(str(self.token_duration), parameters=parameters)
         self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
-        self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
-
-    def _get_algorithm(self) -> str:
-        algorithm: str = self._algorithm.eval(self.config)
-        if not algorithm:
-            raise ValueError("Algorithm is required")
-        return algorithm
-
-    def _get_secret_key(self) -> str:
-        secret_key: str = self._secret_key.eval(self.config)
-        if not secret_key:
-            raise ValueError("secret_key is required")
-        return secret_key
+        self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
 
     def _get_jwt_headers(self) -> Mapping[str, Any]:
         headers = {}
@@ -62,14 +50,14 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         if self._algorithm:
             headers["alg"] = self._get_algorithm()
         if self._typ:
-            headers["typ"] = self._typ
+            headers["typ"] = f"{self._typ.eval(self.config)}"
         if self._cty:
-            headers["cty"] = self._cty
+            headers["cty"] = f"{self._cty.eval(self.config)}"
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
-        now = int(datetime.now().timestamp())
         payload = {}
+        now = int(datetime.now().timestamp())
         if self._token_duration:
             exp = now + int(self._token_duration.eval(self.config))
             payload["exp"] = exp
@@ -78,15 +66,24 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         if self._iss:
             payload["iss"] = f"{self._iss.eval(self.config)}"
         if self._sub:
-            payload["sub"] = self._sub
+            payload["sub"] = f"{self._sub.eval(self.config)}"
         if self._aud:
-            payload["aud"] = self._aud
+            payload["aud"] = f"{self._aud.eval(self.config)}"
         payload["iat"] = now
         payload["nbf"] = nbf
         return payload
 
+    def _get_algorithm(self) -> str:
+        algorithm: str = self._algorithm.eval(self.config)
+        if not algorithm:
+            raise ValueError("Algorithm is required")
+        return f"{algorithm}"
+
     def _get_secret_key(self) -> str:
-        return f"{self._secret_key.eval(self.config)}"
+        secret_key: str = self._secret_key.eval(self.config)
+        if not secret_key:
+            raise ValueError("secret_key is required")
+        return f"{secret_key}"
 
     def _get_signed_token(self) -> str:
         return jwt.encode(
