@@ -436,13 +436,11 @@ def test_valid_full_refresh_read_no_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", stream_output),
             _as_state("s1", {}),
-            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", stream_output),
             _as_state("s2", {}),
-            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -485,7 +483,6 @@ def test_valid_full_refresh_read_with_slices(mocker):
             _as_state("s1", {}),
             _as_record("s1", slices[1]),
             _as_state("s1", {}),
-            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
@@ -493,7 +490,6 @@ def test_valid_full_refresh_read_with_slices(mocker):
             _as_state("s2", {}),
             _as_record("s2", slices[1]),
             _as_state("s2", {}),
-            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -537,13 +533,6 @@ def test_full_refresh_does_not_use_incoming_state(mocker):
                 stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
             ),
         ),
-        AirbyteStateMessage(
-            type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="s2"),
-                stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_state_message": True}),
-            ),
-        ),
     ]
 
     src = MockSource(streams=[s1, s2])
@@ -563,7 +552,6 @@ def test_full_refresh_does_not_use_incoming_state(mocker):
             _as_state("s1", {}),
             _as_record("s1", slices[1]),
             _as_state("s1", {}),
-            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
@@ -571,7 +559,6 @@ def test_full_refresh_does_not_use_incoming_state(mocker):
             _as_state("s2", {}),
             _as_record("s2", slices[1]),
             _as_state("s2", {}),
-            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )

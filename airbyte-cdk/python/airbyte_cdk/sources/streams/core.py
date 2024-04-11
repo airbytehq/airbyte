@@ -169,13 +169,10 @@ class Stream(ABC):
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
 
-        if not has_slices or sync_mode == SyncMode.full_refresh:
-            if sync_mode == SyncMode.full_refresh:
-                # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
-                # Incremental streams running full_refresh mode emit a meaningful state
-                stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
-
-            # We should always emit a final state message for full refresh sync or streams that do not have any slices
+        if not has_slices:
+            # We should always emit a final state message, even for streams that do not have any slices
+            # TODO: can we always ensure that if not has_slices, we have a key? Do we need to think about
+            # stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
 
@@ -185,6 +182,7 @@ class Stream(ABC):
         # # Now, full refresh mode is irrelevant. Incremental streams will have emitted their slice state already
         # # So all we need to worry about is if we have slices or not (a lot of "full refresh only" streams will not have slices)
         # # Question: what does the state message for the `None` slice look like? Does it come out reliably?
+        # # Answer: it is empty, and does come out reliably. we probably need to fix this
         # if not has_slices:
         #     # TODO: this sentinel key should probably change name. It's not a 'full refresh' key, its a "no state" key
         #     # Which previously could have meant "no slices", but in the future it means "no slices (i.e. no data) or

@@ -184,18 +184,6 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
                 )
             ),
         ))
-        expected_records.append(
-            AirbyteMessage(
-                type=MessageType.STATE,
-                state=AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
-                    )
-                ),
-            ),
-        )
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
@@ -247,18 +235,6 @@ def test_full_refresh_read_a_single_slice(constructor):
                 )
             ),
         ))
-        expected_records.append(
-            AirbyteMessage(
-                type=MessageType.STATE,
-                state=AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
-                    )
-                ),
-            ),
-        )
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
