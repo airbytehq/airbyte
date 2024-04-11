@@ -71,7 +71,6 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         now = int(datetime.now().timestamp())
         if self._token_duration:
             exp = now + int(self._token_duration.eval(self.config))
-        exp = now + int(self._token_duration.eval(self.config))
         nbf = now
         payload = {}
         payload.update(self._additional_jwt_payload.eval(self.config))
