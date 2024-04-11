@@ -6,7 +6,7 @@ Custom components cannot be directly edited in the builder, but the OSS docker-c
 
 :::warning 
 Connectors using custom components cannot be directly exported to your workspace. You'll need to create a custom connector, build a docker image, and upload it to the platform by [following these instructions](https://docs.airbyte.com/integrations/custom-connectors#adding-your-connectors-in-the-ui).
-
+:::
 
 Here's how you can do it:
 
