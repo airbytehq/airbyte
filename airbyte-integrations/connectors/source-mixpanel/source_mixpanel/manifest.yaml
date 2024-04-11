@@ -9,7 +9,7 @@ definitions:
 
   api_token_auth:
     type: ApiKeyAuthenticator
-    api_token: "{{ config['credentials']['api_secret'] }}"
+    api_token: "{{ 'Basic ' + config['credentials']['api_secret'] | base64encode }}"
     inject_into:
       type: RequestOption
       inject_into: header
@@ -56,6 +56,9 @@ definitions:
         - error_message_contains: "Query rate limit exceeded"
           action: RETRY
           error_message: Query rate limit exceeded.
+        - error_message_contains: "to_date cannot be later than today"
+          action: FAIL
+          error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
 
   requester_annotation:
     type: CustomRequester
@@ -99,6 +102,9 @@ definitions:
 
   incremental_sync:
     type: DatetimeBasedCursor
+    step: P2D
+    cursor_granularity: P1D
+    lookback_window: '{{ config["attribution_window"] }}'
     cursor_field: date
     cursor_datetime_formats:
       - '%Y-%m-%d'
@@ -119,9 +125,9 @@ definitions:
       type: MinMaxDatetime
       datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    step: P2D
-    cursor_granularity: P1D
 
+
+  # https://developer.mixpanel.com/reference/cohorts
   cohorts_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -133,6 +139,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector_empty_dpath"
 
+  # https://developer.mixpanel.com/reference/engage
   engage_stream:
     $ref: "#/definitions/stream_base"
     primary_key: distinct_id
@@ -194,6 +201,7 @@ definitions:
               - cohort_id
             value: "{{ stream_partition.get('id') }}"
 
+  # No API docs! build based on singer source
   revenue_stream:
     $ref: "#/definitions/stream_base"
     primary_key: "date"
@@ -211,6 +219,7 @@ definitions:
             - "{{ parameters['field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
 
+  # https://developer.mixpanel.com/reference/list-all-annotations-for-project
   annotations_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -223,6 +232,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester_annotation"
 
+  # https://developer.mixpanel.com/reference/funnels-query
   funnel_ids_stream:
     type: DeclarativeStream
     name: funnel_ids
@@ -252,6 +262,7 @@ definitions:
           name:
             type: [string, null]
 
+  # https://developer.mixpanel.com/reference/funnels-query
   funnels_stream:
     type: DeclarativeStream
     name: funnels
@@ -302,10 +313,9 @@ definitions:
               - name
             value: "{{ stream_partition.get('funnel_name') }}"
 
-
 streams:
   - "#/definitions/cohorts_stream"        # +
-  - "#/definitions/engage_stream"         # PAGINATION? SCHEMA
+  - "#/definitions/engage_stream"         # +
   - "#/definitions/revenue_stream"        # +
   - "#/definitions/annotations_stream"    # +
   - "#/definitions/cohort_members_stream" # +

@@ -18,25 +18,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthe
 
 from .streams.engage import EngageSchema
 
-
-@dataclass
-class CustomAuthenticator(ApiKeyAuthenticator):
-    @property
-    def token(self) -> str:
-        token = self.token_provider.get_token()
-        token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        return f"Basic {token}"
-
 @dataclass
 class MixpanelHttpRequester(HttpRequester):
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-        # encode provided api_secret
-        api_secret = self.config.get('credentials', {}).get('api_secret')
-        if api_secret and 'Basic' not in api_secret:
-            api_secret = base64.b64encode(api_secret.encode("utf8")).decode("utf8")
-            self.config['credentials']['api_secret'] = f"Basic {api_secret}"
 
     def get_url_base(self) -> str:
         """
@@ -334,6 +317,8 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
         project_id = self.config.get('credentials', {}).get('project_id')
         if project_id:
             params["project_id"] = project_id
+
+        schema["additionalProperties"] = self.config.get('select_properties_by_default', True)
 
         # read existing Engage schema from API
         schema_properties = EngageSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
