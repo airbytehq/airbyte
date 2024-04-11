@@ -187,7 +187,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
-    assert expected_records == actual_records
+    assert actual_records == expected_records
 
 
 @pytest.mark.parametrize(
@@ -233,7 +233,7 @@ def test_full_refresh_read_a_single_slice(constructor):
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
-    assert expected_records == actual_records
+    assert actual_records == expected_records
 
 
 @pytest.mark.parametrize(
@@ -289,7 +289,7 @@ def test_full_refresh_read_two_slices(constructor):
 
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
 
 def test_incremental_read_two_slices():
@@ -324,7 +324,7 @@ def test_incremental_read_two_slices():
 
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
 
 def test_concurrent_incremental_read_two_slices():
@@ -361,7 +361,7 @@ def test_concurrent_incremental_read_two_slices():
 
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
     # We don't have a real source that reads from the message_repository for state, so we read from the queue directly to verify
     # the cursor observed records correctly and updated partition states

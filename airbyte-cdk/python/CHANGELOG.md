@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.1
+Concurrent CDK: add logging on exception
+
 ## 0.81.0
 Unpin airbyte-protocol-models library
 
