@@ -204,7 +204,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
 
 
@@ -233,10 +233,10 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 2
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {}
+        assert actual_messages.state_messages[1].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
 
@@ -409,7 +409,7 @@ class MultipleStreamTest(TestCase):
             Type.STATE,
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_0}
@@ -418,10 +418,10 @@ class MultipleStreamTest(TestCase):
         assert actual_messages.state_messages[2].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[3].state.stream.stream_state == {}
+        assert actual_messages.state_messages[3].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[4].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[4].state.stream.stream_state == {}
+        assert actual_messages.state_messages[4].state.stream.stream_state == {"__ab_no_cursor_state_message": True}
         assert actual_messages.state_messages[4].state.sourceStats.recordCount == 2.0
 
 

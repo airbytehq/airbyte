@@ -173,16 +173,18 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
     # TODO: Is this not working for concurrent? They don't seem to be checkpointing
     if constructor != _concurrent_stream:
-        expected_records.append(AirbyteMessage(
-            type=MessageType.STATE,
-            state=AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                    stream_state=AirbyteStateBlob(),
-                )
+        expected_records.append(
+            AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
+                    )
+                ),
             ),
-        ))
+        )
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
@@ -224,7 +226,7 @@ def test_full_refresh_read_a_single_slice(constructor):
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                    stream_state=AirbyteStateBlob(),
+                    stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
                 )
             ),
         ))
@@ -273,7 +275,7 @@ def test_full_refresh_read_two_slices(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(),
+                        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
                     )
                 ),
             )
