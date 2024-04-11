@@ -23,6 +23,6 @@ airbyte-cdk = "^0"
 source-trello = "source_trello.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
