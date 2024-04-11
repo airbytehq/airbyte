@@ -35,7 +35,7 @@ data:
           Due to changes in the handling of state format for incremental substreams, this migration constitutes a breaking change for the channel_messages stream.
           Users will need to retest source configuration, refresh the source schema and reset the channel_messages stream after upgrading.
           For more information, see our migration documentation for Source Slack.
-        upgradeDeadline: "2024-05-03"
+        upgradeDeadline: "2024-04-29"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
