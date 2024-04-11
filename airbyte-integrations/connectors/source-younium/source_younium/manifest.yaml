@@ -33,7 +33,7 @@ definitions:
         type: CursorPagination
         page_size: 100
         cursor_value: '{{ response.get("nextPage", {}) }}'
-        stop_condition: '{{ not response.get("nextPage", {}) }}'
+        stop_condition: '{{ response.get("lastPage", {}) }}'
       page_size_option:
         inject_into: request_parameter
         type: RequestOption
