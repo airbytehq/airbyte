@@ -6,6 +6,7 @@ import base64
 import json
 import logging
 import os
+import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -173,10 +174,11 @@ class SourceMixpanel(YamlDeclarativeSource):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # config = self._validate_and_transform(config)
+        config_transformed = copy.deepcopy(config)
+        config_transformed = self._validate_and_transform(config_transformed)
         auth = self.get_authenticator(config)
         streams = super().streams(config=config)
-        # streams.append(Export(authenticator=auth, **config))
+        streams.append(Export(authenticator=auth, **config_transformed))
         return streams
 
     @staticmethod
