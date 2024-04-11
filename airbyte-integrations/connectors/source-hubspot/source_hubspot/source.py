@@ -17,6 +17,7 @@ from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
+    CRMSearchStream,
     Campaigns,
     Companies,
     CompaniesPropertyHistory,
@@ -47,8 +48,8 @@ from source_hubspot.streams import (
     EngagementsNotesWebAnalytics,
     EngagementsTasks,
     EngagementsTasksWebAnalytics,
-    Forms,
     FormSubmissions,
+    Forms,
     Goals,
     GoalsWebAnalytics,
     LineItems,
@@ -131,8 +132,8 @@ class SourceHubspot(AbstractSource):
         return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+        api = common_params['api']
         streams = [
             Campaigns(**common_params),
             Companies(**common_params),
@@ -189,7 +190,6 @@ class SourceHubspot(AbstractSource):
                 ]
             )
 
-        api = API(credentials=credentials)
         if api.is_oauth2():
             authenticator = api.get_authenticator()
             granted_scopes = self.get_granted_scopes(authenticator)
@@ -218,15 +218,21 @@ class SourceHubspot(AbstractSource):
             )
             available_streams.extend(custom_objects_web_analytics_streams)
 
+        for stream in available_streams:
+            if not isinstance(stream, CRMSearchStream):
+                continue
+            stream.update_custom_objects_associations()
+
         return available_streams
 
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
-        for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():
+        for entity, fully_qualified_name, schema, custom_properties, associations in api.get_custom_objects_metadata():
             yield CustomObject(
                 entity=entity,
                 schema=schema,
                 fully_qualified_name=fully_qualified_name,
                 custom_properties=custom_properties,
+                associations=associations,
                 **common_params,
             )
 

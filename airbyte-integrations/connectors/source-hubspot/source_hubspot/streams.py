@@ -263,7 +263,8 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
-    def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any]]]:
+    @lru_cache
+    def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any], Mapping[str, Any], List[str]]]:
         data, response = self.get("/crm/v3/schemas", {})
         if not response.ok or "results" not in data:
             self.logger.warn(self._parse_and_handle_errors(response))
@@ -271,10 +272,33 @@ class API:
         for metadata in data["results"]:
             properties = self.get_properties(raw_schema=metadata)
             schema = self.generate_schema(properties)
-            yield metadata["name"], metadata["fullyQualifiedName"], schema, properties
+            yield (
+                metadata["name"],
+                metadata["fullyQualifiedName"],
+                schema,
+                properties,
+                self._parse_associations(object_type_id=metadata["objectTypeId"], raw_schema=metadata)
+            )
 
     def get_properties(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
         return {field["name"]: self._field_to_property_schema(field) for field in raw_schema["properties"]}
+
+    def _parse_associations(self, object_type_id: str, raw_schema: Mapping[str, Any]):
+        associations = set()
+        for association in raw_schema["associations"]:
+            if object_type_id != association["fromObjectTypeId"]:
+                continue
+            to_type_id = association["toObjectTypeId"]
+            to_type = self.get_type_meta_by_id(to_type_id)
+            associations.add(to_type["fullyQualifiedName"])
+        return sorted(list(associations))
+
+    @lru_cache(maxsize=512)
+    def get_type_meta_by_id(self, type_id) -> Mapping[str, Any]:
+        data, response = self.get(f"/crm/v3/schemas/{type_id}", {})
+        if not response.ok:
+            raise KeyError(f'Could not resolve type id "{type_id}". Error: {self._parse_and_handle_errors(response)}')
+        return data
 
     def generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
         unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
@@ -288,6 +312,7 @@ class API:
                 "updatedAt": {"type": ["null", "string"], "format": "date-time"},
                 "archived": {"type": ["null", "boolean"]},
                 "properties": {"type": ["null", "object"], "properties": properties},
+                "associations": {"type": ["null", "object"], "properties": {}},
                 **unnested_properties,
             },
         }
@@ -434,6 +459,11 @@ class Stream(HttpStream, ABC):
             }
             default_props = json_schema["properties"]
             json_schema["properties"] = {**default_props, **properties, **unnested_properties}
+
+            associated_custom_objects = getattr(self, 'associated_custom_objects', None) or {}
+            for _, name in associated_custom_objects.items():
+                # We use the array type to handle all types of relations (one-to-one, one-to-many) to avoid querying the API.
+                json_schema["properties"][name] = {"type": ["null", "array"], "items": {"type": ["null", "string"]}}
         return json_schema
 
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
@@ -842,7 +872,8 @@ class Stream(HttpStream, ABC):
             if "associations" in record:
                 associations = record.pop("associations")
                 for name, association in associations.items():
-                    record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
+                    resolved_name = self.associated_custom_objects[name] if name in (self.associated_custom_objects or {}) else name
+                    record[resolved_name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
 
     @property
@@ -1094,6 +1125,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     updated_at_field = "updatedAt"
     last_modified_field: str = None
     associations: List[str] = None
+    associated_custom_objects: Mapping[str, str] = None # { "custom_object_fully_qualified_name": "custom_object_name", ... }
     fully_qualified_name: str = None
 
     # added to guarantee the data types, declared for the stream's schema
@@ -1257,6 +1289,27 @@ class CRMSearchStream(IncrementalStream, ABC):
                     self._state = self._start_date
                 else:
                     self._state = self._start_date = max(self._state, self._start_date)
+
+    def update_custom_objects_associations(self):
+        self.associated_custom_objects = {}
+        object_type_id = self.fully_qualified_name or self.entity
+
+        for entity, fully_qualified_name, _, _, _ in self._api.get_custom_objects_metadata():
+            associations, _ = self._api.get(f"/crm/v4/associations/{object_type_id}/{fully_qualified_name}/labels")
+            if len(self._filter_associations_to_custom_objects(associations)) > 0:
+                self.associated_custom_objects[fully_qualified_name] = entity
+
+        # We need the fully_qualified_name to read the associations of custom objects
+        self.associations = sorted(list(
+            set(self.associations).union(self.associated_custom_objects.keys())
+        ))
+
+    @staticmethod
+    def _filter_associations_to_custom_objects(associations: List[Dict]) -> List[Dict]:
+        return [
+            association for association in associations.get("results", [])
+            if association.get("label") and association.get("category") == "USER_DEFINED"
+        ]
 
 
 class CRMObjectStream(Stream):
@@ -2242,16 +2295,16 @@ class Tickets(CRMSearchStream):
 
 class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
-    associations = []
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
+    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], associations: List[str], **kwargs):
         super().__init__(**kwargs)
         self.entity = entity
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
         self.custom_properties = custom_properties
+        self.associations = associations
 
     @property
     def name(self) -> str:
