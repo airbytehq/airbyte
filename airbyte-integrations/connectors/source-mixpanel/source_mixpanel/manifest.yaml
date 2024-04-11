@@ -9,7 +9,7 @@ definitions:
 
   api_token_auth:
     type: ApiKeyAuthenticator
-    api_token: "{{ 'Basic ' + config['credentials']['api_secret'] | base64encode }}"
+    api_token: "Basic {{ config['credentials']['api_secret'] | base64encode }}"
     inject_into:
       type: RequestOption
       inject_into: header
@@ -102,9 +102,9 @@ definitions:
 
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P2D
+    step: 'P{{ config["date_window_size"] or 30 }}D'
     cursor_granularity: P1D
-    lookback_window: '{{ config["attribution_window"] }}'
+    lookback_window: 'P{{ config["attribution_window"] or 7 }}D'
     cursor_field: date
     cursor_datetime_formats:
       - '%Y-%m-%d'
