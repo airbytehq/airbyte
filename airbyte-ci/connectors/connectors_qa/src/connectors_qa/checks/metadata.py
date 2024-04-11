@@ -152,7 +152,7 @@ class CheckConnectorCDKTag(MetadataCheck):
 
 class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
-    Verify that _if_ the the most recent connector version has a breaking change,
+    Verify that _if_ the most recent connector version has a breaking change,
     it's deadline is at least a week in the future.
     """
 
@@ -208,7 +208,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
 
         return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")
 
-      
+
 class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
     name = "Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata"
     description = "Certified source connectors must have a value filled out for `maxSecondsBetweenMessages` in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in connector's `metadata.yaml` file."
@@ -230,7 +230,7 @@ class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
         return self.pass_(
             connector=connector,
             message="Value for maxSecondsBetweenMessages is set",
-        )      
+        )
 
 
 ENABLED_CHECKS = [

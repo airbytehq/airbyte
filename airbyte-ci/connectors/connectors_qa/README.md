@@ -109,7 +109,7 @@ poe lint
 
 ### 1.3.0
 
-Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presencse of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
+Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
 
 ### 1.2.0
 
