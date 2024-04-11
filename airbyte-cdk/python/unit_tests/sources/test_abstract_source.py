@@ -435,12 +435,12 @@ def test_valid_full_refresh_read_no_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", stream_output),
-            _as_state("s1", {}),
+            _as_state("s1", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", stream_output),
-            _as_state("s2", {}),
+            _as_state("s2", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -474,22 +474,22 @@ def test_valid_full_refresh_read_with_slices(mocker):
     )
 
     # TODO: come back to this. We should be able to format it right, and we
-    # Have an issue that the state is empty cause it shouldn't be
+    # These should have cursors, i think it's just a test setup thing
     expected = _fix_emitted_at(
         [
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             _as_record("s1", slices[0]),
-            _as_state("s1", {}),
+            _as_state("s1", {"__ab_no_cursor_state_message": True}),
             _as_record("s1", slices[1]),
-            _as_state("s1", {}),
+            _as_state("s1", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             _as_record("s2", slices[0]),
-            _as_state("s2", {}),
+            _as_state("s2", {"__ab_no_cursor_state_message": True}),
             _as_record("s2", slices[1]),
-            _as_state("s2", {}),
+            _as_state("s2", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
@@ -549,16 +549,16 @@ def test_full_refresh_does_not_use_incoming_state(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             _as_record("s1", slices[0]),
-            _as_state("s1", {}),
+            _as_state("s1", {"__ab_no_cursor_state_message": True}),
             _as_record("s1", slices[1]),
-            _as_state("s1", {}),
+            _as_state("s1", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             _as_record("s2", slices[0]),
-            _as_state("s2", {}),
+            _as_state("s2", {"__ab_no_cursor_state_message": True}),
             _as_record("s2", slices[1]),
-            _as_state("s2", {}),
+            _as_state("s2", {"__ab_no_cursor_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )

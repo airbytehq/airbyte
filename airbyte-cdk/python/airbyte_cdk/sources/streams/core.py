@@ -35,6 +35,11 @@ JsonSchema = Mapping[str, Any]
 # value is used to indicate that stream should not load the incoming state value
 FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
 
+# Streams that don't have cursors should emit this
+# We still want to emit a state message at the end of the stream
+# So that we can return record counts, but we aren't returning a cursor
+NO_CURSOR_SENTINEL_STATE_KEY = "__ab_no_cursor_state_message"
+
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
@@ -151,6 +156,7 @@ class Stream(ABC):
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
+                        # TODO: ella check if this still aligns with what we're doing now
                         stream_state = self.get_updated_state(stream_state, record_data)
                     record_counter += 1
 
@@ -165,9 +171,7 @@ class Stream(ABC):
                     if internal_config.is_limit_reached(record_counter):
                         break
 
-            # A full refresh stream with no state will create a state message at the end of its stream that is something like
-            # type=<AirbyteStateType.STREAM: 'STREAM'> stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name='my_stream', namespace=None), stream_state=AirbyteStateBlob()) global_=None data=None sourceStats=None destinationStats=None
-            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+            airbyte_state_message = self._checkpoint_state(stream_state or {NO_CURSOR_SENTINEL_STATE_KEY: True}, state_manager)
             yield airbyte_state_message
 
         if not has_slices:
