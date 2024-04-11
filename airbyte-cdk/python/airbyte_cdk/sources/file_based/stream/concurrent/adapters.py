@@ -18,7 +18,6 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import Prima
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFinalStateCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -70,7 +69,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
                 partition_generator=FileBasedStreamPartitionGenerator(
                     stream,
                     message_repository,
-                    SyncMode.full_refresh if isinstance(cursor, FileBasedFinalStateCursor) else SyncMode.incremental,
+                    SyncMode.full_refresh,  # TODO: this is not used anywhere, we should remove it from the interface. Sending a dummy value
                     [cursor_field] if cursor_field is not None else None,
                     state,
                     cursor,
