@@ -143,31 +143,17 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .collect(Collectors.toList());
     assertEquals(recordMessages.size(), 1);
     assertFalse(stateMessages.isEmpty(), "Reason");
-    // TODO validate exact records
     ObjectMapper mapper = new ObjectMapper();
 
-    assertTrue(recordMessages.get(0).getData().equals(mapper.readTree("""
-                                                                      {"id":4, "name":"voyager"}""")));
+    assertTrue(recordMessages.get(0).getData().equals(
+            mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    JsonNode latestState = null;
-    for (final AirbyteStateMessage stateMessage : stateMessages) {
-      if (stateMessage.getType().equals(AirbyteStateMessage.AirbyteStateType.STREAM)) {
-        latestState = Jsons.jsonNode(stateMessages);
-        break;
-      } else if (stateMessage.getType().equals(AirbyteStateMessage.AirbyteStateType.GLOBAL)) {
-        latestState = Jsons.jsonNode(List.of(Iterables.getLast(stateMessages)));
-        break;
-      } else {
-        throw new RuntimeException("Unknown state type " + stateMessage.getType());
-      }
-    }
+    JsonNode latestState = extractLatestState(stateMessages);
 
     testdb.getDatabase().query(c -> {
-      return c.query("""
-                     INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
-                     """.formatted(testdb.getDatabaseName(), STREAM_NAME3));
+      return c.query("INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');".formatted(testdb.getDatabaseName(), STREAM_NAME3));
     }).execute();
 
     assert Objects.nonNull(latestState);
@@ -175,8 +161,8 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
-    assertTrue(secondSyncRecords.get(0).getData().equals(mapper.readTree("""
-                                                                         {"id":5, "name":"deep space nine"}""")));
+    assertTrue(secondSyncRecords.get(0).getData().equals(
+            mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
 
   }
 

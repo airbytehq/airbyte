@@ -42,6 +42,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static final String SCHEMA_NAME = "dbo";
   protected static final String STREAM_NAME = "id_and_name";
   protected static final String STREAM_NAME2 = "starships";
+  protected static String STREAM_NAME3 = "stream3";
 
   protected MsSQLTestDatabase testdb;
 
@@ -54,7 +55,10 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             "(1, 'picard', '2124-03-04T01:01:01Z'), " +
             "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
             "(3, 'vash', '2124-03-04T01:01:01Z');")
-        .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato'), (4, 'Argo');", SCHEMA_NAME, STREAM_NAME2);
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato'), (4, 'Argo');", SCHEMA_NAME, STREAM_NAME2)
+            .with("CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);", SCHEMA_NAME, STREAM_NAME3)
+            .with("INSERT INTO %s.%s (id, name) VALUES (4,'voyager');", SCHEMA_NAME, STREAM_NAME3);
+
   }
 
   @Override
@@ -87,7 +91,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME), SCHEMA_NAME,
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
@@ -96,8 +100,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                SCHEMA_NAME,
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
@@ -160,19 +163,6 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   protected void testNullValueConversion() throws Exception {
-    final String STREAM_NAME3 = "stream3";
-    testdb.getDatabase().query(c -> {
-      return c.query("""
-                     CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);
-                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
-    }).execute();
-
-    testdb.getDatabase().query(c -> {
-      return c.query("""
-                     INSERT INTO %s.%s (id, name) VALUES (4,'voyager');
-                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
-    }).execute();
-
     final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
         Lists.newArrayList(CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAME3,
             SCHEMA_NAME,
@@ -194,31 +184,17 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .collect(Collectors.toList());
     assertEquals(recordMessages.size(), 1);
     assertFalse(stateMessages.isEmpty(), "Reason");
-    // TODO validate exact records
     ObjectMapper mapper = new ObjectMapper();
 
-    assertTrue(recordMessages.get(0).getData().equals(mapper.readTree("""
-                                                                      {"id":4, "name":"voyager"}""")));
+    assertTrue(recordMessages.get(0).getData().equals(
+            mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    JsonNode latestState = null;
-    for (final AirbyteStateMessage stateMessage : stateMessages) {
-      if (stateMessage.getType().equals(AirbyteStateMessage.AirbyteStateType.STREAM)) {
-        latestState = Jsons.jsonNode(stateMessages);
-        break;
-      } else if (stateMessage.getType().equals(AirbyteStateMessage.AirbyteStateType.GLOBAL)) {
-        latestState = Jsons.jsonNode(List.of(Iterables.getLast(stateMessages)));
-        break;
-      } else {
-        throw new RuntimeException("Unknown state type " + stateMessage.getType());
-      }
-    }
+    JsonNode latestState = extractLatestState(stateMessages);
 
     testdb.getDatabase().query(c -> {
-      return c.query("""
-                     INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
-                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
+      return c.query("INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');".formatted(SCHEMA_NAME, STREAM_NAME3));
     }).execute();
 
     assert Objects.nonNull(latestState);
@@ -226,8 +202,8 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
-    assertTrue(secondSyncRecords.get(0).getData().equals(mapper.readTree("""
-                                                                         {"id":5, "name":"deep space nine"}""")));
+    assertTrue(secondSyncRecords.get(0).getData().equals(
+            mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
 
   }
 
@@ -235,5 +211,4 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
-
 }
