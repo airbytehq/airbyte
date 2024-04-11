@@ -95,18 +95,24 @@ class ShopifyRateLimiter:
     log_message_count = 0
     log_message_frequency = 3
 
-    def log_message_counter(message: str) -> None:
+    def log_message_counter(message: str, debug_info: Optional[dict] = None) -> None:
         """
         Print the rate-limit info message every `log_message_frequency` request, to minimize the noise in the logs.
         """
         if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
             ShopifyRateLimiter.log_message_count += 1
         else:
+            message = (message + f" Info: {debug_info}") if debug_info else message
             ShopifyRateLimiter.logger.info(message)
             ShopifyRateLimiter.log_message_count = 0
 
+    def get_response_from_args(*args) -> Optional[requests.Response]:
+        for arg in args:
+            if isinstance(arg, requests.models.Response):
+                return arg
+
     @staticmethod
-    def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
+    def _convert_load_to_time(load: Optional[float], threshold: float, debug_info: Optional[dict] = None) -> float:
         """
         Define wait_time based on load conditions.
 
@@ -121,20 +127,22 @@ class ShopifyRateLimiter:
         if not load:
             # when there is no rate_limits from header, use the `sleep_on_unknown_load`
             wait_time = ShopifyRateLimiter.on_unknown_load
-            ShopifyRateLimiter.log_message_counter("API Load: `REGULAR`")
+            ShopifyRateLimiter.log_message_counter("API Load: `REGULAR`", debug_info)
         elif load >= threshold:
             wait_time = ShopifyRateLimiter.on_high_load
-            ShopifyRateLimiter.log_message_counter("API Load: `HIGH`")
+            ShopifyRateLimiter.log_message_counter("API Load: `HIGH`", debug_info)
         elif load >= mid_load:
             wait_time = ShopifyRateLimiter.on_mid_load
-            ShopifyRateLimiter.log_message_counter("API Load: `MID`")
+            ShopifyRateLimiter.log_message_counter("API Load: `MID`", debug_info)
         elif load < mid_load:
             wait_time = ShopifyRateLimiter.on_low_load
-            ShopifyRateLimiter.log_message_counter("API Load: `LOW`")
+            ShopifyRateLimiter.log_message_counter("API Load: `LOW`", debug_info)
         return wait_time
 
     @staticmethod
-    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit") -> float:
+    def get_rest_api_wait_time(
+        *args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit", debug_info: Optional[dict] = None
+    ) -> float:
         """
         To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
@@ -151,8 +159,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
         # Get the rate_limits from response
         rate_limits = response.headers.get(rate_limit_header) if response else None
         # define current load from rate_limits
@@ -161,7 +168,7 @@ class ShopifyRateLimiter:
             load = int(current_rate) / int(max_rate_limit)
         else:
             load = None
-        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
+        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold, debug_info)
         return wait_time
 
     @staticmethod
@@ -193,8 +200,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
 
         # Get the rate limit info from response
         if response:
@@ -211,6 +217,22 @@ class ShopifyRateLimiter:
 
         wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
         return wait_time
+
+    def _debug_info(*args) -> Any:
+        # find the requests.Response inside args list
+        response = ShopifyRateLimiter.get_response_from_args(*args)
+
+        if response:
+            try:
+                content = response.json()
+                content_keys = list(content.keys())
+                stream_name = content_keys[0] if len(content_keys) > 0 else None
+                content_lengh = len(content.get(stream_name, [])) if stream_name else None
+                debug_info = {"stream": stream_name, "url": response.request.url, "n_records": content_lengh}
+                return debug_info
+            except (requests.JSONDecodeError, Exception):
+                # bypassing the errors, we don't care about it here
+                pass
 
     @staticmethod
     def wait_time(wait_time: float) -> None:
@@ -230,9 +252,12 @@ class ShopifyRateLimiter:
         def decorator(func) -> Callable[..., Any]:
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs) -> Any:
+                debug_info = ShopifyRateLimiter._debug_info(*args)
                 if api_type == ApiTypeEnum.rest.value:
                     ShopifyRateLimiter.wait_time(
-                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                        ShopifyRateLimiter.get_rest_api_wait_time(
+                            *args, threshold=threshold, rate_limit_header=rate_limit_header, debug_info=debug_info
+                        )
                     )
                 elif api_type == ApiTypeEnum.graphql.value:
                     ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
