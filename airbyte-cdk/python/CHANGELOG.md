@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
 ## 0.81.2
 Fix concurrent CDK printing by flushing the print buffer for every message
 
