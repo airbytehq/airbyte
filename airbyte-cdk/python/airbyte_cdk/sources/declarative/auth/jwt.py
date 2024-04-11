@@ -5,10 +5,11 @@
 import jwt
 from datetime import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Union, Optional
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
@@ -16,16 +17,16 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
-    algorithm: Union[InterpolatedString, str] = "ES256"
+    algorithm: Union[InterpolatedString, str]
+    token_duration: Union[InterpolatedString, str]
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = "JWT"
     iss: Union[InterpolatedString, str] = None
     sub: Union[InterpolatedString, str] = None
     aud: Union[InterpolatedString, str] = None
-    iat: Union[InterpolatedString, str] = str(int(datetime.now().timestamp()))
-    exp: Union[InterpolatedString, str] = str(int(datetime.now().timestamp()) + 1200)
-    nbf: Union[InterpolatedString, str] = None
-    jti: Union[InterpolatedString, str] = None
+    cty: Union[InterpolatedString, str] = None
+    additional_jwt_headers: Mapping[str, Any] = None
+    additional_jwt_payload: Mapping[str, Any] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__init__()
@@ -36,42 +37,51 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._iss = InterpolatedString.create(self.iss, parameters=parameters)
         self._sub = InterpolatedString.create(self.sub, parameters=parameters)
         self._aud = InterpolatedString.create(self.aud, parameters=parameters)
-        self._iat = InterpolatedString.create(self.iat, parameters=parameters)
-        self._exp = InterpolatedString.create(self.exp, parameters=parameters)
-        self._nbf = InterpolatedString.create(self.nbf, parameters=parameters)
-        self._jti = InterpolatedString.create(self.jti, parameters=parameters)
+        self._cty = InterpolatedString.create(self.cty, parameters=parameters)
+        self._token_duration = InterpolatedString.create(self.token_duration, parameters=parameters)
+        self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
+        self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
 
     def _get_algorithm(self) -> str:
-        return f"{self._algorithm.eval(self.config)}"
+        algorithm: str = self._algorithm.eval(self.config)
+        if not algorithm:
+            raise ValueError("Algorithm is required")
+        return algorithm
+
+    def _get_secret_key(self) -> str:
+        secret_key: str = self._secret_key.eval(self.config)
+        if not secret_key:
+            raise ValueError("secret_key is required")
+        return secret_key
 
     def _get_jwt_headers(self) -> Mapping[str, Any]:
         headers = {}
+        headers.update(self._additional_jwt_headers.eval(self.config))
         if self._kid:
             headers["kid"] = f"{self._kid.eval(self.config)}"
         if self._algorithm:
             headers["alg"] = self._get_algorithm()
         if self._typ:
-            headers["typ"] = f"{self._typ.eval(self.config)}"
+            headers["typ"] = self._typ
+        if self._cty:
+            headers["cty"] = self._cty
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
         now = int(datetime.now().timestamp())
-        exp = now + 1200
+        exp = now + int(self._token_duration.eval(self.config))
+        nbf = now
         payload = {}
+        payload.update(self._additional_jwt_payload.eval(self.config))
         if self._iss:
             payload["iss"] = f"{self._iss.eval(self.config)}"
         if self._sub:
-            payload["sub"] = f"{self._sub.eval(self.config)}"
+            payload["sub"] = self._sub
         if self._aud:
-            payload["aud"] = f"{self._aud.eval(self.config)}"
-        if self._iat:
-            payload["iat"] = now
-        if self._exp:
-            payload["exp"] = exp
-        if self._nbf:
-            payload["nbf"] = self._nbf.eval(self.config)
-        if self._jti:
-            payload["jti"] = f"{self._jti.eval(self.config)}"
+            payload["aud"] = self._aud
+        payload["iat"] = now
+        payload["exp"] = exp
+        payload["nbf"] = nbf
         return payload
 
     def _get_secret_key(self) -> str:
