@@ -173,7 +173,17 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     # Synchronous streams emit a final state message to indicate that the stream has finished reading
     # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
     # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
-    if constructor == _stream:
+    if constructor != _concurrent_stream:
+        expected_records.append(AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                    stream_state=AirbyteStateBlob(),
+                )
+            ),
+        ))
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
@@ -225,7 +235,18 @@ def test_full_refresh_read_a_single_slice(constructor):
     # Synchronous streams emit a final state message to indicate that the stream has finished reading
     # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
     # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
-    if constructor == _stream:
+    # TODO: Is this not working for concurrent? They don't seem to be checkpointing
+    if constructor != _concurrent_stream:
+        expected_records.append(AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                    stream_state=AirbyteStateBlob(),
+                )
+            ),
+        ))
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
@@ -277,15 +298,32 @@ def test_full_refresh_read_two_slices(constructor):
     slice_to_partition = {1: records_partition_1, 2: records_partition_2}
     stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
 
+    def _maybe_state_message(constructor):
+        if constructor != _concurrent_stream:
+            return AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_state=AirbyteStateBlob(),
+                    )
+                ),
+            )
+        return None
+
     expected_records = [
         *records_partition_1,
+        _maybe_state_message(constructor),
         *records_partition_2,
+        _maybe_state_message(constructor),
     ]
+    expected_records = [record for record in expected_records if record is not None]
 
     # Synchronous streams emit a final state message to indicate that the stream has finished reading
     # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
     # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
-    if constructor == _stream or constructor == _stream_with_no_cursor_field:
+    if constructor != _concurrent_stream:
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
