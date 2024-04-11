@@ -295,3 +295,21 @@ def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
         else:
             actual_shop_id = check_test.get_shop_id()
             assert actual_shop_id == expected_shop_id
+
+@pytest.mark.parametrize(
+
+@pytest.mark.parametrize(
+  "record, expected",
+  [
+    # Test case: 'payment_terms' is a string in the response
+    ({"payment_terms": "Net 30"}, {"payment_terms": {"term": "Net 30"}}),
+    # Test case: 'payment_terms' is null in the response
+    ({"payment_terms": None}, {"payment_terms": None}),
+    # Test case: 'payment_terms' is missing in the response
+    ({}, {"payment_terms": None}),
+  ],
+)
+def test_payment_terms(record, expected):
+  stream = Orders(config)
+  parsed_record = stream.parse_response(record)
+  assert parsed_record["payment_terms"] == expected["payment_terms"]

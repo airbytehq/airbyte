@@ -373,9 +373,9 @@
         "type": ["null", "string"]
       }
     },
-    "payment_terms": {
-      "type": ["null", "string"]
-    },
+"payment_terms": {
+  "type": ["null", "object"]
+},
     "phone": {
       "type": ["null", "string"]
     },
