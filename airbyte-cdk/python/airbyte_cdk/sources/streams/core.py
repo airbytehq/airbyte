@@ -154,12 +154,13 @@ class Stream(ABC):
                         stream_state = self.get_updated_state(stream_state, record_data)
                     record_counter += 1
 
-                    if sync_mode == SyncMode.incremental:
-                        # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
-                        checkpoint_interval = self.state_checkpoint_interval
-                        if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
-                            yield airbyte_state_message
+                    # TODO: moved this out of incremental only. Tests pass. We probably need some more tests for full refresh
+                    # + checkpoint modes
+                    # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
+                    checkpoint_interval = self.state_checkpoint_interval
+                    if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                        airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                        yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
                         break
