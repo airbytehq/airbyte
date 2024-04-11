@@ -17,13 +17,12 @@ from airbyte_cdk.models import (
     FailureType,
     Status,
     StreamDescriptor,
-    SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -202,7 +201,6 @@ class AbstractSource(Source, ABC):
         logger.debug(
             f"Syncing configured stream: {configured_stream.stream.name}",
             extra={
-                "sync_mode": configured_stream.sync_mode,
                 "primary_key": configured_stream.primary_key,
                 "cursor_field": configured_stream.cursor_field,
             },
@@ -212,13 +210,9 @@ class AbstractSource(Source, ABC):
         stream_name = configured_stream.stream.name
         # The platform always passes stream state regardless of sync mode. We shouldn't need to consider this case within the
         # connector, but right now we need to prevent accidental usage of the previous stream state
-        stream_state = (
-            state_manager.get_stream_state(stream_name, stream_instance.namespace)
-            if configured_stream.sync_mode == SyncMode.incremental
-            else {}
-        )
+        stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
-        if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
+        if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 
@@ -279,9 +273,3 @@ class AbstractSource(Source, ABC):
     def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
         failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"
-
-    @staticmethod
-    def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]) -> bool:
-        # For full refresh syncs that don't have a suitable cursor value, we emit a state that contains a sentinel key.
-        # This key is never used by a connector and is needed during a read to skip assigning the incoming state.
-        return FULL_REFRESH_SENTINEL_STATE_KEY in stream_state
