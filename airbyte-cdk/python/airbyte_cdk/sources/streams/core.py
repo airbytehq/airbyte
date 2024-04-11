@@ -133,7 +133,7 @@ class Stream(ABC):
             sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
             stream_state=stream_state,
         )
-        logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
+        logger.debug(f"Processing stream slices for {self.name}", extra={"stream_slices": slices})
 
         has_slices = False
         record_counter = 0
