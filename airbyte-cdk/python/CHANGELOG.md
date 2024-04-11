@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
 ## 0.81.1
 Concurrent CDK: add logging on exception
 
