@@ -48,7 +48,6 @@ Python connectors must have a CDK tag in their metadata. It must be set in the `
 *Applies to the following connector languages: java, low-code, python*
 
 If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
-
 ### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 *Applies to the following connector types: source*
 *Applies to the following connector languages: java, low-code, python*
@@ -86,7 +85,7 @@ Connector version in metadata.yaml and pyproject.toml file must match. This is t
 *Applies to the following connector types: source*
 *Applies to the following connector languages: python, low-code*
 
-Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `airbyte-lib`.
+Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`.
 
 ## 💼 Assets
 
