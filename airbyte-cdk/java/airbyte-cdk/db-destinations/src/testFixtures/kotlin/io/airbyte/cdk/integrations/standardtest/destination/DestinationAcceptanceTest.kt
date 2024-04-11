@@ -75,7 +75,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class DestinationAcceptanceTest {
-    protected var TEST_SCHEMAS: HashSet<String> = HashSet()
+    protected var testSchemas: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
 
@@ -197,7 +197,7 @@ abstract class DestinationAcceptanceTest {
             return null
         }
         val schema = config["schema"].asText()
-        TEST_SCHEMAS!!.add(schema)
+        testSchemas!!.add(schema)
         return schema
     }
 
@@ -357,8 +357,8 @@ abstract class DestinationAcceptanceTest {
         LOGGER.info("localRoot: {}", localRoot)
         testEnv = TestDestinationEnv(localRoot)
         mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater::class.java)
-        TEST_SCHEMAS = HashSet()
-        setup(testEnv, TEST_SCHEMAS)
+        testSchemas = HashSet()
+        setup(testEnv, testSchemas)
 
         processFactory =
             DockerProcessFactory(
@@ -1201,7 +1201,7 @@ abstract class DestinationAcceptanceTest {
             )
         // A unique namespace is required to avoid test isolation problems.
         val namespace = TestingNamespaces.generate("source_namespace")
-        TEST_SCHEMAS!!.add(namespace)
+        testSchemas!!.add(namespace)
 
         catalog.streams.forEach(Consumer { stream: AirbyteStream -> stream.namespace = namespace })
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
@@ -1241,12 +1241,12 @@ abstract class DestinationAcceptanceTest {
                 AirbyteCatalog::class.java
             )
         val namespace1 = TestingNamespaces.generate("source_namespace")
-        TEST_SCHEMAS!!.add(namespace1)
+        testSchemas!!.add(namespace1)
         catalog.streams.forEach(Consumer { stream: AirbyteStream -> stream.namespace = namespace1 })
 
         val diffNamespaceStreams = ArrayList<AirbyteStream>()
         val namespace2 = TestingNamespaces.generate("diff_source_namespace")
-        TEST_SCHEMAS!!.add(namespace2)
+        testSchemas!!.add(namespace2)
         val mapper = MoreMappers.initMapper()
         for (stream in catalog.streams) {
             val clonedStream =
@@ -1341,7 +1341,7 @@ abstract class DestinationAcceptanceTest {
         try {
             runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false)
             // Add to the list of schemas to clean up.
-            TEST_SCHEMAS!!.add(namespaceInCatalog)
+            testSchemas!!.add(namespaceInCatalog)
         } catch (e: Exception) {
             throw IOException(
                 String.format(
