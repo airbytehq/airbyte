@@ -86,7 +86,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     schema_loader:
       type: InlineSchemaLoader
@@ -183,7 +183,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     schema_loader:
       type: InlineSchemaLoader
@@ -1017,7 +1017,7 @@ streams:
         http_method: GET
         request_parameters:
           since: >-
-            {{ stream_state.published if stream_state else config['start_date']
+            {{ stream_state.published if stream_state else config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') 
             }}
         authenticator:
           $ref: "#/definitions/selective_authenticator"
@@ -1060,7 +1060,7 @@ streams:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     schema_loader:
       type: InlineSchemaLoader
@@ -1791,11 +1791,11 @@ streams:
               - "null"
 
 spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/okta
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
-    required:
-      - start_date
+    required: []
     properties:
       credentials:
         title: Authorization Method

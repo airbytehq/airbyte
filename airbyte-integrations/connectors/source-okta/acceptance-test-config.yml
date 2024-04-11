@@ -1,6 +1,9 @@
 connector_image: airbyte/source-okta:dev
 test_strictness_level: high
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_okta/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
