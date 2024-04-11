@@ -42,11 +42,12 @@ acceptance_tests:
             bypass_reason: "Empty stream, further investigation is required"
         fail_on_extra_columns: false
   incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: "Xero only supports date-precision filtering and our sandbox does not have enough data to properly test incremental reads"
+    # tests:
+    #   - config_path: "secrets/config.json"
+    #     configured_catalog_path: "integration_tests/configured_catalog.json"
+    #     future_state:
+    #       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
