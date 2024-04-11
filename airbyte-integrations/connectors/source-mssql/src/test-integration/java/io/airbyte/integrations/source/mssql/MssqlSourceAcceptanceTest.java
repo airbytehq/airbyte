@@ -82,25 +82,25 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s", STREAM_NAME), SCHEMA_NAME,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s", STREAM_NAME2),
-                                    SCHEMA_NAME,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s", STREAM_NAME), SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s", STREAM_NAME2),
+                SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
   @Override
@@ -161,40 +161,44 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   protected void testNullValueConversion() throws Exception {
     final String STREAM_NAME3 = "stream3";
-    testdb.getDatabase().query(c -> { return c.query("""
-CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL); 
-""".formatted(SCHEMA_NAME, STREAM_NAME3));}).execute();
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     CREATE TABLE %s.%s (id INTEGER PRIMARY KEY, name VARCHAR(200), userid INTEGER DEFAULT NULL);
+                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
+    }).execute();
 
-    testdb.getDatabase().query(c -> { return c.query("""
-INSERT INTO %s.%s (id, name) VALUES (4,'voyager'); 
-""".formatted(SCHEMA_NAME, STREAM_NAME3));}).execute();
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     INSERT INTO %s.%s (id, name) VALUES (4,'voyager');
+                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
+    }).execute();
 
     final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
-            Lists.newArrayList(CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAME3,
-                                    SCHEMA_NAME,
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING),
-                                    Field.of("userid", JsonSchemaType.NUMBER))
-                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                            .withSyncMode(INCREMENTAL)
-                            .withCursorField(List.of("id")));
+        Lists.newArrayList(CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAME3,
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("userid", JsonSchemaType.NUMBER))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withSyncMode(INCREMENTAL)
+            .withCursorField(List.of("id")));
     final ConfiguredAirbyteCatalog configuredCatalogWithOneStream =
-            new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
+        new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalogWithOneStream, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     final List<AirbyteStateMessage> stateMessages = airbyteMessages
-            .stream()
-            .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
-            .map(AirbyteMessage::getState)
-            .collect(Collectors.toList());
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
     assertEquals(recordMessages.size(), 1);
     assertFalse(stateMessages.isEmpty(), "Reason");
     // TODO validate exact records
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(recordMessages.get(0).getData().equals(mapper.readTree("""
-{"id":4, "name":"voyager"}""")));
+                                                                      {"id":4, "name":"voyager"}""")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -211,17 +215,19 @@ INSERT INTO %s.%s (id, name) VALUES (4,'voyager');
       }
     }
 
-    testdb.getDatabase().query(c -> { return c.query("""
-INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine'); 
-""".formatted(SCHEMA_NAME, STREAM_NAME3));}).execute();
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
+                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
+    }).execute();
 
     assert Objects.nonNull(latestState);
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState));
     assertFalse(
-            secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce records.");
+        secondSyncRecords.isEmpty(),
+        "Expected the second incremental sync to produce records.");
     assertTrue(secondSyncRecords.get(0).getData().equals(mapper.readTree("""
-{"id":5, "name":"deep space nine"}""")));
+                                                                         {"id":5, "name":"deep space nine"}""")));
 
   }
 

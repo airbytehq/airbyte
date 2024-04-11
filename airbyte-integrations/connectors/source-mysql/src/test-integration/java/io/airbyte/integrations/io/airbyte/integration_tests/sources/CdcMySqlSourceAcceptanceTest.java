@@ -196,35 +196,35 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   protected void testNullValueConversion() throws Exception {
     final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
-            Lists.newArrayList(new ConfiguredAirbyteStream()
-                    .withSyncMode(INCREMENTAL)
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME3,
-                                    testdb.getDatabaseName(),
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING),
-                                    Field.of("userid", JsonSchemaType.NUMBER))
-                            .withSourceDefinedCursor(true)
-                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                            .withSupportedSyncModes(Lists.newArrayList(FULL_REFRESH, INCREMENTAL))));
+        Lists.newArrayList(new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME3,
+                testdb.getDatabaseName(),
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("userid", JsonSchemaType.NUMBER))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(Lists.newArrayList(FULL_REFRESH, INCREMENTAL))));
 
     final ConfiguredAirbyteCatalog configuredCatalogWithOneStream =
-            new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
+        new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalogWithOneStream, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     final List<AirbyteStateMessage> stateMessages = airbyteMessages
-            .stream()
-            .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
-            .map(AirbyteMessage::getState)
-            .collect(Collectors.toList());
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
     Assert.assertEquals(recordMessages.size(), 1);
     assertFalse(stateMessages.isEmpty(), "Reason");
     // TODO validate exact records
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(cdcFieldsOmitted(recordMessages.get(0).getData()).equals(mapper.readTree("""
-{"id":4, "name":"voyager"}""")));
+                                                                                        {"id":4, "name":"voyager"}""")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -241,17 +241,19 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
       }
     }
 
-    testdb.getDatabase().query(c -> { return c.query("""
-INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine'); 
-""".formatted(testdb.getDatabaseName(), STREAM_NAME3));}).execute();
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
+                     """.formatted(testdb.getDatabaseName(), STREAM_NAME3));
+    }).execute();
 
     assert Objects.nonNull(latestState);
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState));
     assertFalse(
-            secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce records.");
+        secondSyncRecords.isEmpty(),
+        "Expected the second incremental sync to produce records.");
     assertTrue(cdcFieldsOmitted(secondSyncRecords.get(0).getData()).equals(mapper.readTree("""
-{"id":5, "name":"deep space nine", "userid":null}""")));
+                                                                                           {"id":5, "name":"deep space nine", "userid":null}""")));
 
   }
 

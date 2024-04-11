@@ -34,14 +34,12 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.testcontainers.shaded.org.bouncycastle.util.encoders.UTF8;
 
 @TestInstance(Lifecycle.PER_METHOD)
 @Execution(ExecutionMode.CONCURRENT)
@@ -192,35 +190,35 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   protected void testNullValueConversion() throws Exception {
     final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
-            Lists.newArrayList(new ConfiguredAirbyteStream()
-                    .withSyncMode(INCREMENTAL)
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME3,
-                            SCHEMA_NAME,
-                            Field.of("id", JsonSchemaType.NUMBER),
-                            Field.of("name", JsonSchemaType.STRING),
-                            Field.of("userid", JsonSchemaType.NUMBER))
-                            .withSourceDefinedCursor(true)
-                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                            .withSupportedSyncModes(Lists.newArrayList(FULL_REFRESH, INCREMENTAL))));
+        Lists.newArrayList(new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME3,
+                SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("userid", JsonSchemaType.NUMBER))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(Lists.newArrayList(FULL_REFRESH, INCREMENTAL))));
 
     final ConfiguredAirbyteCatalog configuredCatalogWithOneStream =
-            new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
+        new ConfiguredAirbyteCatalog().withStreams(List.of(configuredAirbyteStreams.get(0)));
 
     final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalogWithOneStream, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     final List<AirbyteStateMessage> stateMessages = airbyteMessages
-            .stream()
-            .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
-            .map(AirbyteMessage::getState)
-            .collect(Collectors.toList());
+        .stream()
+        .filter(m -> m.getType() == AirbyteMessage.Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
     Assert.assertEquals(recordMessages.size(), 1);
     assertFalse(stateMessages.isEmpty(), "Reason");
     // TODO validate exact records
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(cdcFieldsOmitted(recordMessages.get(0).getData()).equals(mapper.readTree("""
-{"id":4, "name":"voyager"}""")));
+                                                                                        {"id":4, "name":"voyager"}""")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -237,17 +235,19 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
       }
     }
 
-    testdb.getDatabase().query(c -> { return c.query("""
-INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine'); 
-""".formatted(SCHEMA_NAME, STREAM_NAME3));}).execute();
+    testdb.getDatabase().query(c -> {
+      return c.query("""
+                     INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
+                     """.formatted(SCHEMA_NAME, STREAM_NAME3));
+    }).execute();
 
     assert Objects.nonNull(latestState);
     final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalogWithOneStream, latestState));
     assertFalse(
-            secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce records.");
+        secondSyncRecords.isEmpty(),
+        "Expected the second incremental sync to produce records.");
     assertTrue(cdcFieldsOmitted(secondSyncRecords.get(0).getData()).equals(mapper.readTree("""
-{"id":5, "name":"deep space nine", "userid":null}""")));
+                                                                                           {"id":5, "name":"deep space nine", "userid":null}""")));
 
   }
 
@@ -261,4 +261,5 @@ INSERT INTO %s.%s (id, name) VALUES (5,'deep space nine');
     });
     return object;
   }
+
 }

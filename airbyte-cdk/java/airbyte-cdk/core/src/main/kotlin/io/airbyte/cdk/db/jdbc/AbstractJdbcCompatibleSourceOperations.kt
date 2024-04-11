@@ -45,9 +45,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             try {
                 // attempt to access the column. this allows us to know if it is null before we do
                 // type-specific
-                // parsing. if it is null, we can move on. while awkward, this seems to be the agreed
-                // upon way of
-                // checking for null values with jdbc.
+                // parsing. if it is null, we can move on. while awkward, this seems to be the
+                // agreed upon way of checking for null values with jdbc.
                 queryContext.getObject(i)
                 if (queryContext.wasNull()) {
                     continue
