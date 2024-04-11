@@ -119,6 +119,12 @@ class TablesStream(BambooHrStream):
             fields=[BambooMetaTableField(**field) for field in raw_meta_table.get("fields", [])],
         )
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code in self.skip_http_status_codes:
+            return False
+        else:
+            return super().should_retry(response)
+
     def read_records(
         self,
         sync_mode: SyncMode,
