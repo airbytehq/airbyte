@@ -858,8 +858,8 @@ definitions:
         type: string
         description: Algorithm used to sign the JSON web token.
         examples:
-          - "{{ config['algorithm'] }}"
           - "HS256"
+          - "ES256"
       token_duration:
         type: integer
         title: Token Duration
@@ -878,13 +878,6 @@ definitions:
             description: Private key ID for user account.
             examples:
               - "{{ config['kid'] }}"
-          alg:
-            type: string
-            title: Algorithm
-            description: Algorithm used to sign the JSON web token.
-            examples:
-              - "{{ config['algorithm'] }}"
-              - "HS256"
           typ:
             type: string
             title: Type
@@ -918,23 +911,17 @@ definitions:
             type: string
             title: Subject
             description: The subject of the JWT. Commonly defined by the API.
-            examples:
-              - "{{ config['sub'] }}"
           aud:
             type: string
             title: Audience
             description: The recipient that the JWT is intended for. Commonly defined by the API.
             examples:
-              - "{{ config['aud'] }}"
               - "appstoreconnect-v1"
       additional_jwt_payload:
         type: object
         title: Additional JWT Payload Properties
         description: Additional properties to be added to the JWT payload.
         additionalProperties: true
-        examples:
-          - scope: "{{ config['scope'] }}"
-            jti: "{{ config['jti'] }}"
       $parameters:
         type: object
         additionalProperties: true

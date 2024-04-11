@@ -258,9 +258,6 @@ class JwtHeaders(BaseModel):
     kid: Optional[str] = Field(
         None, description='Private key ID for user account.', examples=["{{ config['kid'] }}"], title='Key Identifier'
     )
-    alg: Optional[str] = Field(
-        None, description='Algorithm used to sign the JSON web token.', examples=["{{ config['algorithm'] }}", 'HS256'], title='Algorithm'
-    )
     typ: Optional[str] = Field(None, description='The media type of the complete JWT.', examples=['JWT'], title='Type')
     cty: Optional[str] = Field(None, description='Content type of JWT header.', examples=['JWT'], title='Content Type')
 
@@ -275,13 +272,11 @@ class JwtPayload(BaseModel):
         examples=["{{ config['iss'] }}"],
         title='Issuer',
     )
-    sub: Optional[str] = Field(
-        None, description='The subject of the JWT. Commonly defined by the API.', examples=["{{ config['sub'] }}"], title='Subject'
-    )
+    sub: Optional[str] = Field(None, description='The subject of the JWT. Commonly defined by the API.', title='Subject')
     aud: Optional[str] = Field(
         None,
         description='The recipient that the JWT is intended for. Commonly defined by the API.',
-        examples=["{{ config['aud'] }}", 'appstoreconnect-v1'],
+        examples=['appstoreconnect-v1'],
         title='Audience',
     )
 
@@ -289,7 +284,7 @@ class JwtPayload(BaseModel):
 class JwtAuthenticator(BaseModel):
     type: Literal['JwtAuthenticator']
     secret_key: str = Field(..., description='Secret used to sign the JSON web token.', examples=["{{ config['secret_key'] }}"])
-    algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=["{{ config['algorithm'] }}", 'HS256'])
+    algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=['HS256', 'ES256'])
     token_duration: Optional[int] = Field(
         None,
         description='The amount of time in seconds a JWT token can be valid after being issued.',
@@ -302,10 +297,7 @@ class JwtAuthenticator(BaseModel):
     )
     jwt_payload: JwtPayload = Field(..., description='JWT Payload used when signing JSON web token.', title='JWT Payload')
     additional_jwt_payload: Optional[Dict[str, Any]] = Field(
-        None,
-        description='Additional properties to be added to the JWT payload.',
-        examples=[{'scope': "{{ config['scope'] }}", 'jti': "{{ config['jti'] }}"}],
-        title='Additional JWT Payload Properties',
+        None, description='Additional properties to be added to the JWT payload.', title='Additional JWT Payload Properties'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
