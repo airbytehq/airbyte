@@ -42,7 +42,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static final String SCHEMA_NAME = "dbo";
   protected static final String STREAM_NAME = "id_and_name";
   protected static final String STREAM_NAME2 = "starships";
-  protected static String STREAM_NAME3 = "stream3";
+  protected static final String STREAM_NAME3 = "stream3";
 
   protected MsSQLTestDatabase testdb;
 
