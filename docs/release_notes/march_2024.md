@@ -18,6 +18,8 @@ In addition to our OpenID Connect support, we also released:
 
 - A major upgrade to our Docker and Helm deployments, which simplifies how external logs are configured. Learn more about the specific changes in our [migration guide](/deploying-airbyte/on-kubernetes-via-helm#migrate-from-old-chart-to-airbyte-v0520-and-latest-chart-version).
 
+- A breaking change to Docker deployments. Containers no longer run as the `root` user. If you are upgrading from an older version, the `airbyte_workspace` docker volume must be recreated to fix the ownership of staging directories under `/tmp` (in the container). Alternatively, you can manually update the ownership (`airbyte:airbyte`) of the directory mount point /tmp/workspace in all containers where `airbyte_workspace` is mounted (see: `docker-compose.yaml`)
+
 
 - Our major version upgrades (Airbyte Cloud only) now only require manual upgrading when you are actively syncing a stream that has changed. Otherwise, syncs will continue as is and the version will be upgraded automatically for you.
 
