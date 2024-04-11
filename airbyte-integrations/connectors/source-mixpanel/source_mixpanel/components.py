@@ -17,8 +17,9 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 
 from .streams.engage import EngageSchema
+from .source import SourceMixpanel
 
-@dataclass
+
 class MixpanelHttpRequester(HttpRequester):
 
     def get_url_base(self) -> str:
@@ -27,8 +28,7 @@ class MixpanelHttpRequester(HttpRequester):
         US    : https://mixpanel.com/api/2.0/
         EU    : https://EU.mixpanel.com/api/2.0/
         """
-        url_base = super().get_url_base().replace("US.", "")
-        return url_base
+        return super().get_url_base().replace("US.", "")
 
     def get_request_params(
         self,
@@ -56,6 +56,7 @@ class MixpanelHttpRequester(HttpRequester):
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
 
+
 class AnnotationsHttpRequester(MixpanelHttpRequester):
 
     def get_url_base(self) -> str:
@@ -76,6 +77,7 @@ class AnnotationsHttpRequester(MixpanelHttpRequester):
     ) -> MutableMapping[str, Any]:
         return {}
 
+
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
 
     def get_request_body_json(
@@ -89,7 +91,6 @@ class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
         return {"filter_by_cohort": f"{{\"id\":{cohort_id}}}"}
 
 
-@dataclass
 class EngageTransformation(RecordTransformation):
     def transform(
         self,
@@ -165,11 +166,6 @@ class FunnelsDpathExtractor(DpathExtractor):
                     'paid_count': 0
                 },
                 '2021-06-01': {
-                    'amount': 0.0,
-                    'count': 124,
-                    'paid_count': 0
-                },
-                '2021-06-02': {
                     'amount': 0.0,
                     'count': 124,
                     'paid_count': 0
@@ -299,20 +295,9 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
             "string": {"type": ["null", "string"]},
         }
 
-        credentials = self.config["credentials"]
-        username = credentials.get("username")
-        secret = credentials.get("secret")
-        if username and secret:
-            authenticator = BasicHttpAuthenticator(username=username, password=secret)
-        else:
-            token = credentials["api_secret"].replace("Basic ", "")
-            authenticator = TokenAuthenticator(token=token, auth_method="Basic")
-
         params = {
-            "authenticator": authenticator,
-            "region": self.config.get('region'),
-            "project_timezone": self.config.get('project_timezone'),
-            "reqs_per_hour_limit": self.config.get('reqs_per_hour_limit'),
+            "authenticator": SourceMixpanel.get_authenticator(self.config),
+            "region": self.config.get('region')
         }
         project_id = self.config.get('credentials', {}).get('project_id')
         if project_id:

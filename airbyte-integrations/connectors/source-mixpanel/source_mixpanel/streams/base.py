@@ -51,7 +51,7 @@ class MixpanelStream(HttpStream, ABC):
         self,
         authenticator: HttpAuthenticator,
         region: str,
-        project_timezone: str,
+        project_timezone: str = "US/Pacific",
         start_date: Date = None,
         end_date: Date = None,
         date_window_size: int = 30,  # in days
