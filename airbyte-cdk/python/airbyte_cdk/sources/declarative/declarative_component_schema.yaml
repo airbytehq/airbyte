@@ -858,7 +858,6 @@ definitions:
         type: string
         description: Algorithm used to sign the JSON web token.
         examples:
-          - "HS256"
           - "ES256"
       token_duration:
         type: integer
