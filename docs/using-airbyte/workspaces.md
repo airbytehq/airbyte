@@ -6,8 +6,8 @@ products: cloud, oss-enterprise
 
 A workspace in Airbyte allows you to collaborate with other users and manage connections together. 
 
-:::info
-Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces
+:::info    
+Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize workskpace management for billing or user management purposes.
 :::
 
 ## Add users to your workspace
