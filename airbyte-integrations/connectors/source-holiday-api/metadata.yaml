@@ -1,0 +1,30 @@
+data:
+  allowedHosts:
+    hosts:
+      - holidayapi.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  definitionId: 87cd13ea-7b3a-477c-bf9d-bd52961c8306
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-holiday-api
+  githubIssueLabel: source-holiday-api
+  icon: holiday-api.svg
+  license: MIT
+  name: Holiday Api
+  releaseDate: 2024-04-30
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
+  tags:
+    - language:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+metadataSpecVersion: "1.0"
