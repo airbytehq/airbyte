@@ -69,7 +69,7 @@ class S3ConsumerFactory {
                         pathFormat
                     )
                     storageOperations.cleanUpBucketObject(
-                        namespace!!,
+                        namespace,
                         stream,
                         outputBucketPath,
                         pathFormat
@@ -124,7 +124,7 @@ class S3ConsumerFactory {
                     writeConfig!!.addStoredFile(
                         storageOperations.uploadRecordsToBucket(
                             writer,
-                            writeConfig.namespace!!,
+                            writeConfig.namespace,
                             writeConfig.fullOutputPath
                         )!!
                     )
@@ -183,7 +183,7 @@ class S3ConsumerFactory {
                     "Undefined destination sync mode"
                 )
                 val abStream = stream.stream
-                val namespace = abStream.namespace
+                val namespace: String? = abStream.namespace
                 val streamName = abStream.name
                 val bucketPath = s3Config.bucketPath
                 val customOutputFormat = java.lang.String.join("/", bucketPath, s3Config.pathFormat)

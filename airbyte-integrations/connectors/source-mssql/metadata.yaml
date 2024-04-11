@@ -19,8 +19,12 @@ data:
   name: Microsoft SQL Server (MSSQL)
   registries:
     cloud:
+      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
+      dockerImageTag: 4.0.6
       enabled: true
     oss:
+      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
+      dockerImageTag: 4.0.6
       enabled: true
   releaseStage: generally_available
   supportLevel: certified
