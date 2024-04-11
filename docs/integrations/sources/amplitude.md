@@ -52,6 +52,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.13 | 2024-04-11 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | schema descriptions |
 | 0.3.9 | 2024-04-11 | [36631](https://github.com/airbytehq/airbyte/pull/36631) | schema descriptions |
 | 0.3.8   | 2024-03-12 | [35987](https://github.com/airbytehq/airbyte/pull/35987) | Unpin CDK version                                                                                         |
 | 0.3.7   | 2024-02-12 | [35162](https://github.com/airbytehq/airbyte/pull/35162) | Manage dependencies with Poetry.                                                                          |
