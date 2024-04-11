@@ -21,7 +21,7 @@ data:
           The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API.
           The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result.
           To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
-        upgradeDeadline: "2024-04-15"
+        upgradeDeadline: "2024-04-29"
   dockerRepository: airbyte/source-sendgrid
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
   githubIssueLabel: source-sendgrid
