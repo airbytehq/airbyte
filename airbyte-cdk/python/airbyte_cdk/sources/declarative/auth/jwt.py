@@ -18,7 +18,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
     algorithm: Union[InterpolatedString, str]
-    token_duration: Union[InterpolatedString, str]
+    token_duration: Union[InterpolatedString, str] = None
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = "JWT"
     iss: Union[InterpolatedString, str] = None
@@ -69,6 +69,8 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
         now = int(datetime.now().timestamp())
+        if self._token_duration:
+            exp = now + int(self._token_duration.eval(self.config))
         exp = now + int(self._token_duration.eval(self.config))
         nbf = now
         payload = {}
