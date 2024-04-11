@@ -173,6 +173,10 @@ class Stream(ABC):
             # We should always emit a final state message, even for streams that do not have any slices
             # TODO: can we always ensure that if not has_slices, we have a key? Do we need to think about
             # stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+
+            # Interesting: removing this means the `test_no_slices` test fail, which makes sense.
+            # However it also makes `test_file_based_read` fail. I think that's because of the note about
+            # It looking like concurrent sources don't emit the checkpoints during the sync, but not sure.
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
 
