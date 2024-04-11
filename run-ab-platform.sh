@@ -47,6 +47,16 @@ all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
 
+# event states are used for telemetry data
+readonly eventStateStarted="started"
+readonly eventStateFailed="failed"
+readonly eventStateSuccess="succeeded"
+
+# event types are used for telemetry data
+readonly eventTypeDownload="download"
+readonly eventTypeInstall="install"
+readonly eventTypeRefresh="refresh"
+
 telemetrySuccess=false
 telemetrySessionULID=""
 telemetryUserULID=""
@@ -112,7 +122,7 @@ TelemetryDockerUp()
   while [ $SECONDS -lt $end ]; do
     webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
-      TelemetrySend "success" "install"
+      TelemetrySend $eventStateSuccess $eventTypeInstall
       break
     fi
     sleep 1
@@ -144,7 +154,7 @@ TelemetrySend()
   "anonymousId":"$telemetryUserULID",
   "event":"$event",
   "properties": {
-    "deployment_mode":"run_ab",
+    "deployment_method":"run_ab",
     "session_id":"$telemetrySessionULID",
     "state":"$state",
     "os":"$OSTYPE",
@@ -235,20 +245,20 @@ done
 for argument in $args; do
   case $argument in
     -d | --download)
-      TelemetrySend "start" "download"
-      trap 'TelemetrySend "failed" "download" "sigint"' SIGINT
-      trap 'TelemetrySend "failed" "download" "sigterm"' SIGTERM
+      TelemetrySend $eventStateStarted $eventTypeDownload
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigterm"' SIGTERM
       Download
-      TelemetrySend "success" "download"
+      TelemetrySend $eventStateSuccess $eventTypeDownload
       exit
       ;;
     -r | --refresh)
-      TelemetrySend "start" "refresh"
-      trap 'TelemetrySend "failed" "refresh" "sigint"' SIGINT
-      trap 'TelemetrySend "failed" "refresh" "sigterm"' SIGTERM
+      TelemetrySend $eventStateStarted $eventTypeRefresh
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigterm"' SIGTERM
       DeleteLocalAssets
       Download
-      TelemetrySend "success" "refresh"
+      TelemetrySend $eventStateSuccess $eventTypeRefresh
       exit
       ;;
     -x | --debug)
@@ -272,9 +282,9 @@ for argument in $args; do
   esac
 done
 
-TelemetrySend "start" "install"
-trap 'TelemetrySend "failed" "install" "sigint"' SIGINT
-trap 'TelemetrySend "failed" "install" "sigterm"' SIGTERM
+TelemetrySend $eventStateStarted $eventTypeInstall
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigint"' SIGINT
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigterm"' SIGTERM
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -296,7 +306,7 @@ fi
 ########## Dependency Check ##########
 if ! docker compose version >/dev/null 2>/dev/null; then
   echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
-  TelemetrySend "failed" "install" "docker compose not installed"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose not installed"
   exit 1
 fi
 
@@ -325,9 +335,9 @@ docker compose up $dockerDetachedMode
 if test $? -ne 0; then
   echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
   echo -e "$red_text""please consider removing old containers""$default_text"
-  TelemetrySend "failed" "install" "docker compose failed"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose failed"
 else
-  TelemetrySend "success" "install"
+  TelemetrySend $eventStateSuccess $eventTypeInstall
 fi
 
 ########## Ending Docker ##########
