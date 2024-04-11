@@ -3,6 +3,7 @@
 #
 import logging
 
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
@@ -317,7 +318,7 @@ test_concurrent_cdk_partition_raises_exception = (
             {"data": {"id": "1"}, "stream": "stream1"},
         ]
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(StreamThreadException, "Exception while syncing stream stream1: test exception")
     .set_expected_catalog(
         {
             "streams": [

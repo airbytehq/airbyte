@@ -260,8 +260,8 @@ ___
 * **Number of days per request:**  The maximum supported date range is 31 days.
 * **Historical Data:**  You can't retrieve more than 3yrs of data for the `transactions` stream. For `dispute_start_date` you can only retrieve 180 days of data (see specifications per stream) 
 * `records_per_request`: The maximum number of records in a single request are 10K (API Server restriction)
-* `page_size`: The maximum page size is 500. This has been configured by default.
-* `requests_per_minute` = The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
+* `page_size`: The number of records per page is differs per stream. `source-paypal-transaction` sets maximum allowed page size for each stream by default.
+* `requests_per_minute`: The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
 
 
 
