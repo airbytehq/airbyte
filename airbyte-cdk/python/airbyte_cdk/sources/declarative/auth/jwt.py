@@ -18,7 +18,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
     algorithm: Union[InterpolatedString, str]
-    token_duration: Union[InterpolatedString, str] = 0
+    token_duration: Union[InterpolatedString, str] = 1200
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = "JWT"
     iss: Union[InterpolatedString, str] = None
@@ -38,7 +38,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._sub = InterpolatedString.create(self.sub, parameters=parameters)
         self._aud = InterpolatedString.create(self.aud, parameters=parameters)
         self._cty = InterpolatedString.create(self.cty, parameters=parameters)
-        self._token_duration = InterpolatedString.create(str(self.token_duration), parameters=parameters)
+        self._token_duration = self.token_duration
         self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
         self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
 
@@ -58,9 +58,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     def _get_jwt_payload(self) -> Mapping[str, Any]:
         payload = {}
         now = int(datetime.now().timestamp())
-        if self._token_duration:
-            exp = now + int(self._token_duration.eval(self.config))
-            payload["exp"] = exp
+        exp = now + self._token_duration
         nbf = now
         payload.update(self._additional_jwt_payload.eval(self.config))
         if self._iss:
@@ -70,6 +68,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         if self._aud:
             payload["aud"] = f"{self._aud.eval(self.config)}"
         payload["iat"] = now
+        payload["exp"] = exp
         payload["nbf"] = nbf
         return payload
 
