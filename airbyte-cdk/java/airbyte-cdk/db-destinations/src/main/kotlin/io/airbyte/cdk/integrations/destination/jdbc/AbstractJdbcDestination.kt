@@ -50,9 +50,21 @@ import org.slf4j.LoggerFactory
 
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
+    private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations
+    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
+
+    constructor(
+        driverClass: String,
+        namingResolver: NamingConventionTransformer,
+        sqlOperations: SqlOperations,
+    ) : this(
+        driverClass,
+        JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
+        namingResolver,
+        sqlOperations
+    )
     protected val configSchemaKey: String
         get() = "schema"
 
@@ -293,6 +305,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             defaultNamespace,
             typerDeduper,
             getDataTransformer(parsedCatalog, defaultNamespace),
+            optimalBatchSizeBytes,
         )
     }
 
