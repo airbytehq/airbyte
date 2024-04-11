@@ -268,17 +268,14 @@ constructor(
 
         val dropTableStep =
             DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
-        val dropTableSql =
-            if (cascadeDrop) {
-                dropTableStep.cascade().getSQL(ParamType.INLINED)
-            } else {
-                dropTableStep.getSQL(ParamType.INLINED)
-            }
+        if (cascadeDrop) {
+            dropTableStep.cascade()
+        }
 
         return transactionally(
             Stream.concat(
                     Stream.of(
-                        dropTableSql,
+                        dropTableStep.getSQL(ParamType.INLINED),
                         createTableSql(
                             stream.id.finalNamespace,
                             finalTableIdentifier,
@@ -309,14 +306,11 @@ constructor(
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         val dropTableStep = DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
-        val dropTableSql =
-            if (cascadeDrop) {
-                dropTableStep.cascade().getSQL(ParamType.INLINED)
-            } else {
-                dropTableStep.getSQL(ParamType.INLINED)
-            }
+        if (cascadeDrop) {
+            dropTableStep.cascade()
+        }
         return transactionally(
-            dropTableSql,
+            dropTableStep.getSQL(ParamType.INLINED),
             DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
                 .renameTo(DSL.name(stream.finalName))
                 .sql
