@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.81.0"
+version = "0.81.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.81.0-py3-none-any.whl", hash = "sha256:d2b1998776a299271b5e055065f14f199bb157b25b333cc7f1504574edbd7012"},
-    {file = "airbyte_cdk-0.81.0.tar.gz", hash = "sha256:031f9b5485f4b61b42e325b26a30c12ef990c18135e2beb581e98969d715ab82"},
+    {file = "airbyte_cdk-0.81.3-py3-none-any.whl", hash = "sha256:c168acef484120f5b392cbf0c43bb8180d8596a0c87cfe416ac2e8e7fe1ab93a"},
+    {file = "airbyte_cdk-0.81.3.tar.gz", hash = "sha256:e91e7ca66b3f4d5714b44304ff3cb1bb9b703933cf6b38d32e7f06384e9e1108"},
 ]
 
 [package.dependencies]
@@ -326,13 +326,13 @@ files = [
 
 [[package]]
 name = "idna"
-version = "3.6"
+version = "3.7"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "idna-3.6-py3-none-any.whl", hash = "sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f"},
-    {file = "idna-3.6.tar.gz", hash = "sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"},
+    {file = "idna-3.7-py3-none-any.whl", hash = "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"},
+    {file = "idna-3.7.tar.gz", hash = "sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc"},
 ]
 
 [[package]]
