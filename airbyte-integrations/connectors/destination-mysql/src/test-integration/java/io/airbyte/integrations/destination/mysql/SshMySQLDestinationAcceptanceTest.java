@@ -32,8 +32,8 @@ import org.junit.jupiter.api.Disabled;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  * <p>
- * This class probably should extend {@link MySQLDestinationAcceptanceTest} to further reduce
- * code duplication though.
+ * This class probably should extend {@link MySQLDestinationAcceptanceTest} to further reduce code
+ * duplication though.
  */
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 

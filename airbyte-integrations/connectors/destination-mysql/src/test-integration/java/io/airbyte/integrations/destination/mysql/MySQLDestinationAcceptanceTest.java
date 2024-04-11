@@ -271,7 +271,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   // Something is very weird in our connection check code. A wrong password takes >1 minute to return.
   // TODO investigate why invalid creds take so long to detect
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   void testCheckIncorrectPasswordFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PASSWORD_KEY, "fake");
@@ -281,7 +282,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectUsernameFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.USERNAME_KEY, "fake");
@@ -291,7 +293,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 28000; Error code: 1045;");
   }
 
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectHostFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.HOST_KEY, "localhost2");
@@ -301,7 +304,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectPortFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.PORT_KEY, "0000");
@@ -311,7 +315,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 08S01;");
   }
 
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testCheckIncorrectDataBaseFailure() {
     final JsonNode config = ((ObjectNode) getConfigForBareMetalConnection()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
@@ -321,7 +326,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     assertStringContains(status.getMessage(), "State code: 42000; Error code: 1049;");
   }
 
-  @Timeout(value=300, unit=SECONDS)
+  @Timeout(value = 300,
+           unit = SECONDS)
   @Test
   public void testUserHasNoPermissionToDataBase() {
     executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
