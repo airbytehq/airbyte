@@ -59,6 +59,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -867,6 +868,8 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
+    // Normalization is a pretty slow process. Increase our test timeout.
+    @Timeout(value = 300, unit = TimeUnit.SECONDS)
     open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
         if (!normalizationFromDefinition()) {
             return
