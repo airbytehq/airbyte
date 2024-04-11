@@ -253,34 +253,60 @@ class LegacyToPerPartitionStateMigration(BaseModel):
 
 class JwtHeaders(BaseModel):
     class Config:
-        extra = Extra.allow
+        extra = Extra.forbid
 
-    alg: Optional[str] = Field(
-        None, description='Algorithm used to sign the JSON web token.\\', examples=["{{ config['algorithm'] }}", 'HS256']
+    kid: Optional[str] = Field(
+        None, description='Private key ID for user account.', examples=["{{ config['kid'] }}"], title='Key Identifier'
     )
-    typ: Optional[str] = Field('JWT', examples=['JWT'])
-    kid: Optional[str] = Field(None, description='Key ID', examples=["{{ config['kid'] }}"])
+    alg: Optional[str] = Field(
+        None, description='Algorithm used to sign the JSON web token.', examples=["{{ config['algorithm'] }}", 'HS256'], title='Algorithm'
+    )
+    typ: Optional[str] = Field(None, description='The media type of the complete JWT.', examples=['JWT'], title='Type')
+    cty: Optional[str] = Field(None, description='Content type of JWT header.', examples=['JWT'], title='Content Type')
 
 
 class JwtPayload(BaseModel):
     class Config:
-        extra = Extra.allow
+        extra = Extra.forbid
 
-    iss: Optional[str] = Field(None, examples=["{{ config['iss'] }}"], title='Issued')
-    sub: Optional[str] = Field(None, examples=["{{ config['sub'] }}"], title='Subscriber')
-    aud: Optional[str] = Field(None, examples=["{{ config['aud'] }}"], title='Audience')
-    exp: Optional[str] = Field(None, examples=["{{ config['exp'] }}"], title='Expiration')
-    nbf: Optional[str] = Field(None, examples=["{{ config['nbf'] }}"], title='Not Before')
-    iat: Optional[str] = Field(None, examples=["{{ config['iat'] }}"], title='Issued At')
-    jti: Optional[str] = Field(None, examples=["{{ config['jti'] }}"], title='JWT ID')
+    iss: Optional[str] = Field(
+        None,
+        description='The user/principal that issued the JWT. Commonly a value unique to the user.',
+        examples=["{{ config['iss'] }}"],
+        title='Issuer',
+    )
+    sub: Optional[str] = Field(
+        None, description='The subject of the JWT. Commonly defined by the API.', examples=["{{ config['sub'] }}"], title='Subject'
+    )
+    aud: Optional[str] = Field(
+        None,
+        description='The recipient that the JWT is intended for. Commonly defined by the API.',
+        examples=["{{ config['aud'] }}", 'appstoreconnect-v1'],
+        title='Audience',
+    )
 
 
 class JwtAuthenticator(BaseModel):
     type: Literal['JwtAuthenticator']
     secret_key: str = Field(..., description='Secret used to sign the JSON web token.', examples=["{{ config['secret_key'] }}"])
     algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=["{{ config['algorithm'] }}", 'HS256'])
-    jwt_headers: JwtHeaders = Field(..., description='JWT Headers used when signing JSON web token.', title='JWT Headers')
+    token_duration: Optional[int] = Field(
+        None,
+        description='The amount of time in seconds a JWT token can be valid after being issued.',
+        examples=[1200],
+        title='Token Duration',
+    )
+    jwt_headers: JwtHeaders = Field(..., description='JWT headers used when signing JSON web token.', title='JWT Headers')
+    additional_jwt_headers: Optional[Dict[str, Any]] = Field(
+        None, description='Additional headers to be included with the JWT headers object.', title='Additional JWT Headers'
+    )
     jwt_payload: JwtPayload = Field(..., description='JWT Payload used when signing JSON web token.', title='JWT Payload')
+    additional_jwt_payload: Optional[Dict[str, Any]] = Field(
+        None,
+        description='Additional properties to be added to the JWT payload.',
+        examples=[{'scope': "{{ config['scope'] }}", 'jti': "{{ config['jti'] }}"}],
+        title='Additional JWT Payload Properties',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
