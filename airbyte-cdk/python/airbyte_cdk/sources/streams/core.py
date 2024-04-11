@@ -38,7 +38,7 @@ FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
 # Streams that don't have cursors should emit this
 # We still want to emit a state message at the end of the stream
 # So that we can return record counts, but we aren't returning a cursor
-NO_CURSOR_SENTINEL_STATE_KEY = "__ab_no_cursor_state_message"
+NO_CURSOR_STATE_KEY = "__ab_no_cursor_state_message"
 
 
 def package_name_from_class(cls: object) -> str:
@@ -170,7 +170,7 @@ class Stream(ABC):
                     if internal_config.is_limit_reached(record_counter):
                         break
 
-            airbyte_state_message = self._checkpoint_state(stream_state or {NO_CURSOR_SENTINEL_STATE_KEY: True}, state_manager)
+            airbyte_state_message = self._checkpoint_state(stream_state or {NO_CURSOR_STATE_KEY: True}, state_manager)
             yield airbyte_state_message
 
         if not has_slices:
