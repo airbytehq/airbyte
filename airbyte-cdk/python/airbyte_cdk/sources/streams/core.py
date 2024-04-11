@@ -164,12 +164,10 @@ class Stream(ABC):
                     if internal_config.is_limit_reached(record_counter):
                         break
 
-            if sync_mode == SyncMode.incremental:
-                # Even though right now, only incremental streams running as incremental mode will emit periodic checkpoints. Rather than
-                # overhaul how refresh interacts with the platform, this positions the code so that once we want to start emitting
-                # periodic checkpoints in full refresh mode it can be done here
-                airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
-                yield airbyte_state_message
+            # A full refresh stream with no state will create a state message at the end of its stream that is something like
+            # type=<AirbyteStateType.STREAM: 'STREAM'> stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name='my_stream', namespace=None), stream_state=AirbyteStateBlob()) global_=None data=None sourceStats=None destinationStats=None
+            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+            yield airbyte_state_message
 
         if not has_slices or sync_mode == SyncMode.full_refresh:
             if sync_mode == SyncMode.full_refresh:
@@ -180,6 +178,20 @@ class Stream(ABC):
             # We should always emit a final state message for full refresh sync or streams that do not have any slices
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
+
+        # # Here we want to make sure that we emit a final state message
+        # # But only if we didn't emit a final state message already (we don't want duplicates, I think?)
+        # # Previously, these cases were "we don't have stream slices" or "we're in full refresh mode"
+        # # Now, full refresh mode is irrelevant. Incremental streams will have emitted their slice state already
+        # # So all we need to worry about is if we have slices or not (a lot of "full refresh only" streams will not have slices)
+        # # Question: what does the state message for the `None` slice look like? Does it come out reliably?
+        # if not has_slices:
+        #     # TODO: this sentinel key should probably change name. It's not a 'full refresh' key, its a "no state" key
+        #     # Which previously could have meant "no slices", but in the future it means "no slices (i.e. no data) or
+        #     # no RFR cursor (and maybe but not necessarily data)"
+        #     stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+        #     airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+        #     yield airbyte_state_message
 
     @abstractmethod
     def read_records(

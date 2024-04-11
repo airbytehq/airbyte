@@ -171,7 +171,18 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     ]
 
     # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
-    if constructor == _stream:
+    # TODO: Is this not working for concurrent? They don't seem to be checkpointing
+    if constructor != _concurrent_stream:
+        expected_records.append(AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                    stream_state=AirbyteStateBlob(),
+                )
+            ),
+        ))
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
@@ -217,7 +228,18 @@ def test_full_refresh_read_a_single_slice(constructor):
     expected_records = [*records]
 
     # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
-    if constructor == _stream:
+    # TODO: Is this not working for concurrent? They don't seem to be checkpointing
+    if constructor != _concurrent_stream:
+        expected_records.append(AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                    stream_state=AirbyteStateBlob(),
+                )
+            ),
+        ))
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
@@ -265,13 +287,32 @@ def test_full_refresh_read_two_slices(constructor):
     slice_to_partition = {1: records_partition_1, 2: records_partition_2}
     stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
 
+    def _maybe_state_message(constructor):
+        # TODO: Is this not working for concurrent? They don't seem to be checkpointing
+        # during the full refresh read
+        if constructor != _concurrent_stream:
+            return AirbyteMessage(
+                type=MessageType.STATE,
+                state=AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_state=AirbyteStateBlob(),
+                    )
+                ),
+            )
+        return None
+
     expected_records = [
         *records_partition_1,
+        _maybe_state_message(constructor),
         *records_partition_2,
+        _maybe_state_message(constructor),
     ]
+    expected_records = [record for record in expected_records if record is not None]
 
     # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
-    if constructor == _stream or constructor == _stream_with_no_cursor_field:
+    if constructor != _concurrent_stream:
         expected_records.append(
             AirbyteMessage(
                 type=MessageType.STATE,
