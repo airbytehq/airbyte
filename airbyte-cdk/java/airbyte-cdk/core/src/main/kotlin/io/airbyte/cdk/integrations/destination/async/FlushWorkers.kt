@@ -48,7 +48,7 @@ class FlushWorkers
 constructor(
     private val bufferDequeue: io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue,
     private val flusher: DestinationFlushFunction,
-    private val outputRecordCollector: Consumer<AirbyteMessage?>,
+    private val outputRecordCollector: Consumer<AirbyteMessage>,
     private val flushFailure: FlushFailure,
     private val stateManager: GlobalAsyncStateManager,
     private val workerPool: ExecutorService = Executors.newFixedThreadPool(5),
@@ -124,9 +124,7 @@ constructor(
         val queueSize = threadPoolExecutor.queue.size
         val activeCount = threadPoolExecutor.activeCount
 
-        workerInfo.append(
-            String.format("Pool queue size: %d, Active threads: %d", queueSize, activeCount),
-        )
+        workerInfo.append("Pool queue size: $queueSize, Active threads: $activeCount")
         logger.info { workerInfo.toString() }
     }
 
