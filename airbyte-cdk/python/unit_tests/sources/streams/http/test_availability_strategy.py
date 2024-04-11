@@ -113,7 +113,7 @@ def test_default_http_availability_strategy(
     else:
         actual_is_available, reason = http_stream.check_availability(logger)
 
-    assert expected_is_available == actual_is_available
+    assert actual_is_available == expected_is_available
     if expected_is_available:
         assert reason is None
     else:

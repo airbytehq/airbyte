@@ -304,8 +304,8 @@ abstract class AbstractSourceConnectorTest {
     protected fun runReadVerifyNumberOfReceivedMsgs(
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?,
-        mapOfExpectedRecordsCount: MutableMap<String?, Int>
-    ): Map<String?, Int> {
+        mapOfExpectedRecordsCount: MutableMap<String, Int>
+    ): Map<String, Int> {
         val sourceConfig =
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
