@@ -184,22 +184,22 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
         (
             '{"error": "Not sufficient permissions"}',
             403,
-            31,
+            32,
             [
-                "Skipping stream ticket_forms, error message: Not sufficient permissions. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms?per_page=10 failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
             ],
             None,
         ),
         (
             "",
             404,
-            31,
+            32,
             [
-                "Skipping stream ticket_forms, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms?per_page=10 failed with status code 404 and error message None. Skipping this stream."
             ],
             "Not Found",
         ),
@@ -210,7 +210,7 @@ def test_full_access_streams(caplog, requests_mock, ticket_forms_response, statu
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
-    logged_warnings = (record for record in caplog.records if record.levelname == "ERROR")
+    logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
     for msg in expected_warnings:
         assert msg in next(logged_warnings).message
 

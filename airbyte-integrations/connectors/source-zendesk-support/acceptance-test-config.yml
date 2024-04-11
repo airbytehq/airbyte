@@ -38,6 +38,8 @@ acceptance_tests:
             bypass_reason: "not available in current subscription plan"
           - name: "tags"
             bypass_reason: "API issue" # TODO: remove this after all changes being merged
+          - name: "ticket_activities"
+            bypass_reason: "No records"
   incremental:
     tests:
       - config_path: "secrets/config.json"
