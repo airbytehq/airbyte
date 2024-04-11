@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 

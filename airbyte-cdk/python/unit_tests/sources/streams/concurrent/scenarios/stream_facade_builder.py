@@ -21,7 +21,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder

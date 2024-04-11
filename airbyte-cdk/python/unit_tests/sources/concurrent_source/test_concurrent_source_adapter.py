@@ -20,7 +20,6 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 
 
 class _MockSource(ConcurrentSourceAdapter):
