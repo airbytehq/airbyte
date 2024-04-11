@@ -103,11 +103,6 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   protected void testNullValueConversion() throws Exception {
-    // if (!sourceSupportsIncremental()) {
-    // return;
-    // }
-
-    // final String SCHEMA_NAME = "dbo";
     final String STREAM_NAME3 = "stream3";
     testdb.getDatabase().query(c -> {
       return c.query("""
