@@ -7,7 +7,8 @@ products: cloud, oss-enterprise
 A workspace in Airbyte allows you to collaborate with other users and manage connections together. 
 
 :::info
-Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces:::
+Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces
+:::
 
 ## Add users to your workspace
 
@@ -15,9 +16,9 @@ Airbyte [credits](https://airbyte.com/pricing) are by default assigned per works
 
 2. On the **Add new member** dialog, enter the email address of the user you want to invite to your workspace. Click **SAdd new member**.
 
-    :::info
-    The user will have access to only the workspace you invited them to. They will be added as a workspace admin by default. A workspace admin has the ability to add or delete other users and make changes to connections and connectors in the workspace. 
-    :::
+:::info
+The user will have access to only the workspace you invited them to. They will be added as a workspace admin by default. A workspace admin has the ability to add or delete other users and make changes to connections and connectors in the workspace. 
+:::
 
 ## Remove users from your workspace​
 
@@ -36,12 +37,13 @@ To rename a workspace, go to the **Settings** via the side navigation in Airbyte
 
 To delete a workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the **Danger!** section, click **Delete your workspace**.
 
-## Multiple workspaces
+## Managing multiple workspaces
  
-You can use one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing. Workspaces are linked through an organization, which allows you to collaborate with team members and share workspaces across your team.
+You can use one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing. Workspaces can also be linked through an organization, which allows you to collaborate with team members and share workspaces across your team.
 
 :::info
-Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features:::
+Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features
+:::
  
 ### Managing User Access
 
