@@ -28,7 +28,9 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
-abstract class JdbcSqlGenerator @JvmOverloads constructor(
+abstract class JdbcSqlGenerator
+@JvmOverloads
+constructor(
     protected val namingTransformer: NamingConventionTransformer,
     private val cascadeDrop: Boolean = false
 ) : SqlGenerator {
@@ -264,12 +266,14 @@ abstract class JdbcSqlGenerator @JvmOverloads constructor(
             )
         }
 
-        val dropTableStep = DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
-        val dropTableSql = if (cascadeDrop) {
-            dropTableStep.cascade().getSQL(ParamType.INLINED)
-        } else {
-            dropTableStep.getSQL(ParamType.INLINED)
-        }
+        val dropTableStep =
+            DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
+        val dropTableSql =
+            if (cascadeDrop) {
+                dropTableStep.cascade().getSQL(ParamType.INLINED)
+            } else {
+                dropTableStep.getSQL(ParamType.INLINED)
+            }
 
         return transactionally(
             Stream.concat(
@@ -305,11 +309,12 @@ abstract class JdbcSqlGenerator @JvmOverloads constructor(
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         val dropTableStep = DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
-        val dropTableSql = if (cascadeDrop) {
-            dropTableStep.cascade().getSQL(ParamType.INLINED)
-        } else {
-            dropTableStep.getSQL(ParamType.INLINED)
-        }
+        val dropTableSql =
+            if (cascadeDrop) {
+                dropTableStep.cascade().getSQL(ParamType.INLINED)
+            } else {
+                dropTableStep.getSQL(ParamType.INLINED)
+            }
         return transactionally(
             dropTableSql,
             DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
