@@ -29,6 +29,7 @@ streams:
           type: JwtAuthenticator
           secret_key: "{{ config['secret_key'] }}"
           algorithm: ES256
+          token_duration: 1200
           jwt_headers:
             kid:  "{{ config['kid'] }}"
             alg: ES256
