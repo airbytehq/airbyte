@@ -175,29 +175,14 @@ class Stream(ABC):
 
         if not has_slices:
             # We should always emit a final state message, even for streams that do not have any slices
-            # TODO: can we always ensure that if not has_slices, we have a key? Do we need to think about
-            # stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+            # TODO: can we always ensure that if not has_slices, we have a cursor? Do we need to think about
+            # stream_state = stream_state or {NO_CURSOR_SENTINEL_STATE_KEY: True}
 
             # Interesting: removing this means the `test_no_slices` test fail, which makes sense.
             # However it also makes `test_file_based_read` fail. I think that's because of the note about
             # It looking like concurrent sources don't emit the checkpoints during the sync, but not sure.
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
-
-        # # Here we want to make sure that we emit a final state message
-        # # But only if we didn't emit a final state message already (we don't want duplicates, I think?)
-        # # Previously, these cases were "we don't have stream slices" or "we're in full refresh mode"
-        # # Now, full refresh mode is irrelevant. Incremental streams will have emitted their slice state already
-        # # So all we need to worry about is if we have slices or not (a lot of "full refresh only" streams will not have slices)
-        # # Question: what does the state message for the `None` slice look like? Does it come out reliably?
-        # # Answer: it is empty, and does come out reliably. we probably need to fix this
-        # if not has_slices:
-        #     # TODO: this sentinel key should probably change name. It's not a 'full refresh' key, its a "no state" key
-        #     # Which previously could have meant "no slices", but in the future it means "no slices (i.e. no data) or
-        #     # no RFR cursor (and maybe but not necessarily data)"
-        #     stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
-        #     airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
-        #     yield airbyte_state_message
 
     @abstractmethod
     def read_records(
