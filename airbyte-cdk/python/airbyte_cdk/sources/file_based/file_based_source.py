@@ -36,7 +36,6 @@ from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedS
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import (
     AbstractConcurrentFileBasedCursor,
     FileBasedConcurrentCursor,
-    FileBasedFinalStateCursor,
 )
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
@@ -167,19 +166,8 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 )
                 self._validate_input_schema(stream_config)
 
-                sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
-
-                if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
-                    cursor = FileBasedFinalStateCursor(
-                        stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
-                    )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
-
-                elif (
-                    sync_mode == SyncMode.incremental
-                    and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
+                if (
+                    issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
                     and hasattr(self, "_concurrency_level")
                     and self._concurrency_level is not None
                 ):
