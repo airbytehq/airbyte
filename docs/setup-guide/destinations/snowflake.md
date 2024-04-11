@@ -18,21 +18,35 @@ By default, Snowflake allows users to connect to the service from any computer o
 
 If you have any issues connecting with Daspire, please make sure that the list of IP addresses is on the allowed list.
 
+### From the command line
+
 To determine whether a network policy is set on your account or for a specific user, execute the SHOW PARAMETERS command.
 
 **Account**
+
 ```SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;```
 
 **User**
+
 ```SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;```
 
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
+### From the UI
+
+You can do so by going to **Admin** -> **Security** from the sidebar. You can check existing Network Policies in your account.
+![Snowflake Network Policies](/docs/setup-guide/assets/images/snowflake-network-policies.jpg "Snowflake Network Policies")
+
+To add a new network policy, click **+ Network Policy**, add your policy name, allowed and/or blocked IP addresses.
+![Snowflake New Network Policy](/docs/setup-guide/assets/images/snowflake-new-network-policy.jpg "Snowflake New Network Policy")
 
 ## Setup guide
 
 ### Step 1: Set up Daspire-specific entities in Snowflake
 
 To set up the Snowflake destination connector, you first need to create Daspire-specific Snowflake entities (a warehouse, database, schema, user, and role) with the OWNERSHIP permission to write data into Snowflake, track costs pertaining to Daspire, and control permissions at a granular level.
+
+#### From the command line
 
 You can use the following script in a new [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the entities:
 
@@ -115,6 +129,68 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
 
+#### From the UI
+
+##### 1. Create a Daspire role
+
+From the side menu, click **Admin** -> **Users & Roles**. Click the **Roles** tab, and then click **+ Role**. 
+![Snowflake Roles](/docs/setup-guide/assets/images/snowflake-roles.jpg "Snowflake Roles")
+
+Enter a name for the role, for example, *DASPIRE_ROLE*, and grant **SYSADMIN** access to the role. 
+![Snowflake New Role](/docs/setup-guide/assets/images/snowflake-new-role.jpg "Snowflake New Role")
+
+##### 2. Create a Daspire user
+
+Once your Daspire role is created, switch to the **Users** tab, and then click **+ User**. 
+![Snowflake Users](/docs/setup-guide/assets/images/snowflake-users.jpg "Snowflake Users")
+
+Enter a user name for the user, for example, *DASPIRE_USER*. Enter other details, and assign the role you created in step 1, for example, **DASPIRE_ROLE** to the user. 
+![Snowflake New User](/docs/setup-guide/assets/images/snowflake-new-user.jpg "Snowflake New User")
+ 
+##### 3. Create a Daspire warehouse
+
+From the side menu, click **Admin** -> **Warehouses**, and then click **+ Warehouse**. 
+![Snowflake Warehouses](/docs/setup-guide/assets/images/snowflake-warehouse.jpg "Snowflake Warehouses")
+
+Enter a name for the warehouse, for example, *DASPIRE_WAREHOUSE*, and select the relevant size for the warehouse. 
+![Snowflake New Warehouse](/docs/setup-guide/assets/images/snowflake-new-warehouse.jpg "Snowflake New Warehouse")
+
+##### 4. Grant Daspire warehouse access
+
+Once your Daspire warehouse is created, click it, and scroll down to the **Privileges** section. Then click **+ Privilege**.
+![Snowflake Warehouse Privileges](/docs/setup-guide/assets/images/snowflake-warehouse-privileges.jpg "Snowflake Warehouse Privileges")
+
+Select the Daspire role you created in step 1, then in the Privileges dropdown, select **USAGE**, and then click **Grant Privilege**.
+![Snowflake New Warehouse Privilege](/docs/setup-guide/assets/images/snowflake-warehouse-new-privilege.jpg "Snowflake New Warehouse Privilege")
+
+##### 5. Create a Daspire database
+
+From the side menu, click **Data** -> **Databases**, and then click **+ Database**. 
+![Snowflake Databases](/docs/setup-guide/assets/images/snowflake-databases.jpg "Snowflake Databases")
+
+Enter a name for the database, for example, *DASPIRE_DATABASE*, and create the database.
+![Snowflake New Database](/docs/setup-guide/assets/images/snowflake-new-database.jpg "Snowflake New Database")
+
+##### 6. Grant Daspire database access
+
+Once your Daspire database is created, click it, and then click **+ Privilege**.
+![Snowflake Database Privileges](/docs/setup-guide/assets/images/snowflake-database-privilege.jpg "Snowflake Database Privileges")
+
+Select the Daspire role you created in step 1, then in the Privileges dropdown, select **OWNERSHIP**, and then click **Grant Privilege**.
+![Snowflake Database New Privilege](/docs/setup-guide/assets/images/snowflake-warehouse-new-privilege.jpg "Snowflake Database New Privilege")
+
+##### 7. Create a Daspire schema
+
+Inside your Daspire database, click **+ Schema**. 
+![Snowflake Database Schema](/docs/setup-guide/assets/images/snowflake-database-schema.jpg "Snowflake Database Schema")
+
+Enter a name for the database schema, for example, *DASPIRE_SCHEMA*, and create the schema.
+![Snowflake Database New Schema](/docs/setup-guide/assets/images/snowflake-database-new-schema.jpg "Snowflake Database New Schema")
+
+##### 8. Summary
+
+You have obtained all the details and correct permissions to set up Snowflake in Daspire.
+
 ### Step 2: Set up a data loading method
 
 By default, Daspire uses Snowflake's [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
@@ -175,7 +251,7 @@ Navigate to the Daspire to set up Snowflake as a destination. You can authentica
 | Schema | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The username you created in Step 1 to allow Daspire to access the database. Example: DASPIRE\_USER |
 | Password | The password associated with the username. |
-| JDBC URL Params (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as key=value pairs separated by the symbol &. Example: key1=value1&key2=value2&key3=value3 |
+| JDBC URL Params (optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as key=value pairs separated by the symbol &. Example: key1=value1&key2=value2&key3=value3 |
 
 #### OAuth 2.0
 
@@ -188,7 +264,7 @@ Navigate to the Daspire to set up Snowflake as a destination. You can authentica
 | Schema | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The username you created in Step 1 to allow Daspire to access the database. Example: DASPIRE\_USER |
 | OAuth2 | The Login name and password to obtain auth token. |
-| JDBC URL Params (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as key=value pairs separated by the symbol &. Example: key1=value1&key2=value2&key3=value3 |
+| JDBC URL Params (optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as key=value pairs separated by the symbol &. Example: key1=value1&key2=value2&key3=value3 |
 
 #### Key pair authentication
 
@@ -225,10 +301,10 @@ To use **AWS S3** as the cloud storage, enter the information for the S3 bucket 
 | S3 Bucket Region | The S3 staging bucket region used. |
 | S3 Key Id \* | The Access Key ID granting access to the S3 staging bucket. Daspire requires Read and Write permissions for the bucket. |
 | S3 Access Key \* | The corresponding secret to the S3 Key ID. |
-| Stream Part Size (Optional) | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5) |
+| Stream Part Size (optional) | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5) |
 | Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named bucketPath/namespace/streamName/syncDate\_epochMillis\_randomUuid.csv containing three columns (ab\_id, data, emitted\_at). Normally these files are deleted after sync; if you want to keep them for other purposes, set purge\_staging\_data to false. |
 | Encryption | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Daspire will automatically generate a new key for each sync, and nobody but Daspire and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
-| S3 Filename pattern (Optional) | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy\_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part\_number}, {sync\_id}, {format\_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized. |
+| S3 Filename pattern (optional) | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy\_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part\_number}, {sync\_id}, {format\_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized. |
 
 To use a **Google Cloud Storage** bucket, enter the information for the bucket you created in Step 2:
 
@@ -244,10 +320,10 @@ To use **Azure Blob** storage, enter the information for the storage you created
 | --- | --- |
 | Endpoint Domain Name | Leave default value blob.core.windows.net or map a custom domain to an Azure Blob Storage endpoint. |
 | Azure Blob Storage Account Name | The Azure storage account you created in Step 2. |
-| Azure blob storage container (Bucket) Name | The Azure blob storage container you created in Step 2. |
+| Azure Blob Storage Container (Bucket) Name | The Azure blob storage container you created in Step 2. |
 | SAS Token | The SAS Token you provided in Step 2. |
 
-## Output schema
+## Output schema 
 
 Daspire outputs each stream into its own table with the following columns in Snowflake:
 

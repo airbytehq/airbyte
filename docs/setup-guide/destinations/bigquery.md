@@ -103,18 +103,18 @@ Daspire converts any invalid characters into `_` characters when writing data. H
 
 | Daspire type | BigQuery type | BigQuery denormalized type |
 | --- | --- | --- |
-| DATE | DATE | DATE |
-| STRING (BASE64) | STRING | STRING |
-| NUMBER | FLOAT | FLOAT |
-| OBJECT | STRING | RECORD |
-| STRING | STRING | STRING |
-| BOOLEAN | BOOLEAN | BOOLEAN |
-| INTEGER | INTEGER | INTEGER |
-| STRING (BIG\_NUMBER) | STRING | STRING |
-| STRING (BIG\_INTEGER) | STRING | STRING |
-| ARRAY | REPEATED | REPEATED |
-| STRING (TIMESTAMP\_WITH\_TIMEZONE) | TIMESTAMP | DATETIME |
-| STRING (TIMESTAMP\_WITHOUT\_TIMEZONE) | TIMESTAMP | DATETIME |
+| `DATE` | `DATE` | `DATE` |
+| `STRING (BASE64)` | `STRING` | `STRING` |
+| `NUMBER` | `FLOAT` | `FLOAT` |
+| `OBJECT` | `STRING` | `RECORD` |
+| `STRING` | `STRING` | `STRING` |
+| `BOOLEAN` | `BOOLEAN` | `BOOLEAN` |
+| `INTEGER` | `INTEGER` | `INTEGER` |
+| `STRING (BIG_NUMBER)` | `STRING` | `STRING` |
+| `STRING (BIG_INTEGER)` | `STRING` | `STRING` |
+| `ARRAY` | `REPEATED` | `REPEATED` |
+| `STRING (TIMESTAMP_WITH_TIMEZONE)` | `TIMESTAMP` | `DATETIME` |
+| `STRING (TIMESTAMP_WITHOUT_TIMEZONE)` | `TIMESTAMP` | `DATETIME` |
 
 ## Troubleshooting permission issues
 

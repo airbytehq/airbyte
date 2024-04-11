@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for GitHub.
 2. Go to Settings -> Developer settings -> [Personal access tokens](https://github.com/settings/tokens) page.
 
 3. Click **Generate new token**, select **scopes** which define the access for the token, and click **Generate token**.
-![GitHub personal access token](/assets/images/github-generate-new-token.jpg "GitHub personal access token")
+![GitHub personal access token](/docs/setup-guide/assets/images/github-generate-new-token.jpg "GitHub personal access token")
 
   > NOTE: Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 

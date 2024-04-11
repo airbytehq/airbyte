@@ -3,6 +3,7 @@
 此页面包含Plaid的设置指南和参考信息。
 
 ## 前提条件
+
 * Plaid API密钥（API key）
 * 客户端ID（Client ID）
 * 访问令牌（Access token）
@@ -20,10 +21,10 @@
 ### 第一步：获取Plaid设置相关信息
 
 1. **访问您的[Plaid dashboard](https://dashboard.plaid.com/overview)：** 点击**Team Settings**下拉列表中的**Keys**。
-![Plaid Keys](../../.gitbook/assets/plaid-keys.jpg "Plaid Keys")
+![Plaid Keys](/docs/setup-guide/assets/images/plaid-keys.jpg "Plaid Keys")
 
 2. **获取客户端ID和API密钥：** 在Keys页面上，复制您的**client_id**和Sandbox **secret**。
-![Plaid Client Id Secret](../../.gitbook/assets/plaid-client-id-secret.jpg "Plaid Client Id Secret")
+![Plaid Client Id Secret](/docs/setup-guide/assets/images/plaid-client-id-secret.jpg "Plaid Client Id Secret")
 
 3. **创建访问令牌：** 首先您需要创建一个公共令牌密钥，然后您可以使用它创建访问令牌。
 
@@ -58,13 +59,13 @@ curl --location --request POST 'https://sandbox.plaid.com/item/public_token/exch
 
 2. 输入**数据源名称**。
 
-3. 输入Plaid **API密钥（API key）**.
+3. 输入Plaid **API密钥（API key）**。
 
-4. 输入Plaid**客户端ID（Client ID）**.
+4. 输入Plaid**客户端ID（Client ID）**。
 
 5. 从**sandbox**，**development**或**production**中选择您需要同步数据的Plaid环境。
 
-6. 输入Plaid**访问令牌（Access Token）**.
+6. 输入Plaid**访问令牌（Access Token）**。
 
 7. 点击**保存并测试**。
 

@@ -10,17 +10,23 @@ This page contains the setup guide and reference information for BigCommerce.
 | Incremental - Append Sync | Yes |
 | Namespaces | No |
 
+## Prerequisites
+
+* BigCommerce [high-risk user permission](https://support.bigcommerce.com/s/article/User-Permissions?language=en_US#highrisk)
+
 ## Setup guide
 
-1. Navigate to your store's control panel (Advanced Settings \> API Accounts \> Create API Account)
+1. Navigate to your store's control panel. In the left side menu, click **Settings**. On the page opened on the right side, scroll down and find **Store-level API accounts**.
+![BigCommerce API Accounts](/docs/setup-guide/assets/images/bigcommerce-settings.jpg "BigCommerce API Accounts")
 
-2. Create an API account.
+2. Click **Create an API account**.
+![BigCommerce Create API Accounts](/docs/setup-guide/assets/images/bigcommerce-create-api-account.jpg "BigCommerce Create API Accounts")
 
 3. Select the resources you want to allow access to. Daspire only needs read-level access.
+![BigCommerce API Scope](/docs/setup-guide/assets/images/bigcommerce-api-scope.jpg "BigCommerce API Scope")
 
-  > **Note:** The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
-
-4. The generated Access Token is what you'll use as the access\_token for the integration.
+4. Once you're done with the selection, click **Save**. You will get **Client ID**, **Client secret**, and **Access token**. Copy them, you will use them later to set up the source.
+![BigCommerce API Credentials](/docs/setup-guide/assets/images/bigcommerce-creds.jpg "BigCommerce API Credentials")
 
 5. You're ready to set up BigCommerce in Daspire!
 

@@ -26,10 +26,10 @@ There are two types of incremental sync:
 Follow these [instructions](https://developers.hubspot.com/docs/api/private-apps) or the below steps to create a HubSpot App and obtain the Access Token needed to set up the source in Daspire.
 
 1. In your HubSpot account, click the **settings icon** in the top navigation bar.
-![HubSpot Settings](/assets/images/hubspot-settings.jpg "HubSpot Settings")
+![HubSpot Settings](/docs/setup-guide/assets/images/hubspot-settings.jpg "HubSpot Settings")
 
 2. In the left sidebar menu, navigate to **Integrations > Private Apps**.
-![HubSpot Private Apps](/assets/images/hubspot-private-apps.jpg "HubSpot Private Apps")
+![HubSpot Private Apps](/docs/setup-guide/assets/images/hubspot-private-apps.jpg "HubSpot Private Apps")
 
 3. Click **Create private app**.
 
@@ -66,10 +66,10 @@ Follow these [instructions](https://developers.hubspot.com/docs/api/private-apps
 | `workflows` | `automation` |
 
 6. After you're done configuring your app, click **Create app** on the top right.
-![HubSpot Create Private App](/assets/images/hubspot-create-app.jpg "HubSpot Create Private App")
+![HubSpot Create Private App](/docs/setup-guide/assets/images/hubspot-create-app.jpg "HubSpot Create Private App")
 
 7. Once your private app is created, you will get an **Access Token**. Copy that. You will use it to set up the source in Daspire.
-![HubSpot Access Token](/assets/images/hubspot-access-token.jpg "HubSpot Access Token")
+![HubSpot Access Token](/docs/setup-guide/assets/images/hubspot-access-token.jpg "HubSpot Access Token")
 
 ### Step 2: Set up HubSpot in Daspire
 

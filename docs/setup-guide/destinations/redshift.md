@@ -68,13 +68,13 @@ Optional parameters:
 
 1. Go to Daspire dashboard.
 
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ New Destination**.
 
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
 
-4. Fill in all the required fields to use the INSERT or COPY strategy
+4. Fill in all the required fields to use the INSERT or COPY strategy.
 
-5. Click Set up destination.
+5. Click **Save & Test**.
 
 ## Supported sync modes
 
@@ -132,12 +132,12 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Redshift Type | Daspire Type |
 | --- | --- |
-| boolean | boolean |
-| int | integer |
-| float | number |
-| varchar | string |
-| date/varchar | date |
-| time/varchar | time |
-| timestamptz/varchar | timestamp\_with\_timezone |
-| varchar | array |
-| varchar | object |
+| `boolean` | `boolean` |
+| `int` | `integer` |
+| `float` | `number` |
+| `varchar` | `string` |
+| `date/varchar` | `date` |
+| `time/varchar` | `time` |
+| `timestamptz/varchar` | `timestamp_with_timezone` |
+| `varchar` | `array` |
+| `varchar` | `object` |

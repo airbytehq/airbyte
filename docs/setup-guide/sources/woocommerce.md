@@ -38,11 +38,15 @@ This Source is capable of syncing the following core Streams:
 * [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-orders)
 * [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-coupons)
 
+## Troubleshooting
+
+Max number of tables that can be synced at a time is 6,000. We advise you to adjust your settings if it fails to fetch schema due to max number of tables reached.
+
 ## Data type mapping
 
 | Integration Type | Daspire Type |
 | --- | --- |
-| string | string |
-| number | number |
-| array | array |
-| object | object |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |

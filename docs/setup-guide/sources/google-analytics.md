@@ -23,46 +23,63 @@ This page contains the setup guide and reference information for Google Analytic
 1. Sign in to the Google Account you are using for GA as an admin.
 
 2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
-![GA4 Service Accounts](/assets/images/ga4-service-accounts.jpg "GA4 Service Accounts")
+![GA4 Service Accounts](/docs/setup-guide/assets/images/ga4-service-accounts.jpg "GA4 Service Accounts")
 
 3. Select the project you want to use (or create a new one).
 
 4. Click **+ Create Service Account** at the top of the page.
-![GA4 Create Service Account](/assets/images/ga4-create-service-account.jpg "GA4 Create Service Account")
+![GA4 Create Service Account](/docs/setup-guide/assets/images/ga4-create-service-account.jpg "GA4 Create Service Account")
 
 5. Enter a name for the service account, and click **Create and Continue**.
-![GA4 Service Account Details](/assets/images/ga4-service-account-details.jpg "GA4 Service Account Details")
+![GA4 Service Account Details](/docs/setup-guide/assets/images/ga4-service-account-details.jpg "GA4 Service Account Details")
 
 6. Choose the role for the service account. We recommend the **Viewer role (Read & Analyze permissions)**. Click Continue. And then click Done.
-![GA4 Service Account Role](/assets/images/ga4-service-account-role.jpg "GA4 Service Account Role")
+![GA4 Service Account Role](/docs/setup-guide/assets/images/ga4-service-account-role.jpg "GA4 Service Account Role")
 
 7. Select your new service account from the list, and open the Keys tab. Click **Keys** > **Add Key**.
-![GA4 Service Account Add Key](/assets/images/ga4-service-account-add-key.jpg "GA4 Service Account Add Key")
+![GA4 Service Account Add Key](/docs/setup-guide/assets/images/ga4-service-account-add-key.jpg "GA4 Service Account Add Key")
 
 8. Select **JSON** as the Key type. Then click Create. This will generate and download the JSON key file that you'll use for authentication.
 
 ### Step 2: Enable the Google Analytics APIs
 
 1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and **Enable** the API. You can also set quotas and check usage.
-![GA4 Reporting API](/assets/images/ga4-reporting-api.jpg "GA4 Reporting API")
+![GA4 Reporting API](/docs/setup-guide/assets/images/ga4-reporting-api.jpg "GA4 Reporting API")
 
 2. Go to the [Google Analytics API dashboard](https://console.cloud.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and **Enable** the API.
-![GA4 API](/assets/images/ga4-api.jpg "GA4 API")
+![GA4 API](/docs/setup-guide/assets/images/ga4-api.jpg "GA4 API")
+
+3. Go to the [Google Analytics Data API dashboard](https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com). Make sure you have selected the associated project for your service account, and Enable the API.
+![GA4 Data API](/docs/setup-guide/assets/images/ga4-data-api.jpg "GA4 Data API")
 
 ### Step 3: Obtain your GA4 property id
 
 1. Sign in to the [Google Analytics account](https://analytics.google.com/) as an admin.
 
 2. On the left sidebar, click **Admin**.
-![GA4 Admin](/assets/images/ga4-admin.jpg "GA4 Admin")
+![GA4 Admin](/docs/setup-guide/assets/images/ga4-admin.jpg "GA4 Admin")
 
 3. Click **Property**.
-![GA4 Property](/assets/images/ga4-property.jpg "GA4 Property")
+![GA4 Property](../docs/setup-guide/assets/images/ga4-property.jpg "GA4 Property")
 
 4. Click **Property details** and you will find your **Property ID** on the top right corner. This ID should be a numeric value, such as `123456789`. Copy it for later use.
-![GA4 Property ID](/assets/images/ga4-property-id.jpg "GA4 Property ID")
+![GA4 Property ID](/docs/setup-guide/assets/images/ga4-property-id.jpg "GA4 Property ID")
 
-### Step 4: Set up GA4 in Daspire
+### Step 4: Grant Service Account GA4 property access
+
+1. Following Step 3, inside the **Admin** area of your GA4 account, click **Account Access Management**.
+![GA4 Account Access](/docs/setup-guide/assets/images/ga4-account-access.jpg "GA4 Account Access")
+
+2. Click the blue **+** button in the right top corner of your screen. And click **Add Users**.
+![GA4 Add User](/docs/setup-guide/assets/images/ga4-add-user.jpg "GA4 Add User")
+
+3. Enter the email address of your Service Account user you created in Step 1. You can find the email listed in [Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) in your Google Cloud Platform.
+![GA4 Service Account Email](/docs/setup-guide/assets/images/ga4-service-account-email.jpg "GA4 Service Account Email")
+
+4. Assign a role to the Service Account user. Daspire only needs the **Viewer** role. And click **Add**.
+![GA4 Roles](/docs/setup-guide/assets/images/ga4-roles.jpg "GA4 Roles")
+
+### Step 5: Set up GA4 in Daspire
 
 1. Select **Google Analytics 4 (GA4)** from the Source list.
 

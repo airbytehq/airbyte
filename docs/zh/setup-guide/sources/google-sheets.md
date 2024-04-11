@@ -21,21 +21,21 @@ This page contains the setup guide and reference information for Google Sheets.
 ### Step 1: Create a Service Account for authentication
 
 1. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
-![Google Service Accounts](/assets/images/ga4-service-accounts.jpg "Google Service Accounts")
+![Google Service Accounts](/docs/setup-guide/assets/images/ga4-service-accounts.jpg "Google Service Accounts")
 
 2. Select the project you want to use (or create a new one).
 
 3. Click **+ Create Service Account** at the top of the page.
-![Google Create Service Account](/assets/images/ga4-create-service-account.jpg "Google Create Service Account")
+![Google Create Service Account](/docs/setup-guide/assets/images/ga4-create-service-account.jpg "Google Create Service Account")
 
 4. Enter a name for the service account, and click **Create and Continue**.
-![Google Service Account Details](/assets/images/ga4-service-account-details.jpg "Google Service Account Details")
+![Google Service Account Details](/docs/setup-guide/assets/images/ga4-service-account-details.jpg "Google Service Account Details")
 
 5. Choose the role for the service account. We recommend the **Viewer role (Read & Analyze permissions)**. Click Continue. And then click Done.
-![Google Service Account Role](/assets/images/ga4-service-account-role.jpg "Google Service Account Role")
+![Google Service Account Role](/docs/setup-guide/assets/images/ga4-service-account-role.jpg "Google Service Account Role")
 
 6. Select your new service account from the list, and open the Keys tab. Click **Keys** > **Add Key**.
-![Google Service Account Add Key](/assets/images/ga4-service-account-add-key.jpg "Google Service Account Add Key")
+![Google Service Account Add Key](/docs/setup-guide/assets/images/ga4-service-account-add-key.jpg "Google Service Account Add Key")
 
 7. Select **JSON** as the Key type. Then click Create. This will generate and download the JSON key file that you'll use for authentication.
 
@@ -46,28 +46,28 @@ This page contains the setup guide and reference information for Google Sheets.
 2. Make sure you have selected the correct project from the top.
 
 3. Find and select the Google Sheets API.
-![Google Sheets API](/assets/images/gsheets-api.jpg "Google Sheets API")
+![Google Sheets API](/docs/setup-guide/assets/images/gsheets-api.jpg "Google Sheets API")
 
 4. Click ENABLE.
-![Enable Google Sheets API](/assets/images/gsheets-api-enable.jpg "Enable Google Sheets API")
+![Enable Google Sheets API](/docs/setup-guide/assets/images/gsheets-api-enable.jpg "Enable Google Sheets API")
 
 NOTE: If your spreadsheet is viewable by anyone with its link, no further action is needed and you can proceed to **Step 4**. If not, give your Service account access to your spreadsheet by following Step 3.
 
 ### Step 3: Give your Service account access to your spreadsheet
 
 1. Go to [Google Cloud Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) and find your **service account email**. Copy it.
-![Google Service Account Email](/assets/images/gsheets-email.jpg "Google Service Account Email")
+![Google Service Account Email](/docs/setup-guide/assets/images/gsheets-email.jpg "Google Service Account Email")
 
 2. Open the Google Sheets you want to sync, and click **Share** in the top right corner.
-![Google Sheets Share](/assets/images/gsheets-share.jpg "Google Sheets Share")
+![Google Sheets Share](/docs/setup-guide/assets/images/gsheets-share.jpg "Google Sheets Share")
 
 3. Enter your Service account email, give it **Viewer** access, and click Share.
-![Google Sheets Viewer Access](/assets/images/gsheets-viewer-access.jpg "Google Sheets Viewer Access")
+![Google Sheets Viewer Access](/docs/setup-guide/assets/images/gsheets-viewer-access.jpg "Google Sheets Viewer Access")
 
 ### Step 4: Obtain Google Sheets link
 
 1.  Go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-![Google Sheets Link](/assets/images/gsheets-link.jpg "Google Sheets Link")
+![Google Sheets Link](/docs/setup-guide/assets/images/gsheets-link.jpg "Google Sheets Link")
 
 2. You're ready to set up Google Sheets in Daspire!
 

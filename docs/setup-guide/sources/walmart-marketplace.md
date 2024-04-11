@@ -1,8 +1,9 @@
-# Walmart
+# Walmart Marketplace
 
-This page contains the setup guide and reference information for Walmart.
+This page contains the setup guide and reference information for Walmart Marketplace.
 
 ## Prerequisites
+
 * Client ID
 * Client Secret
 
@@ -12,11 +13,14 @@ This page contains the setup guide and reference information for Walmart.
 
 1. Log in to your [Walmart seller dashboard](https://seller.walmart.com).
 
-2. Click on **Settings** -> **API Key Management**  
+2. Click on **Settings** -> **API Key Management**.
+![Walmart Settings](/docs/setup-guide/assets/images/walmart-settings.jpg "Walmart Settings")
 
-3. Click on **Walmart Developer Portal**. You will be redirected to the Walmart developer portal.
+3. Once you're on the API Integrations page, click **API Key Management**. You will be redirected to the Walmart developer portal.
+![Walmart API Key Management](/docs/setup-guide/assets/images/walmart-api-key-mgnt.jpg "Walmart API Key Management")
 
-4. Note down the **Client ID** and **Client secret** on **Production keys** tab. These will be used to create the integration in Daspire.
+4. Note down the **Client ID** and **Client secret** on the ***My API Key*** section under the ***Production keys*** tab. These will be used to create the integration in Daspire.
+![Walmart API Key](/docs/setup-guide/assets/images/walmart-api-key.jpg "Walmart API Key")
 
 ### Step 2: Set up the Walmart data source in Daspire
 
@@ -30,9 +34,9 @@ This page contains the setup guide and reference information for Walmart.
 
 5. Enter your Walmart account **Client Secret**.
 
-6. In Acquisition Method, enter the  **Start Time**, which is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. The date for a specific profile is calculated according to its timezone, this parameter should be specified in the UTC timezone. Since it doesn't make sense to generate reports for the current day (metrics could be changed), it generates reports for the day before (e.g. if **Start Date** is 2022-10-11 it would use 20221010 as reportDate parameter for request).
+6. In **Data Replication Schedule**, choose an option between **Based on Start Date** or **Periodic Replication**.
 
-7. Click **Set up source**.
+7. Click **Save & Test**.
 
 ## Supported sync modes
 
@@ -50,22 +54,20 @@ This source is capable of syncing the following streams:
 * [Returns](https://developer.walmart.com/api/us/mp/returns#operation/getReturns)
 * [Multiple Item Inventory for All Ship Nodes](https://developer.walmart.com/api/us/mp/inventory#operation/getMultiNodeInventoryForAllSkuAndAllShipNodes)
 * [WFS Inventory](https://developer.walmart.com/api/us/mp/inventory#operation/getWFSInventory)
-* [Items Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
-* [Buybox Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
-* [CPA Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
-* [Item Performance Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
-* [Return Overrides Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
-* [Promp Reports](https://developer.walmart.com/api/us/mp/reports#operation/getItemReport)
 * [Get Shipments](https://developer.walmart.com/api/us/mp/fulfillment#operation/getInboundShipments)
 * [Get Inbound Shipment Items](https://developer.walmart.com/api/us/mp/fulfillment#operation/getInboundShipmentItems)
 * [All Departments](https://developer.walmart.com/api/us/mp/utilities#operation/getDepartmentList)
+
+## Troubleshooting
+
+Max number of tables that can be synced at a time is 6,000. We advise you to adjust your settings if it fails to fetch schema due to max number of tables reached.
 
 ## Data type mapping
 
 | Integration Type | Daspire Type |
 | --- | --- |
 | `string` | `string` |
-| `int`, `float`, `number` | `number` |
+| `int, float, number` | `number` |
 | `date` | `date` |
 | `datetime` | `datetime` |
 | `array` | `array` |

@@ -38,6 +38,10 @@ Daspire可以为[WooCommerce API](https://woocommerce.github.io/woocommerce-rest
 * [订单（Orders）](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-orders)
 * [优惠券（Coupons）](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-coupons)
 
+## 故障排除
+
+单次可同步的最大表数为6千张。如果由于达到最大表数而无法获取数据架构，我们建议您调整数据源设置。
+
 ## 数据类型映射
 
 | 集成类型 | Daspire类型 |
