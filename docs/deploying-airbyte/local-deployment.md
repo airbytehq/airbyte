@@ -8,7 +8,7 @@ These instructions have been tested on MacOS, Windows, and Ubuntu and Fedora.
 ## Setup & launch Airbyte
 
 - Install `Docker Desktop`  \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
-- After `Docker Desktop` is installed, you must enable `Kubernetes` \(see [instructions](https://docs.docker.com/desktop/kubernetes/).
+- After `Docker Desktop` is installed, you must enable `Kubernetes` \(see [instructions](https://docs.docker.com/desktop/kubernetes/)\).
 - Download the latest version of `abctl` from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:
 
 ```bash
