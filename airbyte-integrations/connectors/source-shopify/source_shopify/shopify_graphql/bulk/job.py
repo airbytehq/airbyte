@@ -60,7 +60,7 @@ class ShopifyBulkManager:
     # P365D, upper boundary for slice size
     job_size_max: Final[float] = 365.0
     # running job logger constrain
-    log_running_job_msg_frequency: Final[int] = 3
+    log_running_job_msg_frequency: Final[int] = 5
     # attempt limit indicator
     concurrent_max_attempt_reached: bool = field(init=False, default=False)
     # attempt counter

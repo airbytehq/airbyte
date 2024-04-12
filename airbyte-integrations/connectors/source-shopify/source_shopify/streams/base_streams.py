@@ -268,7 +268,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     )
                     yield record
                     emitted_records += 1
-            self.logger.info(f"Stream `{self.name}`. Emitted Records / Processed Records: {emitted_records}/{processed_records}.")
+            # final stats message
+            stats = {
+                "emitted": emitted_records,
+                "processed": processed_records,
+                "filtered_by_state": processed_records - emitted_records,
+            }
+            self.logger.info(f"Stream `{self.name}`. Stats: {stats}.")
         else:
             yield from records_slice
 
