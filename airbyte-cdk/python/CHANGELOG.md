@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
+## 0.81.1
+Concurrent CDK: add logging on exception
+
+## 0.81.0
+Unpin airbyte-protocol-models library
+
+## 0.80.0
+Concurrent CDK: support partitioned states
+
 ## 0.79.2
 Concurrent CDK: Print error messages properly so that they can be categorized
 
