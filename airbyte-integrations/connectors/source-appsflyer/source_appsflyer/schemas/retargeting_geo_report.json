@@ -2,100 +2,132 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the retargeting data is reported.",
       "type": ["null", "string"],
       "format": "date"
     },
     "country_code": {
+      "description": "Country code associated with the user for geo-targeting analysis.",
       "type": ["null", "string"]
     },
     "af_prt": {
+      "description": "AppsFlyer's proprietary retargeting metric.",
       "type": ["null", "string"]
     },
     "media_source": {
+      "description": "The media source or platform from which the retargeting traffic originated.",
       "type": ["null", "string"]
     },
     "campaign": {
+      "description": "The name or ID of the retargeting campaign.",
       "type": ["null", "string"]
     },
     "clicks": {
+      "description": "Total clicks received on retargeting ads.",
       "type": ["null", "number"]
     },
     "conversions": {
+      "description": "Total number of conversions attributed to retargeting efforts.",
       "type": ["null", "number"]
     },
     "conversion_type": {
+      "description": "Type of conversion achieved through retargeting (e.g., app install, purchase).",
       "type": ["null", "string"]
     },
     "conversion_rate": {
+      "description": "The percentage of users who converted after being retargeted.",
       "type": ["null", "number"]
     },
     "sessions": {
+      "description": "Total sessions initiated by users as a result of retargeting.",
       "type": ["null", "number"]
     },
     "loyal_users": {
+      "description": "Number of loyal users retained through retargeting campaigns.",
       "type": ["null", "number"]
     },
     "loyal_users_rate": {
+      "description": "Percentage of users retained as loyal users through retargeting efforts.",
       "type": ["null", "number"]
     },
     "total_revenue": {
+      "description": "Total revenue generated through retargeting efforts.",
       "type": ["null", "number"]
     },
     "total_cost": {
+      "description": "The total cost incurred for running retargeting campaigns.",
       "type": ["null", "number"]
     },
     "return_on_investment": {
+      "description": "The calculated return on investment (ROI) from retargeting activities.",
       "type": ["null", "number"]
     },
     "average_revenue_per_user": {
+      "description": "Average revenue generated per user as a result of retargeting activities.",
       "type": ["null", "number"]
     },
     "average_ecpi": {
+      "description": "Average Effective Cost Per Install for retargeting campaigns.",
       "type": ["null", "number"]
     },
     "account_login_unique_users": {
+      "description": "The number of unique users who logged into their account as a result of retargeting efforts.",
       "type": ["null", "number"]
     },
     "account_login_event_counter": {
+      "description": "The count of account login events triggered by retargeting.",
       "type": ["null", "number"]
     },
     "account_login_sales": {
+      "description": "Total sales generated from account login events.",
       "type": ["null", "number"]
     },
     "af_complete_registration_unique_users": {
+      "description": "Unique users who completed registration as a result of retargeting.",
       "type": ["null", "number"]
     },
     "af_complete_registration_event_counter": {
+      "description": "The count of events where users completed registration after retargeting.",
       "type": ["null", "number"]
     },
     "af_complete_registration_sales": {
+      "description": "Total sales from users who completed registration due to retargeting.",
       "type": ["null", "number"]
     },
     "checkout_success_unique_users": {
+      "description": "Unique users who successfully checked out due to retargeting.",
       "type": ["null", "number"]
     },
     "checkout_success_event_counter": {
+      "description": "Number of successful checkouts triggered by retargeting.",
       "type": ["null", "number"]
     },
     "checkout_success_sales": {
+      "description": "Total sales from successful checkouts influenced by retargeting.",
       "type": ["null", "number"]
     },
     "create_product_complete_unique_users": {
+      "description": "Unique users who completed creating a product through retargeting.",
       "type": ["null", "number"]
     },
     "create_product_complete_event_counter": {
+      "description": "Events triggered when users create a complete product after retargeting.",
       "type": ["null", "number"]
     },
     "create_product_complete_sales": {
+      "description": "Total sales from users who completed creating a product due to retargeting.",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_unique_users": {
+      "description": "Unique users who initialized an AppsFlyer ID via retargeting.",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_event_counter": {
+      "description": "Count of events where users initialized an AppsFlyer ID after retargeting.",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_sales": {
+      "description": "Total sales from users who initialized an AppsFlyer ID through retargeting.",
       "type": ["null", "number"]
     }
   }

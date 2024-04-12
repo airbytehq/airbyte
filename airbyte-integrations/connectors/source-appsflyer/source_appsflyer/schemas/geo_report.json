@@ -2,121 +2,160 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date corresponding to the data entry",
       "type": ["null", "string"],
       "format": "date"
     },
     "country_code": {
+      "description": "The code representing the country associated with the data",
       "type": ["null", "string"]
     },
     "af_prt": {
+      "description": "AppsFlyer performance ranking for targeted campaign",
       "type": ["null", "string"]
     },
     "media_source": {
+      "description": "The source of media for the campaign",
       "type": ["null", "string"]
     },
     "campaign": {
+      "description": "The campaign name or ID associated with the data",
       "type": ["null", "string"]
     },
     "impressions": {
+      "description": "Total number of times an ad was displayed",
       "type": ["null", "number"]
     },
     "clicks": {
+      "description": "Total number of clicks on the campaign link",
       "type": ["null", "number"]
     },
     "click_through_rate": {
+      "description": "Percentage of users who clicked on a link and completed a desired action",
       "type": ["null", "number"]
     },
     "installs": {
+      "description": "Total number of app installs",
       "type": ["null", "number"]
     },
     "conversion_rate": {
+      "description": "Percentage of users who completed a desired action out of total visitors",
       "type": ["null", "number"]
     },
     "sessions": {
+      "description": "Total number of sessions or interactions",
       "type": ["null", "number"]
     },
     "loyal_users": {
+      "description": "Number of users considered loyal based on predefined criteria",
       "type": ["null", "number"]
     },
     "loyal_users_rate": {
+      "description": "Percentage of users identified as loyal out of total users",
       "type": ["null", "number"]
     },
     "total_revenue": {
+      "description": "Total revenue generated from the campaign",
       "type": ["null", "number"]
     },
     "total_cost": {
+      "description": "Total cost associated with the campaign",
       "type": ["null", "number"]
     },
     "return_on_investment": {
+      "description": "The ratio of revenue generated to the cost of the campaign",
       "type": ["null", "number"]
     },
     "average_revenue_per_user": {
+      "description": "Average revenue generated per user",
       "type": ["null", "number"]
     },
     "average_ecpi": {
+      "description": "Average effective cost per install",
       "type": ["null", "number"]
     },
     "account_login_unique_users": {
+      "description": "The number of unique users who have logged into their accounts",
       "type": ["null", "number"]
     },
     "account_login_event_counter": {
+      "description": "The total number of account login events",
       "type": ["null", "number"]
     },
     "account_login_sales": {
+      "description": "The total sales revenue generated from account logins",
       "type": ["null", "number"]
     },
     "af_complete_registration_unique_users": {
+      "description": "The number of unique users who have completed the registration process",
       "type": ["null", "number"]
     },
     "af_complete_registration_event_counter": {
+      "description": "The total number of completed registrations through AppsFlyer",
       "type": ["null", "number"]
     },
     "af_complete_registration_sales": {
+      "description": "The total sales revenue from completed registrations",
       "type": ["null", "number"]
     },
     "af_purchase_registration_unique_users": {
+      "description": "The number of unique users who completed purchase registrations",
       "type": ["null", "number"]
     },
     "af_purchase_registration_event_counter": {
+      "description": "The total number of purchase registration events tracked by AppsFlyer",
       "type": ["null", "number"]
     },
     "af_purchase_registration_sales": {
+      "description": "The total sales revenue generated from purchase registrations",
       "type": ["null", "number"]
     },
     "checkout_success_unique_users": {
+      "description": "The number of unique users who have successfully completed a checkout",
       "type": ["null", "number"]
     },
     "checkout_success_event_counter": {
+      "description": "The total number of successful checkout events",
       "type": ["null", "number"]
     },
     "checkout_success_sales": {
+      "description": "The total sales revenue from successful checkouts",
       "type": ["null", "number"]
     },
     "create_product_complete_unique_users": {
+      "description": "The number of unique users who have completed creating a product",
       "type": ["null", "number"]
     },
     "create_product_complete_event_counter": {
+      "description": "The total number of completed product creation events",
       "type": ["null", "number"]
     },
     "create_product_complete_sales": {
+      "description": "The total sales revenue from completed product creations",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_unique_users": {
+      "description": "The number of unique users who have initiated AppsFlyer IDs",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_event_counter": {
+      "description": "The total number of initiated AppsFlyer ID events",
       "type": ["null", "number"]
     },
     "init_appsflyer_id_sales": {
+      "description": "The total sales revenue generated from initiated AppsFlyer ID events",
       "type": ["null", "number"]
     },
     "pay_premium_pkg_unique_users": {
+      "description": "The number of unique users who have paid for premium packages",
       "type": ["null", "number"]
     },
     "pay_premium_pkg_event_counter": {
+      "description": "The total number of premium package payment events",
       "type": ["null", "number"]
     },
     "pay_premium_pkg_sales": {
+      "description": "The total sales revenue from premium package payments",
       "type": ["null", "number"]
     }
   }

@@ -2,46 +2,60 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the report data is recorded.",
       "type": ["null", "string"],
       "format": "date"
     },
     "af_prt": {
+      "description": "The AppsFlyer Partner which the data belongs to.",
       "type": ["null", "string"]
     },
     "media_source": {
+      "description": "The source or platform where the ads are displayed, such as Facebook or Google Ads.",
       "type": ["null", "string"]
     },
     "campaign": {
+      "description": "The marketing campaign name.",
       "type": ["null", "string"]
     },
     "impressions": {
+      "description": "The total number of times the ad is displayed.",
       "type": ["null", "number"]
     },
     "clicks": {
+      "description": "The total number of clicks on the ad.",
       "type": ["null", "number"]
     },
     "click_through_rate": {
+      "description": "The ratio of ad clicks to impressions, indicative of ad performance.",
       "type": ["null", "number"]
     },
     "installs": {
+      "description": "The total number of successful app installs from the ad campaign.",
       "type": ["null", "number"]
     },
     "conversion_rate": {
+      "description": "The percentage of ad clicks that lead to a desired action, such as an install or purchase.",
       "type": ["null", "number"]
     },
     "sessions": {
+      "description": "The total number of sessions or interactions with the app.",
       "type": ["null", "number"]
     },
     "loyal_users": {
+      "description": "The number of users who repeatedly engage with the app.",
       "type": ["null", "number"]
     },
     "loyal_users_rate": {
+      "description": "The percentage of users who are considered loyal out of total installs.",
       "type": ["null", "number"]
     },
     "total_cost": {
+      "description": "The total cost of running the ad campaign.",
       "type": ["null", "number"]
     },
     "average_ecpi": {
+      "description": "The average earnings per install for the campaign.",
       "type": ["null", "number"]
     }
   }

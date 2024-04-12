@@ -2,366 +2,484 @@
   "type": "object",
   "properties": {
     "attributed_touch_type": {
+      "description": "Type of touch attribution",
       "type": ["null", "string"]
     },
     "attributed_touch_time": {
+      "description": "Timestamp of the attributed touch",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "install_time": {
+      "description": "Time of installation",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "event_time": {
+      "description": "Time of the event",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "event_name": {
+      "description": "Name of the event",
       "type": ["null", "string"]
     },
     "event_value": {
+      "description": "Value associated with the event",
       "type": ["null", "string"]
     },
     "event_revenue": {
+      "description": "Revenue generated from the event",
       "type": ["null", "string"]
     },
     "event_revenue_currency": {
+      "description": "Currency of the event revenue",
       "type": ["null", "string"]
     },
     "event_revenue_usd": {
+      "description": "Event revenue in USD",
       "type": ["null", "string"]
     },
     "event_source": {
+      "description": "Source of the event",
       "type": ["null", "string"]
     },
     "is_receipt_validated": {
+      "description": "Flag indicating receipt validation",
       "type": ["null", "boolean"]
     },
     "af_prt": {
+      "description": "AppsFlyer partner ID",
       "type": ["null", "string"]
     },
     "media_source": {
+      "description": "Source of the media",
       "type": ["null", "string"]
     },
     "af_channel": {
+      "description": "The channel through which the advertisement is displayed",
       "type": ["null", "string"]
     },
     "af_keywords": {
+      "description": "Keywords associated with the advertisement",
       "type": ["null", "string"]
     },
     "campaign": {
+      "description": "Campaign name",
       "type": ["null", "string"]
     },
     "af_c_id": {
+      "description": "Campaign ID within AppsFlyer",
       "type": ["null", "string"]
     },
     "af_adset": {
+      "description": "The ad set ID within AppsFlyer",
       "type": ["null", "string"]
     },
     "af_adset_id": {
+      "description": "The unique ID of the ad set",
       "type": ["null", "string"]
     },
     "af_ad": {
+      "description": "The advertisement ID within AppsFlyer",
       "type": ["null", "string"]
     },
     "af_ad_id": {
+      "description": "The unique ID of the advertisement",
       "type": ["null", "string"]
     },
     "af_ad_type": {
+      "description": "The type of advertisement",
       "type": ["null", "string"]
     },
     "af_siteid": {
+      "description": "The site ID for attribution",
       "type": ["null", "string"]
     },
     "af_sub_siteid": {
+      "description": "Site ID for sub attribution",
       "type": ["null", "string"]
     },
     "af_sub1": {
+      "description": "Subparameter 1",
       "type": ["null", "string"]
     },
     "af_sub2": {
+      "description": "Subparameter 2",
       "type": ["null", "string"]
     },
     "af_sub3": {
+      "description": "Subparameter 3",
       "type": ["null", "string"]
     },
     "af_sub4": {
+      "description": "Subparameter 4",
       "type": ["null", "string"]
     },
     "af_sub5": {
+      "description": "Subparameter 5",
       "type": ["null", "string"]
     },
     "af_cost_model": {
+      "description": "The model for cost calculation",
       "type": ["null", "string"]
     },
     "af_cost_value": {
+      "description": "The value/cost associated with the advertisement",
       "type": ["null", "string"]
     },
     "af_cost_currency": {
+      "description": "The currency for cost values",
       "type": ["null", "string"]
     },
     "contributor1_af_prt": {
+      "description": "Contribution from AppsFlyer partner 1",
       "type": ["null", "string"]
     },
     "contributor1_media_source": {
+      "description": "Media source from contributor 1",
       "type": ["null", "string"]
     },
     "contributor1_campaign": {
+      "description": "Campaign contributed by contributor 1",
       "type": ["null", "string"]
     },
     "contributor1_touch_type": {
+      "description": "Type of touch from contributor 1",
       "type": ["null", "string"]
     },
     "contributor1_touch_time": {
+      "description": "Timestamp of touch from contributor 1",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contributor2_af_prt": {
+      "description": "Contribution from AppsFlyer partner 2",
       "type": ["null", "string"]
     },
     "contributor2_media_source": {
+      "description": "Media source from contributor 2",
       "type": ["null", "string"]
     },
     "contributor2_campaign": {
+      "description": "Campaign contributed by contributor 2",
       "type": ["null", "string"]
     },
     "contributor2_touch_type": {
+      "description": "Type of touch from contributor 2",
       "type": ["null", "string"]
     },
     "contributor2_touch_time": {
+      "description": "Timestamp of touch from contributor 2",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contributor3_af_prt": {
+      "description": "Contribution from AppsFlyer partner 3",
       "type": ["null", "string"]
     },
     "contributor3_media_source": {
+      "description": "Media source from contributor 3",
       "type": ["null", "string"]
     },
     "contributor3_campaign": {
+      "description": "Campaign contributed by contributor 3",
       "type": ["null", "string"]
     },
     "contributor3_touch_type": {
+      "description": "Type of touch from contributor 3",
       "type": ["null", "string"]
     },
     "contributor3_touch_time": {
+      "description": "Timestamp of touch from contributor 3",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "region": {
+      "description": "Region associated with the event",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "Country code associated with the event",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State associated with the event",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "City associated with the event",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "Postal code associated with the event",
       "type": ["null", "string"]
     },
     "dma": {
+      "description": "Designated Market Area",
       "type": ["null", "string"]
     },
     "ip": {
+      "description": "IP address associated with event",
       "type": ["null", "string"]
     },
     "wifi": {
+      "description": "Flag indicating WiFi connectivity",
       "type": ["null", "boolean"]
     },
     "operator": {
+      "description": "Mobile operator information",
       "type": ["null", "string"]
     },
     "carrier": {
+      "description": "Mobile network carrier",
       "type": ["null", "string"]
     },
     "language": {
+      "description": "Language associated with the event",
       "type": ["null", "string"]
     },
     "appsflyer_id": {
+      "description": "AppsFlyer's unique identifier for attribution",
       "type": ["null", "string"]
     },
     "advertising_id": {
+      "description": "The unique ID of the advertising entity",
       "type": ["null", "string"]
     },
     "idfa": {
+      "description": "ID for advertisers for iOS devices",
       "type": ["null", "string"]
     },
     "android_id": {
+      "description": "Android device ID",
       "type": ["null", "string"]
     },
     "customer_user_id": {
+      "description": "Unique ID of the customer/user",
       "type": ["null", "string"]
     },
     "imei": {
+      "description": "Device IMEI number",
       "type": ["null", "string"]
     },
     "idfv": {
+      "description": "Vendor identifier for iOS devices",
       "type": ["null", "string"]
     },
     "platform": {
+      "description": "Platform of the device",
       "type": ["null", "string"]
     },
     "device_type": {
+      "description": "Type of the device",
       "type": ["null", "string"]
     },
     "os_version": {
+      "description": "Operating system version",
       "type": ["null", "string"]
     },
     "app_version": {
+      "description": "Version of the mobile application",
       "type": ["null", "string"]
     },
     "sdk_version": {
+      "description": "AppsFlyer SDK version",
       "type": ["null", "string"]
     },
     "app_id": {
+      "description": "ID of the mobile application",
       "type": ["null", "string"]
     },
     "app_name": {
+      "description": "Name of the mobile application",
       "type": ["null", "string"]
     },
     "bundle_id": {
+      "description": "Bundle ID of the app",
       "type": ["null", "string"]
     },
     "is_retargeting": {
+      "description": "Flag indicating retargeting",
       "type": ["null", "boolean"]
     },
     "retargeting_conversion_type": {
+      "description": "Type of retargeting conversion",
       "type": ["null", "string"]
     },
     "af_attribution_lookback": {
+      "description": "The time frame to look back for attributions",
       "type": ["null", "string"]
     },
     "af_reengagement_window": {
+      "description": "The time window for re-engagement campaigns",
       "type": ["null", "string"]
     },
     "is_primary_attribution": {
+      "description": "Flag indicating primary attribution",
       "type": ["null", "boolean"]
     },
     "user_agent": {
+      "description": "User agent information",
       "type": ["null", "string"]
     },
     "http_referrer": {
+      "description": "HTTP referrer",
       "type": ["null", "string"]
     },
     "original_url": {
+      "description": "Original URL of the event/source",
       "type": ["null", "string"]
     },
     "app_type": {
+      "description": "Type of the mobile application",
       "type": ["null", "string"]
     },
     "custom_data": {
+      "description": "Custom data associated with the event",
       "type": ["null", "string"]
     },
     "network_account_id": {
+      "description": "Account ID within the network",
       "type": ["null", "string"]
     },
     "install_app_store": {
+      "description": "App store where the installation was conducted",
       "type": ["null", "string"]
     },
     "contributor1_match_type": {
+      "description": "Match type from contributor 1",
       "type": ["null", "string"]
     },
     "contributor2_match_type": {
+      "description": "Match type from contributor 2",
       "type": ["null", "string"]
     },
     "contributor3_match_type": {
+      "description": "Match type from contributor 3",
       "type": ["null", "string"]
     },
     "campaign_type": {
+      "description": "Type of campaign",
       "type": ["null", "string"]
     },
     "conversion_type": {
+      "description": "Type of conversion event",
       "type": ["null", "string"]
     },
     "match_type": {
+      "description": "Match type of the event",
       "type": ["null", "string"]
     },
     "gp_referrer": {
+      "description": "Referrer information for Google Play",
       "type": ["null", "string"]
     },
     "gp_click_time": {
+      "description": "Click time for Google Play",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "gp_install_begin": {
+      "description": "Google Play install begin time",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "gp_broadcast_referrer": {
+      "description": "Broadcast referrer for Google Play",
       "type": ["null", "string"]
     },
     "keyword_match_type": {
+      "description": "Match type of the keyword",
       "type": ["null", "string"]
     },
     "keyword_id": {
+      "description": "ID of the keyword",
       "type": ["null", "string"]
     },
     "att": {
+      "description": "Attribution type",
       "type": ["null", "string"]
     },
     "amazon_aid": {
+      "description": "Amazon advertising ID",
       "type": ["null", "string"]
     },
     "device_category": {
+      "description": "Category of the device",
       "type": ["null", "string"]
     },
     "device_model": {
+      "description": "Model of the device",
       "type": ["null", "string"]
     },
     "device_download_time": {
+      "description": "Time when the device was downloaded",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deeplink_url": {
+      "description": "Deeplink URL",
       "type": ["null", "string"]
     },
     "oaid": {
+      "description": "Open Anonymous Identifier",
       "type": ["null", "string"]
     },
     "is_lat": {
+      "description": "Flag indicating limited ad tracking",
       "type": ["null", "boolean"]
     },
     "store_reinstall": {
+      "description": "Flag indicating store reinstall",
       "type": ["null", "boolean"]
     },
     "placement": {
+      "description": "Placement information",
       "type": ["null", "string"]
     },
     "mediation_network": {
+      "description": "Network used for mediation",
       "type": ["null", "string"]
     },
     "segment": {
+      "description": "Segment information",
       "type": ["null", "string"]
     },
     "ad_unit": {
+      "description": "The unit of advertisement being displayed",
       "type": ["null", "string"]
     },
     "monetization_network": {
+      "description": "Network used for monetization",
       "type": ["null", "string"]
     },
     "impressions": {
+      "description": "Number of impressions made",
       "type": ["null", "string"]
     },
     "blocked_reason": {
+      "description": "Reason for blocking the event",
       "type": ["null", "string"]
     },
     "blocked_reason_value": {
+      "description": "Value triggering event blocking",
       "type": ["null", "string"]
     },
     "blocked_reason_rule": {
+      "description": "Rule for blocking the event",
       "type": ["null", "string"]
     },
     "blocked_sub_reason": {
+      "description": "Sub-reason for blocking the event",
       "type": ["null", "string"]
     },
     "rejected_reason": {
+      "description": "Reason for rejection",
       "type": ["null", "string"]
     },
     "rejected_reason_value": {
+      "description": "Value triggering rejection",
       "type": ["null", "string"]
     }
   }
