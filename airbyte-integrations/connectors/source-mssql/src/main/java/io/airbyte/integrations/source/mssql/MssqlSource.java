@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
