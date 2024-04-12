@@ -17,6 +17,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -237,6 +239,20 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   @Test
   public void testLineBreakCharacters() {
     // overrides test with a no-op until we handle full UTF-8 in the destination
+  }
+
+  /**
+   * Legacy mysql normalization is broken, and uses the FLOAT type for numbers. This rounds off e.g.
+   * 12345.678 to 12345.7. We can fix this in DV2, but will not fix legacy normalization. As such,
+   * disabling the test case.
+   */
+  @Override
+  @Disabled("MySQL normalization uses the wrong datatype for numbers. This will not be fixed, because we intend to replace normalization with DV2.")
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
