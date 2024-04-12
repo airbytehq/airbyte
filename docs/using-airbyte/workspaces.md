@@ -52,7 +52,7 @@ Airbyte offers multiple user roles to enable teams to securely access workspaces
 
 | Role | Cloud | Cloud Teams | Enterprise | 
 |---|------|------|------|
-|**Organization Admin:** Administer the whole organization, create workspaces in it, and manage Organization permissions| |✅|✅|
+|**Organization Admin:** Administer the whole organization, create workspaces in it, and manage organization permissions| |✅|✅|
 |**Workspace Admin:** Administer the workspace, create workspace permissions|✅| | |
 |**Workspace Reader:** View information within a workspace, cannot modify anything within a workspace| |✅|✅|
 
