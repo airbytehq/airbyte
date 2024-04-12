@@ -188,7 +188,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     abstract fun toJdbcConfig(config: JsonNode): JsonNode
 
-    protected abstract val sqlGenerator: JdbcSqlGenerator
+    protected abstract fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator
 
     protected abstract fun getDestinationHandler(
         databaseName: String,
@@ -281,7 +281,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         defaultNamespace: String
     ): SerializedAirbyteMessageConsumer {
-        val sqlGenerator = sqlGenerator
+        val sqlGenerator = getSqlGenerator(config)
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
             rawNamespaceOverride
@@ -314,6 +314,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         parsedCatalog: ParsedCatalog,
     ): TyperDeduper {
+        val sqlGenerator = getSqlGenerator(config)
         val databaseName = getDatabaseName(config)
         val v2TableMigrator = NoopV2TableMigrator()
         val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)

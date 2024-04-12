@@ -51,6 +51,8 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
+  private static final String DROP_CASCADE_OPTION = "drop_cascade";
+
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
@@ -132,8 +134,10 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(DROP_CASCADE_OPTION);
+    final boolean dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean();
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), dropCascade);
   }
 
   @Override

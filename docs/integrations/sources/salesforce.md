@@ -193,12 +193,13 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1   | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001)     | Update airbyte-cdk to flush print buffer for every message                                                                           |
 | 2.5.0   | 2024-04-11 | [36942](https://github.com/airbytehq/airbyte/pull/36942) | Move Salesforce to partitioned state in order to avoid stuck syncs                                                                   |
 | 2.4.4   | 2024-04-08 | [36901](https://github.com/airbytehq/airbyte/pull/36901) | Upgrade CDK for empty internal_message empty when ExceptionWithDisplayMessage raised                                                 |
 | 2.4.3   | 2024-04-08 | [36885](https://github.com/airbytehq/airbyte/pull/36885) | Add missing retry on REST API                                                                                                        |
 | 2.4.2   | 2024-04-05 | [36862](https://github.com/airbytehq/airbyte/pull/36862) | Upgrade CDK for updated error messaging regarding missing streams                                                                    |
 | 2.4.1   | 2024-04-03 | [36385](https://github.com/airbytehq/airbyte/pull/36385) | Retry HTTP requests and jobs on various cases                                                                                        |
-| 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                        |
+| 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state                                                        |
 | 2.3.3   | 2024-03-04 | [35791](https://github.com/airbytehq/airbyte/pull/35791) | Fix memory leak (OOM)                                                                                                                |
 | 2.3.2   | 2024-02-19 | [35421](https://github.com/airbytehq/airbyte/pull/35421) | Add Stream Slice Step option to specification                                                                                        |
 | 2.3.1   | 2024-02-12 | [35147](https://github.com/airbytehq/airbyte/pull/35147) | Manage dependencies with Poetry.                                                                                                     |
