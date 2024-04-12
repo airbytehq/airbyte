@@ -26,7 +26,7 @@ In addition to our OpenID Connect support, we also released:
 
 In addition to our MS-SQL certification, we also released a few notable Connector improvements:
 
-- We released several connector builder enhancements, including support for raw YAML blocks, modification the start date when testing, and added the ability to adjust page/slice/record limits. We also resolved bugs in [page size and interpolation inputs](https://github.com/airbytehq/airbyte-platform-internal/pull/11926), improved the [switching time](https://github.com/airbytehq/airbyte-platform-internal/pull/11848) between YAML and UI, and fixed [layout issues](https://github.com/airbytehq/airbyte-platform-internal/pull/11695).
+- We released several connector builder enhancements, including support for raw YAML blocks, modification the start date when testing, and added the ability to adjust page/slice/record limits. We also resolved bugs in page size and interpolation inputs, improved the switching time between YAML and UI, and fixed several layout issues.
 - Our [Bing source](https://github.com/airbytehq/airbyte/pull/35812) includes the following new streams: `Audience Performance Report`, `Goals And Funnels Report`, `Product Dimension Performance Report`
 - Our [JIRA source](https://github.com/airbytehq/airbyte/pull/35656) now contains more fields to the following streams: `board_issues`,`filter_sharing`,`filters`,`issues`, `permission_schemes`, `sprint_issues`,`users_groups_detailed` and `workflows` 
 - Our [Snapchat Source](https://github.com/airbytehq/airbyte/pull/35660) now contains additional fields in the `ads`, `adsquads`, `creatives`, and `media` streams.
