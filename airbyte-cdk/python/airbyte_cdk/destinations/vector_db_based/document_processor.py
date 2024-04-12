@@ -21,6 +21,7 @@ METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
 CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
 
+# adding a comment to trigger the tests. 
 
 @dataclass
 class Chunk:
