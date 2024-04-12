@@ -47,10 +47,10 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
                 // type-specific
                 // parsing. if it is null, we can move on. while awkward, this seems to be the
                 // agreed upon way of checking for null values with jdbc.
-                queryContext.getObject(i)
+                /*queryContext.getObject(i)
                 if (queryContext.wasNull()) {
                     continue
-                }
+                }*/
 
                 // convert to java types that will convert into reasonable json.
                 copyToJsonField(queryContext, i, jsonNode)
