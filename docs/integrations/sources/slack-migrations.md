@@ -3,7 +3,7 @@
 ## Upgrading to 1.0.0
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. 
-As part of our commitment to delivering exceptional service, we are transitioning source slack from the
+As part of our commitment to delivering exceptional service, we are transitioning source Slack from the
 Python Connector Development Kit (CDK) to our innovative low-code framework. 
 This is part of a strategic move to streamline many processes across connectors, bolstering maintainability and 
 freeing us to focus more of our efforts on improving the performance and features of our evolving platform and growing catalog.
