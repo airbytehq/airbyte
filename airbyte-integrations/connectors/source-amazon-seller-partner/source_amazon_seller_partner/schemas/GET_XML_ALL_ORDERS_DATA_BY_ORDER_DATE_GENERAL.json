@@ -27,6 +27,7 @@
       "format": "date-time"
     },
     "OrderItem": {
+      "description": "Details about the individual items in the order.",
       "type": ["array"],
       "items": {
         "type": ["null", "object"]
@@ -41,9 +42,11 @@
           "type": ["null", "string"]
         },
         "ItemPrice": {
+          "description": "Contains the price information for the item.",
           "type": ["null", "object"],
           "properties": {
             "Component": {
+              "description": "Breakdown of item components if applicable.",
               "type": ["array"],
               "items": {
                 "type": ["null", "object"]
@@ -54,6 +57,7 @@
                   "type": ["null", "string"]
                 },
                 "Amount": {
+                  "description": "The total amount for the item.",
                   "type": ["null", "object"],
                   "properties": {
                     "currency": {
@@ -89,9 +93,11 @@
       }
     },
     "FulfillmentData": {
+      "description": "Contains data related to order fulfillment.",
       "type": ["null", "object"],
       "properties": {
         "Address": {
+          "description": "Contains the address information for order shipping.",
           "type": ["null", "object"],
           "properties": {
             "State": {
