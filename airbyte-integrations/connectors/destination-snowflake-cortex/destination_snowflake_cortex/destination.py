@@ -11,13 +11,20 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_snowflake_cortex.config import SnowflakeCortexConfig
 from destination_snowflake_cortex.client import SnowflakeCortexClient
+from destination_snowflake_cortex.writer import SnowflakeCortexWriter
+import airbyte as ab
+from airbyte import ReadResult, DuckDBCache
 
 
 class DestinationSnowflakeCortex(Destination):
     client: SnowflakeCortexClient
+    writer: SnowflakeCortexWriter
 
     def _init_client(self, config: SnowflakeCortexConfig):
         self.client = SnowflakeCortexClient(config=config)
+        # todo: pass relevant config to the writer 
+        self.writer = SnowflakeCortexWriter(client=self.client)
+        
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -38,8 +45,11 @@ class DestinationSnowflakeCortex(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        self._init_client(config)
+        self.writer.write(configured_catalog, input_messages)
 
-        pass
+        return input_messages
+
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
