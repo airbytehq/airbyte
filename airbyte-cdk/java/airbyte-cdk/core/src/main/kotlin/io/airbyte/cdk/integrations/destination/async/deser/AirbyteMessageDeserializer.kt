@@ -7,7 +7,9 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 
-class DeserializationUtil {
+class AirbyteMessageDeserializer(
+    private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
+) {
     /**
      * Deserializes to a [PartialAirbyteMessage] which can represent both a Record or a State
      * Message
@@ -16,20 +18,20 @@ class DeserializationUtil {
      * * entire serialized message string when message is a valid State Message
      * * serialized AirbyteRecordMessage when message is a valid Record Message
      *
-     * @param messageString the string to deserialize
+     * @param message the string to deserialize
      * @return PartialAirbyteMessage if the message is valid, empty otherwise
      */
     fun deserializeAirbyteMessage(
-        messageString: String?,
-        dataTransformer: StreamAwareDataTransformer,
+        message: String?,
     ): PartialAirbyteMessage {
         // TODO: This is doing some sketchy assumptions by deserializing either the whole or the
         // partial based on type.
         // Use JsonSubTypes and extend StdDeserializer to properly handle this.
         // Make immutability a first class citizen in the PartialAirbyteMessage class.
         val partial =
-            Jsons.tryDeserializeExact(messageString, PartialAirbyteMessage::class.java)
-                .orElseThrow { RuntimeException("Unable to deserialize PartialAirbyteMessage.") }
+            Jsons.tryDeserializeExact(message, PartialAirbyteMessage::class.java).orElseThrow {
+                RuntimeException("Unable to deserialize PartialAirbyteMessage.")
+            }
 
         val msgType = partial.type
         if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
@@ -50,7 +52,7 @@ class DeserializationUtil {
             // usage.
             partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
-            partial.withSerialized(messageString)
+            partial.withSerialized(message)
         } else {
             throw RuntimeException(String.format("Unsupported message type: %s", msgType))
         }
