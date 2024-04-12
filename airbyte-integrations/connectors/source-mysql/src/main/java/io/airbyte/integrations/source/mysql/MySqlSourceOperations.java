@@ -76,6 +76,11 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     final String columnName = field.getName();
     final MysqlType columnType = field.getMysqlType();
 
+    resultSet.getObject(colIndex);
+    if (resultSet.wasNull()) {
+        json.putNull(columnName);
+    }
+
     // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-type-conversions.html
     switch (columnType) {
       case BIT -> {
