@@ -30,7 +30,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_protocol.models import AirbyteErrorTraceMessage
 
 _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
