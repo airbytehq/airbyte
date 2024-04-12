@@ -3,19 +3,17 @@
 #
 
 
-from typing import Any, List, Mapping
-
 import base64
 import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Tuple
+
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
-
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
     ArticleComments,

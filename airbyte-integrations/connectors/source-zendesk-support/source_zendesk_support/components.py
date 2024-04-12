@@ -10,11 +10,13 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
+
 @dataclass
 class ZendeskSupportAuditLogsIncrementalSync(DatetimeBasedCursor):
     """
     This class is created for the Audit Logs stream. List with time range is used for record filtering.
     """
+
     def get_request_params(
         self,
         *,
@@ -55,3 +57,18 @@ class ZendeskSupportExtractorEvents(RecordExtractor):
                         event["via"] = None
                     events.append(event)
         return events
+
+
+class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        try:
+            records = []
+            for definition in response.json()["definitions"]["conditions_all"]:
+                definition["condition"] = "all"
+                records.append(definition)
+            for definition in response.json()["definitions"]["conditions_any"]:
+                definition["condition"] = "any"
+                records.append(definition)
+        except requests.exceptions.JSONDecodeError:
+            records = []
+        return records

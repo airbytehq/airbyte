@@ -5,14 +5,14 @@
   "properties": {
     "actor": {
       "type": ["null", "object"],
-        "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          }
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
         },
+        "name": {
+          "type": ["null", "string"]
+        }
+      },
       "description": "The full user record of the user responsible for the ticket activity. See Users"
     },
     "actor_id": {
