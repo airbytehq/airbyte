@@ -50,11 +50,11 @@ Airbyte [credits](https://airbyte.com/pricing) are by default assigned per works
 
 Airbyte offers multiple user roles to enable teams to securely access workskpaces or organizations.
 
-| Role | OSS | Cloud | Cloud Teams | Enterprise | 
-|---|------|------|------|------|
-|**Organization Admin:** Administer the whole organization, create workspaces in it, and manage Organization permissions| | |✅|✅|
-|**Workspace Admin:** Administer the workspace, create workspace permissions|✅|✅| | |
-|**Workspace Reader:** View information within a workspace, cannot modify anything within a workspace| | |✅|✅|
+| Role | Cloud | Cloud Teams | Enterprise | 
+|---|------|------|------|
+|**Organization Admin:** Administer the whole organization, create workspaces in it, and manage Organization permissions| |✅|✅|
+|**Workspace Admin:** Administer the workspace, create workspace permissions|✅| | |
+|**Workspace Reader:** View information within a workspace, cannot modify anything within a workspace| |✅|✅|
 
 ## Switch between multiple workspaces
 
