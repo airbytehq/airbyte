@@ -3,83 +3,108 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique ID of the order",
       "type": ["null", "integer"]
     },
     "date_modified": {
+      "description": "The date and time when the order was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_shipped": {
+      "description": "The date and time when the order was shipped",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "cart_id": {
+      "description": "The ID of the cart associated with the order",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the order",
       "type": ["null", "string"]
     },
     "subtotal_tax": {
+      "description": "The tax amount on subtotal",
       "type": ["null", "string"]
     },
     "shipping_cost_tax": {
+      "description": "The tax amount on shipping cost",
       "type": ["null", "string"]
     },
     "shipping_cost_tax_class_id": {
+      "description": "The tax class ID for shipping cost",
       "type": ["null", "integer"]
     },
     "handling_cost_tax": {
+      "description": "The tax amount on handling cost",
       "type": ["null", "string"]
     },
     "handling_cost_tax_class_id": {
+      "description": "The tax class ID for handling cost",
       "type": ["null", "integer"]
     },
     "wrapping_cost_tax": {
+      "description": "The tax amount on wrapping cost",
       "type": ["null", "string"]
     },
     "wrapping_cost_tax_class_id": {
+      "description": "The tax class ID for wrapping cost",
       "type": ["null", "integer"]
     },
     "payment_status": {
+      "description": "The payment status of the order",
       "type": ["null", "string"]
     },
     "store_credit_amount": {
+      "description": "The amount paid using store credits",
       "type": ["null", "string"]
     },
     "gift_certificate_amount": {
+      "description": "The amount paid using gift certificates",
       "type": ["null", "string"]
     },
     "currency_id": {
+      "description": "The ID of the currency used in the order",
       "type": ["null", "integer"]
     },
     "currency_code": {
+      "description": "The currency code used in the order",
       "type": ["null", "string"]
     },
     "currency_exchange_rate": {
+      "description": "The exchange rate used for currency conversion",
       "type": ["null", "string"]
     },
     "default_currency_id": {
+      "description": "The default currency ID of the store",
       "type": ["null", "integer"]
     },
     "coupon_discount": {
+      "description": "The discount amount applied using coupons",
       "type": ["null", "string"]
     },
     "shipping_address_count": {
+      "description": "The count of shipping addresses associated with the order",
       "type": ["null", "integer"]
     },
     "is_email_opt_in": {
+      "description": "Flag to indicate if customer opted-in for emails",
       "type": ["null", "boolean"]
     },
     "order_source": {
+      "description": "The source from which the order originated",
       "type": ["null", "string"]
     },
     "products": {
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "The URL for product details",
           "type": ["null", "string"]
         },
         "resource": {
+          "description": "The resource URL for products",
           "type": ["null", "string"]
         }
       }
@@ -88,9 +113,11 @@
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "The URL for shipping address details",
           "type": ["null", "string"]
         },
         "resource": {
+          "description": "The resource URL for shipping addresses",
           "type": ["null", "string"]
         }
       }
@@ -99,62 +126,87 @@
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "The URL for coupon details",
           "type": ["null", "string"]
         },
         "resource": {
+          "description": "The resource URL for coupons",
           "type": ["null", "string"]
         }
       }
     },
     "status_id": {
+      "description": "The ID of the status of the order",
       "type": ["null", "integer"]
     },
     "base_handling_cost": {
+      "description": "The base handling cost of the order",
       "type": ["null", "string"]
     },
     "base_shipping_cost": {
+      "description": "The base shipping cost of the order",
       "type": ["null", "string"]
     },
     "base_wrapping_cost": {
-      "oneOf": [{ "type": ["null", "integer"] }, { "type": ["null", "string"] }]
+      "description": "The base wrapping cost of the order",
+      "oneOf": [
+        {
+          "type": ["null", "integer"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "billing_address": {
       "type": ["null", "object"],
       "properties": {
         "first_name": {
+          "description": "The first name in the billing address",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "The last name in the billing address",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "The company name in the billing address",
           "type": ["null", "string"]
         },
         "street_1": {
+          "description": "The street line 1 in the billing address",
           "type": ["null", "string"]
         },
         "street_2": {
+          "description": "The street line 2 in the billing address",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "The city in the billing address",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "The state in the billing address",
           "type": ["null", "string"]
         },
         "zip": {
+          "description": "The ZIP code in the billing address",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country in the billing address",
           "type": ["null", "string"]
         },
         "country_iso2": {
+          "description": "The ISO2 country code in the billing address",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "The phone number in the billing address",
           "type": ["null", "string"]
         },
         "email": {
+          "description": "The email address in the billing address",
           "type": ["null", "string"]
         },
         "form_fields": {
@@ -163,9 +215,11 @@
             "type": ["null", "object"],
             "properties": {
               "name": {
+                "description": "The name of the form field item",
                 "type": ["null", "string"]
               },
               "value": {
+                "description": "The value of the form field item",
                 "type": ["null", "string"]
               }
             }
@@ -174,97 +228,128 @@
       }
     },
     "channel_id": {
+      "description": "The ID of the channel where the order was made",
       "type": ["null", "integer"]
     },
     "customer_id": {
+      "description": "The ID of the customer who placed the order",
       "type": ["null", "integer"]
     },
     "customer_message": {
+      "description": "The message or note left by the customer",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the order was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "default_currency_code": {
+      "description": "The default currency code of the store",
       "type": ["null", "string"]
     },
     "discount_amount": {
+      "description": "The total discount amount on the order",
       "type": ["null", "string"]
     },
     "ebay_order_id": {
+      "description": "The eBay order ID if applicable",
       "type": ["null", "string"]
     },
     "external_id": {
+      "description": "The external ID associated with the order",
       "type": ["null", "string"]
     },
     "external_source": {
+      "description": "The external source of the order",
       "type": ["null", "string"]
     },
     "geoip_country": {
+      "description": "The country detected by GeoIP",
       "type": ["null", "string"]
     },
     "geoip_country_iso2": {
+      "description": "The ISO2 country code detected by GeoIP",
       "type": ["null", "string"]
     },
     "handling_cost_ex_tax": {
+      "description": "The handling cost excluding tax",
       "type": ["null", "string"]
     },
     "handling_cost_inc_tax": {
+      "description": "The handling cost including tax",
       "type": ["null", "string"]
     },
     "ip_address": {
+      "description": "The IP address associated with the order",
       "type": ["null", "string"]
     },
     "is_deleted": {
+      "description": "Indicates if the order has been deleted",
       "type": ["null", "boolean"]
     },
     "items_shipped": {
+      "description": "The number of items shipped in the order",
       "type": ["null", "integer"]
     },
     "items_total": {
+      "description": "The total number of items in the order",
       "type": ["null", "integer"]
     },
     "order_is_digital": {
+      "description": "Flag to indicate if the order is digital",
       "type": ["null", "boolean"]
     },
     "payment_method": {
+      "description": "The payment method used for the order",
       "type": ["null", "string"]
     },
     "refunded_amount": {
+      "description": "The total amount refunded for the order",
       "type": ["null", "string"]
     },
     "shipping_cost_ex_tax": {
+      "description": "The shipping cost excluding tax",
       "type": ["null", "string"]
     },
     "shipping_cost_inc_tax": {
+      "description": "The shipping cost including tax",
       "type": ["null", "string"]
     },
     "staff_notes": {
+      "description": "Additional notes added by staff",
       "type": ["null", "string"]
     },
     "subtotal_ex_tax": {
+      "description": "The subtotal excluding tax",
       "type": ["null", "string"]
     },
     "subtotal_inc_tax": {
+      "description": "The subtotal including tax",
       "type": ["null", "string"]
     },
     "tax_provider_id": {
+      "description": "The ID of the tax provider",
       "type": ["null", "string"]
     },
     "customer_locale": {
+      "description": "The locale of the customer",
       "type": ["null", "string"]
     },
     "total_ex_tax": {
+      "description": "The total amount excluding tax",
       "type": ["null", "string"]
     },
     "total_inc_tax": {
+      "description": "The total amount including tax",
       "type": ["null", "string"]
     },
     "wrapping_cost_ex_tax": {
+      "description": "The wrapping cost excluding tax",
       "type": ["null", "string"]
     },
     "wrapping_cost_inc_tax": {
+      "description": "The wrapping cost including tax",
       "type": ["null", "string"]
     }
   }

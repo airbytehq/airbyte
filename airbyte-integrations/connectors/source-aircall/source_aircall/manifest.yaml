@@ -673,6 +673,7 @@ definitions:
               - "null"
               - string
           messages:
+            description: An array of messages exchanged via the numbers
             type:
               - "null"
               - object

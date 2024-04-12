@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "weekIncidence": {
+      "description": "The 7-day incidence rate indicating the number of new cases per 100,000 inhabitants in a week.",
       "type": "number"
     },
     "date": {
+      "description": "The date this data point represents.",
       "type": "string"
     }
   },

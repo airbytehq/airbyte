@@ -4,29 +4,36 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the conversation.",
       "type": ["null", "string"]
     },
     "groupId": {
+      "description": "The unique identifier of the group where the conversation belongs.",
       "type": ["null", "string"]
     },
     "topic": {
+      "description": "The topic or subject of the conversation.",
       "type": ["null", "string"]
     },
     "hasAttachments": {
+      "description": "Indicates if the conversation has any attachments.",
       "type": ["null", "boolean"]
     },
     "lastDeliveredDateTime": {
+      "description": "The date and time when the last message was delivered in the conversation.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "uniqueSenders": {
+      "description": "An array of unique senders in the conversation.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "preview": {
+      "description": "A preview or snippet of the conversation content.",
       "type": ["null", "string"]
     }
   }

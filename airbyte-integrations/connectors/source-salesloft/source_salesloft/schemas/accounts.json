@@ -3,181 +3,232 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the account",
       "type": "integer"
     },
     "created_at": {
+      "description": "Date and time when the account was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the account was last updated",
       "type": "string",
       "format": "date-time"
     },
     "archived_at": {
+      "description": "Date and time when the account was archived",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Name of the account",
       "type": ["null", "string"]
     },
     "domain": {
+      "description": "Domain of the account",
       "type": ["null", "string"]
     },
     "conversational_name": {
+      "description": "Name used in conversation",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the account",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number associated with the account",
       "type": ["null", "string"]
     },
     "website": {
+      "description": "Website URL of the account",
       "type": ["null", "string"]
     },
     "linkedin_url": {
+      "description": "LinkedIn URL of the account",
       "type": ["null", "string"]
     },
     "twitter_handle": {
+      "description": "Twitter handle of the account",
       "type": ["null", "string"]
     },
     "street": {
+      "description": "Street address of the account",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "City where the account is located",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State/Region where the account is located",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "Postal code of the account location",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "Country where the account is located",
       "type": ["null", "string"]
     },
     "locale": {
+      "description": "Locale setting of the account",
       "type": ["null", "string"]
     },
     "industry": {
+      "description": "Industry of the account",
       "type": ["null", "string"]
     },
     "company_type": {
+      "description": "Type of the company",
       "type": ["null", "string"]
     },
     "founded": {
+      "description": "Year the company was founded",
       "type": ["null", "string"]
     },
     "revenue_range": {
+      "description": "Range of revenue of the account",
       "type": ["null", "string"]
     },
     "size": {
+      "description": "Size of the company",
       "type": ["null", "string"]
     },
     "crm_id": {
+      "description": "ID in the CRM system",
       "type": ["null", "string"]
     },
     "crm_url": {
+      "description": "URL link in the CRM system",
       "type": ["null", "string"]
     },
     "crm_object_type": {
+      "description": "Type of object in the CRM system",
       "type": ["null", "string"]
     },
     "owner_crm_id": {
+      "description": "CRM ID of the account owner",
       "type": ["null", "string"]
     },
     "last_contacted_at": {
+      "description": "Date and time of the last contact made with the account",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_contacted_type": {
+      "description": "Type of last contact made with the account",
       "type": ["null", "string"]
     },
     "do_not_contact": {
+      "description": "Flag indicating whether the account should not be contacted",
       "type": ["null", "boolean"]
     },
     "counts": {
+      "description": "Counts related to the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "people": {
+          "description": "Number of people associated with the account",
           "type": ["null", "integer"]
         }
       }
     },
     "owner": {
+      "description": "Owner of the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the owner",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to owner details",
           "type": ["null", "string"]
         }
       }
     },
     "creator": {
+      "description": "Creator of the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the creator",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to creator details",
           "type": ["null", "string"]
         }
       }
     },
     "last_contacted_by": {
+      "description": "User who last contacted the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the last contact user",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to last contact person details",
           "type": ["null", "string"]
         }
       }
     },
     "last_contacted_person": {
+      "description": "Person who was last contacted in the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the last contacted person",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to last contacted person details",
           "type": ["null", "string"]
         }
       }
     },
     "company_stage": {
+      "description": "The stage of the company",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the company stage",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to company stage details",
           "type": ["null", "string"]
         }
       }
     },
     "account_tier": {
+      "description": "The tier/category of the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the account tier",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to account tier details",
           "type": ["null", "string"]
         }
       }
     },
     "tags": {
+      "description": "Tags associated with the account",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

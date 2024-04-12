@@ -72,26 +72,37 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the content item
             type: string
           type:
+            description: The type of content item
             type: string
           sectionId:
+            description: The identifier for the section that the content belongs to
             type: string
           sectionName:
+            description: The name of the section that the content belongs to
             type: string
           webPublicationDate:
+            description: The date of publication for the content on the web
             type: string
           webTitle:
+            description: The title of the content
             type: string
           webUrl:
+            description: The URL to access the content on the web
             type: string
           apiUrl:
+            description: The API endpoint for the content data
             type: string
           isHosted:
+            description: Indicates if the content is hosted on The Guardian's platform
             type: boolean
           pillarId:
+            description: The identifier for the pillar that the content belongs to
             type: string
           pillarName:
+            description: The name of the pillar that the content belongs to
             type: string
         required:
           - id

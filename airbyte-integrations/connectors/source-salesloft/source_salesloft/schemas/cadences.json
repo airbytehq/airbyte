@@ -3,129 +3,162 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the cadence",
       "type": "integer"
     },
     "created_at": {
+      "description": "Date and time when the cadence was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the cadence was last updated",
       "type": "string",
       "format": "date-time"
     },
     "archived_at": {
+      "description": "Date and time when the cadence was archived",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "team_cadence": {
+      "description": "Indicates if the cadence is a team cadence",
       "type": ["null", "boolean"]
     },
     "shared": {
+      "description": "Indicates if the cadence is shared",
       "type": ["null", "boolean"]
     },
     "remove_bounces_enabled": {
+      "description": "Indicates if bounce removal is enabled",
       "type": ["null", "boolean"]
     },
     "remove_replies_enabled": {
+      "description": "Indicates if reply removal is enabled",
       "type": ["null", "boolean"]
     },
     "opt_out_link_included": {
+      "description": "Indicates if an opt-out link is included in the cadence",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "Name of the cadence",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "List of tags associated with the cadence",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "creator": {
+      "description": "Information about the creator of the cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to creator details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the creator",
           "type": ["null", "integer"]
         }
       }
     },
     "owner": {
+      "description": "Information about the owner of the cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to owner details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the owner",
           "type": ["null", "integer"]
         }
       }
     },
     "bounced_stage": {
+      "description": "Information about the stage for contacts who have bounced",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to bounced stage details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the bounced stage",
           "type": ["null", "integer"]
         }
       }
     },
     "replied_stage": {
+      "description": "Information about the stage for contacts who have replied",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to replied stage details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the replied stage",
           "type": ["null", "integer"]
         }
       }
     },
     "added_stage": {
+      "description": "Information about the stage where contacts are added to the cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to added stage details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the added stage",
           "type": ["null", "integer"]
         }
       }
     },
     "finished_stage": {
+      "description": "Information about the stage where contacts finish the cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference to finished stage details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the finished stage",
           "type": ["null", "integer"]
         }
       }
     },
     "counts": {
+      "description": "Counts related to the cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "cadence_people": {
+          "description": "Number of people in the cadence",
           "type": ["null", "integer"]
         },
         "target_daily_people": {
+          "description": "Target daily number of people in the cadence",
           "type": ["null", "integer"]
         }
       }
     },
     "latest_active_date": {
+      "description": "Latest date when the cadence was active",
       "type": ["null", "string"],
       "format": "date"
     }

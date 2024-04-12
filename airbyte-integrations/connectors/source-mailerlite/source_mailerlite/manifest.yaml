@@ -57,67 +57,99 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the subscriber.
             type: string
           email:
+            description: The email address of the subscriber.
             type: string
           status:
+            description:
+              The subscription status of the subscriber, e.g., subscribed,
+              unsubscribed.
             type: string
           source:
+            description:
+              The source where the subscriber was added, e.g., API, import,
+              etc.
             type: string
           sent:
+            description: Indicates if emails have been sent to the subscriber.
             type: integer
           opens_count:
+            description: The total number of times the subscriber has opened emails.
             type: integer
           clicks_count:
+            description:
+              The total number of times the subscriber has clicked on links
+              in emails.
             type: integer
           open_rate:
+            description: The percentage of email recipients who opened the email.
             type: integer
           click_rate:
+            description:
+              The percentage of email recipients who clicked on any links
+              included in the email.
             type: integer
           ip_address:
+            description: The IP address from which the subscriber subscribed.
             type:
               - string
               - "null"
           subscribed_at:
+            description: The date and time when the subscriber subscribed.
             type: string
           unsubscribed_at:
+            description: The date and time when the subscriber unsubscribed.
             type:
               - string
               - "null"
           created_at:
+            description: The date and time when the subscriber was created.
             type: string
           updated_at:
+            description:
+              The date and time when the subscriber's information was last
+              updated.
             type: string
           fields:
             type: object
             properties:
               name:
+                description: The first name of the subscriber.
                 type: string
               last_name:
+                description: The last name of the subscriber.
                 type:
                   - string
                   - "null"
               company:
+                description: The company name of the subscriber, if provided.
                 type:
                   - string
                   - "null"
               country:
+                description: The country of the subscriber.
                 type:
                   - string
                   - "null"
               city:
+                description: The city of the subscriber.
                 type:
                   - string
                   - "null"
               phone:
+                description: The phone number of the subscriber, if provided.
                 type:
                   - string
                   - "null"
               state:
+                description: The state or region of the subscriber.
                 type:
                   - string
                   - "null"
               z_i_p:
+                description: The ZIP or postal code of the subscriber.
                 type:
                   - string
                   - "null"
@@ -131,10 +163,14 @@ definitions:
               - state
               - z_i_p
           opted_in_at:
+            description:
+              The date and time when the subscriber opted in to receive
+              emails.
             type:
               - string
               - "null"
           optin_ip:
+            description: The IP address from which the subscriber opted in.
             type:
               - string
               - "null"
@@ -177,32 +213,42 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier associated with the segment.
             type: string
           name:
+            description: The name or title of the segment.
             type: string
           total:
+            description: The total number of contacts in the segment.
             type: integer
           open_rate:
+            description: The open rate of the segment, represented as a percentage.
             type: object
             properties:
               float:
+                description: The numerical value of the open rate.
                 type: number
               string:
+                description: The formatted open rate as a string.
                 type: string
             required:
               - float
               - string
           click_rate:
+            description: The click-through rate of the segment, represented as a percentage.
             type: object
             properties:
               float:
+                description: The numerical value of the click-through rate.
                 type: number
               string:
+                description: The formatted click-through rate as a string.
                 type: string
             required:
               - float
               - string
           created_at:
+            description: The date and time when the segment was created.
             type: string
         required:
           - id
@@ -232,174 +278,243 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the automation.
             type: string
           name:
+            description: The name or title of the automation.
             type: string
           enabled:
+            description: Indicates if the automation is enabled or disabled.
             type: boolean
           trigger_data:
+            description: Data related to the trigger of the automation.
             type: object
             properties:
               track_ecommerce:
+                description: Indicates if ecommerce tracking is enabled for the trigger.
                 type: boolean
               repeatable:
+                description: Indicates if the automation is repeatable.
                 type: boolean
               group_id:
+                description: ID of the group associated with the trigger.
                 type: integer
               exclude_group_ids:
+                description: List of group IDs to be excluded from the trigger.
                 type: array
                 items:
+                  description: ID of the group to be excluded.
                   type: integer
               valid:
+                description: Indicates if the trigger data is valid.
                 type: boolean
             required:
               - valid
           steps:
+            description: Individual steps in the automation flow.
             type: array
             items:
+              description: Details of each step in the automation.
               type: object
               properties:
                 id:
+                  description: The unique identifier of the step.
                   type: string
                 type:
+                  description: The type or category of this step.
                   type: string
                 parent_id:
+                  description: The identifier of the parent step if applicable.
                   type: string
                 name:
+                  description: The name or title of this step.
                   type: string
                 subject:
+                  description: Subject line for this step.
                   type: string
                 from:
+                  description: Email address of the sender for this step.
                   type: string
                 from_name:
+                  description: Name of the sender for this step.
                   type: string
                 email_id:
+                  description: The unique identifier of the associated email.
                   type: string
                 email:
+                  description: Email details associated with the step.
                   type: object
                   properties:
                     id:
+                      description: The unique identifier of the email.
                       type: string
                     account_id:
+                      description: The account ID associated with the email.
                       type: string
                     emailable_id:
+                      description: The ID of the entity associated with the email.
                       type: string
                     emailable_type:
+                      description: The type of entity associated with the email.
                       type: string
                     type:
+                      description: The type or category of the email.
                       type: string
                     from:
+                      description: Email address of the sender.
                       type: string
                     from_name:
+                      description: Name of the sender.
                       type: string
                     name:
+                      description: The name or title of the email.
                       type: string
                     subject:
+                      description: Subject line of the email.
                       type: string
                     plain_text:
+                      description: The plain text content of the email.
                       type:
                         - string
                         - "null"
                     screenshot_url:
+                      description: URL to the screenshot of the email.
                       type:
                         - string
                         - "null"
                     preview_url:
+                      description: URL to preview the email.
                       type:
                         - string
                         - "null"
                     created_at:
+                      description: The timestamp when the email was created.
                       type: string
                     updated_at:
+                      description: The timestamp when the email was last updated.
                       type: string
                     is_designed:
+                      description: Indicates if the email is designed or not.
                       type: boolean
                     language_id:
+                      description: The ID of the language used in the email.
                       type: integer
                     is_winner:
+                      description: Indicates if the email is a winning version.
                       type: boolean
                     stats:
+                      description: Statistics related to the performance of the email.
                       type: object
                       properties:
                         sent:
+                          description: Indicates if the email has been sent.
                           type: integer
                         opens_count:
+                          description: The total number of opens on the email.
                           type: integer
                         unique_opens_count:
+                          description: The total number of unique opens on the email.
                           type: integer
                         open_rate:
+                          description: The open rate of the email.
                           type: object
                           properties:
                             float:
+                              description: Open rate as a floating-point number.
                               type: number
                             string:
+                              description: Open rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         clicks_count:
+                          description: The total number of clicks on the email.
                           type: integer
                         unique_clicks_count:
+                          description: The total number of unique clicks on the email.
                           type: integer
                         click_rate:
+                          description: The click-through rate of the email.
                           type: object
                           properties:
                             float:
+                              description: Click rate as a floating-point number.
                               type: number
                             string:
+                              description: Click rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         unsubscribes_count:
+                          description: The total number of unsubscribes on the email.
                           type: integer
                         unsubscribe_rate:
+                          description: The unsubscribe rate of the email.
                           type: object
                           properties:
                             float:
+                              description: Unsubscribe rate as a floating-point number.
                               type: number
                             string:
+                              description: Unsubscribe rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         spam_count:
+                          description:
+                            The total number of times the email was marked
+                            as spam.
                           type: integer
                         spam_rate:
+                          description: The rate of the email being marked as spam.
                           type: object
                           properties:
                             float:
+                              description: Spam rate as a floating-point number.
                               type: number
                             string:
+                              description: Spam rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         hard_bounces_count:
+                          description: The total number of hard bounces on the email.
                           type: integer
                         hard_bounce_rate:
+                          description: The hard bounce rate of the email.
                           type: object
                           properties:
                             float:
+                              description: Hard bounce rate as a floating-point number.
                               type: number
                             string:
+                              description: Hard bounce rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         soft_bounces_count:
+                          description: The total number of soft bounces on the email.
                           type: integer
                         soft_bounce_rate:
+                          description: The soft bounce rate of the email.
                           type: object
                           properties:
                             float:
+                              description: Soft bounce rate as a floating-point number.
                               type: number
                             string:
+                              description: Soft bounce rate as a string.
                               type: string
                           required:
                             - float
                             - string
                         forwards_count:
+                          description: The total number of times the email was forwarded.
                           type: integer
                       required:
                         - sent
@@ -419,10 +534,12 @@ definitions:
                         - soft_bounce_rate
                         - forwards_count
                     send_after:
+                      description: The delay after which the email is sent.
                       type:
                         - string
                         - "null"
                     track_opens:
+                      description: Indicates if open tracking is enabled for the email.
                       type: boolean
                   required:
                     - id
@@ -446,44 +563,61 @@ definitions:
                     - send_after
                     - track_opens
                 language_id:
+                  description: The ID of the language used in this step.
                   type: integer
                 complete:
+                  description: Indicates if the step has been completed.
                   type: boolean
                 created_at:
+                  description: The timestamp when the step was created.
                   type: string
                 updated_at:
+                  description: The timestamp when the step was last updated.
                   type: string
                 track_opens:
+                  description: Indicates if open tracking is enabled for this step.
                   type: boolean
                 google_analytics:
+                  description: Google Analytics tracking parameters for this step.
                   type:
                     - string
                     - "null"
                 tracking_was_disabled:
+                  description: Indicates if tracking was disabled for this step.
                   type: boolean
                 description:
+                  description: A short description of the step.
                   type: string
               required:
                 - id
           triggers:
+            description: Triggers associated with the automation.
             type: array
             items:
+              description: Details of each trigger.
               type: object
               properties:
                 id:
+                  description: The unique identifier of the trigger.
                   type: string
                 type:
+                  description: The type or category of the trigger.
                   type: string
                 group_id:
+                  description: ID of the group associated with the trigger.
                   type: string
                 group:
+                  description: Details of the group associated with the trigger.
                   type: object
                   properties:
                     id:
+                      description: The ID of the group.
                       type: string
                     name:
+                      description: The name of the group.
                       type: string
                     url:
+                      description: URL of the group.
                       type:
                         - string
                         - "null"
@@ -492,14 +626,19 @@ definitions:
                     - name
                     - url
                 exclude_group_ids:
+                  description: List of group IDs excluded from the trigger.
                   type: array
                   items:
+                    description: ID of the excluded group.
                     type: string
                 excluded_groups:
+                  description: List of groups excluded from the trigger.
                   type: array
                   items:
+                    description: Details of the excluded group.
                     type: string
                 broken:
+                  description: Indicates if the trigger is broken.
                   type: boolean
               required:
                 - id
@@ -510,124 +649,166 @@ definitions:
                 - excluded_groups
                 - broken
           complete:
+            description: Indicates if all steps of the automation have been completed.
             type: boolean
           broken:
+            description: Indicates if the automation is broken or not.
             type: boolean
           warnings:
+            description: List of warnings or issues related to the automation.
             type: array
             items:
+              description: Details of each warning or issue.
               type: string
           emails_count:
+            description: The total number of emails in the automation.
             type: integer
           first_email_screenshot_url:
+            description: URL to the screenshot of the first email in the automation.
             type:
               - string
               - "null"
           stats:
+            description: Statistics related to the performance of the automation.
             type: object
             properties:
               completed_subscribers_count:
+                description: The count of subscribers who have completed the automation.
                 type: integer
               subscribers_in_queue_count:
+                description: The count of subscribers waiting in the automation queue.
                 type: integer
               bounce_rate:
+                description: The bounce rate of the emails in the automation.
                 type: object
                 properties:
                   float:
+                    description: Bounce rate as a floating-point number.
                     type: number
                   string:
+                    description: Bounce rate as a string.
                     type: string
                 required:
                   - float
                   - string
               click_to_open_rate:
+                description: The rate of unique clicks to unique opens in the emails.
                 type: object
                 properties:
                   float:
+                    description: Click-to-open rate as a floating-point number.
                     type: number
                   string:
+                    description: Click-to-open rate as a string.
                     type: string
                 required:
                   - float
                   - string
               sent:
+                description: The total number of emails sent in the automation.
                 type: integer
               opens_count:
+                description: The total number of opens in the automation.
                 type: integer
               unique_opens_count:
+                description: The total number of unique opens in the automation.
                 type:
                   - integer
                   - "null"
               open_rate:
+                description: The open rate of the emails in the automation.
                 type: object
                 properties:
                   float:
+                    description: Open rate as a floating-point number.
                     type: number
                   string:
+                    description: Open rate as a string.
                     type: string
                 required:
                   - float
                   - string
               clicks_count:
+                description: The total number of clicks in the automation.
                 type: integer
               unique_clicks_count:
+                description: The total number of unique clicks in the automation.
                 type:
                   - integer
                   - "null"
               click_rate:
+                description: The click-through rate of the emails in the automation.
                 type: object
                 properties:
                   float:
+                    description: Click rate as a floating-point number.
                     type: number
                   string:
+                    description: Click rate as a string.
                     type: string
                 required:
                   - float
                   - string
               unsubscribes_count:
+                description: The total number of unsubscribes in the automation.
                 type: integer
               unsubscribe_rate:
+                description: The rate of unsubscribes in the automation.
                 type: object
                 properties:
                   float:
+                    description: Unsubscribe rate as a floating-point number.
                     type: number
                   string:
+                    description: Unsubscribe rate as a string.
                     type: string
                 required:
                   - float
                   - string
               spam_count:
+                description: The total number of emails marked as spam in the automation.
                 type: integer
               spam_rate:
+                description: The rate of emails marked as spam in the automation.
                 type: object
                 properties:
                   float:
+                    description: Spam rate as a floating-point number.
                     type: number
                   string:
+                    description: Spam rate as a string.
                     type: string
                 required:
                   - float
                   - string
               hard_bounces_count:
+                description: The total number of hard bounces in the automation.
                 type: integer
               hard_bounce_rate:
+                description: The hard bounce rate of the emails in the automation.
                 type: object
                 properties:
                   float:
+                    description: Hard bounce rate as a floating-point number.
                     type: number
                   string:
+                    description: Hard bounce rate as a string.
                     type: string
                 required:
                   - float
                   - string
               soft_bounces_count:
+                description: The total number of soft bounces in the automation.
                 type: integer
               soft_bounce_rate:
+                description: The soft bounce rate of the emails in the automation.
                 type: object
                 properties:
                   float:
+                    description: Soft bounce rate as a floating-point number.
                     type: number
                   string:
+                    description: Soft bounce rate as a string.
                     type: string
                 required:
                   - float
@@ -653,10 +834,15 @@ definitions:
               - soft_bounces_count
               - soft_bounce_rate
           created_at:
+            description: The timestamp when the automation was created.
             type: string
           has_banned_content:
+            description: Indicates if the automation has any banned content.
             type: boolean
           qualified_subscribers_count:
+            description:
+              The count of subscribers who qualify to receive the emails
+              in the automation.
             type: integer
         required:
           - id
@@ -692,31 +878,43 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the campaign
             type: string
             format: integer
           account_id:
+            description:
+              The unique identifier of the account associated with the
+              campaign
             type: string
             format: integer
           name:
+            description: The name of the campaign
             type: string
           type:
+            description: The type of campaign
             type: string
           status:
+            description: The status of the campaign
             type: string
           missing_data:
+            description: Missing data for the campaign
             type: array
             items:
               type: string
           settings:
+            description: Settings related to the campaign
             type: object
             properties:
               track_opens:
+                description: Indicates whether email opens are tracked
                 type: string
                 format: integer
               use_google_analytics:
+                description: Indicates whether Google Analytics is used
                 type: string
                 format: integer
               ecommerce_tracking:
+                description: Indicates whether ecommerce tracking is enabled
                 type: string
                 format: integer
             required:
@@ -724,6 +922,7 @@ definitions:
               - track_opens
               - use_google_analytics
           filter:
+            description: The filter criteria for the campaign
             type: array
             items:
               type: array
@@ -731,8 +930,10 @@ definitions:
                 type: object
                 properties:
                   operator:
+                    description: Operator for the filter criteria
                     type: string
                   args:
+                    description: Arguments for the filter
                     type: array
                     items:
                       anyOf:
@@ -745,108 +946,146 @@ definitions:
                   - args
                   - operator
           filter_for_humans:
+            description: Filter criteria for the campaign in human-readable format
             type: array
             items:
               type: array
               items:
                 type: string
           delivery_schedule:
+            description: The delivery schedule of the campaign
             type: string
           language_id:
+            description: The language ID associated with the campaign
             type: string
             format: integer
           created_at:
+            description: The date and time when the campaign was created
             type: string
             format: date-time
           updated_at:
+            description: The date and time when the campaign was last updated
             type: string
             format: date-time
           scheduled_for:
+            description: The date and time when the campaign is scheduled for sending
             type: string
             format: date-time
           queued_at:
+            description: The date and time when the campaign was queued for sending
             type:
               - string
               - "null"
             format: date-time
           started_at:
+            description: The date and time when the campaign started sending
             type:
               - string
               - "null"
             format: date-time
           finished_at:
+            description: The date and time when the campaign was finished
             type:
               - string
               - "null"
             format: date-time
           stopped_at:
+            description: The date and time when the campaign was stopped
             type:
               - string
               - "null"
           default_email_id:
+            description: The default email ID associated with the campaign
             type: string
           emails:
+            description: List of emails associated with the campaign
             type: array
             items:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the email
                   type: string
                   format: integer
                 account_id:
+                  description:
+                    The unique identifier of the account associated with
+                    the email
                   type: string
                   format: integer
                 emailable_id:
+                  description:
+                    The unique identifier of the entity associated with
+                    the email
                   type: string
                   format: integer
                 emailable_type:
+                  description: The type of entity associated with the email
                   type: string
                 type:
+                  description: The type of email
                   type: string
                 from:
+                  description: The sender's email address
                   type: string
                 from_name:
+                  description: The sender's name
                   type: string
                 name:
+                  description: The name of the email
                   type:
                     - string
                     - "null"
                 subject:
+                  description: The subject of the email
                   type: string
                 plain_text:
+                  description: The plain text content of the email
                   type: string
                 screenshot_url:
+                  description: The screenshot URL of the email
                   type:
                     - string
                     - "null"
                 preview_url:
+                  description: The preview URL of the email
                   type:
                     - string
                     - "null"
                 created_at:
+                  description: The date and time when the email was created
                   type: string
                   format: date-time
                 updated_at:
+                  description: The date and time when the email was last updated
                   type: string
                   format: date-time
                 is_designed:
+                  description: Indicates whether the email is designed
                   type: boolean
                 language_id:
+                  description: The language ID associated with the email
                   type:
                     - integer
                     - "null"
                 is_winner:
+                  description: Indicates whether the email is the winning version
                   type: boolean
                 stats:
+                  description: Statistics related to the email performance
                   type: object
                   properties:
                     sent:
+                      description: Indicates whether the email has been sent
                       type: integer
                     opens_count:
+                      description: Total number of opens of the email
                       type: integer
                     unique_opens_count:
+                      description: Total number of unique opens of the email
                       type: integer
                     open_rate:
+                      description: Open rate of the email
                       type: object
                       properties:
                         float:
@@ -857,10 +1096,13 @@ definitions:
                         - float
                         - string
                     clicks_count:
+                      description: Total number of clicks on the email
                       type: integer
                     unique_clicks_count:
+                      description: Total number of unique clicks on the email
                       type: integer
                     click_rate:
+                      description: Click rate of the email
                       type: object
                       properties:
                         float:
@@ -871,8 +1113,10 @@ definitions:
                         - float
                         - string
                     unsubscribes_count:
+                      description: Total number of unsubscribes for the email
                       type: integer
                     unsubscribe_rate:
+                      description: Unsubscribe rate of the email
                       type: object
                       properties:
                         float:
@@ -883,8 +1127,10 @@ definitions:
                         - float
                         - string
                     spam_count:
+                      description: Total number of times the email was marked as spam
                       type: integer
                     spam_rate:
+                      description: Spam rate of the email
                       type: object
                       properties:
                         float:
@@ -895,8 +1141,10 @@ definitions:
                         - float
                         - string
                     hard_bounces_count:
+                      description: Total number of hard bounces for the email
                       type: integer
                     hard_bounce_rate:
+                      description: Hard bounce rate of the email
                       type: object
                       properties:
                         float:
@@ -907,8 +1155,10 @@ definitions:
                         - float
                         - string
                     soft_bounces_count:
+                      description: Total number of soft bounces for the email
                       type: integer
                     soft_bounce_rate:
+                      description: Soft bounce rate of the email
                       type: object
                       properties:
                         float:
@@ -919,8 +1169,10 @@ definitions:
                         - float
                         - string
                     forwards_count:
+                      description: Total number of times the email was forwarded
                       type: integer
                     click_to_open_rate:
+                      description: Click-to-open rate of the email
                       type: object
                       properties:
                         float:
@@ -948,10 +1200,12 @@ definitions:
                     - unsubscribe_rate
                     - unsubscribes_count
                 send_after:
+                  description: The time after which the email is scheduled to be sent
                   type:
                     - string
                     - "null"
                 track_opens:
+                  description: Indicates whether email opens are tracked
                   type: boolean
               required:
                 - account_id
@@ -975,19 +1229,26 @@ definitions:
                 - type
                 - updated_at
           used_in_automations:
+            description: Indicates whether the campaign is used in automations
             type: boolean
           type_for_humans:
+            description: The type of campaign in human-readable format
             type: string
           stats:
+            description: Statistics related to the campaign performance
             type: object
             properties:
               sent:
+                description: Indicates whether the campaign has been sent
                 type: integer
               opens_count:
+                description: Total number of opens of the campaign
                 type: integer
               unique_opens_count:
+                description: Total number of unique opens of the campaign
                 type: integer
               open_rate:
+                description: Open rate of the campaign
                 type: object
                 properties:
                   float:
@@ -998,10 +1259,13 @@ definitions:
                   - float
                   - string
               clicks_count:
+                description: Total number of clicks on the campaign
                 type: integer
               unique_clicks_count:
+                description: Total number of unique clicks on the campaign
                 type: integer
               click_rate:
+                description: Click rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1012,8 +1276,10 @@ definitions:
                   - float
                   - string
               unsubscribes_count:
+                description: Total number of unsubscribes for the campaign
                 type: integer
               unsubscribe_rate:
+                description: Unsubscribe rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1024,8 +1290,10 @@ definitions:
                   - float
                   - string
               spam_count:
+                description: Total number of times the campaign was marked as spam
                 type: integer
               spam_rate:
+                description: Spam rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1036,8 +1304,10 @@ definitions:
                   - float
                   - string
               hard_bounces_count:
+                description: Total number of hard bounces for the campaign
                 type: integer
               hard_bounce_rate:
+                description: Hard bounce rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1048,8 +1318,10 @@ definitions:
                   - float
                   - string
               soft_bounces_count:
+                description: Total number of soft bounces for the campaign
                 type: integer
               soft_bounce_rate:
+                description: Soft bounce rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1060,8 +1332,10 @@ definitions:
                   - float
                   - string
               forwards_count:
+                description: Total number of times the campaign was forwarded
                 type: integer
               click_to_open_rate:
+                description: Click-to-open rate of the campaign
                 type: object
                 properties:
                   float:
@@ -1089,38 +1363,49 @@ definitions:
               - unsubscribe_rate
               - unsubscribes_count
           is_stopped:
+            description: Indicates whether the campaign has been stopped
             type: boolean
           has_winner:
+            description: Indicates whether a winner has been selected for the campaign
             type:
               - string
               - "null"
           winner_version_for_human:
+            description: The version of the winner in human-readable format
             type:
               - string
               - "null"
           winner_sending_time_for_humans:
+            description: The sending time for the winner in human-readable format
             type:
               - string
               - "null"
           winner_selected_manually_at:
+            description: The date and time when the winner was selected manually
             type:
               - string
               - "null"
           uses_ecommerce:
+            description: Indicates whether ecommerce features are used in the campaign
             type: boolean
           uses_survey:
+            description: Indicates whether survey features are used in the campaign
             type: boolean
           can_be_scheduled:
+            description: Indicates whether the campaign can be scheduled for sending
             type: boolean
           warnings:
+            description: Warnings related to the campaign
             type: array
             items:
               type: string
           initial_created_at:
+            description: The initial date and time when the campaign was created
             type:
               - string
               - "null"
           is_currently_sending_out:
+            description: Indicates whether the campaign is currently sending out
             type: boolean
         required:
           - account_id
@@ -1170,14 +1455,21 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier of the timezone.
             type: string
           name:
+            description: The timezone name in standard format (e.g., America/New_York).
             type: string
           name_for_humans:
+            description: The timezone name in human-readable form (e.g., Eastern Time).
             type: string
           offset_name:
+            description:
+              The name representing the offset (e.g., Eastern Standard
+              Time).
             type: string
           offset:
+            description: The offset in hours from UTC for the timezone.
             type: integer
         required:
           - id
@@ -1203,25 +1495,34 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the form_popup
             type: string
           type:
+            description: Type of the form_popup
             type: string
           slug:
+            description: Slug for the form_popup
             type: string
           name:
+            description: Name of the form_popup
             type: string
           created_at:
+            description: Timestamp of when the form_popup was created
             type: string
           conversions_count:
+            description: Total count of conversions
             type: integer
           opens_count:
+            description: Total count of opens on the form_popup
             type: integer
           conversion_rate:
             type: object
             properties:
               float:
+                description: Conversion rate in float format
                 type: number
               string:
+                description: Conversion rate in string format
                 type: string
             required:
               - float
@@ -1230,38 +1531,51 @@ definitions:
             type: object
             properties:
               double_optin:
+                description: Specifies if double opt-in is enabled for the form_popup
                 type: boolean
               groot_id:
+                description: ID for groot integration
                 type: integer
               form_type:
+                description: Type of the form_popup
                 type: string
               triggers:
                 type: array
                 items:
+                  description: List of triggers for the form_popup display
                   type: string
               timeout_seconds:
+                description: Timeout duration in seconds for the form_popup
                 type: integer
               scroll_percentage:
+                description: Percentage of scrolling triggering form_popup display
                 type: integer
               frequency:
+                description: Frequency of the form_popup display
                 type: integer
               frequency_unit:
+                description: Unit of the frequency for form_popup display
                 type: string
               visibility:
+                description: Visibility settings for the form_popup
                 type: string
               url_list:
                 type: array
                 items:
+                  description: List of URLs where the form_popup is displayed
                   type: string
               url_list_strict:
+                description: Specifies if URL list is strict for form_popup display
                 type:
                   - "null"
                   - string
               hide_on:
                 type: array
                 items:
+                  description: List of items to hide the form_popup on
                   type: string
               schedule:
+                description: Schedule settings for the form_popup
                 type: string
             required:
               - double_optin
@@ -1278,37 +1592,47 @@ definitions:
               - hide_on
               - schedule
           last_registration_at:
+            description: Timestamp of when the last registration occurred
             type:
               - string
               - "null"
           active:
+            description: Indicates if the form_popup is currently active
             type: boolean
           is_broken:
+            description: Indicates if the form_popup is broken
             type: boolean
           has_content:
+            description: Indicates if the form_popup has content
             type: boolean
           can:
             type: object
             properties:
               update:
+                description: Specifies whether the form_popup can be updated
                 type: boolean
             required:
               - update
           used_in_automations:
+            description: Indicates if the form_popup is used in automations
             type: boolean
           warnings:
             type: array
             items:
+              description: List of warnings associated with the form_popup
               type: string
           double_optin:
+            description: Indicates if double opt-in is enabled for the form_popup
             type:
               - boolean
               - "null"
           screenshot_url:
+            description: URL for the screenshot of the form_popup
             type:
               - string
               - "null"
           has_missing_groups:
+            description: Indicates if there are missing groups in the form_popup
             type: boolean
           groups:
             type: array
@@ -1316,46 +1640,61 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the group
                   type: string
                 name:
+                  description: Name of the group
                   type: string
                 active_count:
+                  description: Total count of active group members
                   type: integer
                 sent_count:
+                  description: Total count of emails sent to the group
                   type: integer
                 opens_count:
+                  description: Total count of opens on group
                   type: integer
                 open_rate:
                   type: object
                   properties:
                     float:
+                      description: Open rate in float format
                       type: integer
                     string:
+                      description: Open rate in string format
                       type: string
                   required:
                     - float
                     - string
                 clicks_count:
+                  description: Total count of clicks on group
                   type: integer
                 click_rate:
                   type: object
                   properties:
                     float:
+                      description: Click rate in float format
                       type: integer
                     string:
+                      description: Click rate in string format
                       type: string
                   required:
                     - float
                     - string
                 unsubscribed_count:
+                  description: Total count of unsubscribed group members
                   type: integer
                 unconfirmed_count:
+                  description: Total count of unconfirmed group members
                   type: integer
                 bounced_count:
+                  description: Total count of bounced group members
                   type: integer
                 junk_count:
+                  description: Total count of junk group members
                   type: integer
                 created_at:
+                  description: Timestamp of when the group was created
                   type: string
               required:
                 - id
@@ -1408,25 +1747,34 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the form.
             type: string
           type:
+            description: The type of the form.
             type: string
           slug:
+            description: The slug identifier of the form.
             type: string
           name:
+            description: The name of the form.
             type: string
           created_at:
+            description: The date and time when the form was created.
             type: string
           conversions_count:
+            description: The total count of conversions for the form.
             type: integer
           opens_count:
+            description: The total count of opens for the form.
             type: integer
           conversion_rate:
             type: object
             properties:
               float:
+                description: The conversion rate in float format.
                 type: integer
               string:
+                description: The conversion rate in string format.
                 type: string
             required:
               - float
@@ -1435,40 +1783,56 @@ definitions:
             type: object
             properties:
               double_optin:
+                description: Indicates if double opt-in is enabled for the form settings.
                 type: boolean
               groot_id:
+                description: The ID associated with the form in the system.
                 type: integer
             required:
               - double_optin
               - groot_id
           last_registration_at:
+            description: The date and time of the last registration to the form.
             type:
               - "null"
               - string
           active:
+            description: Indicates if the form is currently active or not.
             type: boolean
           is_broken:
+            description: Indicates if the form is broken or dysfunctional.
             type: boolean
           has_content:
+            description: Indicates if the form has content or not.
             type: boolean
           can:
             type: object
             properties:
               update:
+                description: Indicates whether the form can be updated or not.
                 type: boolean
             required:
               - update
           used_in_automations:
+            description: Indicates if the form is used in automations.
             type: boolean
           warnings:
             type: array
             items:
+              description:
+                Any warning or notification messages associated with the
+                form.
               type: string
           double_optin:
+            description: Indicates if double opt-in is enabled for the form.
             type: boolean
           screenshot_url:
+            description: The URL to the screenshot of the form.
             type: string
           has_missing_groups:
+            description:
+              Indicates if there are missing groups associated with the
+              form.
             type: boolean
           groups:
             type: array
@@ -1476,46 +1840,61 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the group.
                   type: string
                 name:
+                  description: The name of the group.
                   type: string
                 active_count:
+                  description: The count of active subscribers in the group.
                   type: integer
                 sent_count:
+                  description: The total count of emails sent to the group.
                   type: integer
                 opens_count:
+                  description: The total count of opens in the group.
                   type: integer
                 open_rate:
                   type: object
                   properties:
                     float:
+                      description: The open rate in float format for the group.
                       type: number
                     string:
+                      description: The open rate in string format for the group.
                       type: string
                   required:
                     - float
                     - string
                 clicks_count:
+                  description: The total count of clicks in the group.
                   type: integer
                 click_rate:
                   type: object
                   properties:
                     float:
+                      description: The click rate in float format for the group.
                       type: number
                     string:
+                      description: The click rate in string format for the group.
                       type: string
                   required:
                     - float
                     - string
                 unsubscribed_count:
+                  description: The count of unsubscribed subscribers in the group.
                   type: integer
                 unconfirmed_count:
+                  description: The count of unconfirmed subscribers in the group.
                   type: integer
                 bounced_count:
+                  description: The count of bounced emails in the group.
                   type: integer
                 junk_count:
+                  description: The count of emails marked as junk in the group.
                   type: integer
                 created_at:
+                  description: The date and time when the group was created.
                   type: string
               required:
                 - id
@@ -1570,25 +1949,34 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the form promotion
             type: string
           type:
+            description: Type of the form promotion
             type: string
           slug:
+            description: Slug for the form promotion
             type: string
           name:
+            description: Name of the form promotion
             type: string
           created_at:
+            description: Timestamp indicating the creation date of the form promotion
             type: string
           conversions_count:
+            description: Total count of conversions
             type: integer
           opens_count:
+            description: Total count of form opens
             type: integer
           conversion_rate:
             type: object
             properties:
               float:
+                description: Conversion rate in float format
                 type: integer
               string:
+                description: Conversion rate in string format
                 type: string
             required:
               - float
@@ -1597,44 +1985,59 @@ definitions:
             type: object
             properties:
               groot_id:
+                description: ID related to Groot
                 type: integer
               form_type:
+                description: Type of the form
                 type: string
               triggers:
                 type: array
                 items:
+                  description: List of triggers
                   type: string
               timeout_seconds:
+                description: Timeout in seconds
                 type: integer
               scroll_percentage:
+                description: Percentage of scroll
                 type: integer
               frequency:
+                description: Frequency of the form promotion
                 type: integer
               frequency_unit:
+                description: Unit of the frequency
                 type: string
               visibility:
+                description: Visibility settings
                 type: string
               url_list:
                 type: array
                 items:
+                  description: List of URLs
                   type: string
               url_list_strict:
                 type:
                   - array
                   - "null"
                 items:
+                  description: Strict list of URLs
                   type: string
               hide_on:
                 type: array
                 items:
+                  description: List of items that are hidden
                   type: string
               schedule:
+                description: Schedule of the form promotion
                 type: string
               schedule_from:
+                description: Starting schedule date
                 type: string
               schedule_until:
+                description: Ending schedule date
                 type: string
               schedule_timezone_id:
+                description: Timezone ID for the schedule
                 type: string
             required:
               - groot_id
@@ -1653,39 +2056,52 @@ definitions:
               - schedule_until
               - schedule_timezone_id
           last_registration_at:
+            description: Timestamp of the last registration date
             type:
               - string
               - "null"
           active:
+            description: Flag indicating if the form promotion is currently active
             type: boolean
           is_broken:
+            description: Flag indicating if the form promotion is broken
             type: boolean
           has_content:
+            description: Flag indicating if the form promotion has content
             type: boolean
           can:
             type: object
             properties:
               update:
+                description: Flag indicating if the form promotion can be updated
                 type: boolean
             required:
               - update
           used_in_automations:
+            description: Flag indicating if the form promotion is used in automations
             type: boolean
           warnings:
             type: array
             items:
+              description: List of warning items
               type: string
           double_optin:
+            description:
+              Flag indicating if double opt-in is enabled for the form
+              promotion
             type:
               - string
               - "null"
           screenshot_url:
+            description: URL to the screenshot of the form promotion
             type: string
           has_missing_groups:
+            description: Flag indicating if there are missing groups associated
             type: boolean
           groups:
             type: array
             items:
+              description: List of groups associated with the form promotion
               type: string
         required:
           - id

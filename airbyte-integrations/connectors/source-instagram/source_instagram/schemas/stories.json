@@ -38,6 +38,7 @@
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "The user who owns the story.",
       "type": ["null", "object"],
       "properties": {
         "id": {

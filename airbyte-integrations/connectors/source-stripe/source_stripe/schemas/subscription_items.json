@@ -2,6 +2,7 @@
   "type": ["null", "object"],
   "properties": {
     "metadata": {
+      "description": "Additional information attached to the subscription item.",
       "type": ["null", "object"],
       "properties": {
         "description": "Custom metadata associated with the subscription item."
@@ -16,6 +17,7 @@
       "type": ["null", "string"]
     },
     "plan": {
+      "description": "Details of the plan associated with the subscription item.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
@@ -23,8 +25,10 @@
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Tiers of pricing for the plan of the subscription item.",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual pricing tiers with specific criteria for the plan.",
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
@@ -119,6 +123,7 @@
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Additional information specific to the plan of the subscription item.",
           "type": ["null", "object"],
           "properties": {
             "description": "Custom metadata associated with the plan."
@@ -163,6 +168,7 @@
       "type": ["null", "integer"]
     },
     "discount": {
+      "description": "Any discounts applied to the subscription item.",
       "type": ["null", "object"],
       "properties": {
         "description": "Discount applied to the subscription item."
@@ -201,6 +207,7 @@
       "type": ["null", "number"]
     },
     "billing_thresholds": {
+      "description": "Threshold rules that trigger billing actions for the subscription item.",
       "type": ["null", "object"],
       "properties": {
         "usage_gte": {

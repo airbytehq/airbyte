@@ -71,18 +71,22 @@ streams:
           - object
         properties:
           id:
+            description: Unique ID of the conversation
             type:
               - "null"
               - integer
           created_at:
+            description: Timestamp when conversation was created
             type:
               - "null"
               - integer
           initial_channel:
+            description: Initial channel of the conversation
             type:
               - "null"
               - string
           requester_additional_emails:
+            description: Additional email addresses of the requester
             type:
               - "null"
               - array
@@ -91,6 +95,7 @@ streams:
                 - "null"
                 - string
           requester_additional_phone_numbers:
+            description: Additional phone numbers of the requester
             type:
               - "null"
               - array
@@ -99,46 +104,57 @@ streams:
                 - "null"
                 - string
           requester_id:
+            description: Unique ID of the requester
             type:
               - "null"
               - string
           requester_name:
+            description: Name of the requester
             type:
               - "null"
               - string
           requester_email:
+            description: Email address of the requester
             type:
               - "null"
               - string
           requester_phone_number:
+            description: Phone number of the requester
             type:
               - "null"
               - string
           queued_at:
+            description: Timestamp when the conversation was put in the queue
             type:
               - "null"
               - integer
           queue_id:
+            description: Unique ID of the queue the conversation is assigned to
             type:
               - "null"
               - string
           queue_name:
+            description: Name of the queue the conversation is assigned to
             type:
               - "null"
               - string
           closed_at:
+            description: Timestamp when conversation was closed
             type:
               - "null"
               - integer
           rating_score:
+            description: Score given in the rating of the conversation
             type:
               - "null"
               - integer
           rating_message:
+            description: Message accompanying the rating given to the conversation
             type:
               - "null"
               - string
           ratings:
+            description: Ratings associated with the conversation
             type:
               - "null"
               - array
@@ -148,126 +164,159 @@ streams:
                 - object
               properties:
                 rating_score:
+                  description: Score given in the rating
                   type:
                     - "null"
                     - integer
                 rating_message:
+                  description: Message provided in the rating
                   type:
                     - "null"
                     - string
                 rating_type:
+                  description: Type of the rating
                   type:
                     - "null"
                     - string
                 rating_created_timestamp:
+                  description: Timestamp when the rating was created
                   type:
                     - "null"
                     - integer
                 rating_offered_timestamp:
+                  description: Timestamp when the rating was offered
                   type:
                     - "null"
                     - integer
                 rating_status:
+                  description: Status of the rating
                   type:
                     - "null"
                     - string
                 rating_language:
+                  description: Language of the rating
                   type:
                     - "null"
                     - string
                 rating_modified_timestamp:
+                  description: Timestamp when the rating was modified
                   type:
                     - "null"
                     - integer
                 rating_rated_timestamp:
+                  description: Timestamp when the rating was given
                   type:
                     - "null"
                     - integer
                 rating_scheduled_timestamp:
+                  description: Timestamp when the rating was scheduled
                   type:
                     - "null"
                     - integer
                 rating_scheduled_for_timestamp:
+                  description: Timestamp for scheduled rating
                   type:
                     - "null"
                     - integer
                 rating_unscheduled_timestamp:
+                  description: Timestamp when the scheduled rating was unscheduled
                   type:
                     - "null"
                     - integer
                 rating_cancelled_timestamp:
+                  description: Timestamp when the rating was cancelled
                   type:
                     - "null"
                     - integer
           direction:
+            description: Direction of the conversation (inbound/outbound)
             type:
               - "null"
               - string
           assigned_at:
+            description: Timestamp when conversation was assigned to an agent
             type:
               - "null"
               - integer
           assignee_id:
+            description: Unique ID of the assigned agent
             type:
               - "null"
               - string
           assignee_name:
+            description: Name of the assigned agent
             type:
               - "null"
               - string
           assignee_email:
+            description: Email of the assigned agent
             type:
               - "null"
               - string
           assignee_phone_number:
+            description: Phone number of the assigned agent
             type:
               - "null"
               - string
           to_provisioned_phone_number_id:
+            description: ID of the provisioned phone number conversation was sent to
             type:
               - "null"
               - string
           to_provisioned_phone_number_name:
+            description:
+              Name of the provisioned phone number conversation was sent
+              to
             type:
               - "null"
               - string
           total_duration:
+            description: Total duration of the conversation
             type:
               - "null"
               - integer
           handling_duration:
+            description: Duration for which the conversation was being handled
             type:
               - "null"
               - integer
           dixa_email_integration_id:
+            description: ID of the Dixa email integration used
             type:
               - "null"
               - string
           dixa_email_integration_sender_name:
+            description: Name of the sender from Dixa email integration
             type:
               - "null"
               - string
           forwarding_email:
+            description: Email address to which conversation is being forwarded
             type:
               - "null"
               - string
           facebook_page_id:
+            description: ID of the Facebook page associated with the conversation
             type:
               - "null"
               - string
           facebook_page_name:
+            description: Name of the Facebook page associated with the conversation
             type:
               - "null"
               - string
           widget_id:
+            description: ID of the widget used for the conversation
             type:
               - "null"
               - string
           widget_name:
+            description: Name of the widget used for the conversation
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the conversation
             type:
               - "null"
               - array
@@ -276,6 +325,7 @@ streams:
                 - "null"
                 - string
           tags_info:
+            description: Information about the tags associated with the conversation
             type:
               - "null"
               - array
@@ -285,6 +335,7 @@ streams:
                 - object
               additionalProperties: true
           conversation_wrapup_notes:
+            description: Notes added after conversation wrap-up
             type:
               - "null"
               - array
@@ -293,50 +344,66 @@ streams:
                 - "null"
                 - string
           transferee_name:
+            description: Name of the transferee (if conversation was transferred)
             type:
               - "null"
               - string
           transfer_time:
+            description: Time taken for conversation transfer
             type:
               - "null"
               - integer
           originating_country:
+            description: Country from where the conversation originated
             type:
               - "null"
               - string
           status:
+            description: Status of the conversation
             type:
               - "null"
               - string
           transferee_number:
+            description: Phone number of the transferee (if conversation was transferred)
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp when conversation was last updated
             type:
               - "null"
               - integer
           last_message_created_at:
+            description: Timestamp when the last message in the conversation was created
             type:
               - "null"
               - integer
           from_provisioned_phone_number_id:
+            description:
+              ID of the provisioned phone number conversation originated
+              from
             type:
               - "null"
               - string
           from_provisioned_phone_number_name:
+            description:
+              Name of the provisioned phone number conversation originated
+              from
             type:
               - "null"
               - string
           subject:
+            description: Subject of the conversation
             type:
               - "null"
               - string
           anonymized_at:
+            description: Timestamp when conversation data was anonymized
             type:
               - "null"
               - integer
           custom_fields:
+            description: Custom fields associated with the conversation
             type:
               - "null"
               - array
@@ -347,23 +414,28 @@ streams:
               additionalProperties: true
               properties:
                 attribute_id:
+                  description: Unique ID of the custom field
                   type:
                     - "null"
                     - string
                 identifier:
+                  description: Identifier of the custom field
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value of the custom field
                   type:
                     - "null"
                     - array
                     - string
                 data_type:
+                  description: Data type of the custom field
                   type:
                     - "null"
                     - string
                 archived:
+                  description: Flag indicating if the field is archived
                   type:
                     - "null"
                     - boolean

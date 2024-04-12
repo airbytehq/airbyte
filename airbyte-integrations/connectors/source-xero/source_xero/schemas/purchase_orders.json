@@ -2,102 +2,132 @@
   "type": ["null", "object"],
   "properties": {
     "Contact": {
+      "description": "Details of the contact associated with the purchase order.",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "The date and time when the purchase order was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "DeliveryDate": {
+      "description": "The expected delivery date of the items in the purchase order.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "The types of line amounts included in the purchase order.",
       "type": ["null", "string"]
     },
     "PurchaseOrderNumber": {
+      "description": "The unique purchase order number for identification purposes.",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "Any reference information associated with the purchase order.",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "The individual line items included in the purchase order.",
       "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "BrandingThemeID": {
+      "description": "The unique identifier of the branding theme associated with the purchase order.",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used for the purchase order.",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the purchase order (e.g., draft, sent, approved).",
       "type": ["null", "string"]
     },
     "SentToContact": {
+      "description": "Indicates if the purchase order has been sent to the contact.",
       "type": ["null", "boolean"]
     },
     "DeliveryAddress": {
+      "description": "The delivery address for the items in the purchase order.",
       "type": ["null", "string"]
     },
     "AttentionTo": {
+      "description": "The name or title of the person the purchase order is addressed to.",
       "type": ["null", "string"]
     },
     "Telephone": {
+      "description": "The telephone number associated with the purchase order contact.",
       "type": ["null", "string"]
     },
     "DeliveryInstructions": {
+      "description": "Any special instructions for the delivery of the items in the purchase order.",
       "type": ["null", "string"]
     },
     "ExpectedArrivalDate": {
+      "description": "The expected arrival date of the items in the purchase order.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "PurchaseOrderID": {
+      "description": "The unique identifier of the purchase order.",
       "type": ["string"]
     },
     "CurrencyRate": {
+      "description": "The exchange rate between the base currency and the purchase order currency.",
       "type": ["null", "number"]
     },
     "SubTotal": {
+      "description": "The subtotal amount of the purchase order.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount included in the purchase order.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount of the purchase order including taxes and discounts.",
       "type": ["null", "number"]
     },
     "TotalDiscount": {
+      "description": "The total discount amount applied to the purchase order.",
       "type": ["null", "number"]
     },
     "HasAttachments": {
+      "description": "Indicates if there are any attachments associated with the purchase order.",
       "type": ["null", "boolean"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the purchase order was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "DeliveryDateString": {
+      "description": "The expected delivery date in string format of the items in the purchase order.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "Type": {
+      "description": "The type of the purchase order (e.g., standard, recurring).",
       "type": ["null", "string"]
     },
     "DateString": {
+      "description": "The date in string format of when the purchase order was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "HasErrors": {
+      "description": "Indicates if there are any errors present in the purchase order.",
       "type": ["null", "boolean"]
     },
     "IsDiscounted": {
+      "description": "Indicates if the purchase order has any discounts applied.",
       "type": ["null", "boolean"]
     },
     "ExpectedArrivalDateString": {
+      "description": "The expected arrival date in string format of the items in the purchase order.",
       "format": "date-time",
       "type": ["null", "string"]
     }

@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "abbreviation": {
+      "description": "Abbreviation of the German state being referenced",
       "type": "string"
     },
     "A00-A04": {
+      "description": "Age group 0-4 years old",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": "string"
             }
           },
@@ -61,42 +75,55 @@
       ]
     },
     "A05-A14": {
+      "description": "Age group 5-14 years old",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": "string"
             }
           },
@@ -116,42 +143,55 @@
       ]
     },
     "A15-A34": {
+      "description": "Age group 15-34 years old",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": ["string", "null"]
             }
           },
@@ -171,42 +211,55 @@
       ]
     },
     "A35-A59": {
+      "description": "Age group 35-59 years old",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": ["string", "null"]
             }
           },
@@ -226,42 +279,55 @@
       ]
     },
     "A60-A79": {
+      "description": "Age group 60-79 years old",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": ["string", "null"]
             }
           },
@@ -281,42 +347,55 @@
       ]
     },
     "A80+": {
+      "description": "Age group 80 and above",
       "type": "object",
       "properties": {
         "casesMale": {
+          "description": "Total number of male cases in this age group",
           "type": ["number", "integer"]
         },
         "casesFemale": {
+          "description": "Total number of female cases in this age group",
           "type": ["number", "integer"]
         },
         "deathsMale": {
+          "description": "Total number of male deaths in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemale": {
+          "description": "Total number of female deaths in this age group",
           "type": ["number", "integer"]
         },
         "casesMalePer100k": {
+          "description": "Number of male cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "casesFemalePer100k": {
+          "description": "Number of female cases per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsMalePer100k": {
+          "description": "Number of male deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "deathsFemalePer100k": {
+          "description": "Number of female deaths per 100,000 population in this age group",
           "type": ["number", "integer"]
         },
         "hospitalization": {
+          "description": "Information about hospitalization in this age group",
           "type": "object",
           "properties": {
             "cases7Days": {
+              "description": "Total number of cases hospitalized in the last 7 days",
               "type": ["number", "integer"]
             },
             "incidence7Days": {
+              "description": "Incidence rate of hospitalization in the last 7 days",
               "type": ["number", "integer"]
             },
             "date": {
+              "description": "Date of the data recorded",
               "type": ["string", "null"]
             }
           },

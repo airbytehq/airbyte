@@ -6,15 +6,19 @@
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "The type of query, typically 'Weather' for weather requests.",
           "type": "string"
         },
         "query": {
+          "description": "The query string used to obtain the weather data.",
           "type": "string"
         },
         "language": {
+          "description": "The language used for response localization.",
           "type": "string"
         },
         "unit": {
+          "description": "The unit of measurement for the weather data, either 'm' for metric or 's' for imperial.",
           "type": "string"
         }
       }
@@ -23,30 +27,39 @@
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "The name of the location.",
           "type": "string"
         },
         "country": {
+          "description": "The country where the location is situated.",
           "type": "string"
         },
         "region": {
+          "description": "The region where the location is located.",
           "type": "string"
         },
         "lat": {
+          "description": "The latitude coordinate of the location.",
           "type": "string"
         },
         "lon": {
+          "description": "The longitude coordinate of the location.",
           "type": "string"
         },
         "timezone_id": {
+          "description": "The timezone ID of the location.",
           "type": "string"
         },
         "localtime": {
+          "description": "The local time at the location.",
           "type": "string"
         },
         "localtime_epoch": {
+          "description": "The local time at the location in Unix Epoch time.",
           "type": "number"
         },
         "utc_offset": {
+          "description": "The UTC offset of the location timezone.",
           "type": "string"
         }
       }
@@ -55,53 +68,69 @@
       "type": ["null", "object"],
       "properties": {
         "observation_time": {
+          "description": "The time of the last observation in the local time zone.",
           "type": "string"
         },
         "temperature": {
+          "description": "The temperature in degrees Celsius or Fahrenheit.",
           "type": "number"
         },
         "weather_code": {
+          "description": "The weather condition code.",
           "type": "number"
         },
         "weather_icons": {
+          "description": "An array of URLs to weather icons.",
           "type": "array"
         },
         "weather_descriptions": {
+          "description": "An array of weather descriptions.",
           "type": "array"
         },
         "wind_speed": {
+          "description": "The wind speed in kilometers per hour or miles per hour.",
           "type": "number"
         },
         "wind_degree": {
+          "description": "The direction that the wind is coming from in degrees.",
           "type": "number"
         },
         "wind_dir": {
+          "description": "The compass direction that the wind is coming from.",
           "type": "string"
         },
         "pressure": {
+          "description": "The atmospheric pressure in millibars or inches of mercury.",
           "type": "number"
         },
         "precip": {
+          "description": "The precipitation amount in millimeters or inches.",
           "type": "number"
         },
         "humidity": {
+          "description": "The relative humidity in percentage.",
           "type": "number"
         },
         "cloudcover": {
+          "description": "The percentage of sky covered by clouds.",
           "type": "number"
         },
         "feelslike": {
+          "description": "The temperature that it 'feels like' in degrees Celsius or Fahrenheit.",
           "type": "number"
         },
         "uv_index": {
+          "description": "The strength of the ultraviolet (UV) radiation from the sun.",
           "type": "number"
         },
         "visibility": {
+          "description": "The visibility distance in kilometers or miles.",
           "type": "number"
         }
       }
     },
     "historical": {
+      "description": "Historical weather data for a specific date range.",
       "type": ["null", "object"]
     }
   }

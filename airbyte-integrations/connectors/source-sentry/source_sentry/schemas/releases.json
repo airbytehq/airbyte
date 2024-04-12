@@ -7,6 +7,7 @@
       "type": ["null", "integer"]
     },
     "authors": {
+      "description": "List of authors associated with the release",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -72,6 +73,7 @@
       "type": ["null", "string"]
     },
     "projects": {
+      "description": "List of projects related to the release",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -116,6 +118,7 @@
       "type": ["null", "string"]
     },
     "versionInfo": {
+      "description": "Information about the version of the release",
       "type": ["null", "object"],
       "properties": {
         "buildHash": {
@@ -131,6 +134,7 @@
           "type": ["null", "string"]
         },
         "version": {
+          "description": "Version details of the release",
           "type": ["null", "object"],
           "properties": {
             "buildCode": {

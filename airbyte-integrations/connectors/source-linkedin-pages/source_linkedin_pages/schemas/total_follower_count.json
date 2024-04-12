@@ -4,6 +4,7 @@
   "type": ["null", "object"],
   "properties": {
     "firstDegreeSize": {
+      "description": "The total number of first-degree connections of the user on LinkedIn.",
       "type": ["null", "integer"]
     }
   }

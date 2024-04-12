@@ -339,8 +339,10 @@ definitions:
             description: Attachments related to the candidate
             type: array
           applications:
+            description: An array of all applications made by candidates.
             type: array
             items:
+              description: Details of an individual application.
               type: object
               properties:
                 status:
@@ -461,6 +463,7 @@ definitions:
                   description: ID of the application
                   type: integer
                 current_stage:
+                  description: The current stage of the application process.
                   type:
                     - "null"
                     - object
@@ -472,6 +475,7 @@ definitions:
                       description: ID of the current stage in the application process
                       type: integer
                 credited_to:
+                  description: The user who should be credited for this application.
                   type: object
                   properties:
                     name:
@@ -1534,10 +1538,14 @@ definitions:
               - "null"
               - string
           translations:
+            description:
+              An array of questions related to demographics in multiple
+              languages.
             type:
               - "null"
               - array
             items:
+              description: The details of a single question in a particular language.
               type:
                 - "null"
                 - object
@@ -1584,6 +1592,7 @@ definitions:
               - "null"
               - string
           start:
+            description: The start date and time of the interview
             type:
               - "null"
               - object
@@ -1595,6 +1604,7 @@ definitions:
                   - string
                 format: date-time
           end:
+            description: The end date and time of the interview
             type:
               - "null"
               - object
@@ -1754,6 +1764,7 @@ definitions:
             description: Title or headline of the job post.
             type: string
           location:
+            description: Details about the job post location.
             type: object
             properties:
               id:
@@ -1768,6 +1779,7 @@ definitions:
                   - "null"
                   - integer
               job_post_location_type:
+                description: The type of job post location (e.g., remote, on-site).
                 type: object
                 properties:
                   id:
@@ -1807,8 +1819,10 @@ definitions:
               - "null"
               - integer
           questions:
+            description: List of questions related to the job post.
             type: array
             items:
+              description: A single question object within the questions list.
               type: object
               properties:
                 required:
@@ -2096,6 +2110,7 @@ definitions:
             description: Unique identifier for the candidate associated with the offer
             type: integer
           opening:
+            description: Details about the job opening
             type: object
             properties:
               id:
@@ -2128,6 +2143,7 @@ definitions:
                   - "null"
                   - string
           custom_fields:
+            description: Additional custom fields related to the offer
             type:
               - "null"
               - object
@@ -2138,9 +2154,11 @@ definitions:
                   - "null"
                   - string
           keyed_custom_fields:
+            description: Keyed custom fields associated with the offer
             type: object
             properties:
               employment_type:
+                description: Type of employment for the offer
                 type: object
                 properties:
                   name:
@@ -2172,6 +2190,7 @@ definitions:
               - "null"
               - string
           type:
+            description: Type of rejection reason
             type:
               - "null"
               - object
@@ -2210,6 +2229,7 @@ definitions:
             description: Details about the interview related to the scorecard.
             type: string
           interview_step:
+            description: Details about the interview step associated with the scorecard
             type: object
             properties:
               id:
@@ -2232,6 +2252,7 @@ definitions:
             description: The timestamp when the candidate was interviewed.
             type: string
           submitted_by:
+            description: Details of the user who submitted the scorecard
             type: object
             properties:
               id:
@@ -2256,6 +2277,7 @@ definitions:
                   - "null"
                   - string
           interviewer:
+            description: Information about the interviewer who conducted the assessment
             type: object
             properties:
               id:
@@ -2286,6 +2308,7 @@ definitions:
               scorecard evaluation.
             type: string
           attributes:
+            description: Information about the attributes related to the scorecard
             type: array
             items:
               type: object
@@ -2307,6 +2330,7 @@ definitions:
                   description: The rating given to the attribute.
                   type: string
           ratings:
+            description: Ratings given for each question in the scorecard
             type: object
             properties:
               definitely_not:
@@ -2331,6 +2355,7 @@ definitions:
                   the candidate.
                 type: array
           questions:
+            description: List of questions included in the scorecard
             type: array
             items:
               type: object
@@ -2366,6 +2391,7 @@ definitions:
               - "null"
               - string
           type:
+            description: Type of the data source
             type:
               - "null"
               - object
@@ -2437,6 +2463,7 @@ definitions:
               - "null"
               - boolean
           emails:
+            description: Email addresses of the users
             type:
               - "null"
               - array
@@ -2456,6 +2483,7 @@ definitions:
               - "null"
               - array
           departments:
+            description: List of departments associated with users
             type: array
             items:
               type: object
@@ -2488,6 +2516,7 @@ definitions:
                     - "null"
                     - string
           offices:
+            description: List of office locations where users are based
             type: array
             items:
               type: object
@@ -2499,6 +2528,7 @@ definitions:
                   description: The name of the office.
                   type: string
                 location:
+                  description: Geographical location details of the office
                   type: object
                   properties:
                     name:
@@ -2736,6 +2766,7 @@ definitions:
         additionalProperties: true
         properties:
           notes:
+            description: List of notes or comments added in the greenhouse
             type:
               - "null"
               - array
@@ -2760,6 +2791,7 @@ definitions:
                     - "null"
                     - string
                 user:
+                  description: User who added the note
                   type:
                     - "null"
                     - object
@@ -2807,6 +2839,7 @@ definitions:
                     - "null"
                     - string
           emails:
+            description: List of emails related to greenhouse communication
             type:
               - "null"
               - array
@@ -2855,6 +2888,7 @@ definitions:
                       - "null"
                       - string
                 user:
+                  description: User associated with the email
                   type:
                     - "null"
                     - object
@@ -2887,6 +2921,7 @@ definitions:
                         - "null"
                         - string
           activities:
+            description: List of activities recorded in the greenhouse
             type:
               - "null"
               - array
@@ -2916,6 +2951,7 @@ definitions:
                     - "null"
                     - string
                 user:
+                  description: User associated with the activity
                   type:
                     - "null"
                     - object
@@ -3192,6 +3228,7 @@ definitions:
               - "null"
               - integer
           race:
+            description: The racial or ethnic background of the individual.
             type:
               - "null"
               - object
@@ -3207,6 +3244,7 @@ definitions:
                   - "null"
                   - string
           gender:
+            description: The gender of the individual.
             type:
               - "null"
               - object
@@ -3222,6 +3260,7 @@ definitions:
                   - "null"
                   - string
           veteran_status:
+            description: The veteran status of the individual.
             type:
               - "null"
               - object
@@ -3237,6 +3276,7 @@ definitions:
                   - "null"
                   - string
           disability_status:
+            description: The individual's disability status, if any.
             type:
               - "null"
               - object

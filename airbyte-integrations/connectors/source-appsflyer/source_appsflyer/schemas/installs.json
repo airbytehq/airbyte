@@ -2,366 +2,484 @@
   "type": "object",
   "properties": {
     "attributed_touch_type": {
+      "description": "The type of touch for attribution.",
       "type": ["null", "string"]
     },
     "attributed_touch_time": {
+      "description": "The time when the attribution was touched.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "install_time": {
+      "description": "The time of the install.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "event_time": {
+      "description": "The time the event was triggered.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "event_name": {
+      "description": "The name of the event triggered post-install.",
       "type": ["null", "string"]
     },
     "event_value": {
+      "description": "The value associated with the event triggered.",
       "type": ["null", "string"]
     },
     "event_revenue": {
+      "description": "The revenue generated from the event.",
       "type": ["null", "string"]
     },
     "event_revenue_currency": {
+      "description": "The currency of the event revenue.",
       "type": ["null", "string"]
     },
     "event_revenue_usd": {
+      "description": "The event revenue in USD.",
       "type": ["null", "string"]
     },
     "event_source": {
+      "description": "The source of the event triggered.",
       "type": ["null", "string"]
     },
     "is_receipt_validated": {
+      "description": "Flag indicating if receipt is validated.",
       "type": ["null", "boolean"]
     },
     "af_prt": {
+      "description": "The AF partner ID.",
       "type": ["null", "string"]
     },
     "media_source": {
+      "description": "The media source of the advertising.",
       "type": ["null", "string"]
     },
     "af_channel": {
+      "description": "The marketing channel where the install originated.",
       "type": ["null", "string"]
     },
     "af_keywords": {
+      "description": "The keywords associated with the install.",
       "type": ["null", "string"]
     },
     "campaign": {
+      "description": "The campaign name associated with the install.",
       "type": ["null", "string"]
     },
     "af_c_id": {
+      "description": "The AppsFlyer campaign ID.",
       "type": ["null", "string"]
     },
     "af_adset": {
+      "description": "The ad set name associated with the install.",
       "type": ["null", "string"]
     },
     "af_adset_id": {
+      "description": "The ad set ID associated with the install.",
       "type": ["null", "string"]
     },
     "af_ad": {
+      "description": "The ad name associated with the install.",
       "type": ["null", "string"]
     },
     "af_ad_id": {
+      "description": "The ad ID associated with the install.",
       "type": ["null", "string"]
     },
     "af_ad_type": {
+      "description": "The type of ad associated with the install.",
       "type": ["null", "string"]
     },
     "af_siteid": {
+      "description": "The AppsFlyer site ID.",
       "type": ["null", "string"]
     },
     "af_sub_siteid": {
+      "description": "The sub site ID associated with the install.",
       "type": ["null", "string"]
     },
     "af_sub1": {
+      "description": "The sub parameter 1 associated with the install.",
       "type": ["null", "string"]
     },
     "af_sub2": {
+      "description": "The sub parameter 2 associated with the install.",
       "type": ["null", "string"]
     },
     "af_sub3": {
+      "description": "The sub parameter 3 associated with the install.",
       "type": ["null", "string"]
     },
     "af_sub4": {
+      "description": "The sub parameter 4 associated with the install.",
       "type": ["null", "string"]
     },
     "af_sub5": {
+      "description": "The sub parameter 5 associated with the install.",
       "type": ["null", "string"]
     },
     "af_cost_model": {
+      "description": "The cost model for advertising.",
       "type": ["null", "string"]
     },
     "af_cost_value": {
+      "description": "The value of the advertising cost.",
       "type": ["null", "string"]
     },
     "af_cost_currency": {
+      "description": "The currency of the advertising cost.",
       "type": ["null", "string"]
     },
     "contributor1_af_prt": {
+      "description": "First contributor's AF partner ID.",
       "type": ["null", "string"]
     },
     "contributor1_media_source": {
+      "description": "First contributor's media source.",
       "type": ["null", "string"]
     },
     "contributor1_campaign": {
+      "description": "First contributor's campaign name.",
       "type": ["null", "string"]
     },
     "contributor1_touch_type": {
+      "description": "First contributor's touch type.",
       "type": ["null", "string"]
     },
     "contributor1_touch_time": {
+      "description": "First contributor's touch time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contributor2_af_prt": {
+      "description": "Second contributor's AF partner ID.",
       "type": ["null", "string"]
     },
     "contributor2_media_source": {
+      "description": "Second contributor's media source.",
       "type": ["null", "string"]
     },
     "contributor2_campaign": {
+      "description": "Second contributor's campaign name.",
       "type": ["null", "string"]
     },
     "contributor2_touch_type": {
+      "description": "Second contributor's touch type.",
       "type": ["null", "string"]
     },
     "contributor2_touch_time": {
+      "description": "Second contributor's touch time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contributor3_af_prt": {
+      "description": "Third contributor's AF partner ID.",
       "type": ["null", "string"]
     },
     "contributor3_media_source": {
+      "description": "Third contributor's media source.",
       "type": ["null", "string"]
     },
     "contributor3_campaign": {
+      "description": "Third contributor's campaign name.",
       "type": ["null", "string"]
     },
     "contributor3_touch_type": {
+      "description": "Third contributor's touch type.",
       "type": ["null", "string"]
     },
     "contributor3_touch_time": {
+      "description": "Third contributor's touch time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "region": {
+      "description": "The region of the user's location.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code of the user's location.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state of the user's location.",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "The city of the user's location.",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "The postal code of the user's location.",
       "type": ["null", "string"]
     },
     "dma": {
+      "description": "The Designated Market Area of the user's location.",
       "type": ["null", "string"]
     },
     "ip": {
+      "description": "The IP address of the user's device.",
       "type": ["null", "string"]
     },
     "wifi": {
+      "description": "Flag indicating Wi-Fi usage during the install.",
       "type": ["null", "boolean"]
     },
     "operator": {
+      "description": "The mobile operator of the user's device.",
       "type": ["null", "string"]
     },
     "carrier": {
+      "description": "The mobile carrier of the user's device.",
       "type": ["null", "string"]
     },
     "language": {
+      "description": "The language setting of the user.",
       "type": ["null", "string"]
     },
     "appsflyer_id": {
+      "description": "The unique AppsFlyer ID associated with the install.",
       "type": ["null", "string"]
     },
     "advertising_id": {
+      "description": "The unique advertising ID of the user.",
       "type": ["null", "string"]
     },
     "idfa": {
+      "description": "Identifier for Advertisers (iOS).",
       "type": ["null", "string"]
     },
     "android_id": {
+      "description": "The Android ID of the user's device.",
       "type": ["null", "string"]
     },
     "customer_user_id": {
+      "description": "The unique ID of the customer.",
       "type": ["null", "string"]
     },
     "imei": {
+      "description": "International Mobile Equipment Identity.",
       "type": ["null", "string"]
     },
     "idfv": {
+      "description": "Identifier for Vendors (iOS).",
       "type": ["null", "string"]
     },
     "platform": {
+      "description": "The platform where the install originated.",
       "type": ["null", "string"]
     },
     "device_type": {
+      "description": "The type of the user's device.",
       "type": ["null", "string"]
     },
     "os_version": {
+      "description": "The operating system version of the user's device.",
       "type": ["null", "string"]
     },
     "app_version": {
+      "description": "The version of the app at the time of install.",
       "type": ["null", "string"]
     },
     "sdk_version": {
+      "description": "The version of the AppsFlyer SDK.",
       "type": ["null", "string"]
     },
     "app_id": {
+      "description": "The unique identifier of the app.",
       "type": ["null", "string"]
     },
     "app_name": {
+      "description": "The name of the app.",
       "type": ["null", "string"]
     },
     "bundle_id": {
+      "description": "The unique bundle identifier of the app.",
       "type": ["null", "string"]
     },
     "is_retargeting": {
+      "description": "Flag indicating retargeting status.",
       "type": ["null", "boolean"]
     },
     "retargeting_conversion_type": {
+      "description": "The type of retargeting conversion.",
       "type": ["null", "string"]
     },
     "af_attribution_lookback": {
+      "description": "The attribution lookback window for the install.",
       "type": ["null", "string"]
     },
     "af_reengagement_window": {
+      "description": "The reengagement window for the install.",
       "type": ["null", "string"]
     },
     "is_primary_attribution": {
+      "description": "Flag indicating primary attribution.",
       "type": ["null", "boolean"]
     },
     "user_agent": {
+      "description": "The user agent of the device.",
       "type": ["null", "string"]
     },
     "http_referrer": {
+      "description": "HTTP referrer.",
       "type": ["null", "string"]
     },
     "original_url": {
+      "description": "The original URL associated with the install.",
       "type": ["null", "string"]
     },
     "app_type": {
+      "description": "The type of the app (e.g., game, utility).",
       "type": ["null", "string"]
     },
     "custom_data": {
+      "description": "Custom data associated with the install.",
       "type": ["null", "string"]
     },
     "network_account_id": {
+      "description": "The account ID of the network.",
       "type": ["null", "string"]
     },
     "install_app_store": {
+      "description": "The app store where the install originated.",
       "type": ["null", "string"]
     },
     "contributor1_match_type": {
+      "description": "First contributor's match type.",
       "type": ["null", "string"]
     },
     "contributor2_match_type": {
+      "description": "Second contributor's match type.",
       "type": ["null", "string"]
     },
     "contributor3_match_type": {
+      "description": "Third contributor's match type.",
       "type": ["null", "string"]
     },
     "campaign_type": {
+      "description": "The type of campaign for the install.",
       "type": ["null", "string"]
     },
     "conversion_type": {
+      "description": "The type of conversion.",
       "type": ["null", "string"]
     },
     "match_type": {
+      "description": "The type of match for the install.",
       "type": ["null", "string"]
     },
     "gp_referrer": {
+      "description": "Google Play referrer.",
       "type": ["null", "string"]
     },
     "gp_click_time": {
+      "description": "Google Play click time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "gp_install_begin": {
+      "description": "Google Play install begin time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "gp_broadcast_referrer": {
+      "description": "Google Play broadcast referrer.",
       "type": ["null", "string"]
     },
     "keyword_match_type": {
+      "description": "The match type of the keyword.",
       "type": ["null", "string"]
     },
     "keyword_id": {
+      "description": "The ID of the keyword associated with the install.",
       "type": ["null", "string"]
     },
     "att": {
+      "description": "Attribute.",
       "type": ["null", "string"]
     },
     "amazon_aid": {
+      "description": "The Amazon advertising ID of the user.",
       "type": ["null", "string"]
     },
     "device_category": {
+      "description": "The category of the user's device.",
       "type": ["null", "string"]
     },
     "device_model": {
+      "description": "The model of the user's device.",
       "type": ["null", "string"]
     },
     "device_download_time": {
+      "description": "The time when the device was downloaded.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deeplink_url": {
+      "description": "The deep link associated with the install.",
       "type": ["null", "string"]
     },
     "oaid": {
+      "description": "Android Open Advertising ID.",
       "type": ["null", "string"]
     },
     "is_lat": {
+      "description": "Flag indicating Limit Ad Tracking setting.",
       "type": ["null", "boolean"]
     },
     "store_reinstall": {
+      "description": "Flag indicating a store reinstall.",
       "type": ["null", "boolean"]
     },
     "placement": {
+      "description": "The placement of the ad where the install originated.",
       "type": ["null", "string"]
     },
     "mediation_network": {
+      "description": "The mediation network where the install originated.",
       "type": ["null", "string"]
     },
     "segment": {
+      "description": "The user segment associated with the install.",
       "type": ["null", "string"]
     },
     "ad_unit": {
+      "description": "The advertising unit associated with the install.",
       "type": ["null", "string"]
     },
     "monetization_network": {
+      "description": "The monetization network where the install originated.",
       "type": ["null", "string"]
     },
     "impressions": {
+      "description": "Number of times the ad was displayed.",
       "type": ["null", "string"]
     },
     "blocked_reason": {
+      "description": "Reason for blocking.",
       "type": ["null", "string"]
     },
     "blocked_reason_value": {
+      "description": "Value triggering the blocked reason.",
       "type": ["null", "string"]
     },
     "blocked_reason_rule": {
+      "description": "Blocking reason rule.",
       "type": ["null", "string"]
     },
     "blocked_sub_reason": {
+      "description": "Sub reason for blocking.",
       "type": ["null", "string"]
     },
     "rejected_reason": {
+      "description": "Reason for rejection.",
       "type": ["null", "string"]
     },
     "rejected_reason_value": {
+      "description": "Value triggering the rejection reason.",
       "type": ["null", "string"]
     }
   }

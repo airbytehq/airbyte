@@ -213,8 +213,10 @@
       "type": ["string", "null"]
     },
     "order_line_items": {
+      "description": "List of line items in the order",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item",
         "type": ["object", "null"],
         "properties": {
           "id": {
@@ -305,6 +307,7 @@
       }
     },
     "shipping_address": {
+      "description": "The shipping address for the order",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
@@ -370,6 +373,7 @@
       }
     },
     "billing_address": {
+      "description": "The billing address associated with the order",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
@@ -435,8 +439,10 @@
       }
     },
     "line_item_taxes": {
+      "description": "Taxes applied to individual line items",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item tax",
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
@@ -491,8 +497,10 @@
       }
     },
     "line_item_discounts": {
+      "description": "Discounts applied to individual line items",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item discount",
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
@@ -523,8 +531,10 @@
       }
     },
     "linked_credit_notes": {
+      "description": "Credit notes linked to the order",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a linked credit note",
         "type": ["object", "null"],
         "properties": {
           "amount": {
@@ -559,8 +569,10 @@
       }
     },
     "resent_orders": {
+      "description": "Orders that were resent to the customer",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a resent order",
         "type": ["object", "null"],
         "properties": {
           "order_id": {

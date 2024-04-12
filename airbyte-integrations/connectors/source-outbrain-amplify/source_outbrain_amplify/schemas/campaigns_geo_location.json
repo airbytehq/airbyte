@@ -4,41 +4,53 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the geolocation.",
       "type": ["string", "null"]
     },
     "geoType": {
+      "description": "The type of geolocation (e.g., country, city).",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name of the geolocation.",
       "type": ["string", "null"]
     },
     "canonicalName": {
+      "description": "The canonical name associated with the geolocation.",
       "type": ["string", "null"]
     },
     "code": {
+      "description": "The code representing the geolocation.",
       "type": ["string", "null"]
     },
     "parent": {
+      "description": "The parent geolocation.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the parent geolocation.",
           "type": ["string", "null"]
         },
         "geoType": {
+          "description": "The type of the parent geolocation.",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "The name of the parent geolocation.",
           "type": ["string", "null"]
         },
         "canonicalName": {
+          "description": "The canonical name of the parent geolocation.",
           "type": ["string", "null"]
         },
         "code": {
+          "description": "The code representing the parent geolocation.",
           "type": ["string", "null"]
         }
       }
     },
     "campaign_id": {
+      "description": "The unique identifier for the campaign.",
       "type": ["string", "null"]
     }
   }

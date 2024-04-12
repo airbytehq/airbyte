@@ -3,41 +3,53 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the channel within the system.",
       "type": ["null", "integer"]
     },
     "external_id": {
+      "description": "The unique identifier for the channel in an external system.",
       "type": ["null", "string"]
     },
     "is_listable_from_ui": {
+      "description": "Specifies whether the channel is listable from the user interface.",
       "type": ["null", "boolean"]
     },
     "is_visible": {
+      "description": "Determines if the channel is visible to users.",
       "type": ["null", "boolean"]
     },
     "status": {
+      "description": "The status of the channel (e.g., active, inactive).",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the channel.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of channel (e.g., social media, online marketplace).",
       "type": ["null", "string"]
     },
     "platform": {
+      "description": "The platform on which the channel operates.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the channel was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "The date and time when the channel was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "icon_url": {
+      "description": "The URL pointing to the icon associated with the channel.",
       "type": ["null", "string"]
     },
     "is_enabled": {
+      "description": "Indicates whether the channel is currently enabled or disabled.",
       "type": ["null", "boolean"]
     }
   }

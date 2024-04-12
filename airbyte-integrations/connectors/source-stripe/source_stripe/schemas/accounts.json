@@ -749,6 +749,7 @@
       "additionalProperties": true
     },
     "tos_acceptance": {
+      "description": "Details related to terms of service acceptance for the account.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

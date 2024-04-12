@@ -265,6 +265,7 @@
       "readOnly": true
     },
     "self": {
+      "description": "URL of the workflow scheme resource.",
       "type": "string",
       "readOnly": true
     },

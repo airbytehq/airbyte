@@ -143,6 +143,7 @@ definitions:
               - "null"
               - string
           workspace:
+            description: Workspace details where the form belongs.
             type:
               - "null"
               - object
@@ -153,6 +154,7 @@ definitions:
                   - "null"
                   - string
           theme:
+            description: Theme settings for the form.
             type:
               - "null"
               - object
@@ -163,6 +165,7 @@ definitions:
                   - "null"
                   - string
           settings:
+            description: Settings and configurations for the form.
             type:
               - "null"
               - object
@@ -178,6 +181,7 @@ definitions:
                   - "null"
                   - string
               meta:
+                description: Meta information including images and metadata.
                 type:
                   - "null"
                   - object
@@ -198,6 +202,7 @@ definitions:
                       - "null"
                       - string
                   image:
+                    description: Image settings for the form.
                     type:
                       - "null"
                       - object
@@ -263,11 +268,13 @@ definitions:
                   - "null"
                   - string
               capabilities:
+                description: Feature capabilities settings.
                 type:
                   - "null"
                   - object
                 properties:
                   e2e_encryption:
+                    description: End-to-end encryption settings.
                     type:
                       - "null"
                       - object
@@ -283,11 +290,13 @@ definitions:
                           - "null"
                           - boolean
               notifications:
+                description: Notification settings for respondent and self.
                 type:
                   - "null"
                   - object
                 properties:
                   self:
+                    description: Notification settings for form owner.
                     type:
                       - "null"
                       - object
@@ -322,6 +331,7 @@ definitions:
                           - "null"
                           - string
                   respondent:
+                    description: Notification settings for respondents.
                     type:
                       - "null"
                       - object
@@ -358,6 +368,7 @@ definitions:
                           - "null"
                           - string
               cui_settings:
+                description: Settings for conversational UI.
                 type:
                   - "null"
                   - object
@@ -378,6 +389,7 @@ definitions:
                       - "null"
                       - string
           welcome_screens:
+            description: Welcome screen configurations.
             type:
               - "null"
               - array
@@ -402,6 +414,7 @@ definitions:
                     - "null"
                     - string
                 properties:
+                  description: Custom properties for the welcome screen.
                   type:
                     - "null"
                     - object
@@ -432,6 +445,7 @@ definitions:
                         - "null"
                         - string
                 attachment:
+                  description: Additional information or media on the welcome screen.
                   type:
                     - "null"
                     - object
@@ -447,6 +461,7 @@ definitions:
                         - "null"
                         - string
                 layout:
+                  description: Layout settings for the welcome screen.
                   type:
                     - "null"
                     - object
@@ -462,6 +477,7 @@ definitions:
                         - "null"
                         - string
                     attachment:
+                      description: Attachment details for the welcome screen layout.
                       type:
                         - "null"
                         - object
@@ -482,6 +498,7 @@ definitions:
                             - "null"
                             - number
                     properties:
+                      description: Custom properties for the layout.
                       type:
                         - "null"
                         - object
@@ -511,6 +528,7 @@ definitions:
                                 - "null"
                                 - number
           thankyou_screens:
+            description: Thank you screen configurations.
             type:
               - "null"
               - array
@@ -535,6 +553,7 @@ definitions:
                     - "null"
                     - string
                 properties:
+                  description: Custom properties for the thank you screen.
                   type:
                     - "null"
                     - object
@@ -565,6 +584,7 @@ definitions:
                         - "null"
                         - string
                 attachment:
+                  description: Additional information or media on the thank you screen.
                   type:
                     - "null"
                     - object
@@ -580,6 +600,7 @@ definitions:
                         - "null"
                         - string
                 layout:
+                  description: Layout settings for the thank you screen.
                   type:
                     - "null"
                     - object
@@ -595,6 +616,7 @@ definitions:
                         - "null"
                         - string
                     attachment:
+                      description: Attachment details for the thank you screen layout.
                       type:
                         - "null"
                         - object
@@ -615,6 +637,7 @@ definitions:
                             - "null"
                             - number
                     properties:
+                      description: Custom properties for the layout.
                       type:
                         - "null"
                         - object
@@ -644,6 +667,7 @@ definitions:
                                 - "null"
                                 - number
           logic:
+            description: Logic rules or conditions applied to the form fields.
             type:
               - "null"
               - array
@@ -652,6 +676,7 @@ definitions:
                 - "null"
                 - object
               properties:
+                description: Logic properties for each condition.
                 type:
                   description: Type of logic
                   type:
@@ -757,6 +782,7 @@ definitions:
                                     - "null"
                                     - string
           fields:
+            description: List of fields within the form.
             type:
               - "null"
               - array
@@ -781,6 +807,7 @@ definitions:
                     - "null"
                     - string
                 properties:
+                  description: Custom properties for the field.
                   type:
                     - "null"
                     - object
@@ -831,6 +858,7 @@ definitions:
                               - "null"
                               - string
                 validations:
+                  description: Validation rules for the field.
                   type:
                     - "null"
                     - object
@@ -846,6 +874,7 @@ definitions:
                     - "null"
                     - string
                 attachment:
+                  description: Additional information or media attached to the field.
                   type:
                     - "null"
                     - object
@@ -861,6 +890,7 @@ definitions:
                         - "null"
                         - string
                 layout:
+                  description: Defines the visual layout of the field.
                   type:
                     - "null"
                     - object
@@ -876,6 +906,7 @@ definitions:
                         - "null"
                         - string
                     attachment:
+                      description: Attachment details for the field layout.
                       type:
                         - "null"
                         - object
@@ -896,6 +927,7 @@ definitions:
                             - "null"
                             - number
                     properties:
+                      description: Custom properties for the layout.
                       type:
                         - "null"
                         - object
@@ -925,6 +957,7 @@ definitions:
                                 - "null"
                                 - number
           _links:
+            description: Links to related resources.
             type:
               - "null"
               - object
@@ -1330,6 +1363,7 @@ definitions:
               - "null"
               - boolean
           forms:
+            description: Contains information about forms within the workspace.
             type:
               - "null"
               - object
@@ -1357,6 +1391,7 @@ definitions:
               - "null"
               - string
           self:
+            description: Represents details about the workspace itself.
             type:
               - "null"
               - object

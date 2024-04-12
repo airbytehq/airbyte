@@ -45,98 +45,124 @@ definitions:
         type: object
         properties:
           contactID:
+            description: Unique identifier for the contact
             type: string
           identifiers:
+            description: Unique identifiers associated with the contact
             type: array
             items:
               type: object
               properties:
                 type:
+                  description: Type of the identifier
                   type: string
                 id:
+                  description: Unique identifier of the identifier type
                   type: string
                 channels:
+                  description: Communication channels for the contact
                   type: object
                   properties:
                     sms:
+                      description: SMS communication details
                       type: object
                       properties:
                         status:
+                          description: Status of SMS communication for the contact
                           type:
                             - string
                             - "null"
                         statusDate:
+                          description: Date of the last status update for SMS communication
                           type:
                             - string
                             - "null"
                     email:
+                      description: Email communication details
                       type: object
                       properties:
                         status:
+                          description: Status of email communication for the contact
                           type:
                             - string
                             - "null"
                         statusDate:
+                          description: Date of the last status update for email communication
                           type:
                             - string
                             - "null"
           createdAt:
+            description: Date and time when the contact was created
             type:
               - string
               - "null"
           firstName:
+            description: The first name of the contact
             type:
               - string
               - "null"
           lastName:
+            description: The last name of the contact
             type:
               - string
               - "null"
           tags:
+            description: Tags associated with the contact
             type:
               - array
               - "null"
             items:
               type: string
           country:
+            description: The country where the contact resides
             type:
               - string
               - "null"
           countryCode:
+            description: The country code of the contact's location
             type:
               - string
               - "null"
           state:
+            description: The state where the contact resides
             type:
               - string
               - "null"
           city:
+            description: The city where the contact resides
             type:
               - string
               - "null"
           address:
+            description: The physical address of the contact
             type:
               - string
               - "null"
           postalCode:
+            description: Postal code of the contact's address
             type:
               - string
               - "null"
           gender:
+            description: The gender of the contact
             type: string
           birthdate:
+            description: The date of birth of the contact
             type:
               - string
               - "null"
           clicked:
+            description: Indicates if the contact has clicked on any links
             type:
               - integer
               - "null"
           email:
+            description: The email address of the contact
             type:
               - string
               - "null"
           optIns:
+            description: Opt-in details for the contact
             type:
               - array
               - "null"
@@ -144,30 +170,37 @@ definitions:
               type: object
               properties:
                 date:
+                  description: Date of opt-in action
                   type: string
           segments:
+            description: Segments the contact belongs to
             type:
               - array
               - "null"
             items:
               type: string
           status:
+            description: Status of the contact
             type:
               - string
               - "null"
           opened:
+            description: Indicates if the contact has opened any emails
             type:
               - integer
               - "null"
           phone:
+            description: Phone numbers associated with the contact
             type: array
             items:
               type: string
           phoneNumber:
+            description: Primary phone number of the contact
             type:
               - string
               - "null"
           statuses:
+            description: Status history of the contact
             type:
               - array
               - "null"
@@ -175,14 +208,17 @@ definitions:
               type: object
               properties:
                 status:
+                  description: Previous status of the contact
                   type:
                     - string
                     - "null"
                 date:
+                  description: Date of status update
                   type:
                     - string
                     - "null"
           sent:
+            description: Indicates if any communication has been sent to the contact
             type:
               - integer
               - "null"
@@ -205,72 +241,94 @@ definitions:
         type: object
         properties:
           campaignID:
+            description: Unique identifier for the campaign.
             type: string
           name:
+            description: Name of the campaign for identification.
             type:
               - string
               - "null"
           status:
+            description: Current status of the campaign (e.g., draft, scheduled, sent).
             type:
               - string
               - "null"
           type:
+            description: Type of campaign (e.g., email, SMS, push notification).
             type:
               - string
               - "null"
           fromName:
+            description: Name displayed as the sender of the campaign.
             type:
               - string
               - "null"
           subject:
+            description: Subject line of the campaign email.
             type:
               - string
               - "null"
           url:
+            description: URL link directing to the campaign content.
             type:
               - string
               - "null"
           createdAt:
+            description: Timestamp indicating when the campaign was created.
             type:
               - string
               - "null"
           updatedAt:
+            description: Timestamp indicating when the campaign was last updated.
             type:
               - string
               - "null"
           startDate:
+            description: Start date of the campaign's duration.
             type:
               - string
               - "null"
           endDate:
+            description: End date of the campaign's duration.
             type:
               - string
               - "null"
           sent:
+            description: Number of emails successfully sent as part of the campaign.
             type:
               - integer
               - "null"
           opened:
+            description: Number of subscribers who opened the campaign.
             type:
               - integer
               - "null"
           clicked:
+            description: Number of subscribers who clicked on links in the campaign.
             type:
               - integer
               - "null"
           bounced:
+            description: Number of emails that could not be delivered to recipients.
             type:
               - integer
               - "null"
           complained:
+            description:
+              Number of subscribers who marked the campaign as spam or
+              complained.
             type:
               - integer
               - "null"
           unsubscribed:
+            description:
+              Number of subscribers who opted out or unsubscribed from
+              the campaign.
             type:
               - integer
               - "null"
           allSubscribers:
+            description: Total number of subscribers who received the campaign.
             type:
               - boolean
               - "null"
@@ -282,6 +340,7 @@ definitions:
               type: object
               properties:
                 segmentID:
+                  description: Unique identifier for the segment targeted by the campaign.
                   type:
                     - string
                     - "null"
@@ -301,36 +360,45 @@ definitions:
         type: object
         properties:
           contactID:
+            description: Unique identifier for the contact associated with the cart.
             type:
               - string
               - "null"
           cartID:
+            description: Unique identifier for the cart.
             type: string
           email:
+            description: Email address of the contact linked to the cart.
             type:
               - string
               - "null"
           phone:
+            description: Phone number of the contact associated with the cart.
             type:
               - string
               - "null"
           createdAt:
+            description: Timestamp when the cart was created.
             type:
               - string
               - "null"
           updatedAt:
+            description: Timestamp when the cart was last updated.
             type:
               - string
               - "null"
           currency:
+            description: Currency used for pricing in the cart.
             type:
               - string
               - "null"
           cartSum:
+            description: Total value of products in the cart.
             type:
               - integer
               - "null"
           cartRecoveryUrl:
+            description: URL to recover the cart in case of abandonment.
             type:
               - string
               - "null"
@@ -340,46 +408,57 @@ definitions:
               type: object
               properties:
                 cartProductID:
+                  description: Unique identifier for the product in the cart.
                   type:
                     - string
                     - "null"
                 productID:
+                  description: Unique identifier for the product.
                   type:
                     - string
                     - "null"
                 variantID:
+                  description: Identifier for the variant of the product, if applicable.
                   type:
                     - string
                     - "null"
                 title:
+                  description: Title or name of the product.
                   type:
                     - string
                     - "null"
                 description:
+                  description: Description of the product.
                   type:
                     - string
                     - "null"
                 quantity:
+                  description: Quantity of the product in the cart.
                   type:
                     - integer
                     - "null"
                 price:
+                  description: Current price of the product.
                   type:
                     - integer
                     - "null"
                 oldPrice:
+                  description: Previous price of the product if there was a discount.
                   type:
                     - integer
                     - "null"
                 discount:
+                  description: Discount applied to the product.
                   type:
                     - integer
                     - "null"
                 imageUrl:
+                  description: URL to the image of the product.
                   type:
                     - string
                     - "null"
                 productUrl:
+                  description: URL to view details of the product.
                   type:
                     - string
                     - "null"
@@ -398,276 +477,359 @@ definitions:
         type: object
         properties:
           orderID:
+            description: The unique ID of the order
             type: string
           orderNumber:
+            description: The order number generated for the order
             type:
               - integer
               - "null"
           email:
+            description: The email address associated with the order
             type:
               - string
               - "null"
           contactID:
+            description: The ID of the contact associated with the order
             type:
               - string
               - "null"
           firstName:
+            description: The first name of the customer placing the order
             type:
               - string
               - "null"
           lastName:
+            description: The last name of the customer placing the order
             type:
               - string
               - "null"
           cartID:
+            description: The ID of the cart associated with the order
             type:
               - string
               - "null"
           shippingMethod:
+            description: The method used for shipping (e.g., standard, express)
             type:
               - string
               - "null"
           trackingCode:
+            description: The tracking code for the shipment
             type:
               - string
               - "null"
           courierTitle:
+            description: The title of the courier company used for shipping
             type:
               - string
               - "null"
           courierUrl:
+            description: The URL of the courier company
             type:
               - string
               - "null"
           orderUrl:
+            description: The URL where the order details can be viewed
             type:
               - string
               - "null"
           source:
+            description: The source of the order (e.g., online store, in-person)
             type:
               - string
               - "null"
           tags:
+            description: Tags associated with the order
             type:
               - array
               - "null"
             items:
+              description: Order tag
               type:
                 - string
                 - "null"
           discountCode:
+            description: The discount code applied to the order
             type:
               - string
               - "null"
           discountValue:
+            description: The value of the discount applied
             type:
               - integer
               - "null"
           discountType:
+            description: The type of discount applied (e.g., percentage, fixed amount)
             type:
               - string
               - "null"
           currency:
+            description: The currency used for the order
             type:
               - string
               - "null"
           subTotalSum:
+            description:
+              The subtotal amount of the order before discounts and shipping
+              costs
             type:
               - integer
               - "null"
           orderSum:
+            description: The total sum of the order
             type:
               - integer
               - "null"
           discountSum:
+            description: The total discount amount applied to the order
             type:
               - integer
               - "null"
           taxSum:
+            description: The total tax amount applied to the order
             type:
               - integer
               - "null"
           shippingSum:
+            description: The shipping cost of the order
             type:
               - integer
               - "null"
           createdAt:
+            description: The date and time when the order was created
             type:
               - string
               - "null"
           updatedAt:
+            description: The date and time when the order was last updated
             type:
               - string
               - "null"
           contactNote:
+            description: Any note or comments related to the contact
             type:
               - string
               - "null"
           paymentMethod:
+            description: The method used for payment (e.g., credit card, PayPal)
             type:
               - string
               - "null"
           paymentStatus:
+            description: The status of payment (e.g., pending, paid)
             type:
               - string
               - "null"
           fulfillmentStatus:
+            description:
+              The status of order fulfillment (e.g., pending, shipped,
+              delivered)
             type:
               - string
               - "null"
           billingAddress:
+            description: The billing address details
             type: object
             properties:
               firstName:
+                description:
+                  The first name of the person associated with the billing
+                  address
                 type:
                   - string
                   - "null"
               lastName:
+                description:
+                  The last name of the person associated with the billing
+                  address
                 type:
                   - string
                   - "null"
               company:
+                description: The company name associated with the billing address
                 type:
                   - string
                   - "null"
               phone:
+                description: The phone number associated with the billing address
                 type:
                   - string
                   - "null"
               country:
+                description: The country of the billing address
                 type:
                   - string
                   - "null"
               countryCode:
+                description: The country code of the billing address
                 type:
                   - string
                   - "null"
               state:
+                description: The state of the billing address
                 type:
                   - string
                   - "null"
               city:
+                description: The city of the billing address
                 type:
                   - string
                   - "null"
               address:
+                description: The billing address
                 type:
                   - string
                   - "null"
               postalCode:
+                description: The postal code of the billing address
                 type:
                   - string
                   - "null"
           shippingAddress:
+            description: The shipping address details
             type: object
             properties:
               firstName:
+                description:
+                  The first name of the person associated with the shipping
+                  address
                 type:
                   - string
                   - "null"
               lastName:
+                description:
+                  The last name of the person associated with the shipping
+                  address
                 type:
                   - string
                   - "null"
               company:
+                description: The company name associated with the shipping address
                 type:
                   - string
                   - "null"
               phone:
+                description: The phone number associated with the shipping address
                 type:
                   - string
                   - "null"
               country:
+                description: The country of the shipping address
                 type:
                   - string
                   - "null"
               countryCode:
+                description: The country code of the shipping address
                 type:
                   - string
                   - "null"
               state:
+                description: The state of the shipping address
                 type:
                   - string
                   - "null"
               city:
+                description: The city of the shipping address
                 type:
                   - string
                   - "null"
               address:
+                description: The shipping address
                 type:
                   - string
                   - "null"
               postalCode:
+                description: The postal code of the shipping address
                 type:
                   - string
                   - "null"
           products:
+            description: Details of products included in the order
             type: array
             items:
+              description: Individual product details
               type: object
               properties:
                 cartProductID:
+                  description: The ID of the product in the cart
                   type:
                     - string
                     - "null"
                 productID:
+                  description: The unique ID of the product
                   type:
                     - string
                     - "null"
                 variantID:
+                  description: The ID of the product variant
                   type:
                     - string
                     - "null"
                 variantTitle:
+                  description: The title of the product variant
                   type:
                     - string
                     - "null"
                 title:
+                  description: The title of the product
                   type:
                     - string
                     - "null"
                 quantity:
+                  description: The quantity of the product in the order
                   type:
                     - integer
                     - "null"
                 weight:
+                  description: The weight of the product
                   type:
                     - integer
                     - "null"
                 price:
+                  description: Price of the product
                   type:
                     - integer
                     - "null"
                 discount:
+                  description: Discount applied to the product
                   type:
                     - integer
                     - "null"
                 imageUrl:
+                  description: URL of the product image
                   type:
                     - string
                     - "null"
                 productUrl:
+                  description: URL of the product details
                   type:
                     - string
                     - "null"
                 categoryIDs:
+                  description: IDs of the categories the product belongs to
                   type: array
                   items:
+                    description: Category ID
                     type:
                       - string
                       - "null"
                 tags:
+                  description: Tags associated with the product
                   type: array
                   items:
+                    description: Product tag
                     type:
                       - string
                       - "null"
           customFields:
+            description: Custom fields associated with the order
             type:
               - object
               - "null"
             properties:
               phone:
+                description: The phone number related to custom fields
                 type:
                   - string
                   - "null"
@@ -686,44 +848,61 @@ definitions:
         type: object
         properties:
           productID:
+            description: Unique identifier for the product.
             type: string
           title:
+            description: The name or title of the product.
             type:
               - string
               - "null"
           status:
+            description: Current status of the product (e.g., active, inactive).
             type:
               - string
               - "null"
           description:
+            description: Brief overview or details describing the product.
             type:
               - string
               - "null"
           currency:
+            description: The currency in which the price of the product is listed.
             type:
               - string
               - "null"
           productUrl:
+            description:
+              URL linking to the product page or details on the e-commerce
+              website.
             type:
               - string
               - "null"
           vendor:
+            description: The name of the vendor or seller providing the product.
             type:
               - string
               - "null"
           type:
+            description: Indication of the type or category of the product.
             type:
               - string
               - "null"
           createdAt:
+            description:
+              The timestamp indicating when the product was originally
+              created.
             type:
               - string
               - "null"
           updatedAt:
+            description: The timestamp indicating when the product was last updated.
             type:
               - string
               - "null"
           tags:
+            description:
+              An array containing tags or keywords associated with the
+              product.
             type:
               - array
               - "null"
@@ -732,6 +911,9 @@ definitions:
                 - string
                 - "null"
           categoryIDs:
+            description:
+              An array containing IDs of the categories to which the product
+              belongs.
             type:
               - array
               - "null"
@@ -740,6 +922,9 @@ definitions:
                 - string
                 - "null"
           images:
+            description:
+              An array containing information about the images associated
+              with the product.
             type:
               - array
               - "null"
@@ -747,66 +932,95 @@ definitions:
               type: object
               properties:
                 imageID:
+                  description: ID identifying the image.
                   type:
                     - string
                     - "null"
                 url:
+                  description: URL pointing to the image file.
                   type:
                     - string
                     - "null"
                 isDefault:
+                  description:
+                    Flag indicating if the image is the default image for
+                    the product.
                   type:
                     - boolean
                     - "null"
                 variants:
+                  description:
+                    An array containing information about different versions
+                    or types of the image.
                   type: array
                   items:
                     type:
                       - string
                       - "null"
           variants:
+            description:
+              An array containing different variations or options of the
+              product.
             type: array
             items:
               type: object
               properties:
                 variantID:
+                  description: Unique identifier for the variant.
                   type:
                     - string
                     - "null"
                 title:
+                  description: The title or name given to the variant.
                   type:
                     - string
                     - "null"
                 sku:
+                  description:
+                    Stock Keeping Unit (SKU) code uniquely identifying
+                    the variant.
                   type:
                     - string
                     - "null"
                 status:
+                  description:
+                    Current status of the variant (e.g., available, out
+                    of stock).
                   type:
                     - string
                     - "null"
                 price:
+                  description: Current price of the variant.
                   type:
                     - integer
                     - "null"
                 oldPrice:
+                  description: Previous price of the variant (if applicable).
                   type:
                     - integer
                     - "null"
                 productUrl:
+                  description:
+                    URL linking to the specific variant on the e-commerce
+                    website.
                   type:
                     - string
                     - "null"
                 imageID:
+                  description: ID identifying the image associated with the variant.
                   type:
                     - string
                     - "null"
                 customFields:
+                  description:
+                    Custom fields specific to a variant, such as additional
+                    product information.
                   type:
                     - object
                     - "null"
                   properties:
                     protectionClass:
+                      description: Information about the protection class of the variant.
                       type:
                         - string
                         - "null"

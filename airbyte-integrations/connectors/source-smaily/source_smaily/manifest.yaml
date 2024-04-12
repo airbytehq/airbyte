@@ -51,20 +51,25 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the user.
             type: integer
           email:
+            description: The email address of the user.
             type:
               - string
               - "null"
           first_name:
+            description: The first name of the user.
             type:
               - string
               - "null"
           last_name:
+            description: The last name of the user.
             type:
               - string
               - "null"
           is_owner:
+            description: Indicates if the user is the owner of the account.
             type:
               - boolean
               - "null"
@@ -74,8 +79,10 @@ definitions:
               - "null"
             properties:
               id:
+                description: The unique identifier of the user's role.
                 type: integer
               name:
+                description: The name of the user's role.
                 type:
                   - string
                   - "null"
@@ -94,12 +101,17 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the segment record.
             type: string
           name:
+            description:
+              Name of the segment which helps in identifying the group
+              of subscribers.
             type:
               - string
               - "null"
           subscribers_count:
+            description: Total count of subscribers within the segment.
             type:
               - integer
               - "null"
@@ -118,41 +130,52 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the campaign.
             type: string
           name:
+            description: The name of the campaign.
             type:
               - string
               - "null"
           template:
+            description: The template used for the campaign.
             type:
               - object
               - "null"
             properties:
               id:
+                description: The unique identifier of the template.
                 type: string
               name:
+                description: The name of the template.
                 type:
                   - string
                   - "null"
               preview_url:
+                description: The URL for previewing the template.
                 type:
                   - string
                   - "null"
           tags:
+            description: List of tags associated with the campaign.
             type:
               - array
               - "null"
             items:
+              description: A tag related to the campaign.
               type: string
           created_at:
+            description: The date and time when the campaign was created.
             type:
               - string
               - "null"
           completed_at:
+            description: The date and time when the campaign was completed.
             type:
               - string
               - "null"
           status:
+            description: The current status of the campaign.
             type:
               - string
               - "null"
@@ -178,24 +201,30 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the template
             type: integer
           type:
+            description: The type or category of the template
             type:
               - string
               - "null"
           name:
+            description: The name of the template
             type:
               - string
               - "null"
           created_at:
+            description: The timestamp when the template was created
             type:
               - string
               - "null"
           modified_at:
+            description: The timestamp when the template was last modified
             type:
               - string
               - "null"
           preview_url:
+            description: The URL to preview the template design
             type:
               - string
               - "null"
@@ -214,8 +243,10 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the automation
             type: string
           name:
+            description: Name of the automation
             type:
               - string
               - "null"
@@ -227,8 +258,10 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the section within the automation
                   type: integer
                 subject:
+                  description: Subject of the section
                   type:
                     - string
                     - "null"
@@ -238,12 +271,15 @@ definitions:
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier for the template within the section
                       type: integer
                     name:
+                      description: Name of the template
                       type:
                         - string
                         - "null"
                     preview_url:
+                      description: URL for previewing the template
                       type:
                         - string
                         - "null"
@@ -262,8 +298,10 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the AB test.
             type: integer
           name:
+            description: The name or title of the AB test.
             type:
               - string
               - "null"
@@ -275,8 +313,10 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier for the section.
                   type: integer
                 subject:
+                  description: The subject line used in the section of the AB test.
                   type:
                     - string
                     - "null"
@@ -286,12 +326,17 @@ definitions:
                     - "null"
                   properties:
                     id:
+                      description:
+                        The unique identifier for the template used in
+                        the section.
                       type: integer
                     name:
+                      description: The name or title of the template.
                       type:
                         - string
                         - "null"
                     preview_url:
+                      description: The URL to preview the template.
                       type:
                         - string
                         - "null"
@@ -300,18 +345,24 @@ definitions:
               - array
               - "null"
             items:
+              description: Any tags associated with the AB test.
               type:
                 - string
                 - "null"
           created_at:
+            description: The date and time when the AB test was created.
             type:
               - string
               - "null"
           completed_at:
+            description: The date and time when the AB test was completed.
             type:
               - string
               - "null"
           status:
+            description:
+              The status of the AB test, such as 'active', 'paused', or
+              'completed'.
             type:
               - string
               - "null"

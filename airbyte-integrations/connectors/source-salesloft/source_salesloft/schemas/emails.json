@@ -3,184 +3,223 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the email",
       "type": "integer"
     },
     "created_at": {
+      "description": "Timestamp when the email was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the email was last updated",
       "type": "string",
       "format": "date-time"
     },
     "recipient_email_address": {
+      "description": "Email address of the recipient",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the email",
       "type": ["null", "string"]
     },
     "bounced": {
+      "description": "Indicates if the email bounced",
       "type": ["null", "boolean"]
     },
     "send_after": {
+      "description": "Timestamp when the email is scheduled to be sent",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sent_at": {
+      "description": "Timestamp when the email was sent",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "view_tracking": {
+      "description": "Indicates if view tracking is enabled for the email",
       "type": ["null", "boolean"]
     },
     "click_tracking": {
+      "description": "Indicates if click tracking is enabled for the email",
       "type": ["null", "boolean"]
     },
     "personalization": {
+      "description": "Personalization information for the email",
       "type": ["null", "string"]
     },
     "counts": {
+      "description": "Various counts related to the email activity",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "clicks": {
+          "description": "Number of clicks on the email links",
           "type": ["null", "integer"]
         },
-
         "views": {
+          "description": "Number of views on the email",
           "type": ["null", "integer"]
         },
         "replies": {
+          "description": "Number of replies received for the email",
           "type": ["null", "integer"]
         },
-
         "unique_devices": {
+          "description": "Number of unique devices that viewed the email",
           "type": ["null", "integer"]
         },
-
         "unique_locations": {
+          "description": "Number of unique locations from where the email was viewed",
           "type": ["null", "integer"]
         },
-
         "attachments": {
+          "description": "Number of attachments in the email",
           "type": ["null", "integer"]
         }
       }
     },
     "headers": {
+      "description": "Various email headers information",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "In-Reply-To": {
+          "description": "In-Reply-To header of the email",
           "type": ["null", "string"]
         },
-
         "References": {
+          "description": "References header of the email",
           "type": ["null", "string"]
         },
         "to": {
+          "description": "Primary recipients of the email",
           "type": ["null", "string"]
         },
-
         "cc": {
+          "description": "CC recipients of the email",
           "type": ["null", "string"]
         },
-
         "in_reply_to": {
+          "description": "In-Reply-To header of the email",
           "type": ["null", "string"]
         },
-
         "bcc": {
+          "description": "BCC recipients of the email",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "Details about the user associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the user",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the user",
           "type": ["null", "integer"]
         }
       }
     },
     "recipient": {
+      "description": "Details about the recipient of the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the recipient",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the recipient",
           "type": ["null", "integer"]
         }
       }
     },
     "mailing": {
+      "description": "Details about the mailing associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the mailing",
           "type": ["null", "integer"]
         }
       }
     },
     "action": {
+      "description": "Details about the action associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the action",
           "type": ["null", "integer"]
         }
       }
     },
     "crm_activity": {
+      "description": "Details about CRM activity associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the CRM activity",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the CRM activity",
           "type": ["null", "integer"]
         }
       }
     },
     "cadence": {
+      "description": "Details about the cadence associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the cadence",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the cadence",
           "type": ["null", "integer"]
         }
       }
     },
     "step": {
+      "description": "Details about the step associated with the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the step",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the step",
           "type": ["null", "integer"]
         }
       }
     },
     "email_template": {
+      "description": "Details about the email template used for the email",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Hyperlink reference for the email template",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the email template",
           "type": ["null", "integer"]
         }
       }

@@ -3,94 +3,123 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the coupon.",
       "type": ["null", "integer"]
     },
     "code": {
+      "description": "The coupon code.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount or percentage discounted.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date when the coupon was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "The date when the coupon was created in GMT.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "The date when the coupon was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified_gmt": {
+      "description": "The date when the coupon was last modified in GMT.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "discount_type": {
+      "description": "The type of discount (fixed or percentage).",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the coupon.",
       "type": ["null", "string"]
     },
     "date_expires": {
+      "description": "The expiration date of the coupon.",
       "type": ["null", "string"]
     },
     "date_expires_gmt": {
+      "description": "The expiration date of the coupon in GMT.",
       "type": ["null", "string"]
     },
     "usage_count": {
+      "description": "Number of times the coupon has been used.",
       "type": ["null", "integer"]
     },
     "individual_use": {
+      "description": "Flag to restrict the coupon to individual use only.",
       "type": ["null", "boolean"]
     },
     "product_ids": {
+      "description": "Product IDs the coupon applies to.",
       "type": ["null", "array"]
     },
     "excluded_product_ids": {
+      "description": "Product IDs excluded from the coupon.",
       "type": ["null", "array"]
     },
     "usage_limit": {
+      "description": "Total number of times the coupon can be used.",
       "type": ["null", "integer"]
     },
     "usage_limit_per_user": {
+      "description": "Number of times the coupon can be used per user.",
       "type": ["null", "integer"]
     },
     "limit_usage_to_x_items": {
+      "description": "Number of items the coupon can be applied to.",
       "type": ["null", "integer"]
     },
     "free_shipping": {
+      "description": "Flag indicating if free shipping is included with the coupon.",
       "type": ["null", "boolean"]
     },
     "product_categories": {
+      "description": "Product categories the coupon applies to.",
       "type": ["null", "array"]
     },
     "excluded_product_categories": {
+      "description": "Product categories excluded from the coupon.",
       "type": ["null", "array"]
     },
     "exclude_sale_items": {
+      "description": "Flag to exclude sale items from the coupon.",
       "type": ["null", "boolean"]
     },
     "minimum_amount": {
+      "description": "Minimum amount required to apply the coupon.",
       "type": ["null", "string"]
     },
     "maximum_amount": {
+      "description": "Maximum amount allowed to be discounted.",
       "type": ["null", "string"]
     },
     "email_restrictions": {
+      "description": "Email addresses restricted from using the coupon.",
       "type": ["null", "array"]
     },
     "used_by": {
+      "description": "Users who have used the coupon.",
       "type": ["null", "array"]
     },
     "meta_data": {
+      "description": "Additional metadata related to the coupon.",
       "$ref": "meta_data.json"
     },
     "_links": {
+      "description": "Links related to the coupon.",
       "$ref": "_links.json"
     },
     "shop_url": {
+      "description": "URL of the shop associated with the coupon.",
       "type": ["null", "string"]
     }
   }

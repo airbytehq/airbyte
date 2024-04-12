@@ -34,20 +34,25 @@ definitions:
         type: object
         properties:
           brand_name:
+            description: Name of the brand or company related to the avatar
             type:
               - string
               - "null"
           avatar_id:
+            description: Unique identifier for the avatar
             type: string
           brand_image:
+            description: URL to the brand image associated with the avatar
             type:
               - string
               - "null"
           user_role:
+            description: Role or position of the user associated with the avatar
             type:
               - string
               - "null"
           facebook_page_id:
+            description: Identifier for the Facebook page linked to the avatar
             type:
               - string
               - "null"
@@ -81,8 +86,10 @@ definitions:
         type: object
         properties:
           tag_id:
+            description: Unique identifier for a tag.
             type: string
           tag_name:
+            description: Name or label associated with the tag.
             type:
               - string
               - "null"
@@ -109,8 +116,10 @@ definitions:
         type: object
         properties:
           custom_field_id:
+            description: The unique identifier for the custom field.
             type: string
           custom_field_name:
+            description: The name or label associated with the custom field.
             type:
               - string
               - "null"
@@ -137,8 +146,10 @@ definitions:
         type: object
         properties:
           sequence_id:
+            description: Unique identifier for the sequence data
             type: string
           sequence_name:
+            description: Name of the sequence
             type:
               - string
               - "null"

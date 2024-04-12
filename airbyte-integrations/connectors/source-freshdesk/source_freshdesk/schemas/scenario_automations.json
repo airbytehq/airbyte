@@ -15,8 +15,10 @@
       "type": ["null", "string"]
     },
     "actions": {
+      "description": "Contains the list of actions associated with the scenario automation",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of individual action to be performed",
         "type": ["null", "object"],
         "properties": {
           "name": {

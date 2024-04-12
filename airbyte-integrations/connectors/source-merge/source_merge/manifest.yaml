@@ -66,42 +66,52 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the account details.
             type:
               - "null"
               - string
           integration:
+            description: The type of integration used with the account.
             type:
               - "null"
               - string
           integration_slug:
+            description: The slug identifier for the integration.
             type:
               - "null"
               - string
           category:
+            description: The category to which the account belongs.
             type:
               - "null"
               - string
           end_user_origin_id:
+            description: The identifier of the end user's origin within the organization.
             type:
               - "null"
               - string
           end_user_organization_name:
+            description: The name of the organization to which the end user belongs.
             type:
               - "null"
               - string
           end_user_email_address:
+            description: The email address of the end user associated with the account.
             type:
               - "null"
               - string
           status:
+            description: The current status of the account.
             type:
               - "null"
               - string
           webhook_listener_url:
+            description: The URL for the webhook listener associated with the account.
             type:
               - "null"
               - string
-          is_duplicate: {}
+          is_duplicate:
+            description: Flag indicating whether the account is a duplicate entry.
   activities_stream:
     $ref: "#/definitions/base_stream"
     name: "activities"
@@ -118,38 +128,47 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the activity.
             type:
               - "null"
               - string
           remote_id:
+            description: Unique identifier of the activity in the remote system.
             type:
               - "null"
               - string
           user:
+            description: The user associated with the activity.
             type:
               - "null"
               - string
           remote_created_at:
+            description: Timestamp of when the activity was created remotely.
             type:
               - "null"
               - string
           activity_type:
+            description: The type of activity being performed.
             type:
               - "null"
               - string
           subject:
+            description: The subject or title of the activity.
             type:
               - "null"
               - string
           body:
+            description: The content or description of the activity.
             type:
               - "null"
               - string
           visibility:
+            description: The visibility settings for the activity.
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicator if the activity was deleted remotely.
             type:
               - "null"
               - boolean
@@ -159,24 +178,29 @@ definitions:
               - object
             properties:
               organization_defined_targets:
+                description: Targets defined by the organization.
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization defined data.
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Targets defined by a linked account.
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account related data.
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Additional remote data related to the activity.
             type:
               - "null"
               - array
@@ -186,10 +210,12 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path to access the remote data item.
                   type:
                     - "null"
                     - string
                 data:
+                  description: Specific data related to the remote item.
                   type:
                     - "null"
                     - array
@@ -213,46 +239,59 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the application.
             type:
               - "null"
               - string
           remote_id:
+            description: Identifier of the remote application data.
             type:
               - "null"
               - string
           candidate:
+            description: Details of the candidate who applied for the job.
             type:
               - "null"
               - string
           job:
+            description: Details of the job for which the application is made.
             type:
               - "null"
               - string
           applied_at:
+            description: Timestamp when the application was submitted.
             type:
               - "null"
               - string
           rejected_at:
+            description: Timestamp when the application was rejected.
             type:
               - "null"
               - string
           source:
+            description: Source of the application data.
             type:
               - "null"
               - string
           credited_to:
+            description:
+              User or entity to whom the credit for the application is
+              assigned.
             type:
               - "null"
               - string
           current_stage:
+            description: The current stage of the application process.
             type:
               - "null"
               - string
           reject_reason:
+            description: Reason for rejecting the application.
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Flag indicating if the remote application data was deleted.
             type:
               - "null"
               - boolean
@@ -267,6 +306,7 @@ definitions:
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization defined targets.
                     type:
                       - "null"
                       - string
@@ -276,6 +316,7 @@ definitions:
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account defined targets.
                     type:
                       - "null"
                       - string
@@ -289,6 +330,7 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path to the remote source data.
                   type:
                     - "null"
                     - string
@@ -297,6 +339,7 @@ definitions:
                     - "null"
                     - array
                   items:
+                    description: Data related to the remote source.
                     type:
                       - "null"
                       - string
@@ -316,30 +359,37 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the attachment
             type:
               - "null"
               - string
           remote_id:
+            description: ID of the remote attachment
             type:
               - "null"
               - string
           file_name:
+            description: Name of the attached file
             type:
               - "null"
               - string
           file_url:
+            description: URL to access the attached file
             type:
               - "null"
               - string
           candidate:
+            description: Candidate associated with the attachment
             type:
               - "null"
               - string
           attachment_type:
+            description: Type of attachment being fetched
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicates if the remote attachment was deleted
             type:
               - "null"
               - boolean
@@ -354,6 +404,7 @@ definitions:
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization defined target
                     type:
                       - "null"
                       - string
@@ -363,6 +414,7 @@ definitions:
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account defined target
                     type:
                       - "null"
                       - string
@@ -376,12 +428,14 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path to access the remote data
                   type:
                     - "null"
                     - string
                 data:
                   type: array
                   items:
+                    description: Data associated with the attachment
                     type:
                       - "null"
                       - string
@@ -401,50 +455,64 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the candidate
             type:
               - "null"
               - string
           remote_id:
+            description: Remote identifier for the candidate
             type:
               - "null"
               - string
           first_name:
+            description: First name of the candidate
             type:
               - "null"
               - string
           last_name:
+            description: Last name of the candidate
             type:
               - "null"
               - string
           company:
+            description: Company name associated with the candidate
             type:
               - "null"
               - string
           title:
+            description: Title or position of the candidate
             type:
               - "null"
               - string
           remote_created_at:
+            description: Timestamp when the candidate was created remotely
             type:
               - "null"
               - string
           remote_updated_at:
+            description: Timestamp when the candidate was last updated remotely
             type:
               - "null"
               - string
           last_interaction_at:
+            description: Timestamp of the candidate's last interaction
             type:
               - "null"
               - string
           is_private:
+            description: Boolean indicating if the candidate information is private
             type:
               - "null"
               - boolean
           can_email:
+            description:
+              Boolean indicating if the candidate can be contacted via
+              email
             type:
               - "null"
               - boolean
           locations:
+            description: List of locations associated with the candidate
             type:
               - "null"
               - array
@@ -453,6 +521,7 @@ definitions:
                 - "null"
                 - string
           phone_numbers:
+            description: List of phone numbers for the candidate
             type:
               - "null"
               - array
@@ -462,14 +531,17 @@ definitions:
                 - object
               properties:
                 value:
+                  description: Phone number value
                   type:
                     - "null"
                     - string
                 phone_number_type:
+                  description: Type of phone number
                   type:
                     - "null"
                     - string
           email_addresses:
+            description: List of email addresses for the candidate
             type:
               - "null"
               - array
@@ -479,14 +551,17 @@ definitions:
                 - object
               properties:
                 value:
+                  description: Email address value
                   type:
                     - "null"
                     - string
                 email_address_type:
+                  description: Type of email address
                   type:
                     - "null"
                     - string
           urls:
+            description: List of URLs related to the candidate
             type:
               - "null"
               - array
@@ -496,14 +571,17 @@ definitions:
                 - object
               properties:
                 value:
+                  description: URL value
                   type:
                     - "null"
                     - string
                 url_type:
+                  description: Type of URL
                   type:
                     - "null"
                     - string
           tags:
+            description: List of tags associated with the candidate
             type:
               - "null"
               - array
@@ -512,6 +590,7 @@ definitions:
                 - "null"
                 - string
           applications:
+            description: List of applications related to the candidate
             type:
               - "null"
               - array
@@ -520,6 +599,7 @@ definitions:
                 - "null"
                 - string
           attachments:
+            description: List of attachments associated with the candidate
             type:
               - "null"
               - array
@@ -528,33 +608,40 @@ definitions:
                 - "null"
                 - string
           remote_was_deleted:
+            description: Boolean indicating if the candidate was deleted remotely
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Field mapping details for the candidate
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Custom key mappings defined by the organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key value
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Custom key mappings defined by linked accounts
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key value
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Remote data details for the candidate
             type:
               - "null"
               - array
@@ -564,10 +651,12 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path to access remote data
                   type:
                     - "null"
                     - string
                 data:
+                  description: Remote data information
                   type:
                     - "null"
                     - array
@@ -590,62 +679,76 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the department
             type:
               - "null"
               - string
           remote_id:
+            description: Identifier of the department in the remote system
             type:
               - "null"
               - string
           name:
+            description: Name of the department
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicator if the department was deleted in the remote system
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Mappings for fields related to various types of targets
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Mappings for targets defined by the organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key associated with the target
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Mappings for targets defined by linked accounts
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key associated with the target
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Data related to remote sources
             type:
               - "null"
               - array
             items:
+              description: Items related to remote data retrieval
               type:
                 - "null"
                 - object
               properties:
                 path:
+                  description: Path to the remote data source
                   type:
                     - "null"
                     - string
                 data:
+                  description: Data retrieved from the remote source
                   type:
                     - "null"
                     - array
                   items:
+                    description: Individual data items
                     type:
                       - "null"
                       - string
@@ -665,38 +768,47 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier of the EEOC data.
             type:
               - "null"
               - string
           remote_id:
+            description: Identifier of the remotely fetched EEOC data.
             type:
               - "null"
               - string
           candidate:
+            description: Details about the candidate associated with the EEOC data.
             type:
               - "null"
               - string
           submitted_at:
+            description: Timestamp of when the EEOC data was submitted.
             type:
               - "null"
               - string
           race:
+            description: Race of the candidate.
             type:
               - "null"
               - string
           gender:
+            description: Gender of the candidate.
             type:
               - "null"
               - string
           veteran_status:
+            description: Status of veteran status of the candidate.
             type:
               - "null"
               - string
           disability_status:
+            description: Status of disability of the candidate.
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Flag indicating if the remote data was deleted.
             type:
               - "null"
               - boolean
@@ -706,24 +818,33 @@ definitions:
               - object
             properties:
               organization_defined_targets:
+                description:
+                  Mapping of custom keys associated with organization defined
+                  targets.
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization defined targets.
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description:
+                  Mapping of custom keys associated with linked account
+                  defined targets.
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account defined targets.
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Data fetched remotely related to the EEOC information.
             type:
               - "null"
               - array
@@ -733,14 +854,17 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path of the remote data.
                   type:
                     - "null"
                     - string
                 data:
+                  description: Actual data fetched remotely.
                   type:
                     - "null"
                     - array
                   items:
+                    description: Individual item within the data.
                     type:
                       - "null"
                       - string
@@ -760,26 +884,32 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the interview
             type:
               - "null"
               - string
           remote_id:
+            description: Unique identifier from the remote source
             type:
               - "null"
               - string
           application:
+            description: Application details linked to the interview
             type:
               - "null"
               - string
           job_interview_stage:
+            description: Stage of the job interview
             type:
               - "null"
               - string
           organizer:
+            description: Organizer of the interview
             type:
               - "null"
               - string
           interviewers:
+            description: List of interviewers participating in the interview
             type:
               - "null"
               - array
@@ -788,57 +918,72 @@ definitions:
                 - "null"
                 - string
           location:
+            description: Location of the interview
             type:
               - "null"
               - string
           start_at:
+            description: Start date and time of the interview
             type:
               - "null"
               - string
           end_at:
+            description: End date and time of the interview
             type:
               - "null"
               - string
           remote_created_at:
+            description: Date and time when the interview was created remotely
             type:
               - "null"
               - string
           remote_updated_at:
+            description: Date and time when the interview was updated remotely
             type:
               - "null"
               - string
           status:
+            description: Status of the interview
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Flag indicating if the interview was deleted remotely
             type:
               - "null"
               - boolean
           field_mappings:
+            description:
+              Mapping of field data between linked and organization-defined
+              targets
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Field mappings from organization-defined targets
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization-defined target
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Field mappings from linked accounts defined targets
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account defined target
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Remote data associated with the interview
             type:
               - "null"
               - array
@@ -848,10 +993,12 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path to remote data
                   type:
                     - "null"
                     - string
                 data:
+                  description: Data related to the remote operations
                   type:
                     - "null"
                     - array
@@ -875,70 +1022,88 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the job interview stage
             type:
               - "null"
               - string
           remote_id:
+            description: ID used for remote identification of the job interview stage
             type:
               - "null"
               - string
           name:
+            description: Name of the job interview stage
             type:
               - "null"
               - string
           modified_at:
+            description:
+              Timestamp of the last modification made to the interview
+              stage
             type:
               - "null"
               - string
           job:
+            description: Information about the job associated with the interview stage
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Flag indicating if the remote data was deleted
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Contains mappings for different field types
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Mappings defined by the organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key mapping for organization targets
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Mappings defined by linked accounts
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key mapping for linked account targets
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Data related to remote sources
             type:
               - "null"
               - array
             items:
+              description: Items containing remote data information
               type:
                 - "null"
                 - object
               properties:
                 path:
+                  description: Path to access remote data
                   type:
                     - "null"
                     - string
                 data:
+                  description: Specific data related to the remote source
                   type:
                     - "null"
                     - array
                   items:
+                    description: Individual data item
                     type:
                       - "null"
                       - string
@@ -958,30 +1123,37 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the job
             type:
               - "null"
               - string
           remote_id:
+            description: Unique identifier for the job in the remote system
             type:
               - "null"
               - string
           name:
+            description: Name of the job
             type:
               - "null"
               - string
           description:
+            description: Detailed description of the job
             type:
               - "null"
               - string
           code:
+            description: Unique identifier for the job
             type:
               - "null"
               - string
           status:
+            description: Status of the job (e.g., open, closed)
             type:
               - "null"
               - string
           job_posting_urls:
+            description: List of URLs for job postings
             type:
               - "null"
               - array
@@ -991,26 +1163,32 @@ definitions:
                 - object
               properties:
                 value:
+                  description: URL value
                   type:
                     - "null"
                     - string
                 url_type:
+                  description: Type of URL (e.g., career site, social media)
                   type:
                     - "null"
                     - string
           remote_created_at:
+            description: Timestamp when the job was created remotely
             type:
               - "null"
               - string
           remote_updated_at:
+            description: Timestamp when the job was last updated remotely
             type:
               - "null"
               - string
           confidential:
+            description: Flag indicating if the job is confidential
             type:
               - "null"
               - boolean
           departments:
+            description: List of departments associated with the job
             type:
               - "null"
               - array
@@ -1019,6 +1197,7 @@ definitions:
                 - "null"
                 - string
           offices:
+            description: List of offices associated with the job
             type:
               - "null"
               - array
@@ -1027,6 +1206,7 @@ definitions:
                 - "null"
                 - string
           hiring_managers:
+            description: List of hiring managers for the job
             type:
               - "null"
               - array
@@ -1035,6 +1215,7 @@ definitions:
                 - "null"
                 - string
           recruiters:
+            description: List of recruiters assigned to the job
             type:
               - "null"
               - array
@@ -1043,33 +1224,40 @@ definitions:
                 - "null"
                 - string
           remote_was_deleted:
+            description: Flag indicating if the job was deleted remotely
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Mapping of fields defined by linked accounts and organizations
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Custom key defined by organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Custom key defined by linked account
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Remote data associated with the job
             type:
               - "null"
               - array
@@ -1079,10 +1267,12 @@ definitions:
                 - object
               properties:
                 path:
+                  description: Path of the remote data
                   type:
                     - "null"
                     - string
                 data:
+                  description: Data related to the remote job
                   type:
                     - "null"
                     - array
@@ -1106,66 +1296,81 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the office
             type:
               - "null"
               - string
           remote_id:
+            description: Identifier for the remote office
             type:
               - "null"
               - string
           name:
+            description: Name of the office
             type:
               - "null"
               - string
           location:
+            description: Geographical location of the office
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicator if the remote office was deleted
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Mappings for different types of office data fields
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Targets defined by the organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for organization defined targets
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Targets defined by linked accounts
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key for linked account defined targets
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Data related to remote office operations
             type:
               - "null"
               - array
             items:
+              description: Items related to remote data
               type:
                 - "null"
                 - object
               properties:
                 path:
+                  description: Path to access remote data
                   type:
                     - "null"
                     - string
                 data:
+                  description: Actual data related to remote operations
                   type:
                     - "null"
                     - array
                   items:
+                    description: Individual data item
                     type:
                       - "null"
                       - string
@@ -1185,82 +1390,101 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the offer
             type:
               - "null"
               - string
           remote_id:
+            description: Unique identifier used remotely for the offer
             type:
               - "null"
               - string
           application:
+            description: The application associated with the offer data
             type:
               - "null"
               - string
           creator:
+            description: The creator of the offer
             type:
               - "null"
               - string
           remote_created_at:
+            description: The timestamp when the offer was created remotely
             type:
               - "null"
               - string
           closed_at:
+            description: The timestamp when the offer was closed
             type:
               - "null"
               - string
           sent_at:
+            description: The timestamp when the offer was sent
             type:
               - "null"
               - string
           start_date:
+            description: The start date of the offer
             type:
               - "null"
               - string
           status:
+            description: The status of the offer
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicates if the offer was deleted remotely
             type:
               - "null"
               - boolean
           field_mappings:
+            description: Mappings related to field configurations
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Targets defined by the organization
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key associated with the target
                     type:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Targets defined by linked accounts
                 type:
                   - "null"
                   - object
                 properties:
                   custom_key:
+                    description: Custom key associated with the target
                     type:
                       - "null"
                       - string
           remote_data:
+            description: Remote data related to the offer
             type:
               - "null"
               - array
             items:
+              description: Items in the remote data
               type:
                 - "null"
                 - object
               properties:
                 path:
+                  description: Path to the item
                   type:
                     - "null"
                     - string
                 data:
+                  description: Data associated with the item
                   type:
                     - "null"
                     - array
@@ -1284,23 +1508,37 @@ definitions:
         type: object
         properties:
           model_name:
+            description: Name of the model for which the sync status is being queried.
             type:
               - "null"
               - string
           model_id:
+            description: ID of the model for which the sync status is being queried.
             type:
               - "null"
               - string
           last_sync_start:
+            description:
+              Timestamp indicating the time when the last synchronization
+              process started.
             type:
               - "null"
               - string
-          next_sync_start: {}
+          next_sync_start:
+            description:
+              Timestamp indicating the scheduled time for the next synchronization
+              process to start.
           status:
+            description:
+              Current status of the synchronization process (e.g. 'syncing',
+              'completed', 'failed').
             type:
               - "null"
               - string
           is_initial_sync:
+            description:
+              Indicates if the current sync is the initial synchronization
+              for the model.
             type:
               - "null"
               - boolean
@@ -1320,14 +1558,17 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the user.
             type:
               - "null"
               - string
           remote_data:
+            description: Additional data stored remotely for the user.
             type:
               - "null"
               - string
           modified_at:
+            description: The date and time when the user data was last modified.
             type:
               - "null"
               - string
@@ -1336,37 +1577,48 @@ definitions:
               - "null"
               - object
             properties:
-              linked_account_defined_targets: {}
+              linked_account_defined_targets:
+                description:
+                  Represents the mapping of linked accounts with defined
+                  targets.
           remote_id:
+            description: The unique identifier assigned to the user remotely.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the user.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the user.
             type:
               - "null"
               - string
           email:
+            description: The email address associated with the user.
             type:
               - "null"
               - string
           disabled:
+            description: Indicates whether the user account is disabled.
             type:
               - "null"
               - boolean
           remote_created_at:
+            description: The date and time when the user account was created remotely.
             type:
               - "null"
               - string
             format: date-time
           access_role:
+            description: The role that determines the user's level of access rights.
             type:
               - "null"
               - string
           remote_was_deleted:
+            description: Indicates whether the user was deleted remotely.
             type:
               - "null"
               - boolean

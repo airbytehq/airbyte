@@ -18,6 +18,7 @@
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information or custom data related to the invoice line items.",
       "type": ["null", "object"],
       "properties": {
         "description": "Additional information related to the invoice line item."
@@ -52,6 +53,7 @@
       "type": ["null", "boolean"]
     },
     "margins": {
+      "description": "Information about the margins for each item.",
       "type": ["null", "array"],
       "items": {
         "description": "Details about margins.",
@@ -63,6 +65,7 @@
       "type": ["null", "boolean"]
     },
     "period": {
+      "description": "The time period for which the invoice line items are applicable.",
       "type": ["null", "object"],
       "properties": {
         "start": {
@@ -80,6 +83,7 @@
       "type": ["null", "string"]
     },
     "plan": {
+      "description": "Details about the plan associated with the invoice line items.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
@@ -87,6 +91,7 @@
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Information about the tiers of the plan.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
@@ -183,6 +188,7 @@
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Metadata specific to the plan.",
           "type": ["null", "object"],
           "properties": {
             "description": "Additional metadata related to the plan."
@@ -211,9 +217,11 @@
       "type": ["null", "string"]
     },
     "proration_details": {
+      "description": "Details related to proration on the invoice line items.",
       "type": ["null", "object"],
       "properties": {
         "credited_items": {
+          "description": "Items that were credited in relation to the invoice line items.",
           "type": ["null", "object"],
           "properties": {
             "invoice": {
@@ -221,6 +229,7 @@
               "type": ["null", "string"]
             },
             "invoice_line_items": {
+              "description": "Details of the specific invoice line items that were credited.",
               "type": ["null", "array"],
               "items": {
                 "description": "Details of the credited items on the invoice.",
@@ -236,6 +245,7 @@
       "$ref": "price.json"
     },
     "discount_amounts": {
+      "description": "The amount of discount applied to each item in the invoice line items.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -252,6 +262,7 @@
       }
     },
     "discounts": {
+      "description": "Any discounts applied to the invoice line items.",
       "type": ["null", "array"],
       "items": {
         "description": "Discount information for the invoice line item.",
@@ -263,6 +274,7 @@
       "$ref": "tax_rates.json"
     },
     "tax_amounts": {
+      "description": "The amounts of tax applied to each item in the invoice line items.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

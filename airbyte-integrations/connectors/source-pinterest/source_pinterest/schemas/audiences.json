@@ -23,6 +23,7 @@
       "type": ["null", "string"]
     },
     "rule": {
+      "description": "Contains information about the rule/condition applied to filter audiences.",
       "type": ["null", "object"],
       "properties": {
         "country": {

@@ -22,6 +22,7 @@
       "type": ["null", "integer"]
     },
     "configuration": {
+      "description": "This object contains custom configuration settings.",
       "properties": {
         "assign_tickets_to_any_group": {
           "description": "Allows assigning tickets to any group within the organization",
@@ -88,6 +89,7 @@
           "type": ["null", "string"]
         },
         "custom_objects": {
+          "description": "Custom objects configuration.",
           "type": ["null", "object"],
           "properties": {},
           "additionalProperties": true

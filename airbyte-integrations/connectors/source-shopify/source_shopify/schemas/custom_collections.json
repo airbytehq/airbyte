@@ -34,6 +34,7 @@
       "format": "date-time"
     },
     "image": {
+      "description": "Represents the image associated with the custom collection if available.",
       "properties": {
         "alt": {
           "description": "The alternative text description of the image.",

@@ -2,38 +2,50 @@
   "type": ["null", "object"],
   "properties": {
     "ItemID": {
+      "description": "Unique identifier for the item.",
       "type": ["string"]
     },
     "Code": {
+      "description": "Unique identifier for the item code.",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "Name of the item.",
       "type": ["null", "string"]
     },
     "IsSold": {
+      "description": "Indicates if the item is available for sale.",
       "type": ["null", "boolean"]
     },
     "IsPurchased": {
+      "description": "Indicates if the item is available for purchase.",
       "type": ["null", "boolean"]
     },
     "Description": {
+      "description": "Description of the item.",
       "type": ["null", "string"]
     },
     "PurchaseDescription": {
+      "description": "Description of the item for purchase.",
       "type": ["null", "string"]
     },
     "PurchaseDetails": {
+      "description": "Details related to purchasing the item.",
       "properties": {
         "TaxType": {
+          "description": "Type of tax applicable to the purchase.",
           "type": ["null", "string"]
         },
         "COGSAccountCode": {
+          "description": "Account code for cost of goods sold in purchasing.",
           "type": ["null", "string"]
         },
         "UnitPrice": {
+          "description": "Unit price of the item for purchase.",
           "type": ["null", "number"]
         },
         "AccountCode": {
+          "description": "Account code used for purchasing.",
           "type": ["null", "string"]
         }
       },
@@ -41,14 +53,18 @@
       "additionalProperties": true
     },
     "SalesDetails": {
+      "description": "Details related to selling the item.",
       "properties": {
         "TaxType": {
+          "description": "Type of tax applicable to the sale.",
           "type": ["null", "string"]
         },
         "UnitPrice": {
+          "description": "Unit price of the item for sale.",
           "type": ["null", "number"]
         },
         "AccountCode": {
+          "description": "Account code used for sales.",
           "type": ["null", "string"]
         }
       },
@@ -56,18 +72,23 @@
       "additionalProperties": true
     },
     "IsTrackedAsInventory": {
+      "description": "Indicates if the item is tracked as inventory.",
       "type": ["null", "boolean"]
     },
     "InventoryAssetAccountCode": {
+      "description": "Account code for tracking inventory assets.",
       "type": ["null", "string"]
     },
     "TotalCostPool": {
+      "description": "Total cost pool associated with the item.",
       "type": ["null", "number"]
     },
     "QuantityOnHand": {
+      "description": "Total quantity of the item on hand.",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time when the item data was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

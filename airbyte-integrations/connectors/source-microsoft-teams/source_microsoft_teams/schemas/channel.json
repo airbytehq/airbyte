@@ -3,6 +3,7 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
+    "description": "The description of the channel.",
     "id": {
       "type": ["null", "string"]
     },
@@ -10,13 +11,11 @@
       "type": ["null", "string"]
     },
     "roles": {
+      "description": "The roles associated with the channel members.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
-    },
-    "description": {
-      "type": ["null", "string"]
     },
     "email": {
       "type": ["null", "string"]

@@ -9,32 +9,40 @@
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier for this sequence.",
             "type": ["string", "null"]
           },
           "campaignId": {
+            "description": "The unique identifier for the campaign associated with this sequence.",
             "type": ["string", "null"]
           },
           "title": {
+            "description": "The title of the sequence.",
             "type": ["string", "null"]
           },
           "enabled": {
+            "description": "Indicates if the sequence is currently enabled or disabled.",
             "type": ["boolean", "null"]
           },
           "onAirStatus": {
             "type": "object",
             "properties": {
               "onAir": {
+                "description": "Indicates if the sequence is currently on air or not.",
                 "type": ["boolean", "null"]
               },
               "reason": {
+                "description": "The reason behind the on air status of the sequence.",
                 "type": ["string", "null"]
               }
             }
           },
           "cachedLogoUrl": {
+            "description": "The cached URL for the logo of the sequence.",
             "type": ["string", "null"]
           },
           "sponsor": {
+            "description": "The sponsor of the sequence.",
             "type": ["string", "null"]
           },
           "promotedLinks": {
@@ -43,68 +51,87 @@
               "type": "object",
               "properties": {
                 "id": {
+                  "description": "The unique identifier of this promoted link.",
                   "type": ["string", "null"]
                 },
                 "text": {
+                  "description": "The textual content of the promoted link.",
                   "type": ["string", "null"]
                 },
                 "creationTime": {
+                  "description": "The timestamp indicating when this promoted link was created.",
                   "type": ["string", "null"]
                 },
                 "lastModified": {
+                  "description": "The timestamp of the last modification made to this promoted link.",
                   "type": ["string", "null"]
                 },
                 "url": {
+                  "description": "The URL associated with the promoted link.",
                   "type": ["string", "null"]
                 },
                 "siteName": {
+                  "description": "The name of the site where the promoted link is displayed.",
                   "type": ["string", "null"]
                 },
                 "sectionName": {
+                  "description": "The name of the section where the promoted link is displayed.",
                   "type": ["string", "null"]
                 },
                 "status": {
+                  "description": "The status of the promoted link.",
                   "type": ["string", "null"]
                 },
                 "enabled": {
+                  "description": "Indicates if the promoted link is currently enabled or disabled.",
                   "type": ["boolean", "null"]
                 },
                 "cachedImageUrl": {
+                  "description": "The cached URL for the image of the promoted link.",
                   "type": ["string", "null"]
                 },
                 "campaignId": {
+                  "description": "The unique identifier of the campaign associated with this promoted link.",
                   "type": ["string", "null"]
                 },
                 "archived": {
+                  "description": "Indicates if the promoted link is archived.",
                   "type": ["boolean", "null"]
                 },
                 "documentLanguage": {
+                  "description": "The language used in the promoted link document.",
                   "type": ["string", "null"]
                 },
                 "onAirStatus": {
                   "type": "object",
                   "properties": {
                     "onAir": {
+                      "description": "Indicates if the promoted link is currently on air or not.",
                       "type": ["boolean", "null"]
                     },
                     "reason": {
+                      "description": "The reason behind the on air status of the promoted link.",
                       "type": ["string", "null"]
                     }
                   }
                 },
                 "baseUrl": {
+                  "description": "The base URL of the promoted link.",
                   "type": ["string", "null"]
                 },
                 "documentId": {
+                  "description": "The document identifier of the promoted link.",
                   "type": ["string", "null"]
                 },
                 "sequenceSettings": {
                   "type": "object",
                   "properties": {
                     "sequenceId": {
+                      "description": "The identifier of the sequence to which this promoted link belongs.",
                       "type": ["string", "null"]
                     },
                     "sequenceOrder": {
+                      "description": "The order of this promoted link within the sequence.",
                       "type": ["integer", "null"]
                     }
                   }
@@ -113,35 +140,43 @@
                   "type": "object",
                   "properties": {
                     "status": {
+                      "description": "The approval status of the promoted link.",
                       "type": ["string", "null"]
                     },
                     "isEditable": {
+                      "description": "Indicates if the promoted link is editable or not.",
                       "type": ["boolean", "null"]
                     }
                   }
                 },
                 "imageType": {
+                  "description": "The type of image used in the promoted link.",
                   "type": ["string", "null"]
                 },
                 "language": {
+                  "description": "The language associated with the promoted link.",
                   "type": ["string", "null"]
                 }
               }
             }
           },
           "creationTime": {
+            "description": "The timestamp indicating when this sequence was created.",
             "type": ["string", "null"]
           },
           "lastModified": {
+            "description": "The timestamp of the last modification made to this sequence.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "totalCount": {
+      "description": "The total count of sequences available for the specified criteria.",
       "type": ["integer", "null"]
     },
     "count": {
+      "description": "The number of sequences fetched in the current request.",
       "type": ["integer", "null"]
     }
   }

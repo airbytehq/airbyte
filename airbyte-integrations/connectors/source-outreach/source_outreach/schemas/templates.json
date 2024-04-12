@@ -4,124 +4,158 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the template.",
       "type": "integer"
     },
     "archived": {
+      "description": "Indicates whether the template is archived or not.",
       "type": ["null", "boolean"]
     },
     "archivedAt": {
+      "description": "Date and time when the template was archived.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "bccRecipients": {
+      "description": "List of BCC recipients for the template.",
       "type": ["null", "string"]
     },
     "bodyHtml": {
+      "description": "HTML content of the email template body.",
       "type": ["null", "string"]
     },
     "bodyText": {
+      "description": "Plain text content of the email template body.",
       "type": ["null", "string"]
     },
     "bounceCount": {
+      "description": "Count of bounced emails related to this template.",
       "type": ["null", "integer"]
     },
     "ccRecipients": {
+      "description": "List of CC recipients for the template.",
       "type": ["null", "string"]
     },
     "clickCount": {
+      "description": "Count of clicks on links in emails sent using this template.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "Date and time when the template was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deliverCount": {
+      "description": "Count of successfully delivered emails using this template.",
       "type": ["null", "integer"]
     },
     "failureCount": {
+      "description": "Count of failed email deliveries related to this template.",
       "type": ["null", "integer"]
     },
     "lastUsedAt": {
+      "description": "Date and time when the template was last used in an email.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Name of the template.",
       "type": ["null", "string"]
     },
     "negativeReplyCount": {
+      "description": "Count of negative replies received for emails sent using this template.",
       "type": ["null", "integer"]
     },
     "neutralReplyCount": {
+      "description": "Count of neutral replies received for emails sent using this template.",
       "type": ["null", "integer"]
     },
     "openCount": {
+      "description": "Count of opened emails related to this template.",
       "type": ["null", "integer"]
     },
     "optOutCount": {
+      "description": "Count of recipients who opted out of receiving emails using this template.",
       "type": ["null", "integer"]
     },
     "positiveReplyCount": {
+      "description": "Count of positive replies received for emails sent using this template.",
       "type": ["null", "integer"]
     },
     "replyCount": {
+      "description": "Total count of replies received for emails sent using this template.",
       "type": ["null", "integer"]
     },
     "scheduleCount": {
+      "description": "Count of scheduled email deliveries using this template.",
       "type": ["null", "integer"]
     },
     "shareType": {
+      "description": "Indicates the sharing permissions for the template.",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "Subject line of the email template.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the template.",
       "type": ["null", "string"]
     },
     "toRecipients": {
+      "description": "List of TO recipients for the template.",
       "type": ["null", "string"]
     },
     "trackLinks": {
+      "description": "Flag to track link clicks in emails sent using this template.",
       "type": ["null", "boolean"]
     },
     "trackOpens": {
+      "description": "Flag to track email opens for emails sent using this template.",
       "type": ["null", "boolean"]
     },
     "updatedAt": {
+      "description": "Date and time when the template was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contentCategoryMemberships": {
+      "description": "List of content categories associated with the template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "creator": {
+      "description": "Creator of the template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "owner": {
+      "description": "Owner of the template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "recipients": {
+      "description": "List of email recipients for the template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequenceTemplates": {
+      "description": "List of sequence templates associated with this template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "updater": {
+      "description": "Updater who last modified the template.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]

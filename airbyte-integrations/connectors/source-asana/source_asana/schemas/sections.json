@@ -2,15 +2,19 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the section",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of resource (e.g., 'section')",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the section",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the section was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -18,12 +22,15 @@
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the project the section belongs to",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource (e.g., 'project')",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the project the section belongs to",
           "type": ["null", "string"]
         }
       }

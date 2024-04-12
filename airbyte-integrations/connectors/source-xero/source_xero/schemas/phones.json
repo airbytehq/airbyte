@@ -2,15 +2,19 @@
   "type": ["null", "object"],
   "properties": {
     "PhoneNumber": {
+      "description": "The phone number",
       "type": ["null", "string"]
     },
     "PhoneAreaCode": {
+      "description": "The area code of the phone number",
       "type": ["null", "string"]
     },
     "PhoneCountryCode": {
+      "description": "The country code of the phone number",
       "type": ["null", "string"]
     },
     "PhoneType": {
+      "description": "The type of phone number (e.g., mobile, landline)",
       "type": ["null", "string"]
     }
   },

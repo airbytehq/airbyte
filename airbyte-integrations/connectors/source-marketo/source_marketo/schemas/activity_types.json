@@ -15,6 +15,7 @@
       "type": ["null", "string"]
     },
     "primaryAttribute": {
+      "description": "The primary attribute of the activity, which could be the most essential or relevant data point.",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -28,8 +29,10 @@
       }
     },
     "attributes": {
+      "description": "An array containing the activity attributes including details like type, value, timestamp, etc.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties related to a specific activity attribute.",
         "type": ["null", "object"],
         "properties": {
           "name": {

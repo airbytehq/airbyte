@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the routing queue",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the routing queue",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Division to which the queue belongs",
       "type": "object",
       "properties": {
         "id": {
@@ -23,32 +26,41 @@
       }
     },
     "descriptions": {
+      "description": "Additional descriptive information about the routing queue",
       "type": ["null", "string"]
     },
     "dateCreated": {
+      "description": "Date and time when the queue was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "Date and time when the queue was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "User who last modified the routing queue",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "User who created the routing queue",
       "type": ["null", "string"]
     },
     "memberCount": {
+      "description": "Total number of members (agents + users) in the queue",
       "type": ["null", "number"]
     },
     "userMemberCount": {
+      "description": "Number of users currently joined in the queue",
       "type": ["null", "number"]
     },
     "joinedMemberCount": {
+      "description": "Number of agents currently joined in the queue",
       "type": ["null", "number"]
     },
     "memberGroups": {
+      "description": "Groups of members associated with the queue",
       "type": "object",
       "properties": {
         "id": {
@@ -63,9 +75,11 @@
       }
     },
     "skillEvaluationMethod": {
+      "description": "Method used for evaluating agent skills to assign contacts",
       "type": ["null", "string"]
     },
     "queueFlow": {
+      "description": "Queue flow configuration to determine how contacts are delivered to agents",
       "type": "object",
       "properties": {
         "id": {
@@ -80,21 +94,27 @@
       }
     },
     "autoAnswerOnly": {
+      "description": "Indicates if the queue is set to automatically answer incoming calls",
       "type": ["null", "boolean"]
     },
     "enableTranscription": {
+      "description": "Indicates if transcription feature is enabled for the queue",
       "type": ["null", "boolean"]
     },
     "enableManualAssignment": {
+      "description": "Indicates if manual agent assignment is enabled for the queue",
       "type": ["null", "boolean"]
     },
     "callingPartyName": {
+      "description": "Name of the calling party associated with the queue",
       "type": ["null", "string"]
     },
     "callingPartyNumber": {
+      "description": "Phone number of the calling party associated with the queue",
       "type": ["null", "string"]
     },
     "defaultScripts": {
+      "description": "Default script configurations associated with the queue",
       "type": "object",
       "properties": {
         "id": {
@@ -109,9 +129,11 @@
       }
     },
     "peerId": {
+      "description": "Identifier of the peer queue (if any) associated with this queue",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "URI link to access details of the routing queue",
       "type": ["null", "string"]
     }
   }

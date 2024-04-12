@@ -52,6 +52,9 @@ definitions:
         additionalProperties: true
         properties:
           name:
+            description:
+              The name of the category representing a particular group
+              of data.
             type:
               - "null"
               - string
@@ -69,30 +72,43 @@ definitions:
         additionalProperties: true
         properties:
           API:
+            description: The name or title of the API service.
             type:
               - "null"
               - string
           Description:
+            description: Provides a brief description or summary of the API service.
             type:
               - "null"
               - string
           Auth:
+            description: Describes the authentication methods supported by the API.
             type:
               - "null"
               - string
           HTTPS:
+            description: Indicates if the API requires HTTPS protocol for communication.
             type:
               - "null"
               - boolean
           Cors:
+            description:
+              Specifies whether Cross-Origin Resource Sharing (CORS) is
+              supported by the API.
             type:
               - "null"
               - string
           Link:
+            description:
+              URL pointing to the documentation or homepage of the API
+              service.
             type:
               - "null"
               - string
           Category:
+            description:
+              Indicates the category or type of service the API belongs
+              to.
             type:
               - "null"
               - string

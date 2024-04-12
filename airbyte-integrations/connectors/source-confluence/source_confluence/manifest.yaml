@@ -69,46 +69,63 @@ definitions:
         additionalProperties: true
         properties:
           author:
+            description: The user who triggered the audit event.
             type:
               - "null"
               - object
           remoteAddress:
+            description: The IP address from which the audit event originated.
             type:
               - "null"
               - string
           creationDate:
+            description: The date and time when the audit event was created.
             type:
               - "null"
               - integer
           summary:
+            description: A brief summary or title describing the audit event.
             type:
               - "null"
               - string
           description:
+            description: A detailed description of the audit event.
             type:
               - "null"
               - string
           category:
+            description: The category under which the audit event falls.
             type:
               - "null"
               - string
           sysAdmin:
+            description:
+              Indicates if the user triggering the audit event is a system
+              admin.
             type:
               - "null"
               - boolean
           superAdmin:
+            description:
+              Indicates if the user triggering the audit event is a super
+              admin.
             type:
               - "null"
               - boolean
           affectedObject:
+            description: The object that was affected by the audit event.
             type:
               - "null"
               - object
           changedValues:
+            description:
+              Details of the values that were changed during the audit
+              event.
             type:
               - "null"
               - array
           associatedObjects:
+            description: Any associated objects related to the audit event.
             type:
               - "null"
               - array
@@ -226,6 +243,7 @@ definitions:
           status:
             type: string
           history:
+            description: Historical information related to the blog post
             type: object
             properties:
               latest:
@@ -233,9 +251,11 @@ definitions:
               createdBy:
                 $ref: "#/definitions/user"
               createdDate:
+                description: Date and time when the blog post was created
                 type: string
                 format: date-time
               contributors:
+                description: Contributors who published the blog post
                 type: object
                 properties:
                   publishers:
@@ -245,21 +265,28 @@ definitions:
           version:
             $ref: "#/definitions/version"
           descendants:
+            description: Details of the descendants of the blog post, such as comments
             type: object
             properties:
               comment:
+                description: Comments associated with the blog post
                 type: object
                 properties:
                   results:
+                    description: List of comment items
                     type: array
                     items:
                       $ref: "#/definitions/content"
           restrictions:
+            description: Restrictions on reading the blog post
             type: object
             properties:
               read:
                 $ref: "#/definitions/contentRestriction"
           _expandable:
+            description:
+              Expandable details related to the blog post container and
+              space
             type: object
             properties:
               container:
@@ -267,6 +294,9 @@ definitions:
               space:
                 type: string
           _links:
+            description:
+              Links for navigating to various user interfaces to interact
+              with the blog post
             type: object
             properties:
               self:
@@ -297,18 +327,22 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the group.
             type:
               - "null"
               - string
           name:
+            description: The name of the group.
             type:
               - "null"
               - string
           type:
+            description: The type of group, indicating its category or classification.
             type:
               - "null"
               - string
           _links:
+            description: A collection of links related to the group entity.
             type:
               - "null"
               - object
@@ -418,99 +452,140 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the page
             type: string
           title:
+            description: Title of the page
             type: string
           type:
+            description: Type of the page
             type: string
           status:
+            description: Status of the page
             type: string
           history:
+            description: History details of the page
             type: object
             properties:
               latest:
+                description: Latest version details
                 type: boolean
               createdBy:
+                description: Created by user
                 $ref: "#/definitions/user"
               createdDate:
+                description: Date and time of creation
                 type: string
                 format: date-time
               contributors:
+                description: Contributors to the page
                 type: object
                 properties:
                   publishers:
+                    description: Publishers of the page
                     $ref: "#/definitions/usersUserKeys"
               previousVersion:
+                description: Previous version details
                 $ref: "#/definitions/version"
           version:
+            description: Version of the page
             $ref: "#/definitions/version"
           descendants:
+            description: Descendant comments of this page
             type: object
             properties:
               comment:
+                description: Comments on the page
                 type: object
                 properties:
                   results:
+                    description: Comments results
                     type: array
                     items:
+                      description: Individual comment item
                       $ref: "#/definitions/content"
           body:
+            description: Page body content
             type: object
             properties:
               storage:
+                description: Storage details of the content
                 type: object
                 properties:
                   value:
+                    description: Content value
                     type: string
                   representation:
+                    description: Content representation type
                     type: string
                   embeddedContent:
+                    description: Embedded content
                     type: array
                   _expandable:
+                    description: Expandable URLs related to the content
                     type: object
                     properties:
                       content:
+                        description: Expandable content URL
                         type: string
               view:
+                description: View details of the content
                 type: object
                 properties:
                   value:
+                    description: View value
                     type: string
                   representation:
+                    description: View representation type
                     type: string
                   _expandable:
+                    description: Expandable URLs related to the view
                     type: object
                     properties:
                       webresource:
+                        description: Expandable web resource URL
                         type: string
                   embeddedContent:
+                    description: Embedded view content
                     type: string
                   mediaToken:
+                    description: Media token for view
                     type: string
                   content:
+                    description: View content
                     type: string
           restrictions:
+            description: Restrictions applied to the page
             type: object
             properties:
               read:
+                description: Read restrictions
                 $ref: "#/definitions/contentRestriction"
           _expandable:
+            description: Expandable URLs related to this page
             type: object
             properties:
               container:
+                description: Expandable container URL
                 type: string
               space:
+                description: Expandable space URL
                 type: string
           _links:
+            description: Links related to this page
             type: object
             properties:
               self:
+                description: Self link
                 type: string
               tinyui:
+                description: Tiny UI link
                 type: string
               editui:
+                description: Edit UI link
                 type: string
               webui:
+                description: Web UI link
                 type: string
   space_stream:
     $ref: "#/definitions/base_stream"
@@ -533,42 +608,52 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the space.
             type:
               - "null"
               - integer
           key:
+            description: Key identifier for the space.
             type:
               - "null"
               - string
           name:
+            description: Name of the space.
             type:
               - "null"
               - string
           type:
+            description: Type/category of the space.
             type:
               - "null"
               - string
           status:
+            description: Status information of the space.
             type:
               - "null"
               - string
           permissions:
+            description: Permissions related to the space.
             type:
               - "null"
               - array
           icon:
+            description: Icon representing the space.
             type:
               - "null"
               - object
           description:
+            description: Description of the space.
             type:
               - "null"
               - object
           _expandable:
+            description: Expandable information related to the space.
             type:
               - "null"
               - object
           _links:
+            description: Links associated with the space.
             type:
               - "null"
               - object

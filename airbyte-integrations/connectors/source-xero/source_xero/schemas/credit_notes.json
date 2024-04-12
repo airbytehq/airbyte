@@ -2,93 +2,119 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "The type of the credit note.",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "The contact associated with this credit note.",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "The date of the credit note.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "DueDate": {
+      "description": "The due date of the credit note.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "DueDateString": {
+      "description": "The due date of the credit note in string format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the credit note.",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "The types of line amounts used in the credit note.",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "List of line items associated with the credit note.",
       "items": {
         "$ref": "line_items.json"
       },
       "type": ["null", "array"]
     },
     "SubTotal": {
+      "description": "The subtotal amount of the credit note.",
       "type": ["null", "number"]
     },
     "AppliedAmount": {
+      "description": "The amount of the credit note that has been applied to other transactions.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount on the credit note.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount of the credit note including tax.",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the credit note was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used for the credit note.",
       "type": ["null", "string"]
     },
     "FullyPaidOnDate": {
+      "description": "The date when the credit note was fully paid.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "CreditNoteID": {
+      "description": "Unique identifier for the credit note.",
       "type": ["string"]
     },
     "CreditNoteNumber": {
+      "description": "The unique number assigned to this credit note.",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "Any additional reference information for the credit note.",
       "type": ["null", "string"]
     },
     "SentToContact": {
+      "description": "Indicates if the credit note has been sent to the contact.",
       "type": ["null", "boolean"]
     },
     "CurrencyRate": {
+      "description": "The exchange rate between the credit note currency and the organization's default currency.",
       "type": ["null", "number"]
     },
     "RemainingCredit": {
+      "description": "The remaining credit amount on the credit note.",
       "type": ["null", "number"]
     },
     "Allocations": {
+      "description": "List of allocations associated with the credit note.",
       "items": {
         "$ref": "allocations.json"
       },
       "type": ["null", "array"]
     },
     "BrandingThemeID": {
+      "description": "The ID of the branding theme used for this credit note.",
       "type": ["null", "string"]
     },
     "HasAttachments": {
+      "description": "Indicates if the credit note has attachments.",
       "type": ["null", "boolean"]
     },
     "DateString": {
+      "description": "The date of the credit note in string format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "ID": {
+      "description": "The unique identifier for the credit note.",
       "type": ["null", "string"]
     }
   },

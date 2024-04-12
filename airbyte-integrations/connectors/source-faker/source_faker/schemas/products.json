@@ -2,17 +2,34 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": { "type": "integer" },
-    "make": { "type": "string" },
-    "model": { "type": "string" },
-    "year": { "type": "integer" },
-    "price": { "type": "number" },
+    "id": {
+      "description": "The unique identifier for the product.",
+      "type": "integer"
+    },
+    "make": {
+      "description": "The brand or manufacturer of the product.",
+      "type": "string"
+    },
+    "model": {
+      "description": "The specific model of the product.",
+      "type": "string"
+    },
+    "year": {
+      "description": "The manufacturing year of the product.",
+      "type": "integer"
+    },
+    "price": {
+      "description": "The price of the product in the specified currency.",
+      "type": "number"
+    },
     "created_at": {
+      "description": "The date and time when the product was created.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "updated_at": {
+      "description": "The date and time when the product was last updated.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"

@@ -164,6 +164,7 @@
       "type": ["string", "null"]
     },
     "metadata": {
+      "description": "Additional metadata associated with subscription",
       "type": ["object", "null"],
       "properties": {
         "description": "Additional metadata associated with the subscription."
@@ -210,6 +211,7 @@
       "type": ["string", "null"]
     },
     "coupons": {
+      "description": "Details of applied coupons",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -530,6 +532,7 @@
       "type": ["string", "null"]
     },
     "meta_data": {
+      "description": "Additional metadata associated with subscription",
       "type": ["object", "null"],
       "properties": {
         "description": "Additional metadata associated with the subscription."
@@ -600,6 +603,7 @@
       }
     },
     "charged_event_based_addons": {
+      "description": "Details of addons charged based on events",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],

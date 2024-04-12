@@ -49,21 +49,27 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the book
             type: integer
           title:
+            description: The title of the book
             type: string
           authors:
+            description: List of authors of the book
             type: array
             items:
               type: object
               properties:
                 name:
+                  description: The name of the author
                   type: string
                 birth_year:
+                  description: The birth year of the author
                   type:
                     - integer
                     - "null"
                 death_year:
+                  description: The death year of the author
                   type:
                     - integer
                     - "null"
@@ -72,17 +78,21 @@ definitions:
                 - birth_year
                 - death_year
           translators:
+            description: List of translators of the book
             type: array
             items:
               type: object
               properties:
                 name:
+                  description: The name of the translator
                   type: string
                 birth_year:
+                  description: The birth year of the translator
                   type:
                     - integer
                     - "null"
                 death_year:
+                  description: The death year of the translator
                   type:
                     - integer
                     - "null"
@@ -91,41 +101,55 @@ definitions:
                 - birth_year
                 - death_year
           subjects:
+            description: List of subjects associated with the book
             type: array
             items:
               type: string
           bookshelves:
+            description: List of bookshelves the book belongs to
             type: array
             items:
               type: string
           languages:
+            description: List of languages the book is available in
             type: array
             items:
               type: string
           copyright:
+            description: The copyright information of the book
             type:
               - boolean
               - "null"
           media_type:
+            description: The media type of the book
             type: string
           formats:
+            description: Available formats for downloading the book
             type: object
             properties:
               image/jpeg:
+                description: JPEG image format
                 type: string
               application/x-mobipocket-ebook:
+                description: Mobipocket format
                 type: string
               application/rdf+xml:
+                description: RDF XML format
                 type: string
               text/html:
+                description: HTML format
                 type: string
               application/epub+zip:
+                description: EPUB format
                 type: string
               text/plain; charset=us-ascii:
+                description: Plain text format with US-ASCII charset
                 type: string
               application/octet-stream:
+                description: Binary format
                 type: string
           download_count:
+            description: The number of downloads for the book
             type: integer
         required:
           - id

@@ -61,59 +61,81 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the campaign.
             type:
               - "null"
               - integer
           created:
+            description: The date and time when the campaign was created.
             type:
               - "null"
               - string
             format: date-time
           name:
+            description: The name or title of the campaign.
             type:
               - "null"
               - string
           ownerEmail:
+            description: The email address of the owner or creator of the campaign.
             type:
               - "null"
               - string
           deliveriesCount:
+            description: The number of successfully delivered emails for the campaign.
             type:
               - "null"
               - integer
           opensCount:
+            description: The number of opened emails for the campaign.
             type:
               - "null"
               - integer
           repliesCount:
+            description: The number of replies received for the campaign.
             type:
               - "null"
               - integer
           bouncesCount:
+            description: The number of bounced emails for the campaign.
             type:
               - "null"
               - integer
           optOutsCount:
+            description:
+              The number of recipients who opted out from receiving further
+              emails.
             type:
               - "null"
               - integer
           outOfOfficeCount:
+            description: The number of recipients who were marked as out of office.
             type:
               - "null"
               - integer
           peopleCount:
+            description: The total count of people targeted by the campaign.
             type:
               - "null"
               - integer
           peopleFinished:
+            description:
+              The number of people who have completed all actions related
+              to the campaign.
             type:
               - "null"
               - integer
           peopleActive:
+            description:
+              The number of people who are currently active or engaged
+              with the campaign.
             type:
               - "null"
               - integer
           peoplePaused:
+            description:
+              The number of people who have paused their engagement with
+              the campaign.
             type:
               - "null"
               - integer
@@ -130,18 +152,22 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the email account.
             type:
               - "null"
               - integer
           senderName:
+            description: The name of the sender associated with the email account.
             type:
               - "null"
               - string
           emailAddress:
+            description: The email address associated with the email account.
             type:
               - "null"
               - string
           signature:
+            description: The signature used in outgoing emails from the email account.
             type:
               - "null"
               - string
@@ -158,63 +184,80 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the person record
             type:
               - "null"
               - integer
           email:
+            description: The email address of the person
             type:
               - "null"
               - string
           firstName:
+            description: The first name of the person
             type:
               - "null"
               - string
           lastName:
+            description: The last name of the person
             type:
               - "null"
               - string
           company:
+            description: The company where the person is employed
             type:
               - "null"
               - string
           city:
+            description: The city where the person resides
             type:
               - "null"
               - string
           state:
+            description: The state or region where the person resides
             type:
               - "null"
               - string
           country:
+            description: The country where the person resides
             type:
               - "null"
               - string
           timeZoneId:
+            description: The time zone identifier of the person's location
             type:
               - "null"
               - string
           title:
+            description: The job title or position of the person
             type:
               - "null"
               - string
           phone:
+            description: The phone number of the person
             type:
               - "null"
               - string
           phoneStatus:
+            description: The status of the person's phone number
             type:
               - "null"
               - string
           linkedInProfile:
+            description: The LinkedIn profile URL of the person
             type:
               - "null"
               - string
           addingDate:
+            description:
+              The date and time when the person's record was added to the
+              system
             type:
               - "null"
               - string
             format: date-time
           customFields:
+            description: Custom additional data fields related to the person
             type:
               - "null"
               - array
@@ -236,22 +279,29 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the template
             type:
               - "null"
               - integer
           name:
+            description: The name or title of the template
             type:
               - "null"
               - string
           body:
+            description: The main content or message body of the template
             type:
               - "null"
               - string
           subject:
+            description: The subject line of the template
             type:
               - "null"
               - string
           categoryId:
+            description:
+              The unique identifier for the category to which the template
+              belongs
             type:
               - "null"
               - string

@@ -2,31 +2,40 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the organization export.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "The type of resource contained in the export (e.g., projects, tasks).",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the organization export was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "download_url": {
+      "description": "The URL from which the organization export can be downloaded.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The current state of the organization export (e.g., exporting, completed).",
       "type": ["null", "string"]
     },
     "organization": {
+      "description": "Details of the organization associated with the export.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the organization.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "The type of resource being exported (e.g., projects, tasks).",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the organization.",
           "type": ["null", "string"]
         }
       }

@@ -3,26 +3,33 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the order note",
       "type": ["null", "integer"]
     },
     "author": {
+      "description": "The author of the note",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the note was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "The GMT date and time when the note was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "note": {
+      "description": "The content of the note",
       "type": ["null", "string"]
     },
     "custom_note": {
+      "description": "Custom note added to the order",
       "type": ["null", "boolean"]
     },
     "added_by_user": {
+      "description": "The user who added the note",
       "type": ["null", "boolean"]
     }
   }

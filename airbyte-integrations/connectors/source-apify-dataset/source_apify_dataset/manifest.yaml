@@ -83,34 +83,42 @@ streams:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier of the dataset collection
             type:
               - "null"
               - string
           name:
+            description: Name or title of the dataset collection
             type:
               - "null"
               - string
           userId:
+            description: User ID of the owner of the dataset collection
             type:
               - "null"
               - string
           createdAt:
+            description: Date and time when the dataset collection was created
             type:
               - "null"
               - string
           modifiedAt:
+            description: Date and time when the dataset collection was last modified
             type:
               - "null"
               - string
           accessedAt:
+            description: Date and time when the dataset collection was last accessed
             type:
               - "null"
               - string
           itemCount:
+            description: Total number of items in the dataset collection
             type:
               - "null"
               - number
           username:
+            description: Username of the owner of the dataset collection
             type:
               - "null"
               - string
@@ -121,38 +129,47 @@ streams:
             additionalProperties: true
             properties:
               readCount:
+                description: Number of read operations performed on the dataset collection
                 type:
                   - "null"
                   - number
               storageBytes:
+                description: Total storage size in bytes occupied by the dataset collection
                 type:
                   - "null"
                   - number
               writeCount:
+                description: Number of write operations performed on the dataset collection
                 type:
                   - "null"
                   - number
           schema:
+            description: Data schema or structure of the dataset collection
             type:
               - "null"
               - string
           cleanItemCount:
+            description: Number of clean items in the dataset collection
             type:
               - "null"
               - number
           actId:
+            description: Identifier of the actor associated with the dataset collection
             type:
               - "null"
               - string
           actRunId:
+            description: Identifier of the actor run associated with the dataset collection
             type:
               - "null"
               - string
           title:
+            description: Display title of the dataset collection
             type:
               - "null"
               - string
           fields:
+            description: Fields present in the dataset collection
             anyOf:
               - type: "null"
               - type: array
@@ -181,18 +198,22 @@ streams:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier of the dataset
             type:
               - "null"
               - string
           name:
+            description: Name of the dataset
             type:
               - "null"
               - string
           userId:
+            description: User ID of the owner of the dataset
             type:
               - "null"
               - string
           createdAt:
+            description: Timestamp when the dataset was created
             type:
               - "null"
               - string
@@ -203,51 +224,63 @@ streams:
             additionalProperties: true
             properties:
               readCount:
+                description: Number of times the dataset was read
                 type:
                   - "null"
                   - number
               storageBytes:
+                description: Total storage size of the dataset in bytes
                 type:
                   - "null"
                   - number
               writeCount:
+                description: Number of times the dataset was written to
                 type:
                   - "null"
                   - number
           schema:
+            description: Schema definition of the dataset
             type:
               - "null"
               - string
               - object
           modifiedAt:
+            description: Timestamp when the dataset was last modified
             type:
               - "null"
               - string
           accessedAt:
+            description: Timestamp when the dataset was last accessed
             type:
               - "null"
               - string
           itemCount:
+            description: Total number of items in the dataset
             type:
               - "null"
               - number
           cleanItemCount:
+            description: Number of clean items in the dataset
             type:
               - "null"
               - number
           actId:
+            description: Identifier of the actor associated with the dataset
             type:
               - "null"
               - string
           actRunId:
+            description: Identifier of the actor run associated with the dataset
             type:
               - "null"
               - string
           title:
+            description: Title of the dataset
             type:
               - "null"
               - string
           fields:
+            description: List of fields available in the dataset
             anyOf:
               - type: "null"
               - type: array
@@ -275,25 +308,31 @@ streams:
         additionalProperties: true
         properties:
           crawl:
+            description: Information related to web crawling
             additionalProperties: true
             properties:
               depth:
+                description: Depth level of the crawled page
                 type:
                   - "null"
                   - number
               httpStatusCode:
+                description: HTTP status code of the response
                 type:
                   - "null"
                   - number
               loadedTime:
+                description: Time when the page was loaded
                 type:
                   - "null"
                   - string
               loadedUrl:
+                description: URL of the loaded page
                 type:
                   - "null"
                   - string
               referrerUrl:
+                description: URL of the page that referred to the current page
                 type:
                   - "null"
                   - string
@@ -301,25 +340,31 @@ streams:
               - "null"
               - object
           markdown:
+            description: Markdown content of the webpage
             type:
               - "null"
               - string
           metadata:
+            description: Metadata information of the webpage
             additionalProperties: true
             properties:
               canonicalUrl:
+                description: Canonical URL of the webpage
                 type:
                   - "null"
                   - string
               description:
+                description: Description of the webpage
                 type:
                   - "null"
                   - string
               languageCode:
+                description: Language code of the webpage content
                 type:
                   - "null"
                   - string
               title:
+                description: Title of the webpage
                 type:
                   - "null"
                   - string
@@ -327,14 +372,17 @@ streams:
               - "null"
               - object
           text:
+            description: Text content of the webpage
             type:
               - "null"
               - string
           url:
+            description: URL of the webpage
             type:
               - "null"
               - string
           screenshotUrl:
+            description: URL of the screenshot of the webpage
             type:
               - "null"
               - string
@@ -362,6 +410,7 @@ streams:
         additionalProperties: true
         properties:
           data:
+            description: Collection of items with detailed information
             additionalProperties: true
             type:
               - "null"

@@ -3,206 +3,271 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the product.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the product.",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "Unique slug for the product.",
       "type": ["null", "string"]
     },
     "permalink": {
+      "description": "Permanent link to the product.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "Date and time when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "GMT date and time when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "Date and time when the product was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified_gmt": {
+      "description": "GMT date and time when the product was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "type": {
+      "description": "Type of the product (simple, variable, etc.).",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the product (publish, draft, etc.).",
       "type": ["null", "string"]
     },
     "features": {
+      "description": "Feature highlights of the product.",
       "type": ["null", "boolean"]
     },
     "catalog_visibility": {
+      "description": "Visibility of the product in the catalog.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Full description of the product.",
       "type": ["null", "string"]
     },
     "short_description": {
+      "description": "Brief description of the product.",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "Stock Keeping Unit (SKU) for the product.",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "Price of the product.",
       "type": ["null", "string"]
     },
     "regular_price": {
+      "description": "Regular price of the product.",
       "type": ["null", "string"]
     },
     "sale_price": {
+      "description": "Sale price of the product.",
       "type": ["null", "string"]
     },
     "date_on_sale_from": {
+      "description": "Date and time when the sale starts for the product.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_on_sale_from_gmt": {
+      "description": "GMT date and time when the sale starts for the product.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_on_sale_to": {
+      "description": "Date and time when the sale ends for the product.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_on_sale_to_gmt": {
+      "description": "GMT date and time when the sale ends for the product.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "price_html": {
+      "description": "HTML representation of the product price.",
       "type": ["null", "string"]
     },
     "on_sale": {
+      "description": "Flag indicating if the product is on sale.",
       "type": ["null", "boolean"]
     },
     "purchasable": {
+      "description": "Flag indicating if the product can be purchased.",
       "type": ["null", "boolean"]
     },
     "total_sales": {
+      "description": "Total sales count for the product.",
       "type": ["null", "integer"]
     },
     "virtual": {
+      "description": "Flag indicating if the product is virtual (downloadable without physical delivery).",
       "type": ["null", "boolean"]
     },
     "downloadable": {
+      "description": "Flag indicating if the product is downloadable.",
       "type": ["null", "boolean"]
     },
     "downloads": {
+      "description": "List of downloads associated with the product.",
       "$ref": "product_downloads_properties.json"
     },
     "download_limit": {
+      "description": "Limit on the number of times the product can be downloaded.",
       "type": ["null", "integer"]
     },
     "download_expiry": {
+      "description": "Number of days before the download link expires.",
       "type": ["null", "integer"]
     },
     "external_url": {
+      "description": "URL to an external resource related to the product.",
       "type": ["null", "string"]
     },
     "button_text": {
+      "description": "Text displayed on the button for this product.",
       "type": ["null", "string"]
     },
     "tax_status": {
+      "description": "Tax status for the product.",
       "type": ["null", "string"]
     },
     "tax_class": {
+      "description": "Tax class for the product.",
       "type": ["null", "string"]
     },
     "manage_stock": {
+      "description": "Flag indicating if stock management is enabled.",
       "type": ["null", "boolean"]
     },
     "stock_quantity": {
+      "description": "Available quantity of the product in stock.",
       "type": ["null", "integer"]
     },
     "stock_status": {
+      "description": "Status indicating if the product is in stock or out of stock.",
       "type": ["null", "string"]
     },
     "backorders": {
+      "description": "Number of backorders for the product.",
       "type": ["null", "string"]
     },
     "backorders_allowed": {
+      "description": "Flag indicating if backorders are allowed for the product.",
       "type": ["null", "boolean"]
     },
     "backordered": {
+      "description": "Flag indicating if the product is backordered.",
       "type": ["null", "boolean"]
     },
     "sold_individually": {
+      "description": "Flag indicating if the product is sold individually.",
       "type": ["null", "boolean"]
     },
     "weight": {
+      "description": "Weight of the product.",
       "type": ["null", "string"]
     },
     "dimensions": {
+      "description": "Dimensions of the product like height, width, and length.",
       "$ref": "product_dimensions.json"
     },
     "shipping_required": {
+      "description": "Flag indicating if shipping is required for the product.",
       "type": ["null", "boolean"]
     },
     "shipping_taxable": {
+      "description": "Flag indicating if the product is taxable for shipping.",
       "type": ["null", "boolean"]
     },
     "shipping_class": {
+      "description": "Shipping class of the product.",
       "type": ["null", "string"]
     },
     "shipping_class_id": {
+      "description": "ID of the shipping class associated with the product.",
       "type": ["null", "integer"]
     },
     "reviews_allowed": {
+      "description": "Flag indicating if reviews are allowed for the product.",
       "type": ["null", "boolean"]
     },
     "average_rating": {
+      "description": "Average rating given by customers for the product.",
       "type": ["null", "string"]
     },
     "rating_count": {
+      "description": "Total number of ratings received for the product.",
       "type": ["null", "integer"]
     },
     "related_ids": {
+      "description": "IDs of related products.",
       "type": ["null", "array"]
     },
     "upsell_ids": {
+      "description": "IDs of products recommended for upselling.",
       "type": ["null", "array"]
     },
     "cross_sell_ids": {
+      "description": "IDs of products recommended for cross-selling.",
       "type": ["null", "array"]
     },
     "parent_id": {
+      "description": "ID of the parent product, if applicable.",
       "type": ["null", "integer"]
     },
     "purchase_note": {
+      "description": "Additional notes for the purchase of the product.",
       "type": ["null", "string"]
     },
     "categories": {
+      "description": "Categories to which the product belongs.",
       "$ref": "product_categories_tags.json"
     },
     "tags": {
+      "description": "Tags associated with the product.",
       "$ref": "product_categories_tags.json"
     },
     "images": {
+      "description": "Images associated with the product.",
       "$ref": "product_images.json"
     },
     "attributes": {
+      "description": "List of product attributes such as color, size, material, etc.",
       "$ref": "product_attributes.json"
     },
     "default_attributes": {
+      "description": "Default attributes set for the product.",
       "$ref": "product_default_attributes.json"
     },
     "variations": {
+      "description": "Variations available for the product.",
       "type": ["null", "array"]
     },
     "grouped_products": {
+      "description": "IDs of products grouped together.",
       "type": ["null", "array"]
     },
     "menu_order": {
+      "description": "Order in which the product appears in menus.",
       "type": ["null", "integer"]
     },
     "meta_data": {
+      "description": "Additional meta data associated with the product.",
       "$ref": "meta_data.json"
     },
     "jetpack-related-posts": {
@@ -211,12 +276,15 @@
         "type": "object",
         "properties": {
           "id": {
+            "description": "Unique identifier for the related post.",
             "type": ["null", "integer"]
           },
           "url": {
+            "description": "URL of the related post.",
             "type": ["null", "string"]
           },
           "url_meta": {
+            "description": "Meta information related to the URL.",
             "type": ["null", "object"],
             "properties": {
               "origin": {
@@ -228,27 +296,35 @@
             }
           },
           "title": {
+            "description": "Title of the related post.",
             "type": ["null", "string"]
           },
           "author": {
+            "description": "Author of the related post.",
             "type": ["null", "string"]
           },
           "date": {
+            "description": "Date of the related post.",
             "type": ["null", "string"]
           },
           "format": {
+            "description": "Format of the related post.",
             "type": ["null", "boolean"]
           },
           "excerpt": {
+            "description": "Excerpt of the related post.",
             "type": ["null", "string"]
           },
           "rel": {
+            "description": "Relationship information for the related post.",
             "type": ["null", "string"]
           },
           "context": {
+            "description": "Context of the related post.",
             "type": ["null", "string"]
           },
           "block_context": {
+            "description": "Context information for the related post block.",
             "type": "object",
             "properties": {
               "text": {
@@ -260,6 +336,7 @@
             }
           },
           "img": {
+            "description": "Image details of the related post.",
             "type": ["null", "object"],
             "properties": {
               "alt_text": {
@@ -277,6 +354,7 @@
             }
           },
           "classes": {
+            "description": "Classes assigned to the related post block.",
             "type": ["null", "array"]
           }
         }

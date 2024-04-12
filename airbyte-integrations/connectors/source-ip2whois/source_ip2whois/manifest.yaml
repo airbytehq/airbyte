@@ -34,32 +34,44 @@ definitions:
         type: object
         properties:
           domain:
+            description: Domain name
             type: string
           domain_id:
+            description: Unique identifier for the domain
             type: string
           status:
+            description: Status of the domain registration
             type: string
           create_date:
+            description: Date and time when the domain was created
             type: string
             format: date-time
           update_date:
+            description: Date and time when the domain record was last updated
             type: string
             format: date-time
           expire_date:
+            description: Date and time when the domain will expire
             type: string
             format: date-time
           domain_age:
+            description: Age of the domain in years
             type: integer
           whois_server:
+            description: Whois server used to query the domain registration information
             type: string
           registrar:
+            description: Details of the registrar for the domain
             type: object
             properties:
               iana_id:
+                description: IANA ID of the registrar
                 type: string
               name:
+                description: Name of the registrar
                 type: string
               url:
+                description: URL of the registrar
                 type: string
             required:
               - iana_id
@@ -67,27 +79,38 @@ definitions:
               - url
             additionalProperties: true
           registrant:
+            description: Details of the registrant contact
             type: object
             properties:
               name:
+                description: Name of the registrant contact
                 type: string
               organization:
+                description: Organization of the registrant contact
                 type: string
               street_address:
+                description: Street address of the registrant contact
                 type: string
               city:
+                description: City of the registrant contact
                 type: string
               region:
+                description: Region of the registrant contact
                 type: string
               zip_code:
+                description: Zip code of the registrant contact
                 type: string
               country:
+                description: Country of the registrant contact
                 type: string
               phone:
+                description: Phone number of the registrant contact
                 type: string
               fax:
+                description: Fax number of the registrant contact
                 type: string
               email:
+                description: Email of the registrant contact
                 type: string
             required:
               - name
@@ -102,27 +125,38 @@ definitions:
               - email
             additionalProperties: true
           admin:
+            description: Details of the administrative contact
             type: object
             properties:
               name:
+                description: Name of the administrative contact
                 type: string
               organization:
+                description: Organization of the administrative contact
                 type: string
               street_address:
+                description: Street address of the administrative contact
                 type: string
               city:
+                description: City of the administrative contact
                 type: string
               region:
+                description: Region of the administrative contact
                 type: string
               zip_code:
+                description: Zip code of the administrative contact
                 type: string
               country:
+                description: Country of the administrative contact
                 type: string
               phone:
+                description: Phone number of the administrative contact
                 type: string
               fax:
+                description: Fax number of the administrative contact
                 type: string
               email:
+                description: Email of the administrative contact
                 type: string
             required:
               - name
@@ -137,27 +171,38 @@ definitions:
               - email
             additionalProperties: true
           tech:
+            description: Details of the technical contact
             type: object
             properties:
               name:
+                description: Name of the technical contact
                 type: string
               organization:
+                description: Organization of the technical contact
                 type: string
               street_address:
+                description: Street address of the technical contact
                 type: string
               city:
+                description: City of the technical contact
                 type: string
               region:
+                description: Region of the technical contact
                 type: string
               zip_code:
+                description: Zip code of the technical contact
                 type: string
               country:
+                description: Country of the technical contact
                 type: string
               phone:
+                description: Phone number of the technical contact
                 type: string
               fax:
+                description: Fax number of the technical contact
                 type: string
               email:
+                description: Email of the technical contact
                 type: string
             required:
               - name
@@ -172,27 +217,38 @@ definitions:
               - email
             additionalProperties: true
           billing:
+            description: Details of the billing contact
             type: object
             properties:
               name:
+                description: Name of the billing contact
                 type: string
               organization:
+                description: Organization of the billing contact
                 type: string
               street_address:
+                description: Street address of the billing contact
                 type: string
               city:
+                description: City of the billing contact
                 type: string
               region:
+                description: Region of the billing contact
                 type: string
               zip_code:
+                description: Zip code of the billing contact
                 type: string
               country:
+                description: Country of the billing contact
                 type: string
               phone:
+                description: Phone number of the billing contact
                 type: string
               fax:
+                description: Fax number of the billing contact
                 type: string
               email:
+                description: Email of the billing contact
                 type: string
             required:
               - name
@@ -207,6 +263,7 @@ definitions:
               - email
             additionalProperties: true
           nameservers:
+            description: List of nameservers associated with the domain
             type: array
         required:
           - domain

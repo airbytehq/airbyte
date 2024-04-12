@@ -4,32 +4,41 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the channel",
       "type": ["null", "string"]
     },
     "createdDateTime": {
+      "description": "The date and time when the channel was created",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "displayName": {
+      "description": "The display name of the channel",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the channel",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address associated with the channel",
       "type": ["null", "string"]
     },
     "isFavoriteByDefault": {
+      "description": "Flag indicating if the channel is marked as a favorite by default",
       "type": ["null", "boolean"]
     },
     "membershipType": {
+      "description": "The type of membership in the channel (e.g., public, private)",
       "type": ["null", "string"]
     },
     "tenantId": {
+      "description": "The ID of the tenant to which the channel belongs",
       "type": ["null", "string"]
     },
     "webUrl": {
+      "description": "The URL for accessing the channel via the web",
       "type": ["null", "string"]
     }
   }

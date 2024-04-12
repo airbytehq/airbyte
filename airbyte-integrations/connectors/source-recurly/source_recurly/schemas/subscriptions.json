@@ -14,6 +14,7 @@
       "maxLength": 32
     },
     "account": {
+      "description": "Information about the associated account for the subscription",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -52,6 +53,7 @@
       }
     },
     "plan": {
+      "description": "Information about the plan associated with the subscription",
       "type": "object",
       "properties": {
         "id": {
@@ -75,6 +77,7 @@
       "maxLength": 256
     },
     "shipping": {
+      "description": "Information about the shipping associated with the subscription",
       "type": ["null", "object"],
       "properties": {
         "object": {
@@ -84,6 +87,7 @@
           "$ref": "shipping_addresses.json"
         },
         "method": {
+          "description": "Information about the shipping method",
           "type": ["null", "object"],
           "properties": {
             "id": {
@@ -108,8 +112,11 @@
         }
       }
     },
-    "coupon_redemptions": { "$ref": "coupon_redemptions.json" },
+    "coupon_redemptions": {
+      "$ref": "coupon_redemptions.json"
+    },
     "pending_change": {
+      "description": "Information about any pending changes to the subscription",
       "type": ["null", "object"],
       "title": "Subscription Change",
       "properties": {
@@ -126,6 +133,7 @@
           "maxLength": 13
         },
         "activate_at": {
+          "description": "Timestamp when the pending change will be activated",
           "type": "string",
           "format": "date-time",
           "title": "Activated at",
@@ -137,18 +145,21 @@
           "description": "Returns `true` if the subscription change is activated."
         },
         "created_at": {
+          "description": "Timestamp when the pending change was created",
           "type": "string",
           "format": "date-time",
           "title": "Created at",
           "readOnly": true
         },
         "updated_at": {
+          "description": "Timestamp when the pending change was last updated",
           "type": "string",
           "format": "date-time",
           "title": "Updated at",
           "readOnly": true
         },
         "deleted_at": {
+          "description": "Timestamp when the pending change was deleted",
           "type": "string",
           "format": "date-time",
           "title": "Deleted at",
@@ -157,26 +168,32 @@
       }
     },
     "current_period_started_at": {
+      "description": "Timestamp when the current period started",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "current_period_ends_at": {
+      "description": "Timestamp when the current period ends",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "current_term_started_at": {
+      "description": "Timestamp when the current term started",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "current_term_ends_at": {
+      "description": "Timestamp when the current term ends",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "trial_started_at": {
+      "description": "Timestamp when the trial period started",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "trial_ends_at": {
+      "description": "Timestamp when the trial period ends",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -193,6 +210,7 @@
       "type": ["null", "boolean"]
     },
     "ramp_intervals": {
+      "description": "Information about any ramp intervals associated with the subscription",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -204,10 +222,12 @@
             "type": ["null", "integer"]
           },
           "starting_on": {
+            "description": "Timestamp when the ramp interval starts",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ending_on": {
+            "description": "Timestamp when the ramp interval ends",
             "type": ["null", "string"],
             "format": "date-time"
           },
@@ -218,6 +238,7 @@
       }
     },
     "paused_at": {
+      "description": "Timestamp when the subscription was paused",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -305,6 +326,7 @@
       "maxLength": 1024
     },
     "custom_fields": {
+      "description": "Custom fields associated with the subscription",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -319,26 +341,32 @@
       }
     },
     "created_at": {
+      "description": "Timestamp when the subscription was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the subscription was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "activated_at": {
+      "description": "Timestamp when the subscription was activated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "canceled_at": {
+      "description": "Timestamp when the subscription was canceled",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "expires_at": {
+      "description": "Timestamp when the subscription expires",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "bank_account_authorized_at": {
+      "description": "Timestamp when bank account authorization occurred",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -357,6 +385,7 @@
       "type": ["null", "boolean"]
     },
     "converted_at": {
+      "description": "Timestamp when the subscription was converted",
       "type": ["null", "string"],
       "format": "date-time"
     },

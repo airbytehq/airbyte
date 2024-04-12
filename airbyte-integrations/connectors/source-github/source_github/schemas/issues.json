@@ -63,6 +63,7 @@
       "type": ["null", "integer"]
     },
     "labels": {
+      "description": "List of labels attached to the issue.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -103,6 +104,7 @@
       "$ref": "user.json"
     },
     "assignees": {
+      "description": "List of users assigned to the issue.",
       "type": ["null", "array"],
       "items": {
         "description": "List of users assigned to the issue.",
@@ -110,6 +112,7 @@
       }
     },
     "milestone": {
+      "description": "Details of the milestone associated with the issue.",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -195,6 +198,7 @@
       "type": ["null", "integer"]
     },
     "pull_request": {
+      "description": "Details of a linked pull request, if the issue is a pull request.",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -252,6 +256,7 @@
       "type": ["null", "string"]
     },
     "performed_via_github_app": {
+      "description": "Information related to the GitHub App that performed actions on the issue.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -297,6 +302,7 @@
           "format": "date-time"
         },
         "permissions": {
+          "description": "Permissions granted to the GitHub App on the issue.",
           "type": ["null", "object"],
           "properties": {
             "issues": {
@@ -342,6 +348,7 @@
           }
         },
         "events": {
+          "description": "List of events performed by the GitHub App on the issue.",
           "type": "array",
           "items": {
             "description": "List of events performed by the GitHub app.",

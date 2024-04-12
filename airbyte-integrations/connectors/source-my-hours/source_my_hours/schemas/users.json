@@ -3,42 +3,55 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the user.",
       "type": ["number"]
     },
     "name": {
+      "description": "Name of the user.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Indicates whether the user account has been archived or not.",
       "type": ["null", "boolean"]
     },
     "dateArchived": {
+      "description": "Date when the user account was archived.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates whether the user is currently active or not.",
       "type": ["null", "boolean"]
     },
     "accountOwner": {
+      "description": "Name of the account owner associated with the user.",
       "type": ["null", "boolean"]
     },
     "email": {
+      "description": "Email address of the user.",
       "type": ["null", "string"]
     },
     "rate": {
+      "description": "The hourly rate at which the user is compensated.",
       "type": ["null", "number"]
     },
     "billableRate": {
+      "description": "The hourly rate at which the user's work is billed.",
       "type": ["null", "number"]
     },
     "admin": {
+      "description": "Flag indicating if the user has administrative privileges.",
       "type": ["null", "boolean"]
     },
     "isProjectManager": {
+      "description": "Flag indicating if the user is a project manager.",
       "type": ["null", "boolean"]
     },
     "roleType": {
+      "description": "Type of role the user is assigned within the organization.",
       "type": ["null", "integer"]
     },
     "customId": {
+      "description": "Custom identifier for the user.",
       "type": ["null", "string"]
     }
   }

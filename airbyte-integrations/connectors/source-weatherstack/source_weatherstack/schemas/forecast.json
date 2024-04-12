@@ -6,15 +6,19 @@
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "Request type",
           "type": "string"
         },
         "query": {
+          "description": "Location query used for the request",
           "type": "string"
         },
         "language": {
+          "description": "Language code for the response",
           "type": "string"
         },
         "unit": {
+          "description": "Unit of measurement for the response",
           "type": "string"
         }
       }
@@ -23,30 +27,39 @@
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "Name of the location",
           "type": "string"
         },
         "country": {
+          "description": "Country name",
           "type": "string"
         },
         "region": {
+          "description": "Region name",
           "type": "string"
         },
         "lat": {
+          "description": "Latitude of the location",
           "type": "string"
         },
         "lon": {
+          "description": "Longitude of the location",
           "type": "string"
         },
         "timezone_id": {
+          "description": "Timezone ID of the location",
           "type": "string"
         },
         "localtime": {
+          "description": "Local time at the location",
           "type": "string"
         },
         "localtime_epoch": {
+          "description": "Local time at the location in UNIX timestamp",
           "type": "number"
         },
         "utc_offset": {
+          "description": "UTC offset of the location in hours",
           "type": "string"
         }
       }
@@ -55,53 +68,69 @@
       "type": ["null", "object"],
       "properties": {
         "observation_time": {
+          "description": "Local time the data was observed",
           "type": "string"
         },
         "temperature": {
+          "description": "Temperature in Celsius",
           "type": "number"
         },
         "weather_code": {
+          "description": "Weather condition code",
           "type": "number"
         },
         "weather_icons": {
+          "description": "URLs of weather icons",
           "type": "array"
         },
         "weather_descriptions": {
+          "description": "Weather description",
           "type": "array"
         },
         "wind_speed": {
+          "description": "Wind speed in km/h",
           "type": "number"
         },
         "wind_degree": {
+          "description": "Wind direction in degrees",
           "type": "number"
         },
         "wind_dir": {
+          "description": "Wind direction as cardinal direction",
           "type": "string"
         },
         "pressure": {
+          "description": "Atmospheric pressure in mb",
           "type": "number"
         },
         "precip": {
+          "description": "Precipitation volume in mm",
           "type": "number"
         },
         "humidity": {
+          "description": "Humidity percentage",
           "type": "number"
         },
         "cloudcover": {
+          "description": "Percentage of sky covered by clouds",
           "type": "number"
         },
         "feelslike": {
+          "description": "Feels like temperature in Celsius",
           "type": "number"
         },
         "uv_index": {
+          "description": "UV Index",
           "type": "number"
         },
         "visibility": {
+          "description": "Visibility in kilometers",
           "type": "number"
         }
       }
     },
     "forecast": {
+      "description": "Forecast data for upcoming days",
       "type": ["null", "object"]
     }
   }

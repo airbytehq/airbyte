@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "cases": {
+      "description": "The total number of confirmed COVID-19 cases reported on the given date.",
       "type": ["integer", "null"]
     },
     "date": {
+      "description": "The date for which the case data is recorded.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The full name of the state or region.",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation of the state or region.",
       "type": ["string", "null"]
     }
   },

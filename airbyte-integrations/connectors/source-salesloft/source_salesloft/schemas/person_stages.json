@@ -3,20 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the person stage",
       "type": "integer"
     },
     "name": {
+      "description": "The name of the person stage",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time the person stage was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time the person stage was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "order": {
+      "description": "The order of the person stage",
       "type": ["null", "integer"]
     }
   }

@@ -35,9 +35,11 @@
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Contains relevant hyperlinks related to the review data.",
       "type": ["null", "object"],
       "properties": {
         "html": {
+          "description": "URL for viewing the review data in HTML format.",
           "type": ["null", "object"],
           "properties": {
             "href": {
@@ -47,6 +49,7 @@
           }
         },
         "pull_request": {
+          "description": "URL for accessing the pull request associated with the review data.",
           "type": ["null", "object"],
           "properties": {
             "href": {

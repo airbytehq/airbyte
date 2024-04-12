@@ -3,51 +3,67 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the video.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video was viewed live or on-demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewer is subscribed to the channel or not.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code where the data was collected.",
       "type": ["null", "string"]
     },
     "playback_location_type": {
+      "description": "The type of playback location, e.g., YouTube watch page, YouTube app.",
       "type": ["null", "integer"]
     },
     "traffic_source_type": {
+      "description": "The source through which traffic was generated, e.g., suggested videos, YouTube search.",
       "type": ["null", "integer"]
     },
     "device_type": {
+      "description": "The type of device used to access the video, e.g., mobile, desktop.",
       "type": ["null", "integer"]
     },
     "operating_system": {
+      "description": "The operating system of the device used to access the video.",
       "type": ["null", "integer"]
     },
     "views": {
+      "description": "The total number of views for a video.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time, in minutes, for a video.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration, in seconds, that viewers watched a video.",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "The average percentage of a video that viewers watched.",
       "type": ["null", "number"]
     },
     "red_views": {
+      "description": "The number of views from YouTube Red subscribers.",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "The watch time in minutes from YouTube Red subscribers.",
       "type": ["null", "number"]
     }
   }

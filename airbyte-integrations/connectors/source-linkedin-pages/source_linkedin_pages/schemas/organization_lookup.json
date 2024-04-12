@@ -4,15 +4,19 @@
   "type": ["null", "object"],
   "properties": {
     "vanityName": {
+      "description": "Vanity name of the organization.",
       "type": ["null", "string"]
     },
     "localizedName": {
+      "description": "Localized name of the organization.",
       "type": ["null", "string"]
     },
     "website": {
+      "description": "Website details of the organization.",
       "type": ["null", "object"],
       "properties": {
         "localized": {
+          "description": "Localized website URL in English (United States).",
           "type": ["null", "object"],
           "properties": {
             "en_US": {
@@ -21,12 +25,15 @@
           }
         },
         "preferredLocale": {
+          "description": "Preferred locale for the website URL.",
           "type": ["null", "object"],
           "properties": {
             "country": {
+              "description": "Country of the preferred locale for website URL.",
               "type": ["null", "string"]
             },
             "language": {
+              "description": "Language of the preferred locale for website URL.",
               "type": ["null", "string"]
             }
           }
@@ -34,6 +41,7 @@
       }
     },
     "foundedOn": {
+      "description": "Year the organization was founded.",
       "type": ["null", "object"],
       "properties": {
         "year": {
@@ -44,13 +52,17 @@
     "groups": {
       "type": ["null", "array"],
       "items": {
-        "items": {}
+        "items": {
+          "description": "Array of groups associated with the organization."
+        }
       }
     },
     "description": {
+      "description": "Description details of the organization.",
       "type": ["null", "object"],
       "properties": {
         "localized": {
+          "description": "Localized description in English (United States).",
           "type": ["null", "object"],
           "properties": {
             "en_US": {
@@ -59,12 +71,15 @@
           }
         },
         "preferredLocale": {
+          "description": "Preferred locale for the description.",
           "type": ["null", "object"],
           "properties": {
             "country": {
+              "description": "Country of the preferred locale for description.",
               "type": ["null", "string"]
             },
             "language": {
+              "description": "Language of the preferred locale for description.",
               "type": ["null", "string"]
             }
           }
@@ -72,30 +87,39 @@
       }
     },
     "versionTag": {
+      "description": "Tag version for the organization.",
       "type": ["null", "string"]
     },
     "coverPhotoV2": {
+      "description": "Information about the cover photo of the organization.",
       "type": ["null", "object"],
       "properties": {
         "cropped": {
+          "description": "URL of the cropped cover photo.",
           "type": ["null", "string"]
         },
         "original": {
+          "description": "URL of the original cover photo.",
           "type": ["null", "string"]
         },
         "cropInfo": {
+          "description": "Information about the cropped dimensions of the cover photo.",
           "type": ["null", "object"],
           "properties": {
             "x": {
+              "description": "X-coordinate of the cropped photo.",
               "type": ["null", "integer"]
             },
             "width": {
+              "description": "Width of the cropped photo.",
               "type": ["null", "integer"]
             },
             "y": {
+              "description": "Y-coordinate of the cropped photo.",
               "type": ["null", "integer"]
             },
             "height": {
+              "description": "Height of the cropped photo.",
               "type": ["null", "integer"]
             }
           }
@@ -103,50 +127,64 @@
       }
     },
     "defaultLocale": {
+      "description": "Default locale information for the organization.",
       "type": ["null", "object"],
       "properties": {
         "country": {
+          "description": "Country of the default locale.",
           "type": ["null", "string"]
         },
         "language": {
+          "description": "Language of the default locale.",
           "type": ["null", "string"]
         }
       }
     },
     "organizationType": {
+      "description": "Type of organization.",
       "type": ["null", "string"]
     },
     "alternativeNames": {
       "type": ["null", "array"],
       "items": {
-        "items": {}
+        "items": {
+          "description": "Array of alternative names for the organization."
+        }
       }
     },
     "specialties": {
       "type": ["null", "array"],
       "items": {
-        "items": {}
+        "items": {
+          "description": "Array of specialties the organization has."
+        }
       }
     },
     "staffCountRange": {
+      "description": "Range of staff count in the organization.",
       "type": ["null", "string"]
     },
     "localizedSpecialties": {
       "type": ["null", "array"],
       "items": {
-        "items": {}
+        "items": {
+          "description": "Array of specialized fields associated with the organization."
+        }
       }
     },
     "industries": {
       "type": ["null", "array"],
       "items": {
+        "description": "Array of industries the organization belongs to.",
         "type": ["null", "string"]
       }
     },
     "name": {
+      "description": "Name details of the organization.",
       "type": ["null", "object"],
       "properties": {
         "localized": {
+          "description": "Localized name in English (United States).",
           "type": ["null", "object"],
           "properties": {
             "en_US": {
@@ -155,12 +193,15 @@
           }
         },
         "preferredLocale": {
+          "description": "Preferred locale for the name.",
           "type": ["null", "object"],
           "properties": {
             "country": {
+              "description": "Country of the preferred locale for name.",
               "type": ["null", "string"]
             },
             "language": {
+              "description": "Language of the preferred locale for name.",
               "type": ["null", "string"]
             }
           }
@@ -168,6 +209,7 @@
       }
     },
     "primaryOrganizationType": {
+      "description": "Primary type of organization.",
       "type": ["null", "string"]
     },
     "locations": {
@@ -176,12 +218,15 @@
         "type": ["null", "object"],
         "properties": {
           "locationType": {
+            "description": "Type of location.",
             "type": ["null", "string"]
           },
           "description": {
+            "description": "Description details of the location.",
             "type": ["null", "object"],
             "properties": {
               "localized": {
+                "description": "Localized description of the location in English (United States).",
                 "type": ["null", "object"],
                 "properties": {
                   "en_US": {
@@ -190,12 +235,15 @@
                 }
               },
               "preferredLocale": {
+                "description": "Preferred locale for the location description.",
                 "type": ["null", "object"],
                 "properties": {
                   "country": {
+                    "description": "Country of the preferred locale for location description.",
                     "type": ["null", "string"]
                   },
                   "language": {
+                    "description": "Language of the preferred locale for location description.",
                     "type": ["null", "string"]
                   }
                 }
@@ -203,71 +251,92 @@
             }
           },
           "address": {
+            "description": "Address information of the location.",
             "type": ["null", "object"],
             "properties": {
               "geographicArea": {
+                "description": "Geographic area of the address.",
                 "type": ["null", "string"]
               },
               "country": {
+                "description": "Country of the address.",
                 "type": ["null", "string"]
               },
               "city": {
+                "description": "City of the address.",
                 "type": ["null", "string"]
               },
               "line1": {
+                "description": "Address line 1.",
                 "type": ["null", "string"]
               },
               "postalCode": {
+                "description": "Postal code of the address.",
                 "type": ["null", "string"]
               }
             }
           },
           "localizedDescription": {
+            "description": "Localized description of the location.",
             "type": ["null", "string"]
           },
           "geoLocation": {
+            "description": "Geographical location coordinates of the address.",
             "type": ["null", "string"]
           },
           "streetAddressFieldState": {
+            "description": "State of the street address.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "id": {
+      "description": "ID of the organization.",
       "type": ["null", "integer"]
     },
     "localizedDescription": {
+      "description": "Localized description of the organization.",
       "type": ["null", "string"]
     },
     "$URN": {
+      "description": "Unique identifier for the organization.",
       "type": ["null", "string"]
     },
     "localizedWebsite": {
+      "description": "Localized website URL of the organization.",
       "type": ["null", "string"]
     },
     "logoV2": {
+      "description": "Information about the organization's logo.",
       "type": ["null", "object"],
       "properties": {
         "cropped": {
+          "description": "URL of the cropped logo.",
           "type": ["null", "string"]
         },
         "original": {
+          "description": "URL of the original logo.",
           "type": ["null", "string"]
         },
         "cropInfo": {
+          "description": "Information about the cropped dimensions of the logo.",
           "type": ["null", "object"],
           "properties": {
             "x": {
+              "description": "X-coordinate of the cropped logo.",
               "type": ["null", "integer"]
             },
             "width": {
+              "description": "Width of the cropped logo.",
               "type": ["null", "integer"]
             },
             "y": {
+              "description": "Y-coordinate of the cropped logo.",
               "type": ["null", "integer"]
             },
             "height": {
+              "description": "Height of the cropped logo.",
               "type": ["null", "integer"]
             }
           }

@@ -32,6 +32,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Object containing links data",
       "type": ["null", "object"],
       "properties": {
         "object": {
@@ -39,8 +40,10 @@
           "type": ["null", "string"]
         },
         "data": {
+          "description": "Array containing file data",
           "type": ["null", "array"],
           "items": {
+            "description": "Properties of the file object",
             "type": ["null", "object"],
             "properties": {
               "id": {

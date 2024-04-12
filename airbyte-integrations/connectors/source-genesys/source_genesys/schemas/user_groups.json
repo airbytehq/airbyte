@@ -3,59 +3,76 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the user group",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the user group",
       "type": ["null", "string"]
     },
     "dateModified": {
+      "description": "Date and time when the user group was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "memberCount": {
+      "description": "Number of members in the user group",
       "type": ["null", "number"]
     },
     "state": {
+      "description": "State of the user group (e.g., active, inactive)",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version of the user group data",
       "type": ["null", "number"]
     },
     "type": {
+      "description": "Type of the user group",
       "type": ["null", "string"]
     },
     "addresses": {
+      "description": "User group addresses",
       "type": "array",
       "properties": {
         "address": {
+          "description": "Address of the user group",
           "type": ["null", "string"]
         },
         "display": {
+          "description": "Display address of the user group",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "Type of address (e.g., home, work)",
           "type": ["null", "string"]
         },
         "mediaType": {
+          "description": "Media type of the address",
           "type": ["null", "string"]
         }
       }
     },
     "rulesVisible": {
+      "description": "Flag indicating if group rules are visible",
       "type": ["null", "boolean"]
     },
     "visibility": {
+      "description": "Visibility setting for the user group",
       "type": ["null", "string"]
     },
     "chat": {
+      "description": "Chat information for the user group",
       "type": "object",
       "properties": {
         "jabberId": {
+          "description": "Jabber ID for group chat communication",
           "type": ["null", "string"]
         }
       }
     },
     "selfUri": {
+      "description": "URI for retrieving the user group data",
       "type": ["null", "string"]
     }
   }

@@ -2,16 +2,20 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier for the identity provider",
       "type": "string",
       "format": "uuid"
     },
     "connector": {
+      "description": "The type of identity provider connector used by the organization",
       "type": "string"
     },
     "status": {
+      "description": "The current status of the identity provider within the organization",
       "type": "string"
     },
     "name": {
+      "description": "The name of the identity provider associated with the organization",
       "type": "string"
     }
   }

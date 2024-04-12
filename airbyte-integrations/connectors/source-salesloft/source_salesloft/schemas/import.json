@@ -3,23 +3,29 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the import data.",
       "type": "integer"
     },
     "created_at": {
+      "description": "The date and time when the data was initially created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the data was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name associated with the import data.",
       "type": ["null", "string"]
     },
     "current_people_count": {
+      "description": "The current count of people in the import data.",
       "type": ["null", "integer"]
     },
     "imported_people_count": {
+      "description": "The count of people imported in the import data.",
       "type": ["null", "integer"]
     }
   }

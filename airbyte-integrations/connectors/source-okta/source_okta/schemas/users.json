@@ -3,78 +3,98 @@
   "additionalProperties": true,
   "properties": {
     "_links": {
+      "description": "Collection of hypermedia links related to the user data.",
       "type": ["object", "null"]
     },
     "activated": {
+      "description": "The date and time when the user account was activated.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "created": {
+      "description": "The date and time when the user account was created.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "credentials": {
+      "description": "User's credential information including password and recovery question.",
       "type": ["object", "null"],
       "additionalProperties": true,
       "properties": {
         "password": {
+          "description": "User's password information.",
           "type": ["object", "null"],
           "additionalProperties": true,
           "properties": {
             "hash": {
+              "description": "Password hash details including algorithm, salt, value, and work factor.",
               "additionalProperties": true,
               "properties": {
                 "algorithm": {
+                  "description": "The encryption algorithm used to hash the password.",
                   "type": ["string", "null"]
                 },
                 "salt": {
+                  "description": "Salt value used in password hashing.",
                   "type": ["string", "null"]
                 },
                 "saltOrder": {
+                  "description": "Order of the salt applied during hashing.",
                   "type": ["string", "null"]
                 },
                 "value": {
+                  "description": "Hashed value of the user's password.",
                   "type": ["string", "null"]
                 },
                 "workFactor": {
+                  "description": "Computational cost to calculate the hashed password.",
                   "type": ["integer", "null"]
                 }
               },
               "type": ["object", "null"]
             },
             "hook": {
+              "description": "Password hook details.",
               "additionalProperties": true,
               "properties": {
                 "type": {
+                  "description": "Type of hook used for password management.",
                   "type": ["string", "null"]
                 }
               },
               "type": ["object", "null"]
             },
             "value": {
+              "description": "Actual user password value.",
               "type": ["string", "null"]
             }
           }
         },
         "provider": {
+          "description": "Identity provider information for user authentication.",
           "additionalProperties": true,
           "properties": {
             "name": {
+              "description": "Name of the identity provider.",
               "type": ["string", "null"]
             },
             "type": {
+              "description": "Type of identity provider.",
               "type": ["string", "null"]
             }
           },
           "type": ["object", "null"]
         },
         "recovery_question": {
+          "description": "User's recovery question for password reset.",
           "additionalProperties": true,
           "properties": {
             "answer": {
+              "description": "Answer to the recovery question.",
               "type": ["string", "null"]
             },
             "question": {
+              "description": "The recovery question set by the user.",
               "type": ["string", "null"]
             }
           },
@@ -83,130 +103,170 @@
       }
     },
     "id": {
+      "description": "Unique identifier for the user.",
       "type": ["string", "null"]
     },
     "lastLogin": {
+      "description": "Date and time of the user's last login.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "lastUpdated": {
+      "description": "Date and time when the user data was last updated.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "passwordChanged": {
+      "description": "Date and time when the user's password was last changed.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "profile": {
+      "description": "User's profile information including personal and contact details.",
       "additionalProperties": true,
       "properties": {
         "city": {
+          "description": "City in the user's address.",
           "type": ["string", "null"]
         },
         "costCenter": {
+          "description": "Cost center associated with the user.",
           "type": ["string", "null"]
         },
         "countryCode": {
+          "description": "Country code of the user's location.",
           "type": ["string", "null"]
         },
         "department": {
+          "description": "Department where the user works.",
           "type": ["string", "null"]
         },
         "displayName": {
+          "description": "User's display name.",
           "type": ["string", "null"]
         },
         "division": {
+          "description": "Division or unit to which the user belongs.",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "User's primary email address.",
           "type": ["string", "null"]
         },
         "employeeNumber": {
+          "description": "Employee number or ID.",
           "type": ["string", "null"]
         },
         "firstName": {
+          "description": "User's first name.",
           "type": ["string", "null"]
         },
         "honorificPrefix": {
+          "description": "Prefix used in addressing the user.",
           "type": ["string", "null"]
         },
         "honorificSuffix": {
+          "description": "Suffix used in addressing the user.",
           "type": ["string", "null"]
         },
         "lastName": {
+          "description": "User's last name.",
           "type": ["string", "null"]
         },
         "locale": {
+          "description": "Locale setting for the user.",
           "type": ["string", "null"]
         },
         "login": {
+          "description": "User's login username.",
           "type": ["string", "null"]
         },
         "manager": {
+          "description": "Name of the user's manager.",
           "type": ["string", "null"]
         },
         "managerId": {
+          "description": "Identifier of the user's manager.",
           "type": ["string", "null"]
         },
         "middleName": {
+          "description": "User's middle name.",
           "type": ["string", "null"]
         },
         "mobilePhone": {
+          "description": "User's mobile phone number.",
           "type": ["string", "null"]
         },
         "nickName": {
+          "description": "User's nickname or alias.",
           "type": ["string", "null"]
         },
         "organization": {
+          "description": "Organization to which the user belongs.",
           "type": ["string", "null"]
         },
         "postalAddress": {
+          "description": "User's postal address.",
           "type": ["string", "null"]
         },
         "preferredLanguage": {
+          "description": "User's preferred language.",
           "type": ["string", "null"]
         },
         "primaryPhone": {
+          "description": "User's primary phone number.",
           "type": ["string", "null"]
         },
         "profileUrl": {
+          "description": "URL to the user's profile page.",
           "type": ["string", "null"]
         },
         "secondEmail": {
+          "description": "User's secondary email address.",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "State or region in the user's address.",
           "type": ["string", "null"]
         },
         "streetAddress": {
+          "description": "Street address of the user.",
           "type": ["string", "null"]
         },
         "timezone": {
+          "description": "Timezone setting for the user.",
           "type": ["string", "null"]
         },
         "title": {
+          "description": "User's job title.",
           "type": ["string", "null"]
         },
         "userType": {
+          "description": "Type categorization of the user.",
           "type": ["string", "null"]
         },
         "zipCode": {
+          "description": "Zip or postal code in the user's address.",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "status": {
+      "description": "Current status of the user account.",
       "type": ["string", "null"]
     },
     "statusChanged": {
+      "description": "Date and time when the user account status was last changed.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type information related to the user.",
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user type.",
           "type": ["string", "null"]
         }
       },

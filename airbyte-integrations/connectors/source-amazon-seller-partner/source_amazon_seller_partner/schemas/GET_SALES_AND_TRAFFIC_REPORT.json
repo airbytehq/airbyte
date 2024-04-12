@@ -22,6 +22,7 @@
       "type": ["null", "string"]
     },
     "salesByAsin": {
+      "description": "Sales data grouped by ASIN",
       "type": "object",
       "properties": {
         "unitsOrdered": {
@@ -29,6 +30,7 @@
           "type": ["null", "number"]
         },
         "orderedProductSales": {
+          "description": "Sales information for each product sold",
           "type": "object",
           "properties": {
             "amount": {
@@ -48,6 +50,7 @@
       }
     },
     "trafficByAsin": {
+      "description": "Traffic data grouped by ASIN",
       "type": "object",
       "properties": {
         "browserSessions": {

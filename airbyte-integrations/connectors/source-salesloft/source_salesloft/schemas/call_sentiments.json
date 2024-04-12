@@ -4,17 +4,21 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the call sentiment data.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The timestamp when the call sentiment was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the call sentiment was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name associated with the call sentiment.",
       "type": ["null", "string"]
     }
   }

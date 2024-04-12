@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier (UUID) associated with the organization position.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The position text or title within the organization.",
       "type": "string"
     }
   }

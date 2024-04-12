@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "kind": {
+      "description": "The type of resource, in this case, a group member.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the group member.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the group member.",
       "type": ["null", "string"]
     },
     "role": {
+      "description": "The role of the group member within the group.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of member, for example, user or group.",
       "type": ["null", "string"]
     },
     "etag": {
+      "description": "An opaque entity tag that identifies the resource's current state.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the group member, typically active or suspended.",
       "type": ["null", "string"]
     }
   }

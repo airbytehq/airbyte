@@ -3,28 +3,36 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the email click event",
       "type": ["integer"]
     },
     "prospect_id": {
+      "description": "The identifier of the prospect who clicked the email link",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "The URL that was clicked in the email",
       "type": ["null", "string"],
       "format": ""
     },
     "list_email_id": {
+      "description": "The identifier of the list email associated with the email click",
       "type": ["null", "integer"]
     },
     "drip_program_action_id": {
+      "description": "The identifier for the drip program action associated with the email click",
       "type": ["null", "integer"]
     },
     "email_template_id": {
+      "description": "The identifier of the email template related to the email click",
       "type": ["null", "integer"]
     },
     "tracker_redirect_id": {
+      "description": "The identifier for the tracker redirect associated with the email click",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the email click event occurred",
       "type": ["null", "string"],
       "format": "date-time"
     }

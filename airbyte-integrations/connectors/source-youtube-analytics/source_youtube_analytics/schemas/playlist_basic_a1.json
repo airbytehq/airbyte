@@ -3,42 +3,55 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the analytics data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the channel associated with the playlist.",
       "type": ["null", "string"]
     },
     "playlist_id": {
+      "description": "The unique identifier for the playlist.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the video within the playlist.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the playlist is for live or on-demand content.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates the subscribed status of viewers interacting with the playlist.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code indicating the location where the data is relevant.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views the playlist received.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes accumulated by viewers for the playlist.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration in seconds that viewers watched the videos in the playlist.",
       "type": ["null", "number"]
     },
     "playlist_starts": {
+      "description": "The number of times the playlist was initiated or started by viewers.",
       "type": ["null", "integer"]
     },
     "playlist_saves_added": {
+      "description": "The number of times the playlist was saved or added to a user's collection.",
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "description": "The number of times the playlist was removed from a user's saved collection.",
       "type": ["null", "integer"]
     }
   }

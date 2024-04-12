@@ -3,141 +3,186 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the prospect",
       "type": ["integer"]
     },
     "campaign_id": {
+      "description": "The ID of the campaign associated with the prospect",
       "type": ["null", "integer"]
     },
     "salutation": {
+      "description": "The salutation or title used when addressing the prospect",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "The first name of the prospect",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "The last name of the prospect",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the prospect",
       "type": ["null", "string"]
     },
     "password": {
+      "description": "The password associated with the prospect's account",
       "type": ["null", "string"]
     },
     "company": {
+      "description": "The name of the prospect's company",
       "type": ["null", "string"]
     },
     "prospect_account_id": {
+      "description": "The ID of the prospect's account in the system",
       "type": ["null", "integer"]
     },
     "website": {
+      "description": "The website of the prospect's company",
       "type": ["null", "string"]
     },
     "job_title": {
+      "description": "The job title of the prospect",
       "type": ["null", "string"]
     },
     "department": {
+      "description": "The department within the prospect's company",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "The country where the prospect is located",
       "type": ["null", "string"]
     },
     "address_one": {
+      "description": "The first line of the prospect's address",
       "type": ["null", "string"]
     },
     "address_two": {
+      "description": "The second line of the prospect's address",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "The city where the prospect is located",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state or region where the prospect is located",
       "type": ["null", "string"]
     },
     "territory": {
+      "description": "The sales territory assigned to the prospect",
       "type": ["null", "string"]
     },
     "zip": {
+      "description": "The ZIP or postal code of the prospect's location",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "The phone number of the prospect",
       "type": ["null", "string"]
     },
     "fax": {
+      "description": "The fax number of the prospect",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "The original source or channel through which the prospect was acquired",
       "type": ["null", "string"]
     },
     "annual_revenue": {
+      "description": "The annual revenue of the prospect's company",
       "type": ["null", "string"]
     },
     "employees": {
+      "description": "The number of employees in the prospect's company",
       "type": ["null", "string"]
     },
     "industry": {
+      "description": "The industry to which the prospect's company belongs",
       "type": ["null", "string"]
     },
     "years_in_business": {
+      "description": "The number of years the prospect's company has been in business",
       "type": ["null", "string"]
     },
     "comments": {
+      "description": "Any additional comments or notes about the prospect",
       "type": ["null", "string"]
     },
     "notes": {
+      "description": "Any additional notes or details related to the prospect",
       "type": ["null", "string"]
     },
     "score": {
+      "description": "The scoring or rating of the prospect based on interactions",
       "type": ["null", "integer"]
     },
     "grade": {
+      "description": "The grade or ranking of the prospect",
       "type": ["null", "string"]
     },
     "last_activity_at": {
+      "description": "The date and time of the prospect's last activity",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "recent_interaction": {
+      "description": "Information about the prospect's most recent interaction",
       "type": ["null", "string"]
     },
     "crm_lead_fid": {
+      "description": "The ID of the CRM lead associated with the prospect",
       "type": ["null", "string"]
     },
     "crm_contact_fid": {
+      "description": "The ID of the CRM contact associated with the prospect",
       "type": ["null", "string"]
     },
     "crm_owner_fid": {
+      "description": "The ID of the CRM owner associated with the prospect",
       "type": ["null", "string"]
     },
     "crm_account_fid": {
+      "description": "The ID of the CRM account associated with the prospect",
       "type": ["null", "string"]
     },
     "crm_last_sync": {
+      "description": "The date and time of the last synchronization with CRM",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "crm_url": {
+      "description": "The URL of the CRM system where prospect data is stored",
       "type": ["null", "string"]
     },
     "is_do_not_email": {
+      "description": "A flag indicating if the prospect should not be contacted by email",
       "type": ["null", "integer"]
     },
     "is_do_not_call": {
+      "description": "A flag indicating if the prospect should not be contacted by phone",
       "type": ["null", "integer"]
     },
     "opted_out": {
+      "description": "A flag indicating if the prospect has opted out of communication",
       "type": ["null", "integer"]
     },
     "is_reviewed": {
+      "description": "A flag indicating if the prospect has been reviewed",
       "type": ["null", "integer"]
     },
     "is_starred": {
+      "description": "A flag indicating if the prospect is starred for special attention",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the prospect was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the prospect information was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

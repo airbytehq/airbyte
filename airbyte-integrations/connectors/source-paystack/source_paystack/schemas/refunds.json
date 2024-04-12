@@ -2,54 +2,70 @@
   "type": ["null", "object"],
   "properties": {
     "integration": {
+      "description": "Information about the integration with the payment system.",
       "type": ["null", "integer"]
     },
     "transaction": {
+      "description": "The transaction associated with the refund.",
       "type": ["null", "integer"]
     },
     "dispute": {
+      "description": "Details related to any dispute associated with the refund.",
       "type": ["null", "object"],
       "properties": {}
     },
     "settlement": {
+      "description": "Details related to the settlement of the refund.",
       "type": ["null", "object"],
       "properties": {}
     },
     "id": {
+      "description": "The unique identifier for the refund.",
       "type": ["null", "integer"]
     },
     "domain": {
+      "description": "The domain related to the refund.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency in which the refund was made.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount refunded.",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the refund.",
       "type": ["null", "string"]
     },
     "refunded_at": {
+      "description": "The date and time when the refund was processed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "refunded_by": {
+      "description": "The entity that processed the refund.",
       "type": ["null", "string"]
     },
     "customer_note": {
+      "description": "Any notes provided by the customer regarding the refund.",
       "type": ["null", "string"]
     },
     "merchant_note": {
+      "description": "Any notes provided by the merchant regarding the refund.",
       "type": ["null", "string"]
     },
     "deducted_amount": {
+      "description": "The amount deducted for the refund.",
       "type": ["null", "integer"]
     },
     "fully_deducted": {
+      "description": "Indicates if the refund amount was fully deducted.",
       "type": ["null", "boolean"]
     },
     "createdAt": {
+      "description": "The date and time when the refund was created.",
       "type": ["null", "string"],
       "format": "date-time"
     }

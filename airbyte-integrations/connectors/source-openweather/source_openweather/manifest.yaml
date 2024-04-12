@@ -77,58 +77,81 @@ definitions:
         additionalProperties: true
         properties:
           lat:
+            description: Latitude of the requested location
             type: number
           lon:
+            description: Longitude of the requested location
             type: number
           timezone:
+            description: Time zone name for the requested location
             type: string
           timezone_offset:
+            description: Time offset in seconds from UTC
             type: number
           current:
             type: object
             additionalProperties: true
             properties:
               dt:
+                description: Time of the data forecasted
                 type: number
               sunrise:
+                description: Sunrise time
                 type: number
               sunset:
+                description: Sunset time
                 type: number
               temp:
+                description: Temperature
                 type: number
               feels_like:
+                description: Apparent (feels like) temperature
                 type: number
               pressure:
+                description: Atmospheric pressure on the sea level
                 type: number
               humidity:
+                description: Humidity percentage
                 type: number
               dew_point:
+                description: Dew point temperature
                 type: number
               uvi:
+                description: UV index
                 type: number
               clouds:
+                description: Cloudiness percentage
                 type: number
               visibility:
+                description: Visibility distance
                 type: number
               wind_speed:
+                description: Wind speed in meters per second
                 type: number
               wind_deg:
+                description: Wind direction in degrees
                 type: number
               weather:
+                description: Weather condition
                 type: array
               rain:
                 type: object
                 additionalProperties: true
                 properties:
                   1h:
+                    description: Rain volume for the last hour
                     type: number
           minutely:
+            description: Minute forecast for the next hour
             type: array
           hourly:
+            description: Weather forecast for the next 48 hours
             type: array
           daily:
+            description: Weather forecast for the next 7 days
             type: array
           alerts:
+            description: Weather alerts for the requested location
             type: array
 streams:
   - "#/definitions/onecall_stream"

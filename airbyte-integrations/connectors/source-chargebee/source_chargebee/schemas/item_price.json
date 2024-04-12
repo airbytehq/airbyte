@@ -129,8 +129,10 @@
       "type": ["boolean", "null"]
     },
     "tiers": {
+      "description": "Different pricing tiers for the item.",
       "type": ["array", "null"],
       "items": {
+        "description": "Specific details for each tier such as price, quantity, discount, etc.",
         "type": ["object", "null"],
         "properties": {
           "starting_unit": {
@@ -149,6 +151,7 @@
       }
     },
     "tax_detail": {
+      "description": "Information about taxes associated with the item price.",
       "type": ["object", "null"],
       "properties": {
         "tax_profile_id": {
@@ -178,6 +181,7 @@
       }
     },
     "accounting_detail": {
+      "description": "Details related to accounting such as cost, revenue, expenses, etc.",
       "type": ["object", "null"],
       "properties": {
         "sku": {

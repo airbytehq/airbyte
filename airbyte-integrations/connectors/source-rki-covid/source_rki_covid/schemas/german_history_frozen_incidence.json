@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "weekIncidence": {
+      "description": "The weekly incidence rate of COVID-19 cases per 100,000 population for a specific date.",
       "type": "number"
     },
     "date": {
+      "description": "The date of the recorded data entry.",
       "type": "string"
     }
   },

@@ -4,60 +4,83 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the task",
       "type": "string"
     },
     "name": {
+      "description": "Name or title of the task",
       "type": "string"
     },
     "type": {
+      "description": "Type or category of the task",
       "type": "string"
     },
     "status": {
+      "description": "Current status of the task",
       "type": "string"
     },
     "url": {
+      "description": "URL link to access detailed information about the task",
       "type": "string"
     },
     "iteration": {
+      "description": "Iteration or sprint associated with the task",
       "type": "string"
     },
     "projects": {
+      "description": "List of projects the task is part of",
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "createdAt": {
+      "description": "Timestamp when the task was created",
       "type": "string"
     },
     "dueOn": {
+      "description": "Timestamp indicating the deadline for the task",
       "type": "string"
     },
     "labels": {
+      "description": "List of labels/tags associated with the task",
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "time": {
+      "description": "Time tracking information for the task",
       "type": "object",
       "properties": {
         "total": {
+          "description": "Total time spent on the task",
           "type": "integer"
         },
         "users": {
+          "description": "Individual time tracking for each user involved",
           "type": ["null", "object"]
         },
         "timerTime": {
+          "description": "Time duration currently tracked by a timer",
           "type": "integer"
         }
       }
     },
     "completed": {
+      "description": "Flag indicating if the task has been completed",
       "type": "boolean"
     },
     "completedAt": {
+      "description": "Timestamp when the task was marked as completed",
       "type": "string"
     },
     "assignees": {
+      "description": "List of users assigned to the task",
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

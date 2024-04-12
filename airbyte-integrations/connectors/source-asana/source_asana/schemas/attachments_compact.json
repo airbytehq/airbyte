@@ -2,15 +2,19 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Unique identifier for the attachment.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "The type of the resource the attachment is attached to.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the attachment.",
       "type": ["null", "string"]
     },
     "resource_subtype": {
+      "description": "The subtype of the resource the attachment is attached to.",
       "type": ["null", "string"]
     }
   }

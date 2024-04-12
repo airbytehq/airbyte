@@ -2,62 +2,80 @@
   "type": ["null", "object"],
   "properties": {
     "Date": {
+      "description": "Date when the receipt was issued",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Contact": {
+      "description": "Information about the contact associated with the receipt",
       "$ref": "contacts.json"
     },
     "LineItems": {
+      "description": "List of line items on the receipt",
       "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "User": {
+      "description": "User associated with the receipt",
       "$ref": "users.json"
     },
     "Reference": {
+      "description": "Additional reference information",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "Type of amount values used in the line items",
       "type": ["null", "string"]
     },
     "SubTotal": {
+      "description": "Subtotal amount on the receipt",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "Total tax amount on the receipt",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "Total amount including taxes and discounts",
       "type": ["null", "number"]
     },
     "ReceiptID": {
+      "description": "ID of the receipt",
       "type": ["string"]
     },
     "Status": {
+      "description": "Current status of the receipt",
       "type": ["null", "string"]
     },
     "ReceiptNumber": {
+      "description": "Number assigned to the receipt",
       "type": ["null", "integer"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time when the receipt was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "HasAttachments": {
+      "description": "Flag indicating if there are any attachments linked to the receipt",
       "type": ["null", "boolean"]
     },
     "Url": {
+      "description": "URL to access the receipt online",
       "type": ["null", "string"]
     },
     "ID": {
+      "description": "Unique identifier for the receipt",
       "type": ["null", "string"]
     },
     "ValidationErrors": {
+      "description": "List of validation errors, if any",
       "$ref": "validation_errors.json"
     },
     "Attachments": {
+      "description": "Details of any attachments linked to the receipt",
       "$ref": "attachments.json"
     }
   },

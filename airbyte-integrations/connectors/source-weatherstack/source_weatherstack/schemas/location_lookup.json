@@ -6,9 +6,11 @@
       "type": ["null", "object"],
       "properties": {
         "query": {
+          "description": "The location query used in the request",
           "type": "string"
         },
         "results": {
+          "description": "The total number of results returned",
           "type": "number"
         }
       }
@@ -17,24 +19,31 @@
       "type": ["null", "array"],
       "properties": {
         "name": {
+          "description": "The name of the location",
           "type": "string"
         },
         "country": {
+          "description": "The country where the location is situated",
           "type": "string"
         },
         "region": {
+          "description": "The region where the location is located",
           "type": "string"
         },
         "lon": {
+          "description": "The longitude coordinate of the location",
           "type": "string"
         },
         "lat": {
+          "description": "The latitude coordinate of the location",
           "type": "string"
         },
         "timezone_id": {
+          "description": "The timezone ID of the location",
           "type": "string"
         },
         "utc_offset": {
+          "description": "The UTC offset of the timezone at the location",
           "type": "string"
         }
       }

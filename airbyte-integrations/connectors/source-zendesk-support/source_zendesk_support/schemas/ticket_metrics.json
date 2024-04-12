@@ -21,6 +21,7 @@
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The current status of the ticket (open, pending, solved, etc.).",
       "properties": {
         "calendar": {
           "description": "The status of the ticket in calendar hours",
@@ -38,6 +39,7 @@
       "type": ["null", "string"]
     },
     "agent_wait_time_in_minutes": {
+      "description": "The total time an agent spent waiting before responding to the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -60,6 +62,7 @@
       "format": "date-time"
     },
     "first_resolution_time_in_minutes": {
+      "description": "The time taken to provide the initial resolution to the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -73,6 +76,7 @@
       }
     },
     "full_resolution_time_in_minutes": {
+      "description": "The total time taken to completely resolve the ticket.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -95,6 +99,7 @@
       "format": "date-time"
     },
     "on_hold_time_in_minutes": {
+      "description": "The cumulative time the ticket spent on hold during its lifecycle.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -116,6 +121,7 @@
       "type": ["null", "integer"]
     },
     "reply_time_in_minutes": {
+      "description": "The time taken to reply to the ticket after initial submission.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -134,6 +140,7 @@
       "format": "date-time"
     },
     "requester_wait_time_in_minutes": {
+      "description": "The time a requester had to wait before the ticket was assigned to an agent.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {
@@ -186,6 +193,7 @@
       "format": "date-time"
     },
     "reply_time_in_seconds": {
+      "description": "The time taken to reply to the ticket after initial submission in seconds.",
       "type": ["null", "object"],
       "properties": {
         "calendar": {

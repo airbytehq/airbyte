@@ -507,9 +507,11 @@
       "readOnly": true
     },
     "componentBean": {
+      "description": "Contains information about the component associated with the project.",
       "type": ["null", "object"]
     },
     "issueCount": {
+      "description": "The total count of issues related to the project component.",
       "type": ["null", "integer"]
     }
   },

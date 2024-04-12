@@ -2,58 +2,76 @@
   "type": ["null", "object"],
   "properties": {
     "Code": {
+      "description": "Account code or number",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "Name of the account",
       "type": ["null", "string"]
     },
     "Type": {
+      "description": "Type of the account (e.g., income, expense)",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time of the last update to the account",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ReportingCodeName": {
+      "description": "Name of the reporting code",
       "type": ["null", "string"]
     },
     "SystemAccount": {
+      "description": "Indicates if the account is a system account",
       "type": ["null", "string"]
     },
     "BankAccountType": {
+      "description": "Type of bank account (e.g., savings, checking)",
       "type": ["null", "string"]
     },
     "TaxType": {
+      "description": "Tax type associated with the account",
       "type": ["null", "string"]
     },
     "Description": {
+      "description": "Description or name of the account",
       "type": ["null", "string"]
     },
     "Class": {
+      "description": "Class (category) of the account",
       "type": ["null", "string"]
     },
     "AccountID": {
+      "description": "Unique identifier for the account",
       "type": ["string"]
     },
     "BankAccountNumber": {
+      "description": "Bank account number associated with the account",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "Status of the account",
       "type": ["null", "string"]
     },
     "ShowInExpenseClaims": {
+      "description": "Indicates if this account can be shown in expense claims",
       "type": ["null", "boolean"]
     },
     "CurrencyCode": {
+      "description": "Currency code used by the account",
       "type": ["null", "string"]
     },
     "ReportingCode": {
+      "description": "Reporting code associated with the account",
       "type": ["null", "string"]
     },
     "EnablePaymentsToAccount": {
+      "description": "Indicates if payments are enabled to this account",
       "type": ["null", "boolean"]
     },
     "HasAttachments": {
+      "description": "Indicates if the account has attachments",
       "type": ["null", "boolean"]
     }
   },

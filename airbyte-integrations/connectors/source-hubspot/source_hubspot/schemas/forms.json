@@ -33,6 +33,7 @@
       "type": ["null", "string"]
     },
     "fieldGroups": {
+      "description": "Groups containing fields of a form.",
       "type": ["null", "array"],
       "items": {
         "description": "Field groups in the form.",

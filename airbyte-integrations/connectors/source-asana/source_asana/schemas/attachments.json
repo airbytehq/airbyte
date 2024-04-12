@@ -2,52 +2,68 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Unique identifier for the attachment",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of the resource for the attachment",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the attachment",
       "type": ["null", "string"]
     },
     "resource_subtype": {
+      "description": "Subtype of the resource type for the attachment",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the attachment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "download_url": {
+      "description": "URL to download the attachment",
       "type": ["null", "string"]
     },
     "permanent_url": {
+      "description": "Permanent URL of the attachment",
       "type": ["null", "string"]
     },
     "host": {
+      "description": "Information about the server hosting the attachment",
       "type": ["null", "string"]
     },
     "parent": {
+      "description": "Information about the parent object to which the attachment belongs",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Unique identifier of the parent object",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of the resource for the parent object",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the parent object",
           "type": ["null", "string"]
         },
         "resource_subtype": {
+          "description": "Subtype of the resource type for the parent object",
           "type": ["null", "string"]
         },
         "created_by": {
+          "description": "Details of the user who created the parent object",
           "type": ["null", "object"],
           "properties": {
             "gid": {
+              "description": "Unique identifier of the user who created the parent object",
               "type": ["null", "string"]
             },
             "resource_type": {
+              "description": "Type of the resource for the user who created the parent object",
               "type": ["null", "string"]
             }
           }
@@ -55,12 +71,15 @@
       }
     },
     "size": {
+      "description": "Size of the attachment in bytes",
       "type": ["null", "integer"]
     },
     "view_url": {
+      "description": "URL to view the attachment",
       "type": ["null", "string"]
     },
     "connected_to_app": {
+      "description": "Details about the application to which the attachment is connected",
       "type": ["null", "boolean"]
     }
   }

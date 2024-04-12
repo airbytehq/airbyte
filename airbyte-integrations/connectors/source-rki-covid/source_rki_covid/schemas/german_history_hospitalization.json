@@ -3,42 +3,55 @@
   "type": "object",
   "properties": {
     "cases7Days": {
+      "description": "Total number of COVID-19 cases over the past 7 days.",
       "type": "integer"
     },
     "incidence7Days": {
+      "description": "Incidence rate of COVID-19 cases over the past 7 days.",
       "type": ["number", "null"]
     },
     "date": {
+      "description": "Date corresponding to the data records.",
       "type": ["string", "null"]
     },
     "fixedCases7Days": {
+      "description": "Fixed number of COVID-19 cases over the past 7 days.",
       "type": ["integer", "null"]
     },
     "updatedCases7Days": {
+      "description": "Number of updated COVID-19 cases over the past 7 days.",
       "type": ["integer", "null"]
     },
     "adjustedLowerCases7Days": {
+      "description": "Lower bound of adjusted COVID-19 cases over the past 7 days.",
       "type": ["integer", "null"]
     },
     "adjustedCases7Days": {
+      "description": "Number of COVID-19 cases adjusted over the past 7 days.",
       "type": ["integer", "null"]
     },
     "adjustedUpperCases7Days": {
+      "description": "Upper bound of adjusted COVID-19 cases over the past 7 days.",
       "type": ["integer", "null"]
     },
     "fixedIncidence7Days": {
+      "description": "Fixed incidence rate of COVID-19 cases over the past 7 days.",
       "type": ["number", "null"]
     },
     "updatedIncidence7Days": {
+      "description": "Updated incidence rate of COVID-19 cases over the past 7 days.",
       "type": ["number", "null"]
     },
     "adjustedLowerIncidence7Days": {
+      "description": "Lower bound of adjusted incidence rate of COVID-19 cases over the past 7 days.",
       "type": ["number", "null"]
     },
     "adjustedIncidence7Days": {
+      "description": "Incidence rate of COVID-19 cases adjusted over the past 7 days.",
       "type": ["number", "null"]
     },
     "adjustedUpperIncidence7Days": {
+      "description": "Upper bound of adjusted incidence rate of COVID-19 cases over the past 7 days.",
       "type": ["number", "null"]
     }
   },

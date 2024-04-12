@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "instance_id": {
+      "description": "The unique identifier for an instance of the shipping method.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the shipping method zone.",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "Specifies the order in which the shipping method appears.",
       "type": ["null", "integer"]
     },
     "enabled": {
+      "description": "Indicates whether the shipping method is enabled or disabled.",
       "type": ["null", "boolean"]
     },
     "method_id": {
+      "description": "The ID of the shipping method.",
       "type": ["null", "string"]
     },
     "method_title": {
+      "description": "The title of the shipping method.",
       "type": ["null", "string"]
     },
     "method_description": {
+      "description": "Description of the shipping method.",
       "type": ["null", "string"]
     },
     "settings": {
+      "description": "Additional settings or configurations for the shipping method.",
       "$ref": "shipping_zone_method_settings.json"
     }
   }

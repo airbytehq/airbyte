@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "weekIncidence": {
+      "description": "The incidence rate per 100,000 population aggregated for a week.",
       "type": ["number", "null"]
     },
     "date": {
+      "description": "The date for which the incidence data is recorded.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name of the state for which the data is reported.",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation code of the state where the data is reported.",
       "type": ["string", "null"]
     }
   },

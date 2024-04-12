@@ -63,18 +63,28 @@ definitions:
           - rates
         properties:
           base:
+            description: The base currency against which exchange rates are provided.
             type:
               - "null"
               - string
           disclaimer:
+            description:
+              Information about the usage rights or restrictions related
+              to the provided data.
             type:
               - "null"
               - string
           license:
+            description:
+              The type of license under which the exchange rate data is
+              made available.
             type:
               - "null"
               - string
           timestamp:
+            description:
+              The UNIX timestamp indicating when the exchange rates were
+              last updated.
             type:
               - "null"
               - integer

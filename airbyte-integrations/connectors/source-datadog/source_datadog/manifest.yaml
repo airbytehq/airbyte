@@ -216,10 +216,12 @@ definitions:
             description: If a scheduled downtime is canceled.
             readOnly: true
           child_id:
+            description: ID of the child object associated with the downtime
             type:
               - integer
               - "null"
           created:
+            description: Timestamp indicating the creation time of the downtime
             type:
               - integer
               - "null"
@@ -265,6 +267,7 @@ definitions:
             description: A message to include with notifications for this downtime.
             readOnly: true
           modified:
+            description: Timestamp indicating the last modification time of the downtime
             type:
               - integer
               - "null"
@@ -293,18 +296,23 @@ definitions:
               be muted.
             readOnly: true
           notify_end_states:
+            description: States to be notified when the downtime ends
             type:
               - array
               - "null"
             items:
+              description: Individual state value for notification
               type: string
           notify_end_types:
+            description: Types to be notified when the downtime ends
             type:
               - array
               - "null"
             items:
+              description: Individual type value for notification
               type: string
           org_id:
+            description: ID of the organization to which the downtime belongs
             type:
               - integer
               - "null"
@@ -337,6 +345,7 @@ definitions:
               downtime starts the moment it is created.
             readOnly: true
           status:
+            description: Current status of the downtime (e.g., active, ended)
             type:
               - string
               - "null"
@@ -355,6 +364,7 @@ definitions:
             description: ID of the last user that updated the downtime.
             readOnly: true
           uuid:
+            description: Unique identifier of the downtime record
             type:
               - string
               - "null"
@@ -536,18 +546,22 @@ definitions:
         additionalProperties: true
         properties:
           created:
+            description: Timestamp indicating when the monitor was created
             type:
               - string
               - "null"
           created_at:
+            description: Timestamp indicating the precise creation time of the monitor
             type:
               - integer
               - "null"
           org_id:
+            description: Organization ID associated with the monitor
             type:
               - integer
               - "null"
           overall_state_modified:
+            description: Timestamp indicating the last modification of overall state
             type:
               - string
               - "null"
@@ -555,14 +569,17 @@ definitions:
             additionalProperties: true
             properties:
               email:
+                description: Email address of the creator
                 type:
                   - string
                   - "null"
               handle:
+                description: Handle/username of the creator
                 type:
                   - string
                   - "null"
               name:
+                description: Name of the creator
                 type:
                   - string
                   - "null"
@@ -570,10 +587,12 @@ definitions:
               - object
               - "null"
           deleted:
+            description: Flag indicating if the monitor has been deleted
             type:
               - string
               - "null"
           id:
+            description: Unique identifier for the monitor
             type:
               - integer
               - "null"
@@ -582,15 +601,18 @@ definitions:
               additionalProperties: true
               properties:
                 end:
+                  description: End timestamp of a matching downtime
                   type:
                     - integer
                     - "null"
                 id:
+                  description: Unique identifier for the downtime
                   type:
                     - integer
                     - "null"
                 scope:
                   items:
+                    description: Scope of the matching downtime
                     type:
                       - string
                       - "null"
@@ -598,6 +620,7 @@ definitions:
                     - array
                     - "null"
                 start:
+                  description: Start timestamp of a matching downtime
                   type:
                     - integer
                     - "null"
@@ -608,18 +631,22 @@ definitions:
               - array
               - "null"
           message:
+            description: Message associated with the monitor
             type:
               - string
               - "null"
           modified:
+            description: Timestamp indicating when the monitor was last modified
             type:
               - string
               - "null"
           multi:
+            description: Flag indicating if the monitor is a multi-alert monitor
             type:
               - boolean
               - "null"
           name:
+            description: Name/title of the monitor
             type:
               - string
               - "null"
@@ -631,6 +658,7 @@ definitions:
                 properties:
                   groupBy:
                     items:
+                      description: Fields used for grouping data
                       type:
                         - string
                         - "null"
@@ -638,10 +666,12 @@ definitions:
                       - array
                       - "null"
                   metric:
+                    description: Metric to apply aggregation on
                     type:
                       - string
                       - "null"
                   type:
+                    description: Type of aggregation (e.g., sum, average)
                     type:
                       - string
                       - "null"
@@ -650,6 +680,7 @@ definitions:
                   - "null"
               device_ids:
                 items:
+                  description: List of device IDs associated with the monitor
                   type:
                     - string
                     - "null"
@@ -657,59 +688,73 @@ definitions:
                   - array
                   - "null"
               enable_logs_sample:
+                description: Flag indicating if logs sampling is enabled
                 type:
                   - boolean
                   - "null"
               enable_samples:
+                description: Flag indicating if samples are enabled
                 type:
                   - boolean
                   - "null"
               escalation_message:
+                description: Message to be sent on escalation
                 type:
                   - string
                   - "null"
               evaluation_delay:
+                description: Delay in evaluation before alerts are triggered
                 type:
                   - integer
                   - "null"
               group_retention_duration:
+                description: Duration for which groups are retained
                 type:
                   - string
                   - "null"
               groupby_simple_monitor:
+                description: Flag to group simple monitor alerts
                 type:
                   - boolean
                   - "null"
               include_tags:
+                description: Flag indicating if tags are included in alerts
                 type:
                   - boolean
                   - "null"
               locked:
+                description: Flag indicating if the monitor is locked
                 type:
                   - boolean
                   - "null"
               new_group_delay:
+                description: Delay for creating a new group
                 type:
                   - integer
                   - "null"
               new_host_delay:
+                description: Delay for detecting a new host
                 type:
                   - integer
                   - "null"
               no_data_timeframe:
+                description: Timeframe for considering no data condition
                 type:
                   - integer
                   - "null"
               notification_preset_name:
+                description: Preset name for notifications
                 type:
                   - string
                   - "null"
               notify_audit:
+                description: Flag to notify audit actions
                 type:
                   - boolean
                   - "null"
               notify_by:
                 items:
+                  description: Methods to notify/alert (e.g., email, SMS)
                   type:
                     - string
                     - "null"
@@ -717,23 +762,28 @@ definitions:
                   - array
                   - "null"
               notify_no_data:
+                description: Flag to notify on no data conditions
                 type:
                   - boolean
                   - "null"
               on_missing_data:
+                description: Action to take on missing data
                 type:
                   - string
                   - "null"
               renotify_interval:
+                description: Interval to renotify on alerts
                 type:
                   - integer
                   - "null"
               renotify_occurrences:
+                description: Occurrences count to renotify on alerts
                 type:
                   - integer
                   - "null"
               renotify_statuses:
                 items:
+                  description: Statuses on which to renotify
                   type:
                     - string
                     - "null"
@@ -741,6 +791,7 @@ definitions:
                   - array
                   - "null"
               require_full_window:
+                description: Flag indicating if a full window of data is required
                 type:
                   - boolean
                   - "null"
@@ -751,14 +802,17 @@ definitions:
                     additionalProperties: true
                     properties:
                       day_starts:
+                        description: Time when the day starts for evaluation
                         type:
                           - string
                           - "null"
                       hour_starts:
+                        description: Hour when the evaluation window starts
                         type:
                           - string
                           - "null"
                       month_starts:
+                        description: Month when the evaluation window starts
                         type:
                           - integer
                           - "null"
@@ -771,10 +825,12 @@ definitions:
               silenced:
                 patternProperties:
                   .+:
+                    description: Pattern properties for silencing alerts
                     type:
                       - integer
                       - "null"
               synthetics_check_id:
+                description: ID of the synthetic check associated with the monitor
                 type:
                   - string
                   - "null"
@@ -782,10 +838,12 @@ definitions:
                 additionalProperties: true
                 properties:
                   recovery_window:
+                    description: Window for recovery actions
                     type:
                       - string
                       - "null"
                   trigger_window:
+                    description: Window for triggering actions
                     type:
                       - string
                       - "null"
@@ -796,26 +854,32 @@ definitions:
                 additionalProperties: true
                 properties:
                   critical:
+                    description: Critical threshold value
                     type:
                       - number
                       - "null"
                   critical_recovery:
+                    description: Critical recovery threshold value
                     type:
                       - number
                       - "null"
                   ok:
+                    description: OK threshold value
                     type:
                       - number
                       - "null"
                   unknown:
+                    description: Unknown threshold value
                     type:
                       - number
                       - "null"
                   warning:
+                    description: Warning threshold value
                     type:
                       - number
                       - "null"
                   warning_recovery:
+                    description: Warning recovery threshold value
                     type:
                       - number
                       - "null"
@@ -823,6 +887,7 @@ definitions:
                   - object
                   - "null"
               timeout_h:
+                description: Timeout duration in hours
                 type:
                   - integer
                   - "null"
@@ -834,14 +899,17 @@ definitions:
                       additionalProperties: true
                       properties:
                         aggregation:
+                          description: Aggregation method for computation
                           type:
                             - string
                             - "null"
                         interval:
+                          description: Interval for computation
                           type:
                             - integer
                             - "null"
                         metric:
+                          description: Metric used in computation
                           type:
                             - string
                             - "null"
@@ -849,6 +917,7 @@ definitions:
                         - object
                         - "null"
                     data_source:
+                      description: Source of data for the variable
                       type:
                         - string
                         - "null"
@@ -857,10 +926,12 @@ definitions:
                         additionalProperties: true
                         properties:
                           facet:
+                            description: Field to facet by
                             type:
                               - string
                               - "null"
                           limit:
+                            description: Limit for faceting
                             type:
                               - integer
                               - "null"
@@ -868,14 +939,17 @@ definitions:
                             additionalProperties: true
                             properties:
                               aggregation:
+                                description: Aggregation method for sorting
                                 type:
                                   - string
                                   - "null"
                               metric:
+                                description: Metric used for sorting
                                 type:
                                   - string
                                   - "null"
                               order:
+                                description: Order for sorting
                                 type:
                                   - string
                                   - "null"
@@ -890,6 +964,7 @@ definitions:
                         - "null"
                     indexes:
                       items:
+                        description: Indexes for the variable
                         type:
                           - string
                           - "null"
@@ -897,6 +972,7 @@ definitions:
                         - array
                         - "null"
                     name:
+                      description: Name of the variable
                       type:
                         - string
                         - "null"
@@ -904,6 +980,7 @@ definitions:
                       additionalProperties: true
                       properties:
                         query:
+                          description: Query used in search
                           type:
                             - string
                             - "null"
@@ -920,19 +997,23 @@ definitions:
               - object
               - "null"
           overall_state:
+            description: Overall state of the monitor
             type:
               - string
               - "null"
           priority:
+            description: Priority assigned to the monitor
             type:
               - integer
               - "null"
           query:
+            description: Query or condition used in the monitor
             type:
               - string
               - "null"
           restricted_roles:
             items:
+              description: Roles with restrictions on the monitor
               type:
                 - string
                 - "null"
@@ -946,26 +1027,32 @@ definitions:
                   .+:
                     properties:
                       last_nodata_ts:
+                        description: Timestamp of last no data occurrence
                         type:
                           - integer
                           - "null"
                       last_notified_ts:
+                        description: Timestamp of last notification
                         type:
                           - integer
                           - "null"
                       last_resolved_ts:
+                        description: Timestamp of last resolution
                         type:
                           - integer
                           - "null"
                       last_triggered_ts:
+                        description: Timestamp of last trigger
                         type:
                           - integer
                           - "null"
                       name:
+                        description: Name of the group state
                         type:
                           - string
                           - "null"
                       status:
+                        description: Status of the group state
                         type:
                           - string
                           - "null"
@@ -980,6 +1067,7 @@ definitions:
               - "null"
           tags:
             items:
+              description: Tags associated with the monitor
               type:
                 - string
                 - "null"
@@ -987,6 +1075,7 @@ definitions:
               - array
               - "null"
           type:
+            description: Type/category of the monitor
             type:
               - string
               - "null"
@@ -1015,6 +1104,7 @@ definitions:
         additionalProperties: true
         properties:
           created_at:
+            description: The timestamp when the service level objective was created.
             type:
               - integer
               - "null"
@@ -1022,14 +1112,17 @@ definitions:
             additionalProperties: true
             properties:
               email:
+                description: Email of the user who created the service level objective.
                 type:
                   - string
                   - "null"
               handle:
+                description: User handle of the creator of the service level objective.
                 type:
                   - string
                   - "null"
               name:
+                description: Name of the user who created the service level objective.
                 type:
                   - string
                   - "null"
@@ -1037,11 +1130,13 @@ definitions:
               - object
               - "null"
           description:
+            description: Description of the service level objective.
             type:
               - string
               - "null"
           groups:
             items:
+              description: Array of groups associated with the service level objective.
               type:
                 - string
                 - "null"
@@ -1049,15 +1144,18 @@ definitions:
               - array
               - "null"
           id:
+            description: Unique identifier for the service level objective.
             type:
               - string
               - "null"
           modified_at:
+            description: The timestamp when the service level objective was last modified.
             type:
               - integer
               - "null"
           monitor_ids:
             items:
+              description: Array of monitor IDs linked to the service level objective.
               type:
                 - integer
                 - "null"
@@ -1066,6 +1164,9 @@ definitions:
               - "null"
           monitor_tags:
             items:
+              description:
+                Array of monitor tags associated with the service level
+                objective.
               type:
                 - string
                 - "null"
@@ -1073,6 +1174,7 @@ definitions:
               - array
               - "null"
           name:
+            description: Name of the service level objective.
             type:
               - string
               - "null"
@@ -1080,10 +1182,12 @@ definitions:
             additionalProperties: true
             properties:
               denominator:
+                description: Denominator for calculating the service level objective.
                 type:
                   - string
                   - "null"
               numerator:
+                description: Numerator for calculating the service level objective.
                 type:
                   - string
                   - "null"
@@ -1092,6 +1196,7 @@ definitions:
               - "null"
           tags:
             items:
+              description: Array of tags associated with the service level objective.
               type:
                 - string
                 - "null"
@@ -1099,6 +1204,7 @@ definitions:
               - array
               - "null"
           target_threshold:
+            description: Target threshold value for the service level objective.
             type:
               - number
               - "null"
@@ -1107,22 +1213,27 @@ definitions:
               additionalProperties: true
               properties:
                 target:
+                  description: Target value for the threshold.
                   type:
                     - number
                     - "null"
                 target_display:
+                  description: Readable display of the target value.
                   type:
                     - string
                     - "null"
                 timeframe:
+                  description: Timeframe for the threshold calculation.
                   type:
                     - string
                     - "null"
                 warning:
+                  description: Warning threshold value.
                   type:
                     - number
                     - "null"
                 warning_display:
+                  description: Readable display of the warning threshold value.
                   type:
                     - string
                     - "null"
@@ -1133,18 +1244,22 @@ definitions:
               - array
               - "null"
           timeframe:
+            description: Timeframe for the service level objective calculation.
             type:
               - string
               - "null"
           type:
+            description: Type of service level objective (e.g., availability, performance).
             type:
               - string
               - "null"
           type_id:
+            description: Unique identifier for the type of the service level objective.
             type:
               - integer
               - "null"
           warning_threshold:
+            description: Warning threshold value for the service level objective.
             type:
               - number
               - "null"
@@ -1212,6 +1327,7 @@ definitions:
             description: Unique ID of the event.
             readOnly: true
           sync_date:
+            description: The timestamp when the audit logs data was last synchronized
             type:
               - "null"
               - string
@@ -1305,6 +1421,7 @@ definitions:
             description: Unique ID of the Log.
             readOnly: true
           sync_date:
+            description: Date and time when the logs data was last synchronized
             type:
               - "null"
               - string

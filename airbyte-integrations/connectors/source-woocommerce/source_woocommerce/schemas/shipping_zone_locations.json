@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "code": {
+      "description": "The unique identifier code for the shipping zone location",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of location represented, such as country, state, or zip code",
       "type": ["null", "string"]
     }
   }

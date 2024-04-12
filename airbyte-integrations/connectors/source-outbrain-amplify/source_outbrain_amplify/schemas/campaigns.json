@@ -4,157 +4,204 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the campaign.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name of the campaign.",
       "type": ["string", "null"]
     },
     "enabled": {
+      "description": "A flag indicating whether the campaign is enabled.",
       "type": ["boolean", "null"]
     },
     "creationTime": {
+      "description": "The time when the campaign was created.",
       "type": ["string", "null"]
     },
     "lastModified": {
+      "description": "The last modification time of the campaign.",
       "type": ["string", "null"]
     },
     "cpc": {
+      "description": "The cost per click for the campaign.",
       "type": ["number", "null"]
     },
     "autoArchived": {
+      "description": "A flag indicating whether the campaign has been automatically archived.",
       "type": ["boolean", "null"]
     },
     "minimumCpc": {
+      "description": "The minimum cost per click for the campaign.",
       "type": ["number", "null"]
     },
     "currency": {
+      "description": "The currency used for the campaign.",
       "type": ["string", "null"]
     },
     "targeting": {
+      "description": "Targeting settings for the campaign.",
       "type": "object",
       "properties": {
         "platform": {
+          "description": "The platforms targeted by the campaign.",
           "type": "array",
           "items": {
             "type": ["string", "null"]
           }
         },
         "language": {
+          "description": "The language targeting setting.",
           "type": ["string", "null"]
         },
         "excludeAdBlockUsers": {
+          "description": "A flag indicating whether ad blocking users are excluded from targeting.",
           "type": ["boolean", "null"]
         },
         "nativePlacements": {
+          "description": "Settings for native placements.",
           "type": "object",
           "properties": {
             "enabled": {
+              "description": "A flag indicating whether native placements are enabled.",
               "type": ["boolean", "null"]
             }
           }
         },
         "includeCellularNetwork": {
+          "description": "A flag indicating whether cellular network users are included in targeting.",
           "type": ["boolean", "null"]
         },
         "nativePlacementsEnabled": {
+          "description": "A flag indicating whether native placements are globally enabled.",
           "type": ["boolean", "null"]
         },
         "locationsVersion": {
+          "description": "The version of locations used for targeting.",
           "type": ["string", "null"]
         }
       }
     },
     "marketerId": {
+      "description": "The identifier of the marketer associated with the campaign.",
       "type": ["string", "null"]
     },
     "autoExpirationOfAds": {
+      "description": "The strategy for automatically expiring ads within the campaign.",
       "type": ["integer", "null"]
     },
     "contentType": {
+      "description": "The type of content the campaign is promoting.",
       "type": ["string", "null"]
     },
     "budget": {
+      "description": "Details about the budget for the campaign.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the budget.",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "The name of the budget.",
           "type": ["string", "null"]
         },
         "shared": {
+          "description": "A flag indicating whether the budget is shared.",
           "type": ["boolean", "null"]
         },
         "amount": {
+          "description": "The budget amount for the campaign.",
           "type": ["number", "null"]
         },
         "currency": {
+          "description": "The currency used for the budget.",
           "type": ["string", "null"]
         },
         "creationTime": {
+          "description": "The time when the budget was created.",
           "type": ["string", "null"]
         },
         "lastModified": {
+          "description": "The last modification time of the budget.",
           "type": ["string", "null"]
         },
         "startDate": {
+          "description": "The start date of the budget.",
           "type": ["string", "null"]
         },
         "endDate": {
+          "description": "The end date of the budget.",
           "type": ["string", "null"]
         },
         "runForever": {
+          "description": "A flag indicating whether the budget runs forever.",
           "type": ["boolean", "null"]
         },
         "type": {
+          "description": "The type of budget (e.g., daily, lifetime).",
           "type": ["string", "null"]
         },
         "pacing": {
+          "description": "The pacing strategy for spending the budget.",
           "type": ["string", "null"]
         }
       }
     },
     "prefixTrackingCode": {
+      "description": "Details about the prefix tracking code settings.",
       "type": "object",
       "properties": {
         "prefix": {
+          "description": "The prefix tracking code.",
           "type": ["string", "null"]
         },
         "encode": {
+          "description": "A flag indicating whether the prefix code should be encoded.",
           "type": ["boolean", "null"]
         }
       }
     },
     "liveStatus": {
+      "description": "Information about the live status of the campaign.",
       "type": "object",
       "properties": {
         "onAirReason": {
+          "description": "The reason for the on air status.",
           "type": ["string", "null"]
         },
         "campaignOnAir": {
+          "description": "A flag indicating whether the campaign is on air.",
           "type": ["boolean", "null"]
         },
         "amountSpent": {
+          "description": "The amount spent on the campaign.",
           "type": ["number", "null"]
         },
         "onAirModificationTime": {
+          "description": "The time of the last on air modification.",
           "type": ["string", "null"]
         }
       }
     },
     "readonly": {
+      "description": "A flag indicating whether the campaign is read-only.",
       "type": ["boolean", "null"]
     },
     "startHour": {
+      "description": "The starting hour of the campaign.",
       "type": ["string", "null"]
     },
     "trackingPixels": {
+      "description": "Tracking pixel settings for the campaign.",
       "type": "object",
       "properties": {
         "enabled": {
+          "description": "A flag indicating whether tracking pixels are enabled.",
           "type": ["boolean", "null"]
         },
         "urls": {
+          "description": "URLs associated with tracking pixels.",
           "type": "array",
           "items": {
             "type": ["string", "null"]
@@ -163,15 +210,18 @@
       }
     },
     "pixels": {
+      "description": "Pixel tracking configurations for the campaign.",
       "type": "object",
       "properties": {
         "impressionPixels": {
+          "description": "Impression tracking pixels.",
           "type": "array",
           "items": {
             "type": ["string", "null"]
           }
         },
         "trackingPixels": {
+          "description": "Tracking pixels for the campaign.",
           "type": "array",
           "items": {
             "type": ["string", "null"]
@@ -180,15 +230,19 @@
       }
     },
     "onAirType": {
+      "description": "The type of on air status for the campaign.",
       "type": ["string", "null"]
     },
     "objective": {
+      "description": "The objective or goal of the campaign.",
       "type": ["string", "null"]
     },
     "creativeFormat": {
+      "description": "The format of the creative used in the campaign.",
       "type": ["string", "null"]
     },
     "dynamicRetargeting": {
+      "description": "A flag indicating whether dynamic retargeting is enabled for the campaign.",
       "type": ["boolean", "null"]
     }
   }

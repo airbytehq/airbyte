@@ -325,6 +325,7 @@ definitions:
               - "null"
               - integer
           endorsed_by_portal_user:
+            description: The portal user endorsing the idea
             type: object
             properties:
               id:
@@ -348,6 +349,7 @@ definitions:
                   - "null"
                   - string
           endorsed_by_idea_user:
+            description: The user (from the idea) endorsing the idea
             type: object
             properties:
               id:
@@ -371,6 +373,7 @@ definitions:
                   - "null"
                   - string
           endorsed_by_idea_organization:
+            description: The organization endorsing the idea
             type: object
             properties:
               id:
@@ -401,6 +404,7 @@ definitions:
                   - "null"
                   - string
           endorsed_by_user:
+            description: The general user endorsing the idea
             type: object
             properties:
               id:
@@ -480,6 +484,7 @@ definitions:
               - "null"
               - string
           idea_commenter_user:
+            description: User who commented on the idea
             type: object
             properties:
               id:
@@ -510,6 +515,7 @@ definitions:
                   - "null"
                   - string
           idea:
+            description: Details of the idea related to the comment
             type: object
             properties:
               id:
@@ -538,6 +544,7 @@ definitions:
                   - "null"
                   - string
               workflow_status:
+                description: Workflow status of the idea
                 type: object
                 properties:
                   id:
@@ -568,6 +575,7 @@ definitions:
                       - "null"
                       - string
               description:
+                description: Description of the idea
                 type: object
                 properties:
                   id:

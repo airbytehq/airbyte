@@ -44,6 +44,7 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the provider
             type: string
           name:
             type: string
@@ -67,6 +68,7 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the service.
             type: string
           category:
             type: string
@@ -94,6 +96,7 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the product.
             type: string
           category:
             type: string
@@ -128,6 +131,7 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the report data.
             type: string
           title:
             type: string

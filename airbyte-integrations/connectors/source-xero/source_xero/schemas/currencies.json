@@ -2,9 +2,11 @@
   "type": ["null", "object"],
   "properties": {
     "Description": {
+      "description": "The full name or description of the currency.",
       "type": ["null", "string"]
     },
     "Code": {
+      "description": "The unique identifier for the currency code.",
       "type": ["string"]
     }
   },

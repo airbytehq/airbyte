@@ -2,80 +2,104 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "The type of the repeating invoice.",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "Information about the contact associated with the repeating invoice.",
       "$ref": "contacts.json"
     },
     "Schedule": {
+      "description": "Details of the schedule for the repeating invoice.",
       "type": ["null", "object"],
       "properties": {
         "Unit": {
+          "description": "The unit of time used in the repeating invoice schedule.",
           "type": ["null", "string"]
         },
         "DueDateType": {
+          "description": "The type of due date used in the repeating invoice.",
           "type": ["null", "string"]
         },
         "StartDate": {
+          "description": "The start date of the repeating invoice schedule.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "DueDate": {
+          "description": "The due date for the repeating invoice.",
           "type": ["null", "integer"]
         },
         "EndDate": {
+          "description": "The end date of the repeating invoice schedule.",
           "type": ["null", "string"]
         },
         "NextScheduledDate": {
+          "description": "The next scheduled date for the repeating invoice.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "Period": {
+          "description": "The period between repeating invoice occurrences.",
           "type": ["null", "integer"]
         }
       },
       "additionalProperties": true
     },
     "LineItems": {
+      "description": "The line items included in the repeating invoice.",
       "items": {
+        "description": "Details of each individual line item.",
         "$ref": "line_items.json"
       },
       "type": ["null", "array"]
     },
     "LineAmountTypes": {
+      "description": "The type of line amounts used in the repeating invoice.",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "Reference information associated with the repeating invoice.",
       "type": ["null", "string"]
     },
     "BrandingThemeID": {
+      "description": "The unique identifier for the branding theme associated with the repeating invoice.",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code for the currency used in the repeating invoice.",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the repeating invoice.",
       "type": ["null", "string"]
     },
     "SubTotal": {
+      "description": "The subtotal amount for the repeating invoice.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount for the repeating invoice.",
       "type": ["null", "number"]
     },
     "TotalDiscount": {
+      "description": "The total discount amount for the repeating invoice.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount for the repeating invoice.",
       "type": ["null", "number"]
     },
     "RepeatingInvoiceID": {
+      "description": "The unique identifier for the repeating invoice.",
       "type": ["string"]
     },
     "HasAttachments": {
+      "description": "Flag indicating if the repeating invoice has any attachments.",
       "type": ["null", "boolean"]
     },
     "ID": {
+      "description": "The unique identifier for the repeating invoice.",
       "type": ["null", "string"]
     }
   },

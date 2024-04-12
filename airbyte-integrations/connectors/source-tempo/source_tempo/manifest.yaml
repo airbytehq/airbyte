@@ -56,18 +56,25 @@ definitions:
         type: object
         properties:
           self:
+            description: Self-reference for the account
             type: string
           key:
+            description: Key associated with the account
             type: string
           id:
+            description: Unique identifier for the account
             type: integer
           name:
+            description: Name of the account
             type: string
           status:
+            description: Status of the account
             type: string
           global:
+            description: Global data associated with the account
             type: boolean
           monthlyBudget:
+            description: Monthly budget set for the account
             type:
               - "null"
               - integer
@@ -75,35 +82,45 @@ definitions:
             type: object
             properties:
               self:
+                description: Self-reference for the lead
                 type:
                   - "null"
                   - string
               accountId:
+                description: Unique identifier for the lead account
                 type: string
           contact:
             type: object
             properties:
               self:
+                description: Self-reference for the contact
                 type: string
               accountId:
+                description: Unique identifier for the contact account
                 type: string
               type:
+                description: Type of contact
                 type: string
           category:
             type: object
             properties:
               self:
+                description: Self-reference for the category
                 type: string
               key:
+                description: Key associated with the category
                 type: string
               id:
+                description: Unique identifier for the category
                 type: integer
               name:
+                description: Name of the category
                 type: string
               type:
                 type: object
                 properties:
                   name:
+                    description: Name of the category type
                     type: string
           customer:
             type:
@@ -111,17 +128,22 @@ definitions:
               - object
             properties:
               self:
+                description: Self-reference for the customer
                 type: string
               key:
+                description: Key associated with the customer
                 type: string
               id:
+                description: Unique identifier for the customer
                 type: integer
               name:
+                description: Name of the customer
                 type: string
           links:
             type: object
             properties:
               self:
+                description: Self-reference for the account links
                 type: string
   customers_stream:
     $ref: "#/definitions/base_stream"
@@ -135,12 +157,16 @@ definitions:
         type: object
         properties:
           self:
+            description: The self-reference URL for the customer.
             type: string
           key:
+            description: A reference key associated with the customer.
             type: string
           id:
+            description: The unique identifier for the customer.
             type: integer
           name:
+            description: The name of the customer.
             type: string
   worklogs_stream:
     $ref: "#/definitions/base_stream"

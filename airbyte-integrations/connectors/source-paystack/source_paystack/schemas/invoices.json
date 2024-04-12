@@ -2,106 +2,134 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the invoice.",
       "type": ["null", "integer"]
     },
     "integration": {
+      "description": "Details about the integration used for processing the invoice.",
       "type": ["null", "integer"]
     },
     "domain": {
+      "description": "The domain or context to which the invoice belongs.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The total amount of the invoice.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency in which the invoice is denominated.",
       "type": ["null", "string"]
     },
     "due_date": {
+      "description": "Deadline by which the invoice should be paid.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "has_invoice": {
+      "description": "Flag indicating whether the invoice exists.",
       "type": ["null", "boolean"]
     },
     "invoice_number": {
+      "description": "Unique number assigned to the invoice.",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "Brief description or purpose of the invoice.",
       "type": ["null", "string"]
     },
     "pdf_url": {
+      "description": "URL to access the PDF version of the invoice.",
       "type": ["null", "string"]
     },
     "line_items": {
+      "description": "List of individual products or services included in the invoice.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "Name or description of the product or service.",
             "type": ["null", "string"]
           },
           "amount": {
+            "description": "The amount charged for the specific line item.",
             "type": ["null", "integer"]
           },
           "quantity": {
+            "description": "The quantity of the product or service included.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "tax": {
+      "description": "Details about the taxes applied to the invoice.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "Name or type of tax applied.",
             "type": ["null", "string"]
           },
           "amount": {
+            "description": "The amount of tax charged.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "request_code": {
+      "description": "Code or identifier associated with the invoice request.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the invoice.",
       "type": ["null", "string"]
     },
     "paid": {
+      "description": "Flag indicating whether the invoice has been paid.",
       "type": ["null", "boolean"]
     },
     "paid_at": {
+      "description": "Timestamp indicating when the invoice was paid.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "metadata": {
+      "description": "Additional information or metadata associated with the invoice.",
       "type": ["null", "object"],
       "properties": {}
     },
     "notifications": {
+      "description": "Details about notifications sent regarding the invoice.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "sent_at": {
+            "description": "Timestamp indicating when the notification was sent.",
             "type": ["null", "string"]
           },
           "channel": {
+            "description": "The communication channel used for sending notifications.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "offline_reference": {
+      "description": "Reference number or identifier for offline payments.",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "Details about the customer associated with the invoice.",
       "type": ["null", "object"],
       "properties": {}
     },
     "created_at": {
+      "description": "Timestamp indicating when the invoice was created.",
       "type": ["null", "string"],
       "format": "date-time"
     }

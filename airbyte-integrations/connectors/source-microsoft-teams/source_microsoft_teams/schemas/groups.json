@@ -4,142 +4,178 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier of the group.",
       "type": ["null", "string"]
     },
     "deletedDateTime": {
+      "description": "The date and time when the group was deleted.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "classification": {
+      "description": "The classification of the group.",
       "type": ["null", "string"]
     },
     "createdDateTime": {
+      "description": "The date and time when the group was created.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "creationOptions": {
+      "description": "Options used for group creation.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "description": {
+      "description": "Description of the group.",
       "type": ["null", "string"]
     },
     "displayName": {
+      "description": "The display name of the group.",
       "type": ["null", "string"]
     },
     "expirationDateTime": {
+      "description": "The date and time when the group expires.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "groupTypes": {
+      "description": "Types of the group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "isAssignableToRole": {
+      "description": "Indicates if the group can be assigned to a role.",
       "type": ["null", "boolean"]
     },
     "mail": {
+      "description": "Email address of the group.",
       "type": ["null", "string"]
     },
     "mailEnabled": {
+      "description": "Indicates if the group is mail-enabled.",
       "type": ["null", "boolean"]
     },
     "mailNickname": {
+      "description": "The mail nickname of the group.",
       "type": ["null", "string"]
     },
     "membershipRule": {
+      "description": "Rule for group membership.",
       "type": ["null", "string"]
     },
     "membershipRuleProcessingState": {
+      "description": "State of the group membership rule processing.",
       "type": ["null", "string"]
     },
     "onPremisesDomainName": {
+      "description": "Domain name for on-premises sync.",
       "type": ["null", "string"]
     },
     "onPremisesLastSyncDateTime": {
+      "description": "The date and time of the last on-premises sync.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "onPremisesNetBiosName": {
+      "description": "NetBIOS name for on-premises sync.",
       "type": ["null", "string"]
     },
     "onPremisesSamAccountName": {
+      "description": "SAM account name for on-premises sync.",
       "type": ["null", "string"]
     },
     "onPremisesSecurityIdentifier": {
+      "description": "Security identifier for on-premises sync.",
       "type": ["null", "string"]
     },
     "onPremisesSyncEnabled": {
+      "description": "Indicates if on-premises sync is enabled.",
       "type": ["null", "boolean"]
     },
     "preferredDataLocation": {
+      "description": "Preferred data location for the group.",
       "type": ["null", "string"]
     },
     "preferredLanguage": {
+      "description": "Preferred language for the group.",
       "type": ["null", "string"]
     },
     "proxyAddresses": {
+      "description": "Proxy addresses for the group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "renewedDateTime": {
+      "description": "The date and time when the group was renewed.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "resourceBehaviorOptions": {
+      "description": "Behavior options of the resource.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "resourceProvisioningOptions": {
+      "description": "Provisioning options of the resource.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "securityEnabled": {
+      "description": "Indicates if the group is security-enabled.",
       "type": ["null", "boolean"]
     },
     "securityIdentifier": {
+      "description": "Security identifier of the group.",
       "type": ["null", "string"]
     },
     "serviceProvisioningErrors": {
+      "description": "Errors occurred during service provisioning.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "createdDateTime": {
+            "description": "The date and time when the error was created.",
             "type": ["null", "string"],
             "format": "date-time",
             "airbyte_type": "timestamp_without_timezone"
           },
           "isResolved": {
+            "description": "Indicates if the error is resolved.",
             "type": ["null", "boolean"]
           },
           "serviceInstance": {
+            "description": "The service instance where the error occurred.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "theme": {
+      "description": "Theme of the group.",
       "type": ["null", "string"]
     },
     "visibility": {
+      "description": "Visibility settings of the group.",
       "type": ["null", "string"]
     },
     "onPremisesProvisioningErrors": {
+      "description": "Errors occurred during on-premises provisioning.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

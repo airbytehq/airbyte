@@ -5,12 +5,15 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "The identifier code for the account.",
           "type": ["string", "null"]
         },
         "statementIdentifier": {
+          "description": "The identifier for the cash flow statement.",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "The universally unique identifier for the account.",
           "type": ["string", "null"]
         }
       }
@@ -45,15 +48,19 @@
       "type": ["object", "null"],
       "properties": {
         "actual": {
+          "description": "The actual cash flow status.",
           "type": ["boolean", "null"]
         },
         "confirmedForecasts": {
+          "description": "The confirmed cash flow forecasts.",
           "type": ["boolean", "null"]
         },
         "estimatedForecasts": {
+          "description": "The estimated cash flow forecasts.",
           "type": ["boolean", "null"]
         },
         "intraday": {
+          "description": "The intraday cash balance status.",
           "type": ["boolean", "null"]
         }
       }

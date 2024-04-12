@@ -3,60 +3,79 @@
   "type": "object",
   "properties": {
     "workflow_name": {
+      "description": "The name or identifier of the workflow.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp indicating when this workflow email statistics entry was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp indicating when this workflow email statistics entry was last updated.",
       "type": ["null", "string"]
     },
     "email_name": {
+      "description": "The name or identifier of the email.",
       "type": ["null", "string"]
     },
     "workflow_action_id": {
+      "description": "The identifier of the action within the workflow that triggered this email.",
       "type": ["null", "string"]
     },
     "workflow_id": {
+      "description": "The identifier of the workflow to which this email belongs.",
       "type": ["null", "string"]
     },
     "contacts_count": {
+      "description": "The total number of contacts involved in this workflow email statistics.",
       "type": ["null", "integer"]
     },
     "count_processed": {
+      "description": "The count of emails processed in this workflow.",
       "type": ["null", "integer"]
     },
     "email_delivered_count": {
+      "description": "The count of emails successfully delivered.",
       "type": ["null", "integer"]
     },
     "email_opened_unique_count": {
+      "description": "The count of unique contacts who opened the emails.",
       "type": ["null", "integer"]
     },
     "email_clicked_unique_count": {
+      "description": "The count of unique contacts who clicked on the emails.",
       "type": ["null", "integer"]
     },
     "email_dropped_count": {
+      "description": "The count of emails that were dropped during the sending process.",
       "type": ["null", "integer"]
     },
     "email_unsubscribed_count": {
+      "description": "The count of contacts who unsubscribed after receiving this email.",
       "type": ["null", "integer"]
     },
     "email_spam_reported_count": {
+      "description": "The count of contacts who reported the email as spam.",
       "type": ["null", "integer"]
     },
     "email_delivered_rate": {
+      "description": "The rate of email deliveries compared to the total processed emails.",
       "type": ["null", "number"]
     },
     "email_opened_rate": {
+      "description": "The rate of email opens compared to email deliveries.",
       "type": ["null", "number"]
     },
     "email_clicked_rate": {
+      "description": "The rate of email clicks compared to email deliveries.",
       "type": ["null", "number"]
     },
     "email_spam_reported_rate": {
+      "description": "The rate of email spam reports compared to email deliveries.",
       "type": ["null", "number"]
     },
     "email_bounced_unique_count": {
+      "description": "The count of unique contacts whose emails bounced.",
       "type": ["null", "integer"]
     }
   }

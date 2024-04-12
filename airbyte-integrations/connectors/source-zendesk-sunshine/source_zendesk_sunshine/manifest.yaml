@@ -76,14 +76,19 @@ definitions:
         additionalProperties: true
         properties:
           key:
+            description: The identifier key for the fetched data records
             type:
               - "null"
               - string
           limit:
+            description:
+              The maximum limit allowed for fetching data records in a
+              single request
             type:
               - "null"
               - integer
           count:
+            description: The total count of the data records fetched
             type:
               - "null"
               - integer
@@ -100,22 +105,31 @@ definitions:
         additionalProperties: true
         properties:
           key:
+            description: A unique identifier for the relationship type.
             type:
               - "null"
               - string
           source:
+            description: The entity that is the source of the relationship.
             type:
               - "null"
               - string
           target:
+            description: The entity that is the target of the relationship.
             type:
               - "null"
               - string
           created_at:
+            description:
+              The timestamp representing when the relationship type was
+              created.
             type:
               - "null"
               - string
           updated_at:
+            description:
+              The timestamp representing when the relationship type was
+              last updated.
             type:
               - "null"
               - string
@@ -132,33 +146,44 @@ definitions:
         additionalProperties: true
         properties:
           key:
+            description: The unique identifier for the object type.
             type:
               - "null"
               - string
           schema:
+            description:
+              The schema definition for the object type properties and
+              requirements.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               properties:
+                description: The defined properties for the object type.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
               required:
+                description:
+                  An array specifying the required properties for the object
+                  type.
                 type:
                   - "null"
                   - array
                 items:
+                  description: The name of a required property.
                   type:
                     - "null"
                     - string
           created_at:
+            description: The date and time when the object type was created.
             type:
               - "null"
               - string
           updated_at:
+            description: The date and time when the object type was last updated.
             type:
               - "null"
               - string
@@ -215,27 +240,39 @@ definitions:
         additionalProperties: true
         properties:
           type:
+            description: The type or category of the object record.
             type:
               - "null"
               - string
           id:
+            description:
+              The unique identifier for the object record in the Zendesk
+              Sunshine platform.
             type:
               - "null"
               - string
           external_id:
+            description:
+              The unique identifier for the object record in an external
+              system.
             type:
               - string
               - "null"
           attributes:
+            description: Custom data attributes associated with the object record.
             type:
               - "null"
               - object
             additionalProperties: true
           created_at:
+            description: The timestamp indicating when the object record was created.
             type:
               - "null"
               - string
           updated_at:
+            description:
+              The timestamp indicating when the object record was last
+              updated.
             type:
               - "null"
               - string
@@ -274,6 +311,7 @@ definitions:
         additionalProperties: true
         properties:
           object_type:
+            description: The type of object for which the permissions are being defined.
             type:
               - "null"
               - string
@@ -284,68 +322,83 @@ definitions:
             additionalProperties: true
             properties:
               admin:
+                description: Permissions for administrators.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   create:
+                    description: Permission to create new objects of this type.
                     type:
                       - "null"
                       - boolean
                   read:
+                    description: Permission to read/view objects of this type.
                     type:
                       - "null"
                       - boolean
                   update:
+                    description: Permission to update/edit objects of this type.
                     type:
                       - "null"
                       - boolean
                   delete:
+                    description: Permission to delete objects of this type.
                     type:
                       - "null"
                       - boolean
               agent:
+                description: Permissions for agents.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   create:
+                    description: Permission to create new objects of this type.
                     type:
                       - "null"
                       - boolean
                   read:
+                    description: Permission to read/view objects of this type.
                     type:
                       - "null"
                       - boolean
                   update:
+                    description: Permission to update/edit objects of this type.
                     type:
                       - "null"
                       - boolean
                   delete:
+                    description: Permission to delete objects of this type.
                     type:
                       - "null"
                       - boolean
               end_user:
+                description: Permissions for end users.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   create:
+                    description: Permission to create new objects of this type.
                     type:
                       - "null"
                       - boolean
                   read:
+                    description: Permission to read/view objects of this type.
                     type:
                       - "null"
                       - boolean
                   update:
+                    description: Permission to update/edit objects of this type.
                     type:
                       - "null"
                       - boolean
                   delete:
+                    description: Permission to delete objects of this type.
                     type:
                       - "null"
                       - boolean
@@ -381,14 +434,21 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the relationship record.
             type: string
           relationship_type:
+            description: The type of relationship between the source and target entities.
             type: string
           source:
+            description: The entity that initiated the relationship.
             type: string
           target:
+            description: The entity that is the target of the relationship.
             type: string
           created_at:
+            description:
+              The timestamp indicating when the relationship record was
+              created.
             type: string
 streams:
   - "#/definitions/limits_stream"

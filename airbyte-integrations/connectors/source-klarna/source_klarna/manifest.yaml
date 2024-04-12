@@ -53,6 +53,7 @@ streams:
         additionalProperties: true
         properties:
           totals:
+            description: Contains information related to total payouts data
             type:
               - "null"
               - object
@@ -217,14 +218,17 @@ streams:
             type: integer
             format: int64
           merchant_id:
+            description: Unique identifier of the merchant associated with the transaction
             type:
               - "null"
               - string
           shipping_address_country:
+            description: Country of the shipping address for the transaction
             type:
               - "null"
               - string
           consumer_vat:
+            description: Value-added tax identification number of the consumer
             type:
               - "null"
               - array

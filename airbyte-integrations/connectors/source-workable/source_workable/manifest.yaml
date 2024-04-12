@@ -50,30 +50,37 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the job
             type:
               - "null"
               - string
           title:
+            description: The title or designation of the job
             type:
               - "null"
               - string
           full_title:
+            description: The full title or name of the job
             type:
               - "null"
               - string
           shortcode:
+            description: A short code or abbreviation for the job
             type:
               - "null"
               - string
           code:
+            description: The job code or reference number
             type:
               - "null"
               - string
           state:
+            description: The current status or phase of the job
             type:
               - "null"
               - string
           department:
+            description: The department to which the job belongs
             type:
               - "null"
               - string
@@ -83,19 +90,24 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the department in the hierarchy
                   type: integer
                 name:
+                  description: The name of the department in the hierarchy
                   type: string
             minItems: 0
           url:
+            description: The URL link to the detailed job description
             type:
               - "null"
               - string
           application_url:
+            description: The URL to apply for the job
             type:
               - "null"
               - string
           shortlink:
+            description: A shortened URL link to the job listing
             type:
               - "null"
               - string
@@ -103,36 +115,45 @@ definitions:
             type: object
             properties:
               location_str:
+                description: The complete address or description of the job location
                 type:
                   - "null"
                   - string
               country:
+                description: The country where the job is located
                 type:
                   - "null"
                   - string
               country_code:
+                description: The country code of the job location
                 type:
                   - "null"
                   - string
               region:
+                description: The region or state where the job is located
                 type:
                   - "null"
                   - string
               region_code:
+                description: The region code of the job location
                 type:
                   - "null"
                   - string
               city:
+                description: The city where the job is located
                 type:
                   - "null"
                   - string
               zip_code:
+                description: The ZIP or postal code of the job location
                 type:
                   - "null"
                   - string
               telecommuting:
+                description: Indicates if telecommuting is allowed for the job
                 type: boolean
           created_at:
+            description: The date and time the job was created
             type:
               - "null"
               - string
@@ -150,22 +171,27 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the candidate.
             type:
               - "null"
               - string
           name:
+            description: The full name of the candidate.
             type:
               - "null"
               - string
           headline:
+            description: A brief headline or summary about the candidate.
             type:
               - "null"
               - string
           email:
+            description: The email address of the candidate.
             type:
               - "null"
               - string
           role:
+            description: The role or position of the candidate within the organization.
             type:
               - "null"
               - string
@@ -183,18 +209,24 @@ definitions:
         type: object
         properties:
           slug:
+            description: The unique identifier used in the URL for the stage.
             type:
               - "null"
               - string
           name:
+            description: The name of the stage.
             type:
               - "null"
               - string
           kind:
+            description: The type or category of the stage.
             type:
               - "null"
               - string
           position:
+            description:
+              The numerical position of the stage in relation to other
+              stages.
             type:
               - "null"
               - number
@@ -212,14 +244,17 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the recruiter.
             type:
               - "null"
               - string
           name:
+            description: The full name of the recruiter.
             type:
               - "null"
               - string
           email:
+            description: The email address of the recruiter.
             type:
               - "null"
               - string

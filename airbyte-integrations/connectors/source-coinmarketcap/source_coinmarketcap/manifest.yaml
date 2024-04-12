@@ -46,46 +46,67 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the category.
             type:
               - "null"
               - string
           name:
+            description: Name or title of the category.
             type:
               - "null"
               - string
           title:
+            description: A more detailed title or name of the category.
             type:
               - "null"
               - string
           description:
+            description: A brief overview or summary of the category.
             type:
               - "null"
               - string
           num_tokens:
+            description: Total number of tokens belonging to the category.
             type:
               - "null"
               - integer
           avg_price_change:
+            description:
+              Average price change of the category's tokens over a specific
+              period of time.
             type:
               - "null"
               - number
           market_cap:
+            description: Total market capitalization of all tokens within the category.
             type:
               - "null"
               - number
           market_cap_change:
+            description:
+              Change in market capitalization of the category compared
+              to the previous period.
             type:
               - "null"
               - number
           volume:
+            description:
+              Total trading volume of all tokens in the category over a
+              specific period of time.
             type:
               - "null"
               - number
           volume_change:
+            description:
+              Change in trading volume of the category compared to the
+              previous period.
             type:
               - "null"
               - number
           last_updated:
+            description:
+              Timestamp indicating when the data for the category was last
+              updated.
             type:
               - "null"
               - string
@@ -102,72 +123,118 @@ definitions:
         type: object
         properties:
           id:
+            description:
+              Unique identifier assigned to the cryptocurrency on the CoinMarketCap
+              platform.
             type:
               - "null"
               - integer
           name:
+            description: The name of the cryptocurrency.
             type:
               - "null"
               - string
           symbol:
+            description: The ticker symbol or abbreviated representation of the cryptocurrency.
             type:
               - "null"
               - string
           slug:
+            description: A unique, URL-friendly identifier for the cryptocurrency.
             type:
               - "null"
               - string
           num_market_pairs:
+            description:
+              The total number of market pairs or trading pairs available
+              for the cryptocurrency.
             type:
               - "null"
               - integer
           date_added:
+            description:
+              The date when the cryptocurrency was added to the CoinMarketCap
+              platform.
             type:
               - "null"
               - string
           tags:
+            description:
+              Categorical tags assigned to the cryptocurrency for classification
+              and filtering purposes.
             type:
               - "null"
               - array
             items:
+              description: An individual tag assigned to the cryptocurrency.
               type: string
           max_supply:
+            description:
+              The maximum supply of the cryptocurrency that will ever be
+              available.
             type:
               - "null"
               - number
           circulating_supply:
+            description:
+              The current amount of the cryptocurrency that is in circulation
+              and available to trade.
             type:
               - "null"
               - number
           total_supply:
+            description:
+              The total supply of the cryptocurrency that is expected to
+              be generated or mined over time.
             type:
               - "null"
               - number
           platform:
+            description:
+              Information about the blockchain platform or network on which
+              the cryptocurrency operates.
             type:
               - "null"
               - object
           cmc_rank:
+            description:
+              The ranking of the cryptocurrency based on its market capitalization
+              among other cryptocurrencies listed.
             type:
               - "null"
               - integer
           self_reported_circulating_supply:
+            description:
+              The circulating supply of the cryptocurrency as reported
+              by the project team or issuer.
             type:
               - "null"
               - number
           self_reported_market_cap:
+            description:
+              The market capitalization of the cryptocurrency as reported
+              by the project team or issuer.
             type:
               - "null"
               - number
           tvl_ratio:
+            description:
+              Total Value Locked (TVL) ratio comparing the market capitalization
+              to the total value locked in the protocol (applicable for DeFi projects).
             type:
               - "null"
               - number
           last_updated:
+            description:
+              The timestamp of the last update to the cryptocurrency data
+              on the CoinMarketCap platform.
             type:
               - "null"
               - string
           quote:
+            description:
+              Information on the market price and volume of the cryptocurrency
+              in various fiat and cryptocurrency pairs.
             type:
               - "null"
               - object
@@ -204,16 +271,20 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the fiat currency
             type: integer
           name:
+            description: Name of the fiat currency
             type:
               - "null"
               - string
           sign:
+            description: Currency sign or symbol used when displaying amounts
             type:
               - "null"
               - string
           symbol:
+            description: Currency code or symbol used to represent the fiat currency
             type:
               - "null"
               - string
@@ -231,26 +302,36 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the exchange in the database.
             type:
               - "null"
               - integer
           name:
+            description: The name of the exchange.
             type:
               - "null"
               - string
           slug:
+            description: The unique string identifier of the exchange.
             type:
               - "null"
               - string
           is_active:
+            description: Indicates whether the exchange is currently active or not.
             type:
               - "null"
               - integer
           first_historical_data:
+            description:
+              The date when historical data for the exchange was first
+              recorded.
             type:
               - "null"
               - string
           last_historical_data:
+            description:
+              The date when the latest historical data for the exchange
+              was recorded.
             type:
               - "null"
               - string

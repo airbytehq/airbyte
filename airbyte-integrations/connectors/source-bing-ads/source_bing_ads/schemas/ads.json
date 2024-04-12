@@ -43,14 +43,17 @@
       "type": ["null", "string"]
     },
     "Images": {
+      "description": "Contains images for the ads",
       "type": ["null", "object"],
       "properties": {
         "AssetLink": {
           "type": ["null", "array"],
           "items": {
+            "description": "Links to assets used in the images",
             "type": ["null", "object"],
             "properties": {
               "Asset": {
+                "description": "Defines the asset properties",
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
@@ -89,14 +92,17 @@
       }
     },
     "Videos": {
+      "description": "Contains videos for the ads",
       "type": ["null", "object"],
       "properties": {
         "AssetLink": {
           "type": ["null", "array"],
           "items": {
+            "description": "Links to assets used in the videos",
             "type": ["null", "object"],
             "properties": {
               "Asset": {
+                "description": "Defines the asset properties",
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
@@ -135,14 +141,17 @@
       }
     },
     "LongHeadlines": {
+      "description": "Contains long headlines for the ads",
       "type": ["null", "object"],
       "properties": {
         "AssetLink": {
           "type": ["null", "array"],
           "items": {
+            "description": "Links to assets used in the long headlines",
             "type": ["null", "object"],
             "properties": {
               "Asset": {
+                "description": "Defines the asset properties",
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
@@ -181,9 +190,11 @@
       }
     },
     "LongHeadline": {
+      "description": "Long headline for the ads",
       "type": ["null", "object"],
       "properties": {
         "Asset": {
+          "description": "Defines the asset properties for long headlines",
           "type": ["null", "object"],
           "properties": {
             "Id": {
@@ -243,9 +254,11 @@
       "type": "null"
     },
     "FinalMobileUrls": {
+      "description": "Mobile final URLs for the ads",
       "type": ["null", "object"],
       "properties": {
         "string": {
+          "description": "String properties for mobile URLs",
           "type": ["null", "array"],
           "items": {
             "description": "Final mobile URL",
@@ -259,9 +272,11 @@
       "type": ["null", "string"]
     },
     "FinalUrls": {
+      "description": "Final URLs for the ads",
       "type": ["null", "object"],
       "properties": {
         "string": {
+          "description": "String properties for URLs",
           "type": ["null", "array"],
           "items": {
             "description": "Final URL",
@@ -271,6 +286,7 @@
       }
     },
     "ForwardCompatibilityMap": {
+      "description": "Map for forward compatibility with future API changes",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -303,9 +319,11 @@
       "type": ["null", "string"]
     },
     "UrlCustomParameters": {
+      "description": "Custom URL parameters for the ads",
       "type": ["null", "object"],
       "properties": {
         "Parameters": {
+          "description": "Defines the URL parameter properties",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -324,14 +342,17 @@
       }
     },
     "Descriptions": {
+      "description": "Contains descriptions for the ads",
       "type": ["null", "object"],
       "properties": {
         "AssetLink": {
           "type": ["null", "array"],
           "items": {
+            "description": "Links to assets used in the descriptions",
             "type": ["null", "object"],
             "properties": {
               "Asset": {
+                "description": "Defines the asset properties",
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
@@ -374,14 +395,17 @@
       "type": ["null", "string"]
     },
     "Headlines": {
+      "description": "Contains headlines for the ads",
       "type": ["null", "object"],
       "properties": {
         "AssetLink": {
           "type": ["null", "array"],
           "items": {
+            "description": "Links to assets used in the headlines",
             "type": ["null", "object"],
             "properties": {
               "Asset": {
+                "description": "Defines the asset properties",
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {

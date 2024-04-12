@@ -25,30 +25,45 @@ streams:
                             properties:
                               close:
                                 items:
+                                  description:
+                                    Closing price of the stock for a specific
+                                    time period.
                                   type:
                                     - "null"
                                     - number
                                 type: array
                               high:
                                 items:
+                                  description:
+                                    Highest price the stock reached during
+                                    a specific time period.
                                   type:
                                     - "null"
                                     - number
                                 type: array
                               low:
                                 items:
+                                  description:
+                                    Lowest price the stock reached during
+                                    a specific time period.
                                   type:
                                     - "null"
                                     - number
                                 type: array
                               open:
                                 items:
+                                  description:
+                                    Opening price of the stock for a specific
+                                    time period.
                                   type:
                                     - "null"
                                     - number
                                 type: array
                               volume:
                                 items:
+                                  description:
+                                    Total trading volume of the stock for
+                                    a specific time period.
                                   type:
                                     - "null"
                                     - number
@@ -59,8 +74,12 @@ streams:
                     meta:
                       properties:
                         chartPreviousClose:
+                          description:
+                            Closing price of the stock from the previous
+                            trading day.
                           type: number
                         currency:
+                          description: Currency in which the prices are denoted.
                           type:
                             - "null"
                             - string
@@ -69,89 +88,139 @@ streams:
                             post:
                               properties:
                                 end:
+                                  description: End time of the post-market trading session.
                                   type: number
                                 gmtoffset:
                                   type: number
                                 start:
+                                  description:
+                                    Start time of the post-market trading
+                                    session.
                                   type: number
                                 timezone:
+                                  description:
+                                    Timezone in which the post-market trading
+                                    session occurs.
                                   type: string
                               type: object
                             pre:
                               properties:
                                 end:
+                                  description: End time of the pre-market trading session.
                                   type: number
                                 gmtoffset:
                                   type: number
                                 start:
+                                  description:
+                                    Start time of the pre-market trading
+                                    session.
                                   type: number
                                 timezone:
+                                  description:
+                                    Timezone in which the pre-market trading
+                                    session occurs.
                                   type: string
                               type: object
                             regular:
                               properties:
                                 end:
+                                  description: End time of the regular trading session.
                                   type: number
                                 gmtoffset:
                                   type: number
                                 start:
+                                  description: Start time of the regular trading session.
                                   type: number
                                 timezone:
+                                  description:
+                                    Timezone in which the regular trading
+                                    session occurs.
                                   type: string
                               type: object
                           type: object
                         dataGranularity:
+                          description:
+                            Granularity of the data intervals, like 1m, 1h,
+                            1d, etc.
                           type: string
                         exchangeName:
+                          description:
+                            Name of the stock exchange where the stock is
+                            traded.
                           type: string
                         exchangeTimezoneName:
+                          description: Timezone of the stock exchange.
                           type: string
                         firstTradeDate:
+                          description: Date of the stock's first trade on the exchange.
                           type:
                             - "null"
                             - number
                         gmtoffset:
+                          description: GMT Offset for the trading data.
                           type: number
                         instrumentType:
+                          description: Type of instrument, such as stock, ETF, etc.
                           type: string
                         previousClose:
+                          description:
+                            Closing price of the stock from the previous
+                            trading day.
                           type: number
                         priceHint:
+                          description: Decimal precision for the price data.
                           type: number
                         range:
+                          description:
+                            Price range for the stock during a specific time
+                            period.
                           type: string
                         regularMarketPrice:
+                          description: Price of the stock in the regular market session.
                           type: number
                         regularMarketTime:
+                          description:
+                            Time of the last price update in the regular
+                            market session.
                           type: number
                         scale:
+                          description: Numerical scale factor used to adjust prices.
                           type: number
                         symbol:
+                          description: Symbol or ticker of the stock.
                           type: string
                         timezone:
+                          description: Timezone where the trading data is provided.
                           type: string
                         tradingPeriods:
                           items:
                             items:
                               properties:
                                 end:
+                                  description: End time of a specific trading period.
                                   type: number
                                 gmtoffset:
                                   type: number
                                 start:
+                                  description: Start time of a specific trading period.
                                   type: number
                                 timezone:
+                                  description:
+                                    Timezone in which the trading period
+                                    occurs.
                                   type: string
                               type: object
                             type: array
                           type: array
                         validRanges:
                           items:
+                            description: Ranges of valid trading data.
                             type: string
                           type: array
                       type: object
                     timestamp:
                       items:
+                        description: Timestamp of the price data.
                         type: number
                       type: array
                   type: object

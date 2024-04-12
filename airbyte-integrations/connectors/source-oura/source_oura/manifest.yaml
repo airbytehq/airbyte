@@ -65,18 +65,26 @@ definitions:
         type: object
         properties:
           class_5_min:
+            description:
+              Total minutes classified as very active (e.g., high-intensity
+              exercise).
             type:
               - string
               - "null"
           score:
+            description: Overall score reflecting the user's daily activity level.
             type:
               - number
               - "null"
           active_calories:
+            description: Total calories burned through active physical activities.
             type:
               - number
               - "null"
           average_met_minutes:
+            description:
+              Average minutes spent with metabolic equivalent (MET) above
+              3.0.
             type:
               - number
               - "null"
@@ -84,58 +92,80 @@ definitions:
             type: object
             properties:
               meet_daily_targets:
+                description: Indicator if daily activity targets are met.
                 type:
                   - number
                   - "null"
               move_every_hour:
+                description: Indicator if user moved at least once every hour.
                 type:
                   - number
                   - "null"
               recovery_time:
+                description:
+                  Time spent on activities aimed at promoting recovery
+                  and reducing fatigue.
                 type:
                   - number
                   - "null"
               stay_active:
+                description: Indicator if user remained active throughout the day.
                 type:
                   - number
                   - "null"
               training_frequency:
+                description: Frequency of structured training sessions.
                 type:
                   - number
                   - "null"
               training_volume:
+                description: Volume of training activities completed.
                 type:
                   - number
                   - "null"
           equivalent_walking_distance:
+            description: Distance equivalent to the walking effort for the day.
             type:
               - number
               - "null"
           high_activity_met_minutes:
+            description:
+              Total minutes with high MET values indicating high-intensity
+              activities.
             type:
               - number
               - "null"
           high_activity_time:
+            description: Total time spent on high-intensity physical activities.
             type:
               - number
               - "null"
           inactivity_alerts:
+            description: Number of alerts for prolonged periods of inactivity recorded.
             type:
               - number
               - "null"
           low_activity_met_minutes:
+            description:
+              Total minutes spent with low MET values indicating low-intensity
+              activities.
             type:
               - number
               - "null"
           low_activity_time:
+            description: Total time spent on low-intensity physical activities.
             type:
               - number
               - "null"
           medium_activity_met_minutes:
+            description:
+              Total minutes spent with moderate MET values indicating medium-intensity
+              activities.
             type:
               - number
               - "null"
           medium_activity_time:
+            description: Total time spent on moderate-intensity physical activities.
             type:
               - number
               - "null"
@@ -143,62 +173,76 @@ definitions:
             type: object
             properties:
               interval:
+                description: Time interval for each MET data point recorded.
                 type:
                   - number
                   - "null"
               items:
+                description: Array of MET data points.
                 type: array
                 items:
                   type:
                     - number
                     - "null"
               timestamp:
+                description: Timestamp of when the MET data was recorded.
                 type:
                   - string
                   - "null"
                 format: date-time
           meters_to_target:
+            description: Distance remaining to reach the daily activity target.
             type:
               - number
               - "null"
           non_wear_time:
+            description: Duration of time when the user was not wearing the device.
             type:
               - number
               - "null"
           resting_time:
+            description: Time spent in rest or sleep.
             type:
               - number
               - "null"
           sedentary_met_minutes:
+            description: Total minutes spent with sedentary MET values.
             type:
               - number
               - "null"
           sedentary_time:
+            description: Total time spent in sedentary activities.
             type:
               - number
               - "null"
           steps:
+            description: Total steps taken during the day.
             type:
               - number
               - "null"
           target_calories:
+            description: Daily target for calorie expenditure.
             type:
               - number
               - "null"
           target_meters:
+            description: Daily target distance to be covered.
             type:
               - number
               - "null"
           total_calories:
+            description: Total calories expended throughout the day.
             type:
               - number
               - "null"
           day:
+            description: Date for which the daily activity data is recorded.
             type:
               - string
               - "null"
             format: date
           timestamp:
+            description: Timestamp of when the daily activity data was recorded.
             type:
               - string
               - "null"
@@ -216,55 +260,69 @@ definitions:
         type: object
         properties:
           contributors:
+            description: Contributing factors to daily readiness metrics.
             type: object
             properties:
               activity_balance:
+                description: Balance between physical activity and rest.
                 type:
                   - number
                   - "null"
               body_temperature:
+                description: Body temperature data.
                 type:
                   - number
                   - "null"
               hrv_balance:
+                description: Heart rate variability balance.
                 type:
                   - number
                   - "null"
-              previous_day_activity: {}
+              previous_day_activity:
+                description: Activity data from the previous day.
               previous_night:
+                description: Sleep data from the previous night.
                 type:
                   - number
                   - "null"
               recovery_index:
+                description: Index indicating recovery status.
                 type:
                   - number
                   - "null"
               resting_heart_rate:
+                description: Resting heart rate data.
                 type:
                   - number
                   - "null"
               sleep_balance:
+                description: Balance between sleep quality and quantity.
                 type:
                   - number
                   - "null"
           day:
+            description: Date for which the readiness data is recorded.
             type:
               - string
               - "null"
             format: date
           score:
+            description: Overall readiness score.
             type:
               - number
               - "null"
           temperature_deviation:
+            description: Deviation in body temperature from the norm.
             type:
               - number
               - "null"
           temperature_trend_deviation:
+            description: Trend in body temperature deviation.
             type:
               - number
               - "null"
           timestamp:
+            description: Timestamp when the data was recorded.
             type:
               - string
               - "null"
@@ -282,46 +340,57 @@ definitions:
         type: object
         properties:
           contributors:
+            description: Contributing factors to sleep quality
             type: object
             properties:
               deep_sleep:
+                description: Amount of time spent in deep sleep (in minutes)
                 type:
                   - number
                   - "null"
               efficiency:
+                description: Sleep efficiency percentage
                 type:
                   - number
                   - "null"
               latency:
+                description: Time taken to fall asleep (in minutes)
                 type:
                   - number
                   - "null"
               rem_sleep:
+                description: Amount of time spent in REM sleep (in minutes)
                 type:
                   - number
                   - "null"
               restfulness:
+                description: Degree of restfulness during sleep
                 type:
                   - number
                   - "null"
               timing:
+                description: Quality of sleep timing
                 type:
                   - number
                   - "null"
               total_sleep:
+                description: Total duration of sleep (in minutes)
                 type:
                   - number
                   - "null"
           day:
+            description: Date of the sleep record
             type:
               - string
               - "null"
             format: date
           score:
+            description: Overall sleep score
             type:
               - number
               - "null"
           timestamp:
+            description: Timestamp of the sleep record
             type:
               - string
               - "null"
@@ -339,14 +408,17 @@ definitions:
         type: object
         properties:
           bpm:
+            description: Heart rate in beats per minute
             type:
               - number
               - "null"
           source:
+            description: Source of the heart rate data, e.g., wearable device or app
             type:
               - string
               - "null"
           timestamp:
+            description: Timestamp when the heart rate data was recorded
             type:
               - string
               - "null"
@@ -364,41 +436,52 @@ definitions:
         type: object
         properties:
           day:
+            description: The date when the session took place
             type:
               - string
               - "null"
             format: date
           start_datetime:
+            description: The date and time when the session started
             type:
               - string
               - "null"
             format: date-time
           end_datetime:
+            description: The date and time when the session ended
             type:
               - string
               - "null"
             format: date-time
           type:
+            description: The type of session recorded
             type:
               - string
               - "null"
-          heart_rate: {}
-          heart_rate_variability: {}
-          mood: {}
+          heart_rate:
+            description: The heart rate data recorded during the session
+          heart_rate_variability:
+            description: The heart rate variability data recorded during the session
+          mood:
+            description: The mood data recorded during the session
           motion_count:
+            description: The motion count data recorded during the session
             type: object
             properties:
               interval:
+                description: The time interval for the motion count data
                 type:
                   - number
                   - "null"
               items:
+                description: A collection of motion count items recorded
                 type: array
                 items:
                   type:
                     - number
                     - "null"
               timestamp:
+                description: The timestamp for the motion count data
                 type:
                   - string
                   - "null"
@@ -416,41 +499,50 @@ definitions:
         type: object
         properties:
           average_breath:
+            description: Average breaths per minute during sleep period.
             type:
               - number
               - "null"
           average_heart_rate:
+            description: Average heart rate beats per minute during sleep period.
             type:
               - number
               - "null"
           average_hrv:
+            description: Average heart rate variability during sleep period.
             type:
               - number
               - "null"
           awake_time:
+            description: Total time spent awake during sleep period in minutes.
             type:
               - number
               - "null"
           bedtime_end:
+            description: End time of the bedtime in date-time format.
             type:
               - string
               - "null"
             format: date-time
           bedtime_start:
+            description: Start time of the bedtime in date-time format.
             type:
               - string
               - "null"
             format: date-time
           day:
+            description: Date of the sleep period in date format.
             type:
               - string
               - "null"
             format: date
           deep_sleep_duration:
+            description: Duration of deep sleep during the sleep period in minutes.
             type:
               - number
               - "null"
           efficiency:
+            description: Sleep efficiency percentage during the sleep period.
             type:
               - number
               - "null"
@@ -458,16 +550,19 @@ definitions:
             type: object
             properties:
               interval:
+                description: Time interval between heart rate measurements.
                 type:
                   - number
                   - "null"
               items:
+                description: Array of heart rate values recorded.
                 type: array
                 items:
                   type:
                     - number
                     - "null"
               timestamp:
+                description: Timestamp of the heart rate data point in date-time format.
                 type:
                   - string
                   - "null"
@@ -476,68 +571,91 @@ definitions:
             type: object
             properties:
               interval:
+                description: Time interval between HRV measurements.
                 type:
                   - number
                   - "null"
               items:
+                description: Array of HRV values recorded.
                 type: array
                 items:
                   type:
                     - number
                     - "null"
               timestamp:
+                description: Timestamp of the HRV data point in date-time format.
                 type:
                   - string
                   - "null"
                 format: date-time
           latency:
+            description: Latency in falling asleep in minutes.
             type:
               - number
               - "null"
           light_sleep_duration:
+            description: Duration of light sleep during the sleep period in minutes.
             type:
               - number
               - "null"
           low_battery_alert:
+            description:
+              Indicates if there was a low battery alert during the sleep
+              period.
             type: boolean
           lowest_heart_rate:
+            description: Lowest recorded heart rate during the sleep period.
             type:
               - number
               - "null"
           movement_30_sec:
+            description:
+              Number of movements over 30 seconds recorded during the sleep
+              period.
             type:
               - string
               - "null"
           period:
+            description: Sleep period identifier.
             type:
               - number
               - "null"
           readiness_score_delta:
+            description: Change in readiness score compared to previous sleep period.
             type:
               - number
               - "null"
           rem_sleep_duration:
+            description: Duration of REM sleep during the sleep period in minutes.
             type:
               - number
               - "null"
           restless_periods:
+            description: Number of restless periods recorded during the sleep period.
             type:
               - number
               - "null"
           sleep_phase_5_min:
+            description:
+              Sleep phases (e.g., awake, light, deep, REM) recorded in
+              5-minute intervals.
             type:
               - string
               - "null"
           sleep_score_delta:
+            description: Change in sleep score compared to previous sleep period.
             type:
               - number
               - "null"
           time_in_bed:
+            description: Total time spent in bed during the sleep period in minutes.
             type:
               - number
               - "null"
-          total_sleep_duration: {}
+          total_sleep_duration:
+            description: Total duration of sleep during the sleep period in minutes.
           type:
+            description: Type of sleep period (e.g., main sleep, nap).
             type:
               - string
               - "null"
@@ -554,20 +672,24 @@ definitions:
         type: object
         properties:
           day:
+            description: The date for which the tag data is collected.
             type:
               - string
               - "null"
             format: date
           text:
+            description: Additional text related to the tag data.
             type:
               - string
               - "null"
           timestamp:
+            description: The timestamp when the tag data was recorded.
             type:
               - string
               - "null"
             format: date-time
           tags:
+            description: An array of tags associated with the data for that day.
             type: array
             items:
               type:
@@ -587,37 +709,48 @@ definitions:
         type: object
         properties:
           activity:
+            description: Type of physical activity performed during the workout session
             type:
               - string
               - "null"
           calories:
+            description: Number of calories burned during the workout session
             type:
               - number
               - "null"
           day:
+            description: Date of the workout session
             type:
               - string
               - "null"
             format: date
           distance:
+            description: Distance covered during the workout session
             type:
               - number
               - "null"
           end_datetime:
+            description: End date and time of the workout session
             type:
               - string
               - "null"
             format: date-time
           intensity:
+            description: Level of intensity at which the workout session was performed
             type:
               - string
               - "null"
-          label: {}
+          label:
+            description: Optional label for the workout session
           source:
+            description:
+              Source of the workout data (e.g., oura ring, third-party
+              device)
             type:
               - string
               - "null"
           start_datetime:
+            description: Start date and time of the workout session
             type:
               - string
               - "null"

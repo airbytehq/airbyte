@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Details about the commit related to the pull request.",
       "type": "object",
       "properties": {
         "author": {

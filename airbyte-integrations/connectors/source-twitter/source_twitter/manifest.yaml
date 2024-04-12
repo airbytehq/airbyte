@@ -74,37 +74,51 @@ definitions:
         type: object
         properties:
           edit_history_tweet_ids:
+            description:
+              List of unique identifiers of tweets that were edited to
+              create this tweet.
             type:
               - "null"
               - array
             items:
               type: string
           id:
+            description: The unique identifier of the tweet.
             type:
               - "null"
               - string
           text:
+            description: The textual content of the tweet.
             type:
               - "null"
               - string
           created_at:
+            description: The date and time when the tweet was created.
             type:
               - "null"
               - string
             format: date-time
           lang:
+            description: The language of the tweet.
             type:
               - "null"
               - string
           author_id:
+            description: The unique identifier of the user who authored the tweet.
             type:
               - "null"
               - string
           conversation_id:
+            description:
+              The unique identifier of the conversation to which the tweet
+              belongs.
             type:
               - "null"
               - string
           in_reply_to_user_id:
+            description:
+              The unique identifier of the user to whom the tweet is a
+              reply.
             type:
               - "null"
               - string

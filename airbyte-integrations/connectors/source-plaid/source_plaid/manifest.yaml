@@ -15,22 +15,28 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           account_id:
+            description: The unique identifier for the account
             type: string
           available:
+            description: The available balance in the account
             type:
               - "null"
               - number
           current:
+            description: The current balance in the account
             type: number
           iso_currency_code:
+            description: The ISO currency code for the account
             type:
               - "null"
               - string
           limit:
+            description: The credit or overdraft limit for the account
             type:
               - "null"
               - number
           unofficial_currency_code:
+            description: The unofficial currency code for the account
             type:
               - "null"
               - string
@@ -118,72 +124,93 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           account_id:
+            description: Identifier for the account associated with the transaction
             type: string
           account_owner:
+            description: Name of the account owner
             type:
               - string
               - "null"
           amount:
+            description: Transaction amount
             type: number
           authorized_date:
+            description: Date when the transaction was authorized
             type:
               - string
               - "null"
           authorized_datetime:
+            description: Date and time when the transaction was authorized
             type:
               - string
               - "null"
           category:
+            description: Category of the transaction
             items:
+              description: Specific item within the transaction category
               type: string
             type: array
           category_id:
+            description: ID of the transaction category
             type:
               - string
               - "null"
           check_number:
+            description: Check number associated with the transaction
             type:
               - string
               - "null"
           date:
+            description: Date of the transaction
             type: string
           datetime:
+            description: Date and time of the transaction
             type:
               - string
               - "null"
           iso_currency_code:
+            description: ISO currency code of the transaction
             type: string
           location:
+            description: Location details related to the transaction
             properties:
               address:
+                description: Address of the transaction location
                 type:
                   - string
                   - "null"
               city:
+                description: City of the transaction location
                 type:
                   - string
                   - "null"
               country:
+                description: Country of the transaction location
                 type:
                   - string
                   - "null"
               lat:
+                description: Latitude of the transaction location
                 type:
                   - string
                   - "null"
               lon:
+                description: Longitude of the transaction location
                 type:
                   - string
                   - "null"
               postal_code:
+                description: Postal code of the transaction location
                 type:
                   - string
                   - "null"
               region:
+                description: Region of the transaction location
                 type:
                   - string
                   - "null"
               store_number:
+                description: Store number associated with the transaction location
                 type:
                   - string
                   - "null"
@@ -191,46 +218,58 @@ streams:
               - object
               - "null"
           merchant_name:
+            description: Name of the merchant where the transaction occurred
             type:
               - string
               - "null"
           name:
+            description: Name of the transaction
             type: string
           payment_channel:
+            description: Channel through which the payment was made
             type:
               - string
               - "null"
           payment_meta:
+            description: Metadata related to the payment
             properties:
               by_order_of:
+                description: Details of the payment's recipient
                 type:
                   - string
                   - "null"
               payee:
+                description: Recipient of the payment
                 type:
                   - string
                   - "null"
               payer:
+                description: Payer of the payment
                 type:
                   - string
                   - "null"
               payment_method:
+                description: Method used for the payment
                 type:
                   - string
                   - "null"
               payment_processor:
+                description: Payment processor handling the transaction
                 type:
                   - string
                   - "null"
               ppd_id:
+                description: PPD identifier for the payment
                 type:
                   - string
                   - "null"
               reason:
+                description: Reason for the payment
                 type:
                   - string
                   - "null"
               reference_number:
+                description: Reference number associated with the payment
                 type:
                   - string
                   - "null"
@@ -238,26 +277,33 @@ streams:
               - object
               - "null"
           pending:
+            description: Indicates if the transaction is pending
             type:
               - boolean
               - "null"
           pending_transaction_id:
+            description: ID of a pending transaction
             type:
               - string
               - "null"
           personal_finance_category:
+            description: Personal finance category for the transaction
             type:
               - string
               - "null"
           transaction_code:
+            description: Code associated with the transaction
             type:
               - string
               - "null"
           transaction_id:
+            description: ID of the transaction
             type: string
           transaction_type:
+            description: Type of the transaction
             type: string
           unofficial_currency_code:
+            description: Unofficial currency code of the transaction
             type:
               - string
               - "null"

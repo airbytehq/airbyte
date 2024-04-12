@@ -71,92 +71,113 @@ definitions:
           - object
         properties:
           weeklyRanges:
+            description: User's business hours for each day of the week
             type:
               - "null"
               - object
             properties:
               monday:
+                description: Business hours for Monday
                 type:
                   - "null"
                   - array
                 items:
+                  description: Time range within business hours
                   type:
                     - "null"
                     - object
                   properties:
                     from:
+                      description: Start time of business hours on Monday
                       type:
                         - "null"
                         - string
                     to:
+                      description: End time of business hours on Monday
                       type:
                         - "null"
                         - string
               tuesday:
+                description: Business hours for Tuesday
                 type:
                   - "null"
                   - array
                 items:
+                  description: Time range within business hours
                   type:
                     - "null"
                     - object
                   properties:
                     from:
+                      description: Start time of business hours on Tuesday
                       type:
                         - "null"
                         - string
                     to:
+                      description: End time of business hours on Tuesday
                       type:
                         - "null"
                         - string
               wednesday:
+                description: Business hours for Wednesday
                 type:
                   - "null"
                   - array
                 items:
+                  description: Time range within business hours
                   type:
                     - "null"
                     - object
                   properties:
                     from:
+                      description: Start time of business hours on Wednesday
                       type:
                         - "null"
                         - string
                     to:
+                      description: End time of business hours on Wednesday
                       type:
                         - "null"
                         - string
               thursday:
+                description: Business hours for Thursday
                 type:
                   - "null"
                   - array
                 items:
+                  description: Time range within business hours
                   type:
                     - "null"
                     - object
                   properties:
                     from:
+                      description: Start time of business hours on Thursday
                       type:
                         - "null"
                         - string
                     to:
+                      description: End time of business hours on Thursday
                       type:
                         - "null"
                         - string
               friday:
+                description: Business hours for Friday
                 type:
                   - "null"
                   - array
                 items:
+                  description: Time range within business hours
                   type:
                     - "null"
                     - object
                   properties:
                     from:
+                      description: Start time of business hours on Friday
                       type:
                         - "null"
                         - string
                     to:
+                      description: End time of business hours on Friday
                       type:
                         - "null"
                         - string
@@ -178,11 +199,13 @@ definitions:
           - object
         properties:
           weeklyRanges:
+            description: Schedule for the weekly business hours
             type:
               - "null"
               - object
             properties:
               monday:
+                description: Business hours for Monday
                 type:
                   - "null"
                   - array
@@ -192,14 +215,17 @@ definitions:
                     - object
                   properties:
                     from:
+                      description: Starting time of business hours on Monday
                       type:
                         - "null"
                         - string
                     to:
+                      description: Ending time of business hours on Monday
                       type:
                         - "null"
                         - string
               tuesday:
+                description: Business hours for Tuesday
                 type:
                   - "null"
                   - array
@@ -209,14 +235,17 @@ definitions:
                     - object
                   properties:
                     from:
+                      description: Starting time of business hours on Tuesday
                       type:
                         - "null"
                         - string
                     to:
+                      description: Ending time of business hours on Tuesday
                       type:
                         - "null"
                         - string
               wednesday:
+                description: Business hours for Wednesday
                 type:
                   - "null"
                   - array
@@ -226,14 +255,17 @@ definitions:
                     - object
                   properties:
                     from:
+                      description: Starting time of business hours on Wednesday
                       type:
                         - "null"
                         - string
                     to:
+                      description: Ending time of business hours on Wednesday
                       type:
                         - "null"
                         - string
               thursday:
+                description: Business hours for Thursday
                 type:
                   - "null"
                   - array
@@ -243,14 +275,17 @@ definitions:
                     - object
                   properties:
                     from:
+                      description: Starting time of business hours on Thursday
                       type:
                         - "null"
                         - string
                     to:
+                      description: Ending time of business hours on Thursday
                       type:
                         - "null"
                         - string
               friday:
+                description: Business hours for Friday
                 type:
                   - "null"
                   - array
@@ -260,10 +295,12 @@ definitions:
                     - object
                   properties:
                     from:
+                      description: Starting time of business hours on Friday
                       type:
                         - "null"
                         - string
                     to:
+                      description: Ending time of business hours on Friday
                       type:
                         - "null"
                         - string
@@ -287,23 +324,28 @@ definitions:
           - object
         properties:
           type:
+            description: The type of call block setting
             type:
               - "null"
               - string
           preset:
+            description: Information about the preset for call block settings
             type:
               - "null"
               - object
             properties:
               uri:
+                description: The URI for retrieving more details about the preset
                 type:
                   - "null"
                   - string
               id:
+                description: The unique identifier for the preset
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the preset configuration
                 type:
                   - "null"
                   - string
@@ -328,22 +370,27 @@ definitions:
           - object
         properties:
           uri:
+            description: The URI that points to the specific phone number resource.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the phone number record.
             type:
               - "null"
               - string
           phoneNumber:
+            description: The actual phone number that is either blocked or allowed.
             type:
               - "null"
               - string
           status:
+            description: Indicates if the phone number is blocked or allowed.
             type:
               - "null"
               - string
           label:
+            description: A descriptive label for the phone number.
             type:
               - "null"
               - string
@@ -368,22 +415,27 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the forwarding number
             type:
               - "null"
               - string
           phoneNumber:
+            description: Phone number to which calls will be forwarded
             type:
               - "null"
               - string
           label:
+            description: Custom label assigned to the forwarding number
             type:
               - "null"
               - string
           type:
+            description: Type of forwarding number (e.g., mobile, office)
             type:
               - "null"
               - string
           features:
+            description: List of features associated with the forwarding number
             type:
               - "null"
               - array
@@ -392,6 +444,7 @@ definitions:
                 - "null"
                 - string
           flipNumber:
+            description: Boolean indicating if the flip number feature is enabled
             type:
               - "null"
               - string
@@ -414,22 +467,31 @@ definitions:
           - object
         properties:
           uri:
+            description:
+              URI that can be used to access more details about the call
+              handling rule.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the call handling rule.
             type:
               - "null"
               - string
           type:
+            description: Type or category of the call handling rule.
             type:
               - "null"
               - string
           name:
+            description: Name or title associated with the call handling rule.
             type:
               - "null"
               - string
           enabled:
+            description:
+              Indicates whether the call handling rule is currently enabled
+              or not.
             type:
               - "null"
               - boolean
@@ -454,42 +516,54 @@ definitions:
           - object
         properties:
           uri:
+            description: The URI of the call record.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the call record.
             type:
               - "null"
               - string
           sessionId:
+            description: The session ID associated with the call record.
             type:
               - "null"
               - string
           telephonySessionId:
+            description: The telephony session ID associated with the call record.
             type:
               - "null"
               - string
           startTime:
+            description: The start time of the call.
             type:
               - "null"
               - string
           duration:
+            description: The duration of the call in seconds.
             type:
               - "null"
               - number
           type:
+            description: The type of call record, e.g., 'voice', 'fax'.
             type:
               - "null"
               - string
           direction:
+            description: The direction of the call, e.g., 'inbound' or 'outbound'.
             type:
               - "null"
               - string
           action:
+            description:
+              The action associated with the call record, e.g., 'outbound',
+              'inbound', 'missed'.
             type:
               - "null"
               - string
           result:
+            description: The result of the call, e.g., 'answered', 'voicemail', 'missed'.
             type:
               - "null"
               - string
@@ -499,10 +573,12 @@ definitions:
               - object
             properties:
               phoneNumber:
+                description: The phone number of the call recipient.
                 type:
                   - "null"
                   - string
               location:
+                description: The location of the call recipient.
                 type:
                   - "null"
                   - string
@@ -512,10 +588,12 @@ definitions:
               - object
             properties:
               phoneNumber:
+                description: The phone number of the caller.
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the caller.
                 type:
                   - "null"
                   - string
@@ -525,14 +603,19 @@ definitions:
               - object
             properties:
               uri:
+                description: The URI of the message associated with the call record.
                 type:
                   - "null"
                   - string
               id:
+                description:
+                  The unique identifier of the message associated with
+                  the call record.
                 type:
                   - "null"
                   - string
               type:
+                description: The type of message associated with the call record.
                 type:
                   - "null"
                   - string
@@ -557,42 +640,54 @@ definitions:
           - object
         properties:
           uri:
+            description: The URI of the call.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the call.
             type:
               - "null"
               - string
           sessionId:
+            description: The session ID of the call.
             type:
               - "null"
               - string
           telephonySessionId:
+            description: The telephony session ID of the call.
             type:
               - "null"
               - string
           startTime:
+            description: The start time of the call.
             type:
               - "null"
               - string
           duration:
+            description: The duration of the call in seconds.
             type:
               - "null"
               - number
           type:
+            description: The type of call (e.g., 'voice', 'video').
             type:
               - "null"
               - string
           direction:
+            description: The direction of the call (e.g., 'inbound', 'outbound').
             type:
               - "null"
               - string
           action:
+            description:
+              The type of action associated with the call (e.g., 'start',
+              'end', 'join').
             type:
               - "null"
               - string
           result:
+            description: The result of the call (e.g., 'completed', 'failed').
             type:
               - "null"
               - string
@@ -602,10 +697,12 @@ definitions:
               - object
             properties:
               phoneNumber:
+                description: The phone number of the recipient.
                 type:
                   - "null"
                   - string
               location:
+                description: The location of the recipient.
                 type:
                   - "null"
                   - string
@@ -615,10 +712,12 @@ definitions:
               - object
             properties:
               phoneNumber:
+                description: The phone number of the caller.
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the caller.
                 type:
                   - "null"
                   - string
@@ -628,14 +727,19 @@ definitions:
               - object
             properties:
               uri:
+                description: The URI of the message.
                 type:
                   - "null"
                   - string
               id:
+                description:
+                  The unique identifier of the message associated with
+                  the call.
                 type:
                   - "null"
                   - string
               type:
+                description: The type of message associated with the call.
                 type:
                   - "null"
                   - string
@@ -656,10 +760,12 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the call monitoring group.
             type:
               - "null"
               - string
           name:
+            description: Name of the call monitoring group.
             type:
               - "null"
               - string
@@ -680,18 +786,22 @@ definitions:
         type: object
         properties:
           uri:
+            description: The URI for accessing the call queue details.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the call queue.
             type:
               - "null"
               - string
           extensionNumber:
+            description: The extension number associated with the call queue.
             type:
               - "null"
               - string
           name:
+            description: The name of the call queue.
             type:
               - "null"
               - string
@@ -711,10 +821,16 @@ definitions:
         type: object
         properties:
           type:
+            description:
+              The type of call record settings. Specifies the recording
+              type such as 'voice' or 'video'.
             type:
               - "null"
               - string
           mode:
+            description:
+              The mode of the call record settings. Can be set to 'automatic'
+              or 'manual'.
             type:
               - "null"
               - string
@@ -737,34 +853,44 @@ definitions:
           - object
         properties:
           uri:
+            description: The URI to access the greeting.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the greeting.
             type:
               - "null"
               - string
           name:
+            description: The name associated with the greeting.
             type:
               - "null"
               - string
           usageType:
+            description:
+              The intended usage type of the greeting (e.g., internal,
+              external).
             type:
               - "null"
               - string
           contentUri:
+            description: The URI to access the content of the greeting.
             type:
               - "null"
               - string
           type:
+            description: The type of the greeting (e.g., voicemail, busy, after hours).
             type:
               - "null"
               - string
           category:
+            description: The category that the greeting belongs to.
             type:
               - "null"
               - string
           text:
+            description: The actual text content of the greeting.
             type:
               - "null"
               - string
@@ -787,42 +913,52 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the IVR prompt.
             type:
               - "null"
               - string
           uri:
+            description: The URI pointing to the IVR prompt.
             type:
               - "null"
               - string
           contentType:
+            description: The type of content in the IVR prompt.
             type:
               - "null"
               - string
           filename:
+            description: The name of the file representing the IVR prompt.
             type:
               - "null"
               - string
           contentUri:
+            description: The URI pointing to the content of the IVR prompt.
             type:
               - "null"
               - string
           type:
+            description: The type of IVR prompt.
             type:
               - "null"
               - string
           text:
+            description: The actual text content of the IVR prompt.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the IVR prompt.
             type:
               - "null"
               - string
           usageType:
+            description: The way in which the IVR prompt is used.
             type:
               - "null"
               - string
           category:
+            description: The category to which the IVR prompt belongs.
             type:
               - "null"
               - string
@@ -843,10 +979,12 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the fax cover sheet.
             type:
               - "null"
               - string
           name:
+            description: The name or title associated with the fax cover sheet.
             type:
               - "null"
               - string

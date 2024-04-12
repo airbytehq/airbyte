@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the analytics data is provided.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel for which the data is queried.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the YouTube video for which the data is queried.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the views are from a live stream or on-demand content.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Specifies whether the viewers are subscribed to the channel or not.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The two-letter country code representing the country location of the viewers.",
       "type": ["null", "string"]
     },
     "age_group": {
+      "description": "The age group of the viewers, categorized into different ranges.",
       "type": ["null", "string"]
     },
     "gender": {
+      "description": "The gender of the viewers, categorized as male, female, or unknown.",
       "type": ["null", "string"]
     },
     "views_percentage": {
+      "description": "The percentage of total views represented by the specific demographic segment.",
       "type": ["null", "string"]
     }
   }

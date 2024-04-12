@@ -4,29 +4,37 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the product.",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "The key used to identify the product.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the product.",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "The date and time when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
+      "description": "The user who created the product.",
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
+      "description": "The date and time when the product was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
+      "description": "The user who last modified the product.",
       "$ref": "last_modified_by.json"
     },
     "productType": {
+      "description": "The type of the product.",
       "$ref": "reference.json"
     },
     "masterData": {
@@ -34,23 +42,29 @@
       "additionalProperties": true,
       "properties": {
         "published": {
+          "description": "The published data of the product.",
           "type": ["null", "boolean"]
         },
         "current": {
+          "description": "The current data of the product.",
           "$ref": "product_data.json"
         },
         "staged": {
+          "description": "The staged data of the product.",
           "$ref": "product_data.json"
         },
         "hasStagedChanges": {
+          "description": "Indicates if there are staged changes.",
           "type": ["null", "boolean"]
         }
       }
     },
     "taxCategory": {
+      "description": "The tax category of the product.",
       "$ref": "reference.json"
     },
     "state": {
+      "description": "The current state of the product.",
       "$ref": "reference.json"
     },
     "reviewRatingStatistics": {
@@ -58,30 +72,38 @@
       "additionalProperties": true,
       "properties": {
         "averageRating": {
+          "description": "The average rating of the product.",
           "type": ["null", "number"]
         },
         "highestRating": {
+          "description": "The highest rating received.",
           "type": ["null", "number"]
         },
         "lowestRating": {
+          "description": "The lowest rating received.",
           "type": ["null", "number"]
         },
         "count": {
+          "description": "The total number of ratings.",
           "type": ["null", "number"]
         },
         "ratingsDistribution": {
+          "description": "The distribution of ratings.",
           "type": ["null", "object"],
           "additionalProperties": true
         }
       }
     },
     "lastMessageSequenceNumber": {
+      "description": "The sequence number of the last message.",
       "type": ["null", "integer"]
     },
     "lastVariantId": {
+      "description": "The identifier of the last variant.",
       "type": ["null", "integer"]
     },
     "versionModifiedAt": {
+      "description": "The date and time when the version was last modified.",
       "type": ["null", "string"]
     }
   }

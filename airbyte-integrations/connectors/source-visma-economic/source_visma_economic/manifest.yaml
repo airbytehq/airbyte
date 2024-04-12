@@ -82,10 +82,12 @@ definitions:
             filterable: true
             description: Determines if the account can be manually updated with entries.
           department:
+            description: The department associated with this account
             type:
               - "null"
               - object
           departmentalDistribution:
+            description: The distribution of the account by department
             type:
               - "null"
               - object
@@ -114,6 +116,7 @@ definitions:
             filterable: true
             description: The name of the account.
           vatAccount:
+            description: Information about the VAT account
             type: object
             desciption: The default VAT code for this account.
             properties:
@@ -183,11 +186,13 @@ definitions:
             format: uri
             description: A unique reference to the account resource.
           openingAccount:
+            description: Information about the opening account
             type:
               - "null"
               - object
             properties:
               accountNumber:
+                description: The account number of the opening account
                 type: integer
               self:
                 type: string
@@ -220,6 +225,7 @@ definitions:
             filterable: true
             description: The outstanding amount for this customer.
           dueAmount:
+            description: The total amount that the customer owes
             type:
               - "null"
               - number
@@ -571,10 +577,16 @@ definitions:
               This is the unit net price that will appear on invoice lines
               when a product is added to an invoice line.
           minimumStock:
+            description:
+              The minimum quantity of this product that should be kept
+              in stock to ensure availability.
             type:
               - "null"
               - number
           pricing:
+            description:
+              Pricing information for the product including cost, selling
+              price, and currency.
             type:
               - "null"
               - object
@@ -1240,14 +1252,17 @@ definitions:
             sortable: true
             description: A reference number for the booked invoice document.
           exchangeRate:
+            description: The exchange rate used for currency conversion, if applicable.
             type:
               - "null"
               - number
           orderNumber:
+            description: The unique order number associated with the invoice.
             type:
               - "null"
               - integer
           grossAmountInBaseCurrency:
+            description: The total gross amount of the invoice in the base currency.
             type:
               - "null"
               - number
@@ -1457,6 +1472,9 @@ definitions:
                 format: uri
                 description: A unique reference to the delivery location resource.
           delivery:
+            description:
+              Information related to the delivery of the products/services
+              from the invoice.
             type: object
             properties:
               address:
@@ -1622,6 +1640,7 @@ definitions:
                 format: uri
                 description: A unique link reference to the layout item.
           project:
+            description: Details of the project or client related to the invoice.
             type: object
             properties:
               projectNumber:
@@ -1664,6 +1683,7 @@ definitions:
             sortable: true
             description: A reference number for the booked invoice document.
           orderNumber:
+            description: The unique order number associated with the invoice.
             type:
               - "null"
               - integer
@@ -1888,6 +1908,7 @@ definitions:
                 format: uri
                 description: A unique reference to the delivery location resource.
           delivery:
+            description: Details related to the delivery of the invoice.
             type: object
             properties:
               address:
@@ -2044,6 +2065,7 @@ definitions:
                 format: uri
                 description: A unique link reference to the layout item.
           project:
+            description: Information regarding the project associated with the invoice.
             type: object
             properties:
               projectNumber:
@@ -2101,6 +2123,7 @@ definitions:
             sortable: true
             description: A reference number for the booked invoice document.
           orderNumber:
+            description: The order number related to the invoice
             type:
               - "null"
               - integer
@@ -2320,6 +2343,7 @@ definitions:
                 format: uri
                 description: A unique reference to the delivery location resource.
           delivery:
+            description: Details of the delivery associated with the invoice
             type: object
             properties:
               address:
@@ -2459,6 +2483,7 @@ definitions:
                 format: uri
                 description: A unique link reference to the layout item.
           project:
+            description: Details of the project linked to the invoice
             type: object
             properties:
               projectNumber:

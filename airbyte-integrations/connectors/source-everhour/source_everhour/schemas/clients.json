@@ -4,44 +4,61 @@
   "additionalProperties": true,
   "properties": {
     "projects": {
+      "description": "List of projects associated with this client.",
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "id": {
+      "description": "Unique identifier assigned to the client.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the client.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp indicating when the client was created.",
       "type": ["null", "string"]
     },
     "lineItemMask": {
+      "description": "Mask representing the client's line item format.",
       "type": ["null", "string"]
     },
     "paymentDueDays": {
+      "description": "Number of days before payment is due for this client.",
       "type": ["null", "integer"]
     },
     "reference": {
+      "description": "Client reference or identifier.",
       "type": ["null", "string"]
     },
     "businessDetails": {
+      "description": "Details related to the client's business.",
       "type": ["null", "string"]
     },
     "invoicePublicNotes": {
+      "description": "Public notes to be included in the client's invoice.",
       "type": ["null", "string"]
     },
     "excludedLabels": {
+      "description": "List of labels that are excluded for this client.",
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "status": {
+      "description": "Current status of the client.",
       "type": ["null", "string"]
     },
     "enableResourcePlanner": {
+      "description": "Flag to enable or disable resource planner for the client.",
       "type": ["null", "boolean"]
     },
     "favorite": {
+      "description": "Flag indicating if the client is marked as a favorite.",
       "type": ["null", "boolean"]
     }
   }

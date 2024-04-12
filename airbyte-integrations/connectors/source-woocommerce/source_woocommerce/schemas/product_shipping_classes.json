@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the product shipping class.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the product shipping class.",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "The slug associated with the product shipping class.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the product shipping class.",
       "type": ["null", "string"]
     },
     "count": {
+      "description": "The total number of product shipping classes available.",
       "type": ["null", "integer"]
     }
   }

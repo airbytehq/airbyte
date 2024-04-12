@@ -245,6 +245,7 @@
       "type": ["null", "integer"]
     },
     "lines": {
+      "description": "Details of individual line items included in the invoice",
       "type": ["null", "object"]
     },
     "forgiven": {

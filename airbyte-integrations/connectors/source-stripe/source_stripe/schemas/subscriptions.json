@@ -81,6 +81,7 @@
       "type": ["null", "number"]
     },
     "discount": {
+      "description": "Information about any discounts applied to the subscription.",
       "type": ["null", "object"],
       "properties": {
         "end": {
@@ -367,6 +368,7 @@
       "type": ["null", "string"]
     },
     "automatic_tax": {
+      "description": "Data related to automatic tax calculations for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
@@ -568,6 +570,7 @@
       "type": ["null", "string"]
     },
     "billing_thresholds": {
+      "description": "Settings for billing thresholds such as usage-based pricing or limit enforcement.",
       "type": ["null", "object"],
       "properties": {
         "amount_gte": {

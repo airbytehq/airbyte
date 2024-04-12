@@ -3,47 +3,60 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the team template",
       "type": "string"
     },
     "title": {
+      "description": "The title or name of the team template",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "The subject or title of the team template",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The main content or body of the team template",
       "type": ["null", "string"]
     },
     "body_preview": {
+      "description": "A preview of the main content or body of the team template",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the team template was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time of the last update made to the team template",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_used_at": {
+      "description": "The date and time when the team template was last used",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived_at": {
+      "description": "The date and time when the team template was archived",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_modified_at": {
+      "description": "The date and time of the last modification made to the team template",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "open_tracking_enabled": {
+      "description": "Indicates if open tracking is enabled for the team template",
       "type": ["null", "boolean"]
     },
     "click_tracking_enabled": {
+      "description": "Indicates if click tracking is enabled for the team template",
       "type": ["null", "boolean"]
     },
     "counts": {
+      "description": "Counts related to the team template interactions",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -65,6 +78,7 @@
       }
     },
     "last_modified_user": {
+      "description": "User details who last modified the team template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -77,6 +91,7 @@
       }
     },
     "_links": {
+      "description": "Links related to the team template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -85,8 +100,8 @@
         }
       }
     },
-
     "tags": {
+      "description": "Tags assigned to the team template",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

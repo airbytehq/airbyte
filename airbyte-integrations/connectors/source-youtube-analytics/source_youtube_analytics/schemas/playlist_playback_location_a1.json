@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date on which the analytics data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel associated with the playlist.",
       "type": ["null", "string"]
     },
     "playlist_id": {
+      "description": "The unique identifier of the playlist.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the video within the playlist.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the views are for live streams or on-demand videos.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewer was subscribed or unsubscribed to the channel while watching the playlist.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The ISO 3166-1 alpha-2 country code of the playback location.",
       "type": ["null", "string"]
     },
     "playback_location_type": {
+      "description": "The type of playback location, such as 'youtube', 'embedded', or 'app'.",
       "type": ["null", "integer"]
     },
     "playback_location_detail": {
+      "description": "Additional information about the specific playback location.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views for the videos in the playlist.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time of the videos in the playlist, in minutes.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration of views for the videos in the playlist, in seconds.",
       "type": ["null", "number"]
     },
     "playlist_starts": {
+      "description": "The number of times the playlist was initiated to play.",
       "type": ["null", "integer"]
     },
     "playlist_saves_added": {
+      "description": "The number of times the playlist was saved or added by users.",
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "description": "The number of times the playlist was removed or unsubscribed by users.",
       "type": ["null", "integer"]
     }
   }

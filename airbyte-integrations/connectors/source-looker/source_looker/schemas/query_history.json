@@ -3,38 +3,49 @@
   "type": "object",
   "properties": {
     "query_id": {
+      "description": "The unique identifier of the query in Looker.",
       "type": ["null", "integer"]
     },
     "history_created_date": {
+      "description": "The date when the query history entry was created.",
       "type": ["null", "string"],
       "format": "date"
     },
     "history_created_time": {
+      "description": "The date and time when the query history entry was created.",
       "type": "string",
       "format": "date-time"
     },
     "query_model": {
+      "description": "The model name that the query belongs to.",
       "type": ["null", "string"]
     },
     "query_view": {
+      "description": "The view name that the query is based on.",
       "type": ["null", "string"]
     },
     "space_id": {
+      "description": "The unique identifier of the space where the query was executed.",
       "type": ["null", "integer"]
     },
     "look_id": {
+      "description": "The unique identifier of the look associated with the query history.",
       "type": ["null", "integer"]
     },
     "dashboard_id": {
+      "description": "The unique identifier of the dashboard associated with the query history.",
       "type": ["null", "integer"]
     },
     "user_id": {
+      "description": "The unique identifier of the user who ran the query.",
       "type": ["null", "integer"]
     },
     "history_query_run_count": {
+      "description": "The number of times the query has been run in the history.",
       "type": ["null", "integer"]
     },
     "history_total_runtime": {
+      "description": "The total runtime of the query execution in milliseconds.",
       "multipleOf": 1e-20,
       "type": ["null", "number"]
     }

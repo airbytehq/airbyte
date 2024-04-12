@@ -3,91 +3,119 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Identifier of the user",
       "type": "integer"
     },
     "guid": {
+      "description": "Unique identifier for the user",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the user record was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time of last update to user record",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Full name of the user",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "First name of the user",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the user",
       "type": ["null", "string"]
     },
     "job_role": {
+      "description": "Job role of the user",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Flag indicating if the user is active or not",
       "type": ["null", "boolean"]
     },
     "time_zone": {
+      "description": "Time zone of the user",
       "type": ["null", "string"]
     },
     "slack_username": {
+      "description": "Slack username of the user",
       "type": ["null", "string"]
     },
     "twitter_handle": {
+      "description": "Twitter handle of the user",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address of the user",
       "type": ["null", "string"]
     },
     "email_client_email_address": {
+      "description": "Email address used for email client",
       "type": ["null", "string"]
     },
     "sending_email_address": {
+      "description": "Email address for sending emails",
       "type": ["null", "string"]
     },
     "from_address": {
+      "description": "Email address used as sender",
       "type": ["null", "string"]
     },
     "full_email_address": {
+      "description": "Full email address of the user",
       "type": ["null", "string"]
     },
     "bcc_email_address": {
+      "description": "Email address used for BCC recipients",
       "type": ["null", "string"]
     },
     "email_signature": {
+      "description": "User's email signature",
       "type": ["null", "string"]
     },
     "email_signature_type": {
+      "description": "Type of email signature",
       "type": ["null", "string"]
     },
     "email_signature_click_tracking_disabled": {
+      "description": "Flag indicating if click tracking is disabled in email signature",
       "type": ["null", "boolean"]
     },
     "team_admin": {
+      "description": "Flag indicating if user is a team admin",
       "type": ["null", "boolean"]
     },
     "local_dial_enabled": {
+      "description": "Flag indicating if local dial is enabled",
       "type": ["null", "boolean"]
     },
     "click_to_call_enabled": {
+      "description": "Flag indicating if click-to-call feature is enabled",
       "type": ["null", "boolean"]
     },
     "email_client_configured": {
+      "description": "Flag indicating if email client is configured",
       "type": ["null", "boolean"]
     },
     "crm_connected": {
+      "description": "Flag indicating if the user is connected to a CRM system",
       "type": ["null", "boolean"]
     },
     "external_feature_flags": {
+      "description": "Properties related to external feature flags",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {}
     },
     "phone_client": {
+      "description": "Phone client information",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -100,6 +128,7 @@
       }
     },
     "phone_number_assignment": {
+      "description": "Phone number assignment information",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -112,6 +141,7 @@
       }
     },
     "group": {
+      "description": "Group information of the user",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -124,6 +154,7 @@
       }
     },
     "team": {
+      "description": "Team information of the user",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -136,6 +167,7 @@
       }
     },
     "role": {
+      "description": "Role information of the user",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

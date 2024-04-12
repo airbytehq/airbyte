@@ -56,26 +56,34 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the custom field
             type:
               - string
               - "null"
           accountId:
+            description: The ID of the account associated with the custom field
             type:
               - string
               - "null"
           type:
+            description: The data type of the custom field (e.g., text, number, date)
             type:
               - string
               - "null"
           title:
+            description: The title or name of the custom field
             type:
               - string
               - "null"
           spaceId:
+            description: The ID of the space to which this custom field belongs
             type:
               - "null"
               - string
           sharedIds:
+            description:
+              Array of IDs of users who have shared access to this custom
+              field
             type:
               - array
               - "null"
@@ -89,10 +97,12 @@ definitions:
               - "null"
             properties:
               inheritanceType:
+                description: The type of inheritance applied to this custom field
                 type:
                   - string
                   - "null"
               values:
+                description: Array of predefined values for this custom field
                 type:
                   - array
                   - "null"
@@ -104,30 +114,45 @@ definitions:
                     - boolean
                     - "null"
               decimalPlaces:
+                description:
+                  The number of decimal places for numeric values in this
+                  custom field
                 type:
                   - integer
                   - "null"
               useThousandsSeparator:
+                description:
+                  Flag indicating whether to use a thousands separator
+                  for numeric values
                 type:
                   - boolean
                   - "null"
               readOnly:
+                description: Flag indicating if this custom field is read-only
                 type:
                   - boolean
                   - "null"
               allowTime:
+                description:
+                  Flag indicating if time values are allowed for this custom
+                  field
                 type:
                   - boolean
                   - "null"
               allowOtherValues:
+                description:
+                  Flag indicating if other values are allowed for this
+                  custom field
                 type:
                   - boolean
                   - "null"
               aggregation:
+                description: The type of aggregation used for this custom field
                 type:
                   - string
                   - "null"
               currency:
+                description: The currency type used for this custom field
                 type:
                   - string
                   - "null"
@@ -148,95 +173,118 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the contact.
             type:
               - string
               - "null"
           firstName:
+            description: First name of the contact.
             type:
               - string
               - "null"
           lastName:
+            description: Last name of the contact.
             type:
               - string
               - "null"
           avatarUrl:
+            description: URL of the contact's avatar image.
             type:
               - string
               - "null"
           timezone:
+            description: Timezone setting of the contact.
             type:
               - string
               - "null"
           locale:
+            description: Language and regional settings of the contact.
             type:
               - string
               - "null"
           deleted:
+            description: Flag indicating if the contact has been deleted.
             type:
               - boolean
               - "null"
           type:
+            description: Type of contact (e.g., user, client).
             type:
               - string
               - "null"
           profiles:
+            description: List of profiles associated with the contact.
             type:
               - array
               - "null"
             items:
+              description: Individual profile details.
               type:
                 - object
                 - "null"
               properties:
                 accountId:
+                  description: Unique identifier for the account.
                   type:
                     - string
                     - "null"
                 role:
+                  description: Role assigned to the contact in the profile.
                   type:
                     - string
                     - "null"
                 external:
+                  description: Flag indicating if the profile is external to the system.
                   type:
                     - boolean
                     - "null"
                 admin:
+                  description: Flag indicating if the contact has admin privileges.
                   type:
                     - boolean
                     - "null"
                 owner:
+                  description: Flag indicating if the profile belongs to the contact.
                   type:
                     - boolean
                     - "null"
                 email:
+                  description: Email address of the contact.
                   type:
                     - string
                     - "null"
           title:
+            description: Job title of the contact.
             type:
               - "null"
               - string
           me:
+            description: Flag indicating if the contact is the authenticated user.
             type:
               - "null"
               - boolean
           companyName:
+            description: Name of the company the contact is associated with.
             type:
               - "null"
               - string
           phone:
+            description: Contact's phone number.
             type:
               - "null"
               - string
           myTeam:
+            description: Flag indicating if the contact is part of the user's team.
             type:
               - "null"
               - boolean
           memberIds:
+            description: List of member IDs associated with the contact.
             type:
               - array
               - "null"
             items:
+              description: Individual member ID.
               type:
                 - string
                 - "null"
@@ -257,22 +305,27 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the workflow
             type:
               - string
               - "null"
           name:
+            description: Name of the workflow
             type:
               - string
               - "null"
           standard:
+            description: Indicates if the workflow is a standard system workflow
             type:
               - string
               - "null"
           hidden:
+            description: Indicates if the workflow is hidden
             type:
               - string
               - "null"
           customStatuses:
+            description: List of custom workflow statuses
             type:
               - array
               - "null"
@@ -282,34 +335,42 @@ definitions:
                 - "null"
               properties:
                 id:
+                  description: Unique identifier for the status
                   type:
                     - string
                     - "null"
                 name:
+                  description: Name of the custom status
                   type:
                     - string
                     - "null"
                 standardName:
+                  description: Name of the standard status if applicable
                   type:
                     - boolean
                     - "null"
                 color:
+                  description: Color code associated with the status
                   type:
                     - string
                     - "null"
                 standard:
+                  description: Indicates if the status is a standard system status
                   type:
                     - string
                     - "null"
                 group:
+                  description: Group the status belongs to
                   type:
                     - string
                     - "null"
                 hidden:
+                  description: Indicates if the status is hidden
                   type:
                     - string
                     - "null"
           title:
+            description: Title of the workflow
             type:
               - string
               - "null"
@@ -330,27 +391,33 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the comment.
             type:
               - string
               - "null"
           authorId:
+            description: The unique identifier of the user who authored the comment.
             type:
               - string
               - "null"
           text:
+            description: The text content of the comment.
             type:
               - string
               - "null"
           taskId:
+            description: The unique identifier of the task associated with the comment.
             type:
               - string
               - "null"
           createdDate:
+            description: The date and time when the comment was created.
             type:
               - string
               - "null"
             format: date-time
           updatedDate:
+            description: The date and time when the comment was last updated.
             type:
               - "null"
               - string
@@ -372,19 +439,25 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of this folder.
             type:
               - string
               - "null"
           scope:
+            description: The scope of the folder.
             type:
               - string
               - "null"
           createdDate:
+            description: The timestamp when this folder was created.
             type:
               - "null"
               - string
             format: date-time
           childIds:
+            description:
+              An array of unique identifiers for child folders within this
+              folder.
             type:
               - array
               - "null"
@@ -393,32 +466,47 @@ definitions:
                 - string
                 - "null"
           space:
+            description: The space to which this folder belongs.
             type:
               - boolean
               - "null"
           title:
+            description: The title or name of this folder.
             type:
               - string
               - "null"
           project:
+            description: Details about the project associated with this folder.
             type:
               - object
               - "null"
             properties:
               authorId:
+                description:
+                  The unique identifier of the author of the project linked
+                  to this folder.
                 type:
                   - string
                   - "null"
               customStatusId:
+                description:
+                  The unique identifier of the custom status associated
+                  with the project.
                 type:
                   - string
                   - "null"
               createdDate:
+                description:
+                  The timestamp when the project linked to this folder
+                  was created.
                 type:
                   - "null"
                   - string
                 format: date-time
               ownerIds:
+                description:
+                  An array of unique identifiers for the owners of the
+                  project connected to this folder.
                 type:
                   - array
                   - "null"
@@ -443,87 +531,114 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the task
             type:
               - string
               - "null"
           accountId:
+            description: The unique identifier for the account to which the task belongs
             type:
               - string
               - "null"
           title:
+            description: The title or name of the task
             type:
               - string
               - "null"
           status:
+            description: The current status of the task
             type:
               - string
               - "null"
           importance:
+            description: The importance level of the task
             type:
               - string
               - "null"
           scope:
+            description: The scope or category of the task
             type:
               - string
               - "null"
           briefDescription:
+            description: A short summary or overview of the task
             type:
               - "null"
               - string
           description:
+            description: Detailed description of the task
             type:
               - "null"
               - string
           customStatusId:
+            description: The unique identifier for the custom status of the task
             type:
               - string
               - "null"
           permalink:
+            description: The permanent link to access the task
             type:
               - string
               - "null"
           priority:
+            description: The priority level of the task
             type:
               - string
               - "null"
           createdDate:
+            description: The date and time when the task was created
             type:
               - string
               - "null"
             format: date-time
           responsibleIds:
+            description:
+              An array of unique identifiers for the users responsible
+              for the task
             type:
               - array
               - "null"
             items:
+              description: Unique identifier for the responsible user
               type:
                 - string
                 - "null"
           parentIds:
+            description:
+              An array of unique identifiers for the parent tasks of the
+              task
             type:
               - array
               - "null"
             items:
+              description: Unique identifier for the parent task
               type:
                 - string
                 - "null"
           superTaskIds:
+            description:
+              An array of unique identifiers for the super tasks of the
+              task
             type:
               - array
               - "null"
             items:
+              description: Unique identifier for the super task
               type:
                 - string
                 - "null"
           authorIds:
+            description: An array of unique identifiers for the authors of the task
             type:
               - array
               - "null"
             items:
+              description: Unique identifier for the author
               type:
                 - string
                 - "null"
           customFields:
+            description: Custom fields associated with the task
             type:
               - array
               - "null"
@@ -533,26 +648,32 @@ definitions:
                 - "null"
               properties:
                 id:
+                  description: Unique identifier for the custom field
                   type:
                     - string
                     - "null"
                 value:
+                  description: Value of the custom field
                   type:
                     - string
                     - "null"
           dates:
+            description: Dates related to the task
             type:
               - object
               - "null"
             properties:
               type:
+                description: Type of date (e.g., start date, end date)
                 type:
                   - string
                   - "null"
           updatedDate:
+            description: The date and time when the task was last updated
             type: string
             format: date-time
           completedDate:
+            description: The date and time when the task was completed
             type: string
             format: date-time
 streams:

@@ -79,14 +79,20 @@ definitions:
         additionalProperties: true
         properties:
           timestamp:
+            description: The timestamp indicating when the data was recorded or updated.
             type: integer
           thing:
+            description:
+              Represents the specific thing being measured or recorded
+              in the dataset.
             type: string
           id:
+            description: The unique identifier corresponding to the dataset data.
             type:
               - "null"
               - string
           airbyte_cursor:
+            description: A cursor token received from Airbyte for pagination purposes.
             type: number
 streams:
   - "#/definitions/dataset_stream"

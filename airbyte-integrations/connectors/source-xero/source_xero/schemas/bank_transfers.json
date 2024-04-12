@@ -2,42 +2,54 @@
   "type": ["null", "object"],
   "properties": {
     "FromBankAccount": {
+      "description": "The source bank account of the transfer.",
       "$ref": "accounts.json"
     },
     "ToBankAccount": {
+      "description": "The destination bank account of the transfer.",
       "$ref": "accounts.json"
     },
     "Amount": {
+      "description": "The amount of the bank transfer.",
       "type": ["null", "number"]
     },
     "Date": {
+      "description": "The date of the bank transfer.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "DateString": {
+      "description": "The string representation of the date of the bank transfer.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "BankTransferID": {
+      "description": "Unique identifier for the bank transfer.",
       "type": ["string"]
     },
     "CurrencyRate": {
+      "description": "The currency exchange rate for the bank transfer.",
       "type": ["null", "number"]
     },
     "FromBankTransactionID": {
+      "description": "The ID of the bank transaction from the source account.",
       "type": ["null", "string"]
     },
     "ToBankTransactionID": {
+      "description": "The ID of the bank transaction to the destination account.",
       "type": ["null", "string"]
     },
     "HasAttachments": {
+      "description": "Flag indicating if the bank transfer has any attachments.",
       "type": ["null", "boolean"]
     },
     "CreatedDateUTC": {
+      "description": "The timestamp when the bank transfer was created in UTC timezone.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CreatedDateUTCString": {
+      "description": "The string representation of the timestamp when the bank transfer was created in UTC timezone.",
       "type": ["null", "string"],
       "format": "date-time"
     }

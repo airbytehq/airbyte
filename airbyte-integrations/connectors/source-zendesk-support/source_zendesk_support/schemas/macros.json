@@ -12,12 +12,14 @@
       "type": ["null", "integer"]
     },
     "restriction": {
+      "description": "Restrictions applied to the macro.",
       "properties": {
         "id": {
           "description": "Unique identifier for the restriction",
           "type": ["null", "integer"]
         },
         "ids": {
+          "description": "IDs for specific restrictions applied.",
           "items": {
             "description": "Unique identifiers associated with the restriction",
             "type": ["null", "integer"]
@@ -66,7 +68,9 @@
       "type": ["null", "string"]
     },
     "actions": {
+      "description": "List of actions defined within the macro.",
       "items": {
+        "description": "Properties of each action within the macro.",
         "properties": {
           "field": {
             "description": "The field affected by the action",

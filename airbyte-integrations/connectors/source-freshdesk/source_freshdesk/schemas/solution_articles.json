@@ -35,6 +35,7 @@
       "type": ["null", "integer"]
     },
     "seo_data": {
+      "description": "Detailed SEO information for the solution article to improve search engine visibility.",
       "type": ["null", "object"],
       "properties": {
         "meta_title": {

@@ -43,6 +43,7 @@
       "type": ["string", "null"]
     },
     "contact": {
+      "description": "Details about the contact associated with the agent.",
       "type": ["null", "object"],
       "properties": {
         "active": {

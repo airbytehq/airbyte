@@ -1,62 +1,155 @@
 {
   "type": ["null", "object"],
   "properties": {
-    "gid": { "type": ["null", "string"] },
-    "resource_type": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
-    "color": { "type": ["null", "string"] },
-    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "gid": {
+      "description": "The globally unique identifier of the portfolio",
+      "type": ["null", "string"]
+    },
+    "resource_type": {
+      "description": "The type of the resource, in this case, 'portfolio'",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the portfolio",
+      "type": ["null", "string"]
+    },
+    "color": {
+      "description": "The color associated with the portfolio",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the portfolio was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "created_by": {
+      "description": "Information about the user who created the portfolio",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the creator",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the creator",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the creator",
+          "type": ["null", "string"]
+        }
       }
     },
     "current_status_update": {
+      "description": "The current status update of the portfolio",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "title": { "type": ["null", "string"] },
-        "resource_subtype": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the status update",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the status update",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "The title of the status update",
+          "type": ["null", "string"]
+        },
+        "resource_subtype": {
+          "description": "The subtype of the resource for the status update",
+          "type": ["null", "string"]
+        }
       }
     },
-    "due_on": { "type": ["null", "string"], "format": "date-time" },
+    "due_on": {
+      "description": "The due date of the portfolio",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "members": {
+      "description": "Information about the members associated with the portfolio",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the member",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the member",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the member",
+          "type": ["null", "string"]
+        }
       }
     },
     "owner": {
+      "description": "Information about the owner of the portfolio",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the owner",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the owner",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the owner",
+          "type": ["null", "string"]
+        }
       }
     },
-    "start_on": { "type": ["null", "string"], "format": "date-time" },
+    "start_on": {
+      "description": "The start date of the portfolio",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "workspace": {
+      "description": "Information about the workspace where the portfolio belongs",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the workspace",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the workspace",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the workspace",
+          "type": ["null", "string"]
+        }
       }
     },
-    "permalink_url": { "type": ["null", "string"] },
-    "public": { "type": ["null", "boolean"] },
+    "permalink_url": {
+      "description": "The URL that leads to the portfolio",
+      "type": ["null", "string"]
+    },
+    "public": {
+      "description": "Indicates if the portfolio is public or not",
+      "type": ["null", "boolean"]
+    },
     "project_templates": {
+      "description": "Information about the project templates associated with the portfolio",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "The globally unique identifier of the project template",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "The type of resource for the project template",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the project template",
+          "type": ["null", "string"]
+        }
       }
     }
   }

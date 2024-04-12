@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the shipping method.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title or name of the shipping method.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the shipping method.",
       "type": ["null", "string"]
     }
   }

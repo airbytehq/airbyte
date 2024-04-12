@@ -283,6 +283,7 @@ streams:
             description: The unique identifier for the automation statistics
             type: string
           stats:
+            description: Contains the statistics related to automations.
             type: object
             properties:
               bounce_drops:
@@ -415,6 +416,7 @@ streams:
             description: The method used to aggregate the data for reporting purposes.
             type: string
           stats:
+            description: Contains statistics related to the single send operation.
             type: object
             properties:
               bounce_drops:

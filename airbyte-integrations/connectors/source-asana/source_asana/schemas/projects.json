@@ -2,25 +2,32 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Global identifier of the project.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of the resource.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the project.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Indicates if the project is archived.",
       "type": ["null", "boolean"]
     },
     "color": {
+      "description": "The color associated with the project.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the project was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "current_status": {
+      "description": "Current status information of the project.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -33,6 +40,7 @@
           "type": ["null", "string"]
         },
         "author": {
+          "description": "Author of the current status update.",
           "type": ["null", "object"],
           "properties": {
             "gid": {
@@ -47,12 +55,14 @@
           }
         },
         "color": {
+          "description": "Color associated with the current status.",
           "type": ["null", "string"]
         },
         "html_text": {
           "type": ["null", "string"]
         },
         "modified_at": {
+          "description": "Timestamp when the status was last modified.",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -60,10 +70,12 @@
           "type": ["null", "string"]
         },
         "created_at": {
+          "description": "Timestamp when the status was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "created_by": {
+          "description": "Creator of the current status update.",
           "type": ["null", "object"],
           "properties": {
             "gid": {
@@ -80,6 +92,7 @@
       }
     },
     "custom_field_settings": {
+      "description": "Settings for custom fields associated with the project.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -94,23 +107,29 @@
       }
     },
     "default_view": {
+      "description": "Default view setting for the project.",
       "type": ["null", "string"]
     },
     "due_date": {
+      "description": "Due date of the project.",
       "type": ["null", "string"],
       "format": "date"
     },
     "due_on": {
+      "description": "Due on date of the project.",
       "type": ["null", "string"],
       "format": "date"
     },
     "html_notes": {
+      "description": "HTML content of project notes.",
       "type": ["null", "string"]
     },
     "is_template": {
+      "description": "Indicates if the project is a template.",
       "type": ["null", "boolean"]
     },
     "members": {
+      "description": "Members associated with the project.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -128,20 +147,25 @@
       }
     },
     "modified_at": {
+      "description": "Timestamp when the project was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "notes": {
+      "description": "Notes associated with the project.",
       "type": ["null", "string"]
     },
     "public": {
+      "description": "Indicates if the project is public.",
       "type": ["null", "boolean"]
     },
     "start_on": {
+      "description": "Start date of the project.",
       "type": ["null", "string"],
       "format": "date"
     },
     "workspace": {
+      "description": "Workspace where the project belongs.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -156,6 +180,7 @@
       }
     },
     "custom_fields": {
+      "description": "Custom fields defined for the project.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -214,6 +239,7 @@
       }
     },
     "followers": {
+      "description": "Users following the project.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -231,9 +257,11 @@
       }
     },
     "icon": {
+      "description": "Icon associated with the project.",
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "Owner of the project.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -248,9 +276,11 @@
       }
     },
     "permalink_url": {
+      "description": "URL permalink of the project.",
       "type": ["null", "string"]
     },
     "team": {
+      "description": "Team associated with the project.",
       "type": ["null", "object"],
       "properties": {
         "gid": {

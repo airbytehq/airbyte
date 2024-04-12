@@ -34,6 +34,7 @@
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Any additional data or information associated with the refund.",
       "type": ["null", "object"],
       "properties": {
         "description": "Additional information about the refund."
@@ -64,6 +65,7 @@
       "type": ["null", "string"]
     },
     "destination_details": {
+      "description": "Details about the destination of the refunded amount.",
       "type": ["null", "object"],
       "properties": {
         "type": {
@@ -71,6 +73,7 @@
           "type": ["null", "string"]
         },
         "card": {
+          "description": "Information related to the card used for the refund.",
           "type": ["null", "object"],
           "properties": {
             "reference": {

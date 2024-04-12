@@ -7,8 +7,10 @@
       "type": ["null", "integer"]
     },
     "menus": {
+      "description": "Collection of IVR menus",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual IVR menu item",
         "type": "object",
         "properties": {
           "default": {
@@ -32,8 +34,10 @@
             "type": ["null", "string"]
           },
           "routes": {
+            "description": "List of available routes within the IVR menu",
             "type": ["array", "null"],
             "items": {
+              "description": "Individual route within the IVR menu",
               "type": "object",
               "properties": {
                 "action": {
@@ -75,6 +79,7 @@
       "type": ["null", "string"]
     },
     "phone_number_ids": {
+      "description": "List of phone number IDs associated with the IVR data",
       "type": ["null", "array"],
       "items": {
         "description": "Identifiers of phone numbers associated with this IVR menu",
@@ -82,6 +87,7 @@
       }
     },
     "phone_number_names": {
+      "description": "List of phone number names associated with the IVR data",
       "type": ["null", "array"],
       "items": {
         "description": "Names of phone numbers associated with this IVR menu",

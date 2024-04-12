@@ -4,60 +4,77 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the meeting",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title or subject of the meeting",
       "type": ["null", "string"]
     },
     "start_time": {
+      "description": "Start time of the meeting",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "end_time": {
+      "description": "End time of the meeting",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "calendar_id": {
+      "description": "ID of the calendar where the meeting is scheduled",
       "type": ["null", "string"]
     },
     "calendar_type": {
+      "description": "Type of calendar where the meeting is scheduled",
       "type": ["null", "string"]
     },
     "meeting_type": {
+      "description": "Type or category of the meeting",
       "type": ["null", "string"]
     },
     "recipient_name": {
+      "description": "Name of the meeting recipient",
       "type": ["null", "string"]
     },
     "recipient_email": {
+      "description": "Email address of the meeting recipient",
       "type": ["null", "string"]
     },
     "location": {
+      "description": "Location where the meeting will take place",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description or details of the meeting",
       "type": ["null", "string"]
     },
     "event_id": {
+      "description": "ID of the event associated with the meeting",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "The ID of the account associated with the meeting",
       "type": ["null", "string"]
     },
     "task_id": {
+      "description": "ID of the task associated with the meeting",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp when the meeting was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the meeting was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "guests": {
       "type": ["null", "array"],
       "items": {
+        "description": "List of guests invited to the meeting",
         "type": ["null", "string"]
       }
     },
@@ -68,21 +85,27 @@
         "additionalProperties": true,
         "properties": {
           "email": {
+            "description": "Email address of the attendee",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Name of the attendee",
             "type": ["null", "string"]
           },
           "organizer": {
+            "description": "Indicates if the attendee is the organizer of the meeting",
             "type": ["null", "boolean"]
           },
           "status": {
+            "description": "Status of the attendee for the meeting",
             "type": ["null", "string"]
           },
           "status_changed": {
+            "description": "Timestamp of the last status change for the attendee",
             "type": ["null", "boolean"]
           },
           "deleted_at": {
+            "description": "Timestamp when the attendee was deleted from the meeting",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -94,9 +117,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the person associated with the meeting",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference of the person associated with the meeting",
           "type": ["null", "string"]
         }
       }
@@ -106,9 +131,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the cadence associated with the meeting",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference of the cadence associated with the meeting",
           "type": ["null", "string"]
         }
       }
@@ -118,9 +145,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the step associated with the meeting",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference of the step associated with the meeting",
           "type": ["null", "string"]
         }
       }
@@ -130,44 +159,56 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the user who booked the meeting",
           "type": ["null", "string"]
         },
         "_href": {
+          "description": "Hyperlink reference of the user who booked the meeting",
           "type": ["null", "string"]
         }
       }
     },
     "crm_references": {
+      "description": "References to the meeting in CRM",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "event_source": {
+      "description": "Source of the event related to the meeting",
       "type": ["null", "string"]
     },
     "canceled_at": {
+      "description": "Timestamp when the meeting was canceled",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "all_day": {
+      "description": "Indicates if the meeting is scheduled for the whole day",
       "type": ["null", "boolean"]
     },
     "no_show": {
+      "description": "Indicates if the attendee was a no-show for the meeting",
       "type": ["null", "boolean"]
     },
     "crm_custom_fields": {
+      "description": "Custom fields related to the meeting in CRM",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "strict_attribution": {
+      "description": "Indicates if the meeting requires strict attribution",
       "type": ["null", "boolean"]
     },
     "i_cal_uid": {
+      "description": "Unique ID for the meeting in iCal format",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the meeting",
       "type": ["null", "string"]
     },
     "reschedule_status": {
+      "description": "Status of rescheduling for the meeting",
       "type": ["null", "string"]
     },
     "owned_by_meetings_settings": {
@@ -175,6 +216,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID associated with the owned meetings settings",
           "email_address": ["null", "string"]
         }
       }
@@ -184,6 +226,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID associated with the booked meetings settings",
           "email_address": ["null", "string"]
         }
       }

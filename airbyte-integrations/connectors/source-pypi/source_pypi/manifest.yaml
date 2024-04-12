@@ -182,9 +182,11 @@ definitions:
               Monotonically increasing integer sequence that changes every
               time the project is updated
           releases:
+            description: Contains the release versions of the project
             type: object
             patternProperties:
               .*:
+                description: Release data for a specific version
                 version_urls:
                   type: array
                   description: A list of release artifacts associated with a version
@@ -678,6 +680,7 @@ definitions:
           - total_packages_size
         properties:
           top_packages:
+            description: Object containing size information for top packages
             type: object
             patternProperties:
               .*:
@@ -686,10 +689,12 @@ definitions:
                   - size
                 properties:
                   size:
+                    description: Size of the package in bytes
                     type:
                       - "null"
                       - integer
           total_packages_size:
+            description: Total size of all packages combined in bytes
             type: integer
 streams:
   - "#/definitions/project_stream"

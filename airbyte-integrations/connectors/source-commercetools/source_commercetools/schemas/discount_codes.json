@@ -4,89 +4,113 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the discount code.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version number of the discount code.",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "The date and time when the discount code was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
+      "description": "The user who created the discount code.",
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
+      "description": "The date and time when the discount code was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
+      "description": "The user who last modified the discount code.",
       "$ref": "last_modified_by.json"
     },
     "name": {
+      "description": "The name of the discount code.",
       "$ref": "localized_string.json"
     },
     "description": {
+      "description": "A brief description or name of the discount code.",
       "$ref": "localized_string.json"
     },
     "code": {
+      "description": "The unique code that customers use to apply the discount.",
       "type": ["null", "string"]
     },
     "cartDiscounts": {
+      "description": "Discounts applicable to the cart when the code is used.",
       "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }
     },
     "groups": {
+      "description": "Groups or categories to which the discount code may belong.",
       "type": ["null", "array"]
     },
     "isActive": {
+      "description": "Indicates if the discount code is currently active.",
       "type": ["null", "boolean"]
     },
     "validFrom": {
+      "description": "The date and time from which the discount code is valid for use.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "validUntil": {
+      "description": "The date and time until which the discount code is valid for use.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "references": {
+      "description": "References to other entities or resources linked to the discount code.",
       "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }
     },
     "maxApplications": {
+      "description": "The maximum number of times the discount code can be applied.",
       "type": ["null", "number"]
     },
     "maxApplicationsPerCustomer": {
+      "description": "The maximum number of times a single customer can use the discount code.",
       "type": ["null", "number"]
     },
     "custom": {
+      "description": "Custom attributes or data associated with the discount code.",
       "$ref": "custom.json"
     },
     "applicationVersion": {
+      "description": "The version of the application where the discount code was created.",
       "type": ["null", "integer"]
     },
     "attributeTypes": {
+      "description": "The types of attributes associated with the discount code.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "cartFieldTypes": {
+      "description": "The types of fields associated with the cart.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "customLineItemFieldTypes": {
+      "description": "The types of custom fields associated with line items.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "lineItemFieldTypes": {
+      "description": "The types of fields associated with line items.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "versionModifiedAt": {
+      "description": "The date and time when the version of the discount code was last modified.",
       "type": ["null", "string"]
     }
   }

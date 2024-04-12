@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date when the sharing activity occurred.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the YouTube video being shared.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video shared was streamed live or was on-demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "The subscription status of the viewer who shared the video (subscribed or unsubscribed).",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code of the viewer interacting with the sharing service.",
       "type": ["null", "string"]
     },
     "sharing_service": {
+      "description": "The name or type of sharing service used to share the video.",
       "type": ["null", "string"]
     },
     "shares": {
+      "description": "The number of times the video was shared on a particular sharing service.",
       "type": ["null", "string"]
     }
   }

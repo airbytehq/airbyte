@@ -2,36 +2,46 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "The globally unique identifier for the story.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "The type of the resource the story is related to.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the story was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_by": {
+      "description": "Information about the user who created the story.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "The globally unique identifier for the user.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "The type of the resource (user).",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the user who created the story.",
           "type": ["null", "string"]
         }
       }
     },
     "resource_subtype": {
+      "description": "The subtype of the resource the story is related to.",
       "type": ["null", "string"]
     },
     "text": {
+      "description": "The text content of the story.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of the story.",
       "type": ["null", "string"]
     }
   }

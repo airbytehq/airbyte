@@ -2,77 +2,98 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "Type of the overpayment",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "Contact information related to the overpayment",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "Date of the overpayment",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Status": {
+      "description": "Status of the overpayment",
       "type": ["null", "string"]
     },
     "AppliedAmount": {
+      "description": "Amount applied from the overpayment",
       "type": ["null", "number"]
     },
     "LineAmountTypes": {
+      "description": "Type of line amounts in the overpayment",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "Line items associated with the overpayment",
       "items": {
         "$ref": "line_items.json"
       },
       "type": ["null", "array"]
     },
     "SubTotal": {
+      "description": "Subtotal amount of the overpayment",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "Total tax amount of the overpayment",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "Total amount of the overpayment",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time of when the overpayment was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CurrencyCode": {
+      "description": "Currency code of the overpayment",
       "type": ["null", "string"]
     },
     "OverpaymentID": {
+      "description": "Unique identifier for the overpayment ID",
       "type": ["string"]
     },
     "CurrencyRate": {
+      "description": "Currency rate at the time of the overpayment",
       "type": ["null", "number"]
     },
     "RemainingCredit": {
+      "description": "Remaining credit after overpayment applied",
       "type": ["null", "number"]
     },
     "Allocations": {
+      "description": "List of allocations associated with the overpayment",
       "type": ["null", "array"],
       "items": {
         "$ref": "allocations.json"
       }
     },
     "Payments": {
+      "description": "List of payments related to the overpayment",
       "type": ["null", "array"],
       "items": {
         "$ref": "payments.json"
       }
     },
     "Reference": {
+      "description": "Reference information for the overpayment",
       "type": ["null", "string"]
     },
     "HasAttachments": {
+      "description": "Indicates if there are attachments related to the overpayment",
       "type": ["null", "boolean"]
     },
     "ID": {
+      "description": "Unique identifier for the overpayment",
       "type": ["null", "string"]
     },
     "DateString": {
+      "description": "Date of the overpayment in string format",
       "type": ["null", "string"],
       "format": "date-time"
     }

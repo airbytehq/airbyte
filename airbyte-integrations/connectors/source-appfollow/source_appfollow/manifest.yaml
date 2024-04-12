@@ -48,26 +48,32 @@ definitions:
         additionalProperties: true
         properties:
           name:
+            description: The name of the user
             type:
               - "null"
               - string
           email:
+            description: The email address of the user
             type:
               - "null"
               - string
           updated:
+            description: The timestamp when the user data was last updated
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the user
             type:
               - "null"
               - integer
           status:
+            description: The current status of the user account
             type:
               - "null"
               - string
           role:
+            description: The role of the user within the application
             type:
               - "null"
               - string
@@ -90,38 +96,47 @@ definitions:
         additionalProperties: true
         properties:
           title_normalized:
+            description: Normalized version of the title for indexing and search purposes.
             type:
               - "null"
               - string
           created:
+            description: Timestamp indicating when the collection was created.
             type:
               - "null"
               - string
           count_apps:
+            description: The total number of apps in the collection.
             type:
               - "null"
               - integer
           languages:
+            description: List of languages supported by the apps in the collection.
             type:
               - "null"
               - string
           title:
+            description: Title of the app collection.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the app collection.
             type:
               - "null"
               - integer
           countries:
+            description: List of countries where the apps in the collection are available.
             type:
               - "null"
               - string
           tags:
+            description: List of tags associated with the app collection.
             type:
               - "null"
               - array
             items:
+              description: Individual tag related to the collection.
               type:
                 - "null"
                 - object
@@ -167,47 +182,58 @@ definitions:
         additionalProperties: true
         properties:
           app:
+            description: Name of the application
             type:
               - "null"
               - object
             additionalProperties: true
           has_reply_integration:
+            description: Flag indicating if there is reply integration for the app
             type:
               - "null"
               - integer
           created:
+            description: Date and time when the app was created
             type:
               - "null"
               - string
           is_favorite:
+            description: Flag indicating if the app is marked as favorite
             type:
               - "null"
               - integer
           count_whatsnew:
+            description: Total number of what's new entries for the app
             type:
               - "null"
               - integer
           store:
+            description: Store where the app is listed
             type:
               - "null"
               - string
           watch_url:
+            description: URL to watch or view the app
             type:
               - "null"
               - string
           ext_id:
+            description: External ID for the app
             type:
               - "null"
               - string
           app_id:
+            description: Unique identifier for the app
             type:
               - "null"
               - integer
           count_reviews:
+            description: Total number of reviews for the app
             type:
               - "null"
               - integer
           app_collection_id:
+            description: ID of the app collection
             type:
               - "null"
               - integer
@@ -240,6 +266,7 @@ definitions:
         additionalProperties: true
         properties:
           store:
+            description: The store or platform where the application is listed.
             type:
               - "null"
               - string
@@ -250,34 +277,44 @@ definitions:
             additionalProperties: true
             properties:
               store:
+                description: The store or platform where the review was posted.
                 type:
                   - "null"
                   - string
               title:
+                description: The title or headline of the review.
                 type:
                   - "null"
                   - string
               reviews:
+                description: The content of the review left by the user.
                 type:
                   - "null"
                   - integer
               from:
+                description: The date or timestamp when the review was submitted.
                 type:
                   - "null"
                   - string
               to:
+                description:
+                  The date or timestamp indicating when the review was
+                  last updated.
                 type:
                   - "null"
                   - string
               app_id:
+                description: The identifier for the specific application.
                 type:
                   - "null"
                   - integer
               replies:
+                description: Number of replies or responses to the review.
                 type:
                   - "null"
                   - integer
           ext_id:
+            description: External ID uniquely identifying the review or app instance.
             type:
               - "null"
               - string
@@ -307,40 +344,56 @@ definitions:
         additionalProperties: true
         properties:
           ratings:
+            description: Data related to ratings for the application.
             list:
+              description: List of rating entries.
               type:
                 - "null"
                 - array
               items:
                 properties:
                   stars2:
+                    description: Number of 2-star ratings.
                     type: integer
                   version:
+                    description:
+                      Version of the application for which the rating was
+                      provided.
                     type: string
                   stars1:
+                    description: Number of 1-star ratings.
                     type: integer
                   stars_total:
+                    description: Total number of ratings received.
                     type: integer
                   country:
+                    description: Country for which the rating is provided.
                     type: string
                   date:
+                    description: Date when the rating was provided.
                     type: string
                   stars4:
+                    description: Number of 4-star ratings.
                     type: integer
                   stars5:
+                    description: Number of 5-star ratings.
                     type: integer
                   stars3:
+                    description: Number of 3-star ratings.
                     type: integer
                   rating:
+                    description: Overall rating value.
                     type: number
                 type:
                   - "null"
                   - object
             ext_id:
+              description: External identifier for the ratings data.
               type:
                 - "null"
                 - string
             store:
+              description: Store where the ratings data is sourced from.
               type:
                 - "null"
                 - string

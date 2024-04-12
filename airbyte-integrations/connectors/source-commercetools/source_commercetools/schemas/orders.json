@@ -4,114 +4,148 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the order",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the order",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "The date and time when the order was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
+      "description": "Information about the user who created the order",
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
+      "description": "The date and time when the order was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
+      "description": "Information about the user who last modified the order",
       "$ref": "last_modified_by.json"
     },
     "completedAt": {
+      "description": "The date and time when the order was completed",
       "type": ["null", "integer"],
       "format": "date-time"
     },
     "orderNumber": {
+      "description": "The order number for the order",
       "type": ["null", "string"]
     },
     "customerId": {
+      "description": "The unique identifier of the customer",
       "type": ["null", "string"]
     },
     "customerEmail": {
+      "description": "The email address of the customer",
       "type": ["null", "string"]
     },
     "anonymousId": {
+      "description": "A unique identifier for a user who is not logged in",
       "type": ["null", "string"]
     },
     "store": {
+      "description": "The store associated with the order",
       "$ref": "key_reference.json"
     },
     "lineItems": {
+      "description": "Line items in the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The unique identifier for the line item",
             "type": ["null", "string"]
           },
           "productId": {
+            "description": "The unique identifier for the product associated with the line item",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the line item",
             "$ref": "localized_string.json"
           },
           "productSlug": {
+            "description": "The slug of the product associated with the line item",
             "$ref": "localized_string.json"
           },
           "productType": {
+            "description": "The type of product associated with the line item",
             "$ref": "reference.json"
           },
           "variant": {
+            "description": "Information about the variant of the product in the line item",
             "$ref": "product_variant.json"
           },
           "price": {
+            "description": "The price of the line item",
             "$ref": "price.json"
           },
           "taxedPrice": {
+            "description": "The taxed price for the line item",
             "$ref": "taxed_item_price.json"
           },
           "totalPrice": {
+            "description": "The total price of the line item",
             "$ref": "money.json"
           },
           "quantity": {
+            "description": "The quantity of the line item",
             "type": ["null", "number"]
           },
           "addedAt": {
+            "description": "The date and time when the line item was added",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "state": {
+            "description": "State information related to the line item",
             "type": ["null", "array"],
             "items": {
               "$ref": "state.json"
             }
           },
           "taxRate": {
+            "description": "The tax rate for the line item",
             "$ref": "taxrate.json"
           },
           "supplyChannel": {
+            "description": "The channel responsible for supplying the line item",
             "$ref": "reference.json"
           },
           "distributionChannel": {
+            "description": "The channel through which the line item is distributed",
             "$ref": "reference.json"
           },
           "discountedPricePerQuantity": {
+            "description": "Discounted price per quantity for the line item",
             "$ref": "discounted_price_per_quantity.json"
           },
           "priceMode": {
+            "description": "The mode of pricing for the line item",
             "type": ["null", "string"]
           },
           "lineItemMode": {
+            "description": "The mode of the line item",
             "type": ["null", "string"]
           },
           "custom": {
+            "description": "Custom data related to the line item",
             "$ref": "custom.json"
           },
           "shippingDetails": {
+            "description": "Information about the shipping details for the line item",
             "$ref": "shipping_details.json"
           },
           "lastModifiedAt": {
+            "description": "The date and time when the line item was last modified",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -119,208 +153,263 @@
       }
     },
     "customLineItems": {
+      "description": "Custom line items in the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The unique identifier for the custom line item",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the custom line item",
             "$ref": "localized_string.json"
           },
           "money": {
+            "description": "The monetary value associated with the custom line item",
             "$ref": "money.json"
           },
           "taxedPrice": {
+            "description": "The taxed price for the custom line item",
             "$ref": "taxed_item_price.json"
           },
           "totalPrice": {
+            "description": "The total price of the custom line item",
             "$ref": "money.json"
           },
           "slug": {
+            "description": "The slug of the custom line item",
             "type": ["null", "string"]
           },
           "quantity": {
+            "description": "The quantity of the custom line item",
             "type": ["null", "number"]
           },
           "state": {
+            "description": "State information related to the custom line item",
             "type": ["null", "array"],
             "items": {
               "$ref": "state.json"
             }
           },
           "taxCategory": {
+            "description": "The tax category for the custom line item",
             "$ref": "reference.json"
           },
           "taxRate": {
+            "description": "The tax rate for the custom line item",
             "$ref": "taxrate.json"
           },
           "discountedPricePerQuantity": {
+            "description": "Discounted price per quantity for the custom line item",
             "type": ["null", "array"],
             "items": {
               "$ref": "discounted_price_per_quantity.json"
             }
           },
           "custom": {
+            "description": "Custom data related to the custom line item",
             "$ref": "custom.json"
           },
           "shippingDetails": {
+            "description": "Information about the shipping details for the custom line item",
             "$ref": "shipping_details.json"
           }
         }
       }
     },
     "totalPrice": {
+      "description": "The total price of the order",
       "$ref": "money.json"
     },
     "taxedPrice": {
+      "description": "The total taxed price for the order",
       "$ref": "taxed_price.json"
     },
     "shippingAddress": {
+      "description": "The address to which the order is shipped",
       "$ref": "address.json"
     },
     "billingAddress": {
+      "description": "The address where the billing information is associated with",
       "$ref": "address.json"
     },
     "taxMode": {
+      "description": "The mode of tax handling for the order",
       "type": ["null", "string"]
     },
     "taxRoundingMode": {
+      "description": "The rounding mode for tax calculations",
       "type": ["null", "string"]
     },
     "taxCalculationMode": {
-      "type": ["null", "string"]
-    },
-    "taxCalculationMode": {
+      "description": "The mode of tax calculation for the order",
       "type": ["null", "string"]
     },
     "customerGroup": {
+      "description": "The group to which the customer belongs",
       "$ref": "reference.json"
     },
     "country": {
+      "description": "The country associated with the order",
       "type": ["null", "string"]
     },
     "orderState": {
+      "description": "The state of the order",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state of the order",
       "$ref": "reference.json"
     },
     "shipmentState": {
+      "description": "The state of the shipment",
       "type": ["null", "string"]
     },
     "paymentState": {
+      "description": "The state of payment for the order",
       "type": ["null", "string"]
     },
     "shippingInfo": {
+      "description": "Shipping information including deliveries and pricing details",
       "type": ["null", "object"],
       "properties": {
         "shippingMethodName": {
+          "description": "The name of the shipping method",
           "type": ["null", "string"]
         },
         "price": {
+          "description": "The price associated with shipping",
           "$ref": "money.json"
         },
         "shippingRate": {
+          "description": "The rate of shipping including pricing details",
           "type": ["null", "object"],
           "properties": {
             "price": {
+              "description": "The price of shipping",
               "$ref": "money.json"
             },
             "freeAbove": {
+              "description": "Free shipping threshold amount",
               "$ref": "money.json"
             },
             "tiers": {
+              "description": "Shipping rate tiers",
               "type": ["null", "array"]
             },
             "isMatching": {
+              "description": "Flag indicating if the shipping rate matches the order",
               "type": ["null", "boolean"]
             }
           }
         },
         "taxedPrice": {
+          "description": "The taxed price for shipping",
           "$ref": "taxed_item_price.json"
         },
         "taxRate": {
+          "description": "The tax rate for shipping",
           "$ref": "taxrate.json"
         },
         "taxCategory": {
+          "description": "The tax category for shipping",
           "$ref": "reference.json"
         },
         "shippingMethod": {
+          "description": "The shipping method for the order",
           "$ref": "reference.json"
         },
         "deliveries": {
+          "description": "Deliveries associated with the order",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The unique identifier for the delivery",
                 "type": ["null", "string"]
               },
               "createdAt": {
+                "description": "The date and time when the delivery was created",
                 "type": ["null", "string"],
                 "format": "date-time"
               },
               "items": {
+                "description": "Items included in the delivery",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "id": {
+                      "description": "The unique identifier for an item in the delivery",
                       "type": ["null", "string"]
                     },
                     "quantity": {
+                      "description": "The quantity of the item in the delivery",
                       "type": ["null", "number"]
                     }
                   }
                 }
               },
               "parcels": {
+                "description": "Parcels associated with the delivery",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "id": {
+                      "description": "The unique identifier for the parcel",
                       "type": ["null", "string"]
                     },
                     "createdAt": {
+                      "description": "The date and time when the parcel was created",
                       "type": ["null", "string"],
                       "format": "date-time"
                     },
                     "measurements": {
+                      "description": "Measurements of the parcel",
                       "type": ["null", "string"]
                     },
                     "trackingData": {
+                      "description": "Tracking data related to the parcel",
                       "type": ["null", "object"],
                       "properties": {
                         "trackingId": {
+                          "description": "The tracking ID of the parcel",
                           "type": ["null", "string"]
                         },
                         "carrier": {
+                          "description": "The carrier handling the parcel",
                           "type": ["null", "string"]
                         },
                         "provider": {
+                          "description": "The provider of the shipping service",
                           "type": ["null", "string"]
                         },
                         "providerTransaction": {
+                          "description": "The transaction ID from the provider",
                           "type": ["null", "string"]
                         },
                         "isReturn": {
+                          "description": "Flag indicating if the parcel is a return",
                           "type": ["null", "boolean"]
                         }
                       }
                     },
                     "items": {
+                      "description": "Items included in the parcel",
                       "type": ["null", "array"],
                       "items": {
                         "type": ["null", "object"],
                         "properties": {
                           "id": {
+                            "description": "The unique identifier for an item in the parcel",
                             "type": ["null", "string"]
                           },
                           "quantity": {
+                            "description": "The quantity of the item in the parcel",
                             "type": ["null", "number"]
                           }
                         }
@@ -330,26 +419,32 @@
                 }
               },
               "address": {
+                "description": "The address for the delivery",
                 "$ref": "address.json"
               }
             }
           }
         },
         "discountedPrice": {
+          "description": "Discounted price information including discounts applied",
           "type": ["null", "object"],
           "properties": {
             "value": {
+              "description": "The value of the discounted price",
               "$ref": "money.json"
             },
             "includedDiscounts": {
+              "description": "Included discounts in the pricing",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
                 "properties": {
                   "discount": {
+                    "description": "The discount applied",
                     "$ref": "reference.json"
                   },
                   "discountedAmount": {
+                    "description": "The amount after applying the discount",
                     "$ref": "money.json"
                   }
                 }
@@ -358,22 +453,27 @@
           }
         },
         "shippingMethodState": {
+          "description": "The state of the shipping method",
           "type": ["null", "string"]
         }
       }
     },
     "syncInfo": {
+      "description": "Synchronization information related to the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "channel": {
+            "description": "The synchronization channel",
             "$ref": "reference.json"
           },
           "externalId": {
+            "description": "The external identifier for synchronization",
             "type": ["null", "string"]
           },
           "syncedAt": {
+            "description": "The date and time when synchronization occurred",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -381,41 +481,52 @@
       }
     },
     "returnInfo": {
+      "description": "Information about returns associated with the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "items": {
+            "description": "Items included in the return",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "id": {
+                  "description": "The unique identifier for the return item",
                   "type": ["null", "string"]
                 },
                 "type": {
+                  "description": "The type of return item",
                   "type": ["null", "string"]
                 },
                 "quantity": {
+                  "description": "The quantity of the return item",
                   "type": ["null", "number"]
                 },
                 "lineItemId": {
+                  "description": "The unique identifier for the line item associated with the return item",
                   "type": ["null", "string"]
                 },
                 "comment": {
+                  "description": "Comments related to the return item",
                   "type": ["null", "string"]
                 },
                 "shipmentState": {
+                  "description": "The shipment state of the return item",
                   "type": ["null", "string"]
                 },
                 "paymentState": {
+                  "description": "The payment state of the return item",
                   "type": ["null", "string"]
                 },
                 "lastModifiedAt": {
+                  "description": "The date and time when the return item was last modified",
                   "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "createdAt": {
+                  "description": "The date and time when the return item was created",
                   "type": ["null", "string"],
                   "format": "date-time"
                 }
@@ -423,9 +534,11 @@
             }
           },
           "returnTrackingId": {
+            "description": "The tracking ID associated with the return",
             "type": ["null", "string"]
           },
           "returnDate": {
+            "description": "The date and time when the return was initiated",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -433,38 +546,47 @@
       }
     },
     "discountCodes": {
+      "description": "Discount codes associated with the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "discountCode": {
+            "description": "The discount code applied",
             "$ref": "reference.json"
           },
           "state": {
+            "description": "The state of the discount code",
             "type": ["null", "string"]
           }
         }
       }
     },
     "refusedGifts": {
+      "description": "Gifts in the order that were refused",
       "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }
     },
     "lastMessageSequenceNumber": {
+      "description": "The sequence number of the last message related to the order",
       "type": ["null", "number"]
     },
     "cart": {
+      "description": "Information about the cart related to the order",
       "$ref": "reference.json"
     },
     "custom": {
+      "description": "Custom data related to the order",
       "$ref": "custom.json"
     },
     "paymentInfo": {
+      "description": "Payment information for the order",
       "type": ["null", "object"],
       "properties": {
         "payments": {
+          "description": "Payment details for the order",
           "type": ["null", "array"],
           "items": {
             "$ref": "reference.json"
@@ -473,46 +595,58 @@
       }
     },
     "locale": {
+      "description": "The locale associated with the order",
       "type": ["null", "string"]
     },
     "inventoryMode": {
+      "description": "The mode of inventory for the order",
       "type": ["null", "string"]
     },
     "shippingRateInput": {
+      "description": "Input related to shipping rate calculations",
       "$ref": "localized_string.json"
     },
     "origin": {
+      "description": "The origin of the order",
       "type": ["null", "string"]
     },
     "directDiscounts": {
+      "description": "Direct discounts applied to the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "shipping": {
+      "description": "Shipping information for the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "shippingMode": {
+      "description": "The mode of shipping for the order",
       "type": ["null", "string"]
     },
     "taxedShippingPrice": {
+      "description": "The taxed price associated with shipping",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "transactionFee": {
+      "description": "The transaction fee associated with the order",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "The type of the order",
       "type": ["null", "string"]
     },
     "versionModifiedAt": {
+      "description": "The date and time when the order version was last modified",
       "type": ["null", "string"]
     },
     "itemShippingAddresses": {
+      "description": "Shipping addresses associated with specific items in the order",
       "type": ["null", "array"],
       "items": {
         "$ref": "address.json"

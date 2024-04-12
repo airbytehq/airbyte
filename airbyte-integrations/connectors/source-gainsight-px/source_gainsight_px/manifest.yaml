@@ -74,84 +74,106 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the account
             type:
               - "null"
               - string
           name:
+            description: Name of the account
             type:
               - "null"
               - string
           trackedSubscriptionId:
+            description: ID of the tracked subscription related to the account
             type:
               - "null"
               - string
           sfdcId:
+            description: Salesforce ID associated with the account
             type:
               - "null"
               - string
           lastSeenDate:
+            description: Date when the account was last seen
             type:
               - "null"
               - string
           dunsNumber:
+            description: D-U-N-S number identifier for the account
             type:
               - "null"
               - string
           industry:
+            description: Industry to which the account belongs
             type:
               - "null"
               - string
           numberOfEmployees:
+            description: Number of employees associated with the account
             type:
               - "null"
               - string
           sicCode:
+            description: Standard Industrial Classification code for the account
             type:
               - "null"
               - string
           website:
+            description: Website URL of the account
             type:
               - "null"
               - string
           naicsCode:
+            description:
+              North American Industry Classification System code for the
+              account
             type:
               - "null"
               - string
           plan:
+            description: Subscription plan of the account
             type:
               - "null"
               - string
           location:
+            description: Location of the account
             type:
               - "null"
               - string
           numberOfUsers:
+            description: Number of users associated with the account
             type:
               - "null"
               - string
           propertyKeys:
+            description: Keys associated with specific properties
             type:
               - "null"
               - array
             items:
               location:
+                description: Location specific to each property key
                 type:
                   - "null"
                   - string
           createDate:
+            description: Date when the account was created
             type:
               - "null"
               - string
           lastModifiedDate:
+            description: Date when the account was last modified
             type:
               - "null"
               - string
           customAttributes:
+            description: Custom attributes specific to the account
             type:
               - "null"
               - object
             additionalProperties: true
           parentGroupId:
+            description: ID of the parent group to which the account belongs
             type:
               - "null"
               - string
@@ -173,46 +195,57 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the admin attribute record
             type:
               - "null"
               - string
           name:
+            description: The name associated with the admin attribute
             type:
               - "null"
               - string
           apiName:
+            description: The API name associated with the admin attribute
             type:
               - "null"
               - string
           internalName:
+            description: The internal name used for referencing the admin attribute
             type:
               - "null"
               - string
           description:
+            description: A brief description of the admin attribute and its usage
             type:
               - "null"
               - string
           type:
+            description: The data type of the admin attribute value
             type:
               - "null"
               - string
           state:
+            description: The current state or status of the admin attribute
             type:
               - "null"
               - string
           origin:
+            description: The origin or source of the admin attribute data
             type:
               - "null"
               - string
           createdDate:
+            description: The date when the admin attribute was created
             type:
               - "null"
               - number
           modifiedDate:
+            description: The date when the admin attribute was last modified
             type:
               - "null"
               - number
           defaultValue:
+            description: The default value set for the admin attribute
             type:
               - "null"
               - string
@@ -237,24 +270,29 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the article
             type:
               - "null"
               - string
           modifiedBy:
+            description: User who last modified the article
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               id:
+                description: Unique identifier of the user
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the user who last modified
                 type:
                   - "null"
                   - string
           articleKCs:
+            description: Key Concepts associated with the article
             type:
               - "null"
               - array
@@ -265,42 +303,52 @@ definitions:
               additionalProperties: true
               properties:
                 kcId:
+                  description: Unique identifier for the Key Concept
                   type:
                     - "null"
                     - string
                 kcName:
+                  description: Name of the Key Concept
                   type:
                     - "null"
                     - string
           articleName:
+            description: Name or title of the article
             type:
               - "null"
               - string
           author:
+            description: Author of the article
             type:
               - "null"
               - string
           createdDate:
+            description: Date when the article was created
             type:
               - "null"
               - number
           modifiedDate:
+            description: Date when the article was last modified
             type:
               - "null"
               - number
           productId:
+            description: Identifier of the product associated with the article
             type:
               - "null"
               - string
           productName:
+            description: Name of the product associated with the article
             type:
               - "null"
               - string
           releaseDate:
+            description: Date when the article was released
             type:
               - "null"
               - string
           viewType:
+            description: Type of view for the article (e.g., public, private)
             type:
               - "null"
               - string
@@ -325,14 +373,17 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the feature
             type:
               - "null"
               - string
           name:
+            description: Name of the feature
             type:
               - "null"
               - string
           type:
+            description: Type of the feature
             type:
               - "null"
               - string
@@ -340,14 +391,17 @@ definitions:
               - FEATURE
               - MODULE
           parentFeatureId:
+            description: Identifier of the parent feature, if applicable
             type:
               - "null"
               - string
           propertyKey:
+            description: Key associated with specific property or attribute
             type:
               - "null"
               - string
           status:
+            description: Status of the feature
             type:
               - "null"
               - string
@@ -355,20 +409,24 @@ definitions:
               - ACTIVATED
               - DELETED
           featureLabels:
+            description: Information about the labels associated with the feature
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               id:
+                description: Unique identifier for the feature label
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the feature label
                 type:
                   - "null"
                   - string
               color:
+                description: Color associated with the feature label
                 type:
                   - "null"
                   - string
@@ -392,10 +450,12 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier for the segment data.
             type:
               - "null"
               - string
           name:
+            description: Name of the segment.
             type:
               - "null"
               - string
@@ -426,18 +486,22 @@ definitions:
             additionalProperties: true
             properties:
               id:
+                description: The ID of the user who created the data
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the user who created the data
                 type:
                   - "null"
                   - string
           createdDate:
+            description: The date when the data was created
             type:
               - "null"
               - number
           description:
+            description: A brief description of the data
             type:
               - "null"
               - string
@@ -446,10 +510,12 @@ definitions:
               - "null"
               - array
             items:
+              description: List of environments associated with the data
               type:
                 - "null"
                 - string
           id:
+            description: Unique identifier of the data
             type:
               - "null"
               - string
@@ -460,34 +526,42 @@ definitions:
               - object
             properties:
               id:
+                description: The ID of the user who last modified the data
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the user who last modified the data
                 type:
                   - "null"
                   - string
           modifiedDate:
+            description: The date when the data was last modified
             type:
               - "null"
               - number
           name:
+            description: The name or title of the data
             type:
               - "null"
               - string
           priority:
+            description: The priority level of the data
             type:
               - "null"
               - number
           productId:
+            description: The ID of the product associated with the data
             type:
               - "null"
               - string
           productName:
+            description: The name of the product associated with the data
             type:
               - "null"
               - string
           status:
+            description: The current status of the data
             type:
               - "null"
               - string
@@ -509,46 +583,57 @@ definitions:
           - object
         properties:
           id:
+            description: The unique identifier for the attribute.
             type:
               - "null"
               - string
           name:
+            description: The display name of the attribute.
             type:
               - "null"
               - string
           apiName:
+            description: The name of the attribute used in the API calls.
             type:
               - "null"
               - string
           internalName:
+            description: The internal name used for referencing the attribute.
             type:
               - "null"
               - string
           description:
+            description: A detailed description of the attribute.
             type:
               - "null"
               - string
           type:
+            description: The data type of the attribute values.
             type:
               - "null"
               - string
           state:
+            description: The current state or status of the attribute.
             type:
               - "null"
               - string
           origin:
+            description: The source or system where the attribute originates from.
             type:
               - "null"
               - string
           createdDate:
+            description: The date when the attribute was created.
             type:
               - "null"
               - number
           modifiedDate:
+            description: The date when the attribute was last modified.
             type:
               - "null"
               - number
           defaultValue:
+            description: The default value set for the attribute.
             type:
               - "null"
               - string

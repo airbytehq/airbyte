@@ -49,6 +49,7 @@
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Represents the capabilities of the toll-free phone numbers available",
       "properties": {
         "voice": {
           "description": "Indicates if the phone number supports voice calls.",

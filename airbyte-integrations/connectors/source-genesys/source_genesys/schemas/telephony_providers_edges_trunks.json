@@ -3,158 +3,204 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the telephony trunk",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the telephony trunk",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Information about the division associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the division",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the division details",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional descriptions or notes related to the trunk",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the telephony trunk",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "The timestamp when the trunk was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The timestamp when the trunk was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "The user who last modified the telephony trunk",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "The user who created the telephony trunk",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The current state of the telephony trunk",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "The application through which the trunk was last modified",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "The application through which the trunk was created",
       "type": ["null", "string"]
     },
     "trunkType": {
+      "description": "The type of telephony trunk",
       "type": ["null", "string"]
     },
     "edge": {
+      "description": "Information about the edge associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the edge",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the edge",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the edge details",
           "type": ["null", "string"]
         }
       }
     },
     "trunkBase": {
+      "description": "Information about the trunk base associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the trunk base",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the trunk base",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the trunk base details",
           "type": ["null", "string"]
         }
       }
     },
     "trunkMetabase": {
+      "description": "Information about the trunk metabase associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the trunk metabase",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the trunk metabase",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the trunk metabase details",
           "type": ["null", "string"]
         }
       }
     },
     "edgeGroup": {
+      "description": "Information about the edge group associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the edge group",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the edge group",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the edge group details",
           "type": ["null", "string"]
         }
       }
     },
     "inService": {
+      "description": "Indicates if the trunk is currently in service",
       "type": ["null", "boolean"]
     },
     "enabled": {
+      "description": "Indicates if the trunk is currently enabled",
       "type": ["null", "boolean"]
     },
     "logicalInterface": {
+      "description": "Information about the logical interface associated with the trunk",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the logical interface",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the logical interface",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the logical interface details",
           "type": ["null", "string"]
         }
       }
     },
     "connectedStatus": {
+      "description": "Information about the connection status of the telephony trunk",
       "type": "object",
       "properties": {
         "connected": {
+          "description": "Indicates if the trunk is currently connected",
           "type": ["null", "boolean"]
         },
         "connectedStateTime": {
+          "description": "The timestamp when the trunk's connection state was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "optionsEnabledStatus": {
+      "description": "Status of options enabled for the trunk",
       "type": ["null", "string"]
     },
     "registersEnabledStatus": {
+      "description": "Status of registers enabled for the trunk",
       "type": ["null", "string"]
     },
     "family": {
+      "description": "The family or type of the telephony trunk",
       "type": ["null", "number"]
     },
     "proxyAddressList": {
+      "description": "List of proxy addresses associated with the trunk",
       "type": ["array"]
     },
     "selfUri": {
+      "description": "The URI to access the telephony trunk details",
       "type": ["null", "string"]
     }
   }

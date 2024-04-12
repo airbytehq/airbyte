@@ -49,59 +49,73 @@ definitions:
           - "null"
         properties:
           incident_number:
+            description: Numeric identifier for the incident
             type:
               - number
               - "null"
           title:
+            description: Title of the incident
             type:
               - string
               - "null"
           description:
+            description: Detailed description of the incident
             type:
               - string
               - "null"
           created_at:
+            description: Timestamp when the incident was created
             type:
               - string
               - "null"
           updated_at:
+            description: Timestamp of the last update to the incident
             type:
               - string
               - "null"
           status:
+            description: Current status of the incident
             type:
               - string
               - "null"
           incident_key:
+            description: Key identifier for the incident
             type:
               - string
               - "null"
           service:
+            description: Details of the service associated with the incident
             type:
               - object
               - "null"
             properties:
               id:
+                description: Unique identifier of the service
                 type:
                   - string
                   - "null"
               type:
+                description: Type of the service
                 type:
                   - string
                   - "null"
               summary:
+                description: Summary of the service
                 type:
                   - string
                   - "null"
               self:
+                description: Self reference to the service
                 type:
                   - string
                   - "null"
               html_url:
+                description: URL link to the service
                 type:
                   - string
                   - "null"
           assignments:
+            description: List of assignments made for the incident
             type:
               - array
               - "null"
@@ -111,116 +125,146 @@ definitions:
                 - "null"
               properties:
                 at:
+                  description: Timestamp of the assignment
                   type:
                     - string
                     - "null"
                 assignee:
+                  description: Details of the user assigned to the incident
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the assignee
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the assignee
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the assignee
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the assignee
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the assignee's profile
                       type:
                         - string
                         - "null"
           assigned_via:
+            description: Indicates the method of assignment to the incident
             type:
               - string
               - "null"
           last_status_change_at:
+            description: Timestamp of the last status change
             type:
               - string
               - "null"
           resolved_at:
+            description: Timestamp when the incident was resolved
             type:
               - string
               - "null"
           first_trigger_log_entry:
+            description: Details of the first trigger log entry for the incident
             type:
               - object
               - "null"
             properties:
               id:
+                description: Unique identifier of the trigger log entry
                 type:
                   - string
                   - "null"
               type:
+                description: Type of the trigger log entry
                 type:
                   - string
                   - "null"
               summary:
+                description: Summary of the trigger log entry
                 type:
                   - string
                   - "null"
               self:
+                description: Self reference to the trigger log entry
                 type:
                   - string
                   - "null"
               html_url:
+                description: URL link to the trigger log entry
                 type:
                   - string
                   - "null"
           alert_counts:
+            description:
+              Counts of different states of alerts associated with the
+              incident
             type:
               - object
               - "null"
             properties:
               all:
+                description: Total count of all alerts
                 type:
                   - number
                   - "null"
               triggered:
+                description: Count of triggered alerts
                 type:
                   - number
                   - "null"
               resolved:
+                description: Count of resolved alerts
                 type:
                   - number
                   - "null"
           is_mergeable:
+            description: Indicates if the incident is mergeable
             type: boolean
           escalation_policy:
+            description: Details of the escalation policy associated with the incident
             type:
               - object
               - "null"
             properties:
               id:
+                description: Unique identifier of the escalation policy
                 type:
                   - string
                   - "null"
               type:
+                description: Type of the escalation policy
                 type:
                   - string
                   - "null"
               summary:
+                description: Summary of the escalation policy
                 type:
                   - string
                   - "null"
               self:
+                description: Self reference to the escalation policy
                 type:
                   - string
                   - "null"
               html_url:
+                description: URL link to the escalation policy
                 type:
                   - string
                   - "null"
           teams:
+            description: List of teams associated with the incident
             type:
               - array
               - "null"
@@ -229,6 +273,7 @@ definitions:
                 - string
                 - "null"
           pending_actions:
+            description: List of pending actions for the incident
             type:
               - array
               - "null"
@@ -237,6 +282,7 @@ definitions:
                 - string
                 - "null"
           acknowledgements:
+            description: List of acknowledgements made for the incident
             type:
               - array
               - "null"
@@ -246,125 +292,155 @@ definitions:
                 - "null"
               properties:
                 at:
+                  description: Timestamp when the acknowledgement was made
                   type:
                     - string
                     - "null"
                 acknowledger:
+                  description: Details of the user acknowledging the incident
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the user
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the user
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the user
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the user
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the user's profile
                       type:
                         - string
                         - "null"
           basic_alert_grouping:
+            description: Basic grouping information for alerts
             type:
               - string
               - "null"
           alert_grouping:
+            description: Grouping information for alerts related to the incident
             type:
               - string
               - "null"
           last_status_change_by:
+            description: Details of the user who made the last status change
             type:
               - object
               - "null"
             properties:
               id:
+                description: Unique identifier of the user
                 type:
                   - string
                   - "null"
               type:
+                description: Type of the user
                 type:
                   - string
                   - "null"
               summary:
+                description: Summary of the user
                 type:
                   - string
                   - "null"
               self:
+                description: Self reference to the user
                 type:
                   - string
                   - "null"
               html_url:
+                description: URL link to the user's profile
                 type:
                   - string
                   - "null"
           priority:
+            description: Priority details of the incident
             type:
               - object
               - "null"
             properties:
               id:
+                description: Unique identifier of the priority
                 type:
                   - string
                   - "null"
               type:
+                description: Type of the priority
                 type:
                   - string
                   - "null"
               summary:
+                description: Summary of the priority
                 type:
                   - string
                   - "null"
               self:
+                description: Self reference to the priority
                 type:
                   - string
                   - "null"
               html_url:
+                description: URL link to the priority
                 type:
                   - string
                   - "null"
               account_id:
+                description: Identifier of the account associated with the priority
                 type:
                   - string
                   - "null"
               color:
+                description: Color code representing the priority
                 type:
                   - string
                   - "null"
               created_at:
+                description: Timestamp of the creation of the priority
                 type:
                   - string
                   - "null"
               description:
+                description: Description of the priority
                 type:
                   - string
                   - "null"
               name:
+                description: Name of the priority
                 type:
                   - string
                   - "null"
               order:
+                description: Order of the priority
                 type:
                   - number
                   - "null"
               schema_version:
+                description: Version of the priority schema
                 type:
                   - number
                   - "null"
               updated_at:
+                description: Timestamp of the last update of the priority
                 type:
                   - string
                   - "null"
           incidents_responders:
+            description: List of responders associated with the incidents
             type:
               - array
               - "null"
@@ -374,113 +450,140 @@ definitions:
                 - "null"
               properties:
                 state:
+                  description: State of the incident
                   type:
                     - string
                     - "null"
                 user:
+                  description: Details of the user
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the user
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the user
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the user
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the user
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the user's profile
                       type:
                         - string
                         - "null"
                     avatar_url:
+                      description: URL link to the user's avatar
                       type:
                         - string
                         - "null"
                     job_title:
+                      description: Job title of the user
                       type:
                         - string
                         - "null"
                 incident:
+                  description: Details of the incident
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the incident
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the incident
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the incident
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the incident
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the incident
                       type:
                         - string
                         - "null"
                 updated_at:
+                  description: Timestamp of the last update
                   type:
                     - string
                     - "null"
                 message:
+                  description: Message related to the incident
                   type:
                     - string
                     - "null"
                 requester:
+                  description: Details of the requester
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the requester
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the requester
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the requester
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the requester
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the requester's profile
                       type:
                         - string
                         - "null"
                     avatar_url:
+                      description: URL link to the requester's avatar
                       type:
                         - string
                         - "null"
                     job_title:
+                      description: Job title of the requester
                       type:
                         - string
                         - "null"
                 requested_at:
+                  description: Timestamp of the request
                   type:
                     - string
                     - "null"
                 escalation_policy_requests:
+                  description: Requests related to the escalation policy
                   type:
                     - array
                     - "null"
@@ -489,6 +592,7 @@ definitions:
                       - string
                       - "null"
           responder_requests:
+            description: Details of responder requests related to the incident
             type:
               - array
               - "null"
@@ -498,64 +602,79 @@ definitions:
                 - "null"
               properties:
                 incident:
+                  description: Details of the incident
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the incident
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the incident
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the incident
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the incident
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the incident
                       type:
                         - string
                         - "null"
                 requester:
+                  description: Details of the requester
                   type:
                     - object
                     - "null"
                   properties:
                     id:
+                      description: Unique identifier of the requester
                       type:
                         - string
                         - "null"
                     type:
+                      description: Type of the requester
                       type:
                         - string
                         - "null"
                     summary:
+                      description: Summary of the requester
                       type:
                         - string
                         - "null"
                     self:
+                      description: Self reference to the requester
                       type:
                         - string
                         - "null"
                     html_url:
+                      description: URL link to the requester's profile
                       type:
                         - string
                         - "null"
                 requested_at:
+                  description: Timestamp of the request
                   type:
                     - string
                     - "null"
                 message:
+                  description: Message related to the request
                   type:
                     - string
                     - "null"
                 responder_request_targets:
+                  description: List of targets for responder requests
                   type:
                     - array
                     - "null"
@@ -565,23 +684,28 @@ definitions:
                       - "null"
                     properties:
                       responder_request_target:
+                        description: Details of the responder request target
                         type:
                           - object
                           - "null"
                         properties:
                           type:
+                            description: Type of the target
                             type:
                               - string
                               - "null"
                           id:
+                            description: Unique identifier of the target
                             type:
                               - string
                               - "null"
                           summary:
+                            description: Summary of the target
                             type:
                               - string
                               - "null"
                           incidents_responders:
+                            description: List of responders for the target
                             type:
                               - array
                               - "null"
@@ -591,113 +715,140 @@ definitions:
                                 - "null"
                               properties:
                                 state:
+                                  description: State of the responder request
                                   type:
                                     - string
                                     - "null"
                                 user:
+                                  description: Details of the user
                                   type:
                                     - object
                                     - "null"
                                   properties:
                                     id:
+                                      description: Unique identifier of the user
                                       type:
                                         - string
                                         - "null"
                                     type:
+                                      description: Type of the user
                                       type:
                                         - string
                                         - "null"
                                     summary:
+                                      description: Summary of the user
                                       type:
                                         - string
                                         - "null"
                                     self:
+                                      description: Self reference to the user
                                       type:
                                         - string
                                         - "null"
                                     html_url:
+                                      description: URL link to the user's profile
                                       type:
                                         - string
                                         - "null"
                                     avatar_url:
+                                      description: URL link to the user's avatar
                                       type:
                                         - string
                                         - "null"
                                     job_title:
+                                      description: Job title of the user
                                       type:
                                         - string
                                         - "null"
                                 incident:
+                                  description: Details of the incident
                                   type:
                                     - object
                                     - "null"
                                   properties:
                                     id:
+                                      description: Unique identifier of the incident
                                       type:
                                         - string
                                         - "null"
                                     type:
+                                      description: Type of the incident
                                       type:
                                         - string
                                         - "null"
                                     summary:
+                                      description: Summary of the incident
                                       type:
                                         - string
                                         - "null"
                                     self:
+                                      description: Self reference to the incident
                                       type:
                                         - string
                                         - "null"
                                     html_url:
+                                      description: URL link to the incident
                                       type:
                                         - string
                                         - "null"
                                 updated_at:
+                                  description: Timestamp of the last update
                                   type:
                                     - string
                                     - "null"
                                 message:
+                                  description: Message related to the responder
                                   type:
                                     - string
                                     - "null"
                                 requester:
+                                  description: Details of the requester
                                   type:
                                     - object
                                     - "null"
                                   properties:
                                     id:
+                                      description: Unique identifier of the requester
                                       type:
                                         - string
                                         - "null"
                                     type:
+                                      description: Type of the requester
                                       type:
                                         - string
                                         - "null"
                                     summary:
+                                      description: Summary of the requester
                                       type:
                                         - string
                                         - "null"
                                     self:
+                                      description: Self reference to the requester
                                       type:
                                         - string
                                         - "null"
                                     html_url:
+                                      description: URL link to the requester's profile
                                       type:
                                         - string
                                         - "null"
                                     avatar_url:
+                                      description: URL link to the requester's avatar
                                       type:
                                         - string
                                         - "null"
                                     job_title:
+                                      description: Job title of the requester
                                       type:
                                         - string
                                         - "null"
                                 requested_at:
+                                  description: Timestamp of the request
                                   type:
                                     - string
                                     - "null"
           subscriber_requests:
+            description: List of subscriber requests received for the incident
             type:
               - array
               - "null"
@@ -706,26 +857,32 @@ definitions:
                 - string
                 - "null"
           urgency:
+            description: Level of urgency assigned to the incident
             type:
               - string
               - "null"
           id:
+            description: Unique identifier of the incident
             type:
               - string
               - "null"
           type:
+            description: Type of the incident
             type:
               - string
               - "null"
           summary:
+            description: Brief summary of the incident
             type:
               - string
               - "null"
           self:
+            description: Self reference to the incident
             type:
               - string
               - "null"
           html_url:
+            description: URL link to the incident
             type:
               - string
               - "null"
@@ -761,473 +918,593 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier of the incident log.
             type:
               - "null"
               - string
           type:
+            description: Type of the incident log.
             type:
               - "null"
               - string
           summary:
+            description: Summary information about the incident log.
             type:
               - "null"
               - string
           self:
+            description: Link to retrieve the incident log details.
             type:
               - "null"
               - string
           html_url:
+            description: URL to view the incident log details.
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp when the incident log was created.
             type:
               - "null"
               - string
           agent:
+            description: Details of the agent associated with the incident log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the agent.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the agent.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the agent.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the agent details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the agent details.
                 type:
                   - "null"
                   - string
           channel:
+            description: Details of the channel related to the incident log.
             type:
               - "null"
               - object
             properties:
               type:
+                description: Type of the channel.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the channel.
                 type:
                   - "null"
                   - string
               notification:
+                description: Notification related details of the channel.
                 type:
                   - "null"
                   - object
                 properties:
                   type:
+                    description: Type of notification.
                     type:
                       - "null"
                       - string
                   address:
+                    description: Notification address.
                     type:
                       - "null"
                       - string
                   conferenceAddress:
+                    description: Conference notification address.
                     type:
                       - "null"
                       - string
                   status:
+                    description: Status of the notification.
                     type:
                       - "null"
                       - string
               old_priority:
+                description:
+                  Details of the old priority set for the incident in the
+                  channel.
                 type:
                   - "null"
                   - string
               new_priority:
+                description:
+                  Details of the new priority set for the incident in the
+                  channel.
                 type:
                   - "null"
                   - object
                 properties:
                   id:
+                    description: Unique identifier of the priority.
                     type:
                       - "null"
                       - string
                   type:
+                    description: Type of the priority.
                     type:
                       - "null"
                       - string
                   summary:
+                    description: Summary information about the priority.
                     type:
                       - "null"
                       - string
                   self:
+                    description: Link to retrieve the priority details.
                     type:
                       - "null"
                       - string
                   html_url:
+                    description: URL to view the priority details.
                     type:
                       - "null"
                       - string
                   account_id:
+                    description: Account ID associated with the priority.
                     type:
                       - "null"
                       - string
                   color:
+                    description: Color code representing the priority.
                     type:
                       - "null"
                       - string
                   created_at:
+                    description: Timestamp when the priority was created.
                     type:
                       - "null"
                       - string
                   description:
+                    description: Description of the priority.
                     type:
                       - "null"
                       - string
                   name:
+                    description: Name of the priority.
                     type:
                       - "null"
                       - string
                   order:
+                    description: Order of the priority.
                     type:
                       - "null"
                       - number
                   schema_version:
+                    description: Version of the priority schema.
                     type:
                       - "null"
                       - number
                   updated_at:
+                    description: Timestamp when the priority was last updated.
                     type:
                       - "null"
                       - string
           service:
+            description: Details of the service associated with the incident log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the service.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the service.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the service.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the service details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the service details.
                 type:
                   - "null"
                   - string
           incident:
+            description: Details of the incident associated with the incident log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the incident.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the incident.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the incident.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the incident details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the incident details.
                 type:
                   - "null"
                   - string
           teams:
+            description: List of teams associated with the incident log.
             type:
               - "null"
               - array
             items:
+              description: Details of each associated team.
               type:
                 - "null"
                 - string
           contexts:
+            description: Contexts related to the incident log.
             type:
               - "null"
               - array
             items:
+              description: Details of each context.
               type:
                 - "null"
                 - string
           message:
+            description: Message associated with the incident log.
             type:
               - "null"
               - string
           responder:
+            description: Details of the responder associated with the incident log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the responder.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the responder.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the responder.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the responder details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the responder details.
                 type:
                   - "null"
                   - string
           channels:
+            description: List of channels associated with the incident log.
             type:
               - "null"
               - string
           responders_list:
+            description: List of responders associated with the incident log.
             type:
               - "null"
               - array
             items:
+              description: Details of each responder.
               type:
                 - "null"
                 - object
               properties:
                 id:
+                  description: Unique identifier of the responder.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of the responder.
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Summary information about the responder.
                   type:
                     - "null"
                     - string
                 self:
+                  description: Link to retrieve the responder details.
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL to view the responder details.
                   type:
                     - "null"
                     - string
           escalation_policy:
+            description:
+              Details of the escalation policy associated with the incident
+              log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the escalation policy.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the escalation policy.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the escalation policy.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the escalation policy details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the escalation policy details.
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the escalation policy.
                 type:
                   - "null"
                   - string
               escalation_rules:
+                description: List of escalation rules defined for the policy.
                 type:
                   - "null"
                   - array
                 items:
+                  description: Details of each escalation rule.
                   type:
                     - "null"
                     - object
                   properties:
                     id:
+                      description: Unique identifier of the escalation rule.
                       type:
                         - "null"
                         - string
                     escalation_delay_in_minutes:
+                      description: Delay in minutes for escalation.
                       type:
                         - "null"
                         - number
                     targets:
+                      description: List of targets for the escalation rule.
                       type:
                         - "null"
                         - array
                       items:
+                        description: Details of each target.
                         type:
                           - "null"
                           - object
                         properties:
                           id:
+                            description: Unique identifier of the target.
                             type:
                               - "null"
                               - string
                           type:
+                            description: Type of the target.
                             type:
                               - "null"
                               - string
                           summary:
+                            description: Summary information about the target.
                             type:
                               - "null"
                               - string
                           self:
+                            description: Link to retrieve the target details.
                             type:
                               - "null"
                               - string
                           html_url:
+                            description: URL to view the target details.
                             type:
                               - "null"
                               - string
               services:
+                description: List of services associated with the escalation policy.
                 type:
                   - "null"
                   - array
                 items:
+                  description: Details of each associated service.
                   type:
                     - "null"
                     - object
                   properties:
                     id:
+                      description: Unique identifier of the service.
                       type:
                         - "null"
                         - string
                     type:
+                      description: Type of the service.
                       type:
                         - "null"
                         - string
                     summary:
+                      description: Summary information about the service.
                       type:
                         - "null"
                         - string
                     self:
+                      description: Link to retrieve the service details.
                       type:
                         - "null"
                         - string
                     html_url:
+                      description: URL to view the service details.
                       type:
                         - "null"
                         - string
               num_loops:
+                description: Number of loops in the escalation policy.
                 type:
                   - "null"
                   - number
               teams:
+                description: List of teams associated with the escalation policy.
                 type:
                   - "null"
                   - array
                 items:
+                  description: Details of each associated team.
                   type:
                     - "null"
                     - string
               description:
+                description: Description of the escalation policy.
                 type:
                   - "null"
                   - string
               on_call_handoff_notifications:
+                description: Notification settings for on-call handoff.
                 type:
                   - "null"
                   - string
               privilege:
+                description: Privilege level associated with the escalation policy.
                 type:
                   - "null"
                   - string
           level:
+            description: Level of the incident log.
             type:
               - "null"
               - number
           action:
+            description: Action taken on the incident log.
             type:
               - "null"
               - string
           event_details:
+            description: Details of the event related to the incident log.
             type:
               - "null"
               - object
             properties:
               description:
+                description: Description of the event.
                 type:
                   - "null"
                   - string
           user:
+            description: Details of the user associated with the incident log.
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique identifier of the user.
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the user.
                 type:
                   - "null"
                   - string
               summary:
+                description: Summary information about the user.
                 type:
                   - "null"
                   - string
               self:
+                description: Link to retrieve the user details.
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to view the user details.
                 type:
                   - "null"
                   - string
           assignees:
+            description: List of assignees for the incident log.
             type:
               - "null"
               - array
             items:
+              description: Details of each assignee.
               type:
                 - "null"
                 - object
               properties:
                 id:
+                  description: Unique identifier of the assignee.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of the assignee.
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Summary information about the assignee.
                   type:
                     - "null"
                     - string
                 self:
+                  description: Link to retrieve the assignee details.
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL to view the assignee details.
                   type:
                     - "null"
                     - string
@@ -1250,38 +1527,47 @@ definitions:
           - object
         properties:
           id:
+            description: The unique identifier for the team.
             type:
               - "null"
               - string
           name:
+            description: The name of the team.
             type:
               - "null"
               - string
           description:
+            description: The description of the team.
             type:
               - "null"
               - string
           type:
+            description: The type of the team, e.g., support, development, etc.
             type:
               - "null"
               - string
           summary:
+            description: A brief summary of the team.
             type:
               - "null"
               - string
           self:
+            description: The URL link to access the team details.
             type:
               - "null"
               - string
           html_url:
+            description: The URL link to access the team details in HTML format.
             type:
               - "null"
               - string
           default_role:
+            description: The default role assigned to team members.
             type:
               - "null"
               - string
           parent:
+            description: The parent team if this team is a sub-team.
             type:
               - "null"
               - string
@@ -1304,26 +1590,32 @@ definitions:
           - object
         properties:
           id:
+            description: Unique identifier of the service
             type:
               - "null"
               - string
           name:
+            description: Name of the service
             type:
               - "null"
               - string
           description:
+            description: Description of the service
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp of when the service was created
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp of when the service was last updated
             type:
               - "null"
               - string
           status:
+            description: Current status of the service
             type:
               - "null"
               - string
@@ -1332,10 +1624,12 @@ definitions:
               - "null"
               - array
             items:
+              description: Teams associated with the service
               type:
                 - "null"
                 - string
           alert_creation:
+            description: Method of creating alert incidents
             type:
               - "null"
               - string
@@ -1344,6 +1638,9 @@ definitions:
               - "null"
               - array
             items:
+              description:
+                Additional features or functionalities associated with
+                the service
               type:
                 - "null"
                 - string
@@ -1352,14 +1649,17 @@ definitions:
               - "null"
               - array
             items:
+              description: Scheduled actions related to the service
               type:
                 - "null"
                 - string
           support_hours:
+            description: Hours during which support is provided for the service
             type:
               - "null"
               - string
           last_incident_timestamp:
+            description: Timestamp of the last incident associated with the service
             type:
               - "null"
               - string
@@ -1369,22 +1669,27 @@ definitions:
               - object
             properties:
               id:
+                description: Unique identifier of the escalation policy
                 type:
                   - "null"
                   - string
               type:
+                description: Type of escalation policy
                 type:
                   - "null"
                   - string
               summary:
+                description: Brief summary of the escalation policy
                 type:
                   - "null"
                   - string
               self:
+                description: URL to retrieve the escalation policy details
                 type:
                   - "null"
                   - string
               html_url:
+                description: URL to the escalation policy details
                 type:
                   - "null"
                   - string
@@ -1394,26 +1699,32 @@ definitions:
               - object
             properties:
               type:
+                description: Type of urgency rule for incidents
                 type:
                   - "null"
                   - string
               urgency:
+                description: Level of urgency assigned to incidents
                 type:
                   - "null"
                   - string
           acknowledgement_timeout:
+            description: The amount of time before an alert is automatically acknowledged
             type:
               - "null"
               - string
           auto_resolve_timeout:
+            description: Time before an alert incident is automatically resolved
             type:
               - "null"
               - string
           alert_grouping:
+            description: Strategy for grouping related alerts together
             type:
               - "null"
               - string
           alert_grouping_timeout:
+            description: Time before alert grouping occurs
             type:
               - "null"
               - string
@@ -1423,6 +1734,7 @@ definitions:
               - object
             properties:
               type:
+                description: Type of alert grouping method
                 type:
                   - "null"
                   - string
@@ -1432,10 +1744,12 @@ definitions:
                   - object
                 properties:
                   time_window:
+                    description: Time window for grouping alerts
                     type:
                       - "null"
                       - number
                   recommended_time_window:
+                    description: Suggested time window for creating alert groups
                     type:
                       - "null"
                       - number
@@ -1449,42 +1763,52 @@ definitions:
                 - object
               properties:
                 id:
+                  description: Unique identifier of the integration
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of integration
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Brief summary of the integration
                   type:
                     - "null"
                     - string
                 self:
+                  description: URL to retrieve the integration details
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL to access the integration details
                   type:
                     - "null"
                     - string
           response_play:
+            description: Procedure or playbook for responding to alerts
             type:
               - "null"
               - string
           type:
+            description: Type or category of the service
             type:
               - "null"
               - string
           summary:
+            description: Brief summary of the service
             type:
               - "null"
               - string
           self:
+            description: URL to retrieve the service details
             type:
               - "null"
               - string
           html_url:
+            description: URL to access the service details
             type:
               - "null"
               - string
@@ -1507,38 +1831,50 @@ definitions:
           - object
         properties:
           name:
+            description: Full name of the user.
             type:
               - "null"
               - string
           email:
+            description: Email address of the user.
             type:
               - "null"
               - string
           time_zone:
+            description: Time zone setting for the user.
             type:
               - "null"
               - string
           color:
+            description: Color associated with the user for visual representation.
             type:
               - "null"
               - string
           avatar_url:
+            description: URL of the user's avatar image.
             type:
               - "null"
               - string
           billed:
+            description: Boolean indicating whether the user has been billed.
             type: boolean
           role:
+            description: Role or permission level of the user.
             type:
               - "null"
               - string
           description:
+            description: Description or bio information about the user.
             type:
               - "null"
               - string
           invitation_sent:
+            description:
+              Boolean indicating if an invitation has been sent to the
+              user.
             type: boolean
           job_title:
+            description: Job title or role of the user.
             type:
               - "null"
               - string
@@ -1552,22 +1888,27 @@ definitions:
                 - object
               properties:
                 id:
+                  description: Unique identifier of the team.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of team (e.g., support, development).
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Summary or description of the team.
                   type:
                     - "null"
                     - string
                 self:
+                  description: Self reference for the team.
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL link to the team details.
                   type:
                     - "null"
                     - string
@@ -1581,22 +1922,27 @@ definitions:
                 - object
               properties:
                 id:
+                  description: Unique identifier of the contact method.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of contact method (e.g., email, phone).
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Summary or description of the contact method.
                   type:
                     - "null"
                     - string
                 self:
+                  description: Self reference for the contact method.
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL link to the contact method details.
                   type:
                     - "null"
                     - string
@@ -1610,22 +1956,27 @@ definitions:
                 - object
               properties:
                 id:
+                  description: Unique identifier of the notification rule.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of notification rule (e.g., email, SMS).
                   type:
                     - "null"
                     - string
                 summary:
+                  description: Summary or description of the notification rule.
                   type:
                     - "null"
                     - string
                 self:
+                  description: Self reference for the notification rule.
                   type:
                     - "null"
                     - string
                 html_url:
+                  description: URL link to the notification rule details.
                   type:
                     - "null"
                     - string
@@ -1644,22 +1995,27 @@ definitions:
                     - object
                   properties:
                     id:
+                      description: Unique identifier of the incident.
                       type:
                         - "null"
                         - string
                     type:
+                      description: Type of the incident (e.g., alert, outage).
                       type:
                         - "null"
                         - string
                     summary:
+                      description: Summary or description of the incident.
                       type:
                         - "null"
                         - string
                     self:
+                      description: Self reference for the incident.
                       type:
                         - "null"
                         - string
                     html_url:
+                      description: URL link to the incident details.
                       type:
                         - "null"
                         - string
@@ -1669,54 +2025,67 @@ definitions:
                     - object
                   properties:
                     id:
+                      description: Unique identifier of the requester.
                       type:
                         - "null"
                         - string
                     type:
+                      description: Type of the requester (e.g., user, system).
                       type:
                         - "null"
                         - string
                     summary:
+                      description: Summary or description of the requester.
                       type:
                         - "null"
                         - string
                     self:
+                      description: Self reference for the requester.
                       type:
                         - "null"
                         - string
                     html_url:
+                      description: URL link to the requester details.
                       type:
                         - "null"
                         - string
                 message:
+                  description: Message related to the coordinated incident.
                   type:
                     - "null"
                     - string
                 state:
+                  description: Current state of the coordinated incident.
                   type:
                     - "null"
                     - string
                 requested_at:
+                  description: Timestamp indicating when the request was made.
                   type:
                     - "null"
                     - string
           id:
+            description: Unique identifier of the user.
             type:
               - "null"
               - string
           type:
+            description: Type or category of the user account.
             type:
               - "null"
               - string
           summary:
+            description: Summary or brief information about the user.
             type:
               - "null"
               - string
           self:
+            description: Self reference for the user.
             type:
               - "null"
               - string
           html_url:
+            description: URL link to the user's details.
             type:
               - "null"
               - string
@@ -1739,54 +2108,69 @@ definitions:
           - object
         properties:
           id:
+            description: The unique identifier of the priority.
             type:
               - "null"
               - string
           type:
+            description: The type or category of the priority.
             type:
               - "null"
               - string
           summary:
+            description: A brief summary or overview of the priority.
             type:
               - "null"
               - string
           self:
+            description: The URL link to retrieve the priority data.
             type:
               - "null"
               - string
           html_url:
+            description: The URL link to view the priority details in a web browser.
             type:
               - "null"
               - string
           account_id:
+            description:
+              The unique identifier of the account to which the priority
+              belongs.
             type:
               - "null"
               - string
           color:
+            description: The color associated with the priority.
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp indicating when the priority was created.
             type:
               - "null"
               - string
           description:
+            description: The detailed description of the priority.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the priority.
             type:
               - "null"
               - string
           order:
+            description: The priority order in a sequential manner.
             type:
               - "null"
               - number
           schema_version:
+            description: The version of the schema used for the priority data.
             type:
               - "null"
               - number
           updated_at:
+            description: The timestamp indicating when the priority was last updated.
             type:
               - "null"
               - string

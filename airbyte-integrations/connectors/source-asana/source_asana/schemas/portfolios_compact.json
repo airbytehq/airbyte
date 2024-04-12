@@ -2,12 +2,15 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Unique identifier for the portfolio.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of resource, in this case, it would be 'portfolio'.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the portfolio.",
       "type": ["null", "string"]
     }
   }

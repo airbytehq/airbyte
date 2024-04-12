@@ -102,11 +102,13 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of the photo results.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
+            description: Number of photos per page in the current result set.
             $id: "#root/per_page"
             title: Per_page
             type: integer
@@ -122,44 +124,52 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the photo.
                   $id: "#root/photos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
+                  description: Width of the photo in pixels.
                   $id: "#root/photos/items/width"
                   title: Width
                   type: integer
                   default: 0
                 height:
+                  description: Height of the photo in pixels.
                   $id: "#root/photos/items/height"
                   title: Height
                   type: integer
                   default: 0
                 url:
+                  description: URL to view the photo in the Pexels website.
                   $id: "#root/photos/items/url"
                   title: Url
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer:
+                  description: Name of the photographer who captured the photo.
                   $id: "#root/photos/items/photographer"
                   title: Photographer
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer_url:
+                  description: URL to the photographer's profile.
                   $id: "#root/photos/items/photographer_url"
                   title: Photographer_url
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer_id:
+                  description: Unique identifier for the photographer.
                   $id: "#root/photos/items/photographer_id"
                   title: Photographer_id
                   type: integer
                   default: 0
                 avg_color:
+                  description: Average color of the photo in hexadecimal format.
                   $id: "#root/photos/items/avg_color"
                   title: Avg_color
                   type: string
@@ -171,70 +181,82 @@ definitions:
                   type: object
                   properties:
                     original:
+                      description: URL to the original-sized version of the photo.
                       $id: "#root/photos/items/src/original"
                       title: Original
                       type: string
                       default: ""
                       pattern: ^.*$
                     large2x:
+                      description: URL to the double-sized version of the photo.
                       $id: "#root/photos/items/src/large2x"
                       title: Large2x
                       type: string
                       default: ""
                       pattern: ^.*$
                     large:
+                      description: URL to the large-sized version of the photo.
                       $id: "#root/photos/items/src/large"
                       title: Large
                       type: string
                       default: ""
                       pattern: ^.*$
                     medium:
+                      description: URL to the medium-sized version of the photo.
                       $id: "#root/photos/items/src/medium"
                       title: Medium
                       type: string
                       default: ""
                       pattern: ^.*$
                     small:
+                      description: URL to the small-sized version of the photo.
                       $id: "#root/photos/items/src/small"
                       title: Small
                       type: string
                       default: ""
                       pattern: ^.*$
                     portrait:
+                      description: URL to the portrait-oriented version of the photo.
                       $id: "#root/photos/items/src/portrait"
                       title: Portrait
                       type: string
                       default: ""
                       pattern: ^.*$
                     landscape:
+                      description: URL to the landscape-oriented version of the photo.
                       $id: "#root/photos/items/src/landscape"
                       title: Landscape
                       type: string
                       default: ""
                       pattern: ^.*$
                     tiny:
+                      description: URL to the tiny-sized version of the photo.
                       $id: "#root/photos/items/src/tiny"
                       title: Tiny
                       type: string
                       default: ""
                       pattern: ^.*$
                 liked:
+                  description: Whether the photo has been liked by users.
                   $id: "#root/photos/items/liked"
                   title: Liked
                   type: boolean
                   default: true
                 alt:
+                  description: Alternative text describing the photo content.
                   $id: "#root/photos/items/alt"
                   title: Alt
                   type: string
                   default: ""
                   pattern: ^.*$
           total_results:
+            description: Total number of photos matching the search criteria.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
+            description: Link to the next page of photo results.
             $id: "#root/next_page"
             title: Next_page
             type: string
@@ -256,11 +278,13 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of the results.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
+            description: The number of photos per page.
             $id: "#root/per_page"
             title: Per_page
             type: integer
@@ -276,44 +300,52 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the photo.
                   $id: "#root/photos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
+                  description: Width of the photo in pixels.
                   $id: "#root/photos/items/width"
                   title: Width
                   type: integer
                   default: 0
                 height:
+                  description: Height of the photo in pixels.
                   $id: "#root/photos/items/height"
                   title: Height
                   type: integer
                   default: 0
                 url:
+                  description: URL to view the photo on the Pexels website.
                   $id: "#root/photos/items/url"
                   title: Url
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer:
+                  description: Name of the photographer.
                   $id: "#root/photos/items/photographer"
                   title: Photographer
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer_url:
+                  description: URL to the photographer's portfolio.
                   $id: "#root/photos/items/photographer_url"
                   title: Photographer_url
                   type: string
                   default: ""
                   pattern: ^.*$
                 photographer_id:
+                  description: Unique identifier for the photographer.
                   $id: "#root/photos/items/photographer_id"
                   title: Photographer_id
                   type: integer
                   default: 0
                 avg_color:
+                  description: Average color of the photo.
                   $id: "#root/photos/items/avg_color"
                   title: Avg_color
                   type: string
@@ -325,70 +357,82 @@ definitions:
                   type: object
                   properties:
                     original:
+                      description: URL to the original-sized photo.
                       $id: "#root/photos/items/src/original"
                       title: Original
                       type: string
                       default: ""
                       pattern: ^.*$
                     large2x:
+                      description: URL to the double-large-sized photo.
                       $id: "#root/photos/items/src/large2x"
                       title: Large2x
                       type: string
                       default: ""
                       pattern: ^.*$
                     large:
+                      description: URL to the large-sized photo.
                       $id: "#root/photos/items/src/large"
                       title: Large
                       type: string
                       default: ""
                       pattern: ^.*$
                     medium:
+                      description: URL to the medium-sized photo.
                       $id: "#root/photos/items/src/medium"
                       title: Medium
                       type: string
                       default: ""
                       pattern: ^.*$
                     small:
+                      description: URL to the small-sized photo.
                       $id: "#root/photos/items/src/small"
                       title: Small
                       type: string
                       default: ""
                       pattern: ^.*$
                     portrait:
+                      description: URL to the portrait-oriented photo.
                       $id: "#root/photos/items/src/portrait"
                       title: Portrait
                       type: string
                       default: ""
                       pattern: ^.*$
                     landscape:
+                      description: URL to the landscape-oriented photo.
                       $id: "#root/photos/items/src/landscape"
                       title: Landscape
                       type: string
                       default: ""
                       pattern: ^.*$
                     tiny:
+                      description: URL to the tiny-sized photo.
                       $id: "#root/photos/items/src/tiny"
                       title: Tiny
                       type: string
                       default: ""
                       pattern: ^.*$
                 liked:
+                  description: Indicator if the photo has been liked by users.
                   $id: "#root/photos/items/liked"
                   title: Liked
                   type: boolean
                   default: true
                 alt:
+                  description: Alternative text describing the photo content.
                   $id: "#root/photos/items/alt"
                   title: Alt
                   type: string
                   default: ""
                   pattern: ^.*$
           total_results:
+            description: Total number of results available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
+            description: The token for fetching the next page of results.
             $id: "#root/next_page"
             title: Next_page
             type: string
@@ -410,21 +454,25 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of the returned results.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
+            description: The number of items to be displayed per page.
             $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
+            description: The total number of video results matching the search criteria.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           url:
+            description: The URL associated with the video.
             $id: "#root/url"
             title: Url
             type: string
@@ -441,11 +489,13 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the video.
                   $id: "#root/videos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
+                  description: The width of the video in pixels.
                   $id: "#root/videos/items/width"
                   title: Width
                   type:
@@ -454,6 +504,7 @@ definitions:
                     - integer
                   default: 0
                 height:
+                  description: The height of the video in pixels.
                   $id: "#root/videos/items/height"
                   title: Height
                   type:
@@ -462,18 +513,21 @@ definitions:
                     - integer
                   default: 0
                 url:
+                  description: The URL of the video.
                   $id: "#root/videos/items/url"
                   title: Url
                   type: string
                   default: ""
                   pattern: ^.*$
                 image:
+                  description: The image associated with the video.
                   $id: "#root/videos/items/image"
                   title: Image
                   type: string
                   default: ""
                   pattern: ^.*$
                 duration:
+                  description: The duration of the video.
                   $id: "#root/videos/items/duration"
                   title: Duration
                   type: integer
@@ -484,17 +538,20 @@ definitions:
                   type: object
                   properties:
                     id:
+                      description: The unique identifier of the user.
                       $id: "#root/videos/items/user/id"
                       title: Id
                       type: integer
                       default: 0
                     name:
+                      description: The name of the user.
                       $id: "#root/videos/items/user/name"
                       title: Name
                       type: string
                       default: ""
                       pattern: ^.*$
                     url:
+                      description: The URL associated with the user.
                       $id: "#root/videos/items/user/url"
                       title: Url
                       type: string
@@ -511,23 +568,27 @@ definitions:
                     type: object
                     properties:
                       id:
+                        description: The unique identifier of the video file.
                         $id: "#root/videos/items/video_files/items/id"
                         title: Id
                         type: integer
                         default: 0
                       quality:
+                        description: The quality of the video file.
                         $id: "#root/videos/items/video_files/items/quality"
                         title: Quality
                         type: string
                         default: ""
                         pattern: ^.*$
                       file_type:
+                        description: The type of video file.
                         $id: "#root/videos/items/video_files/items/file_type"
                         title: File_type
                         type: string
                         default: ""
                         pattern: ^.*$
                       width:
+                        description: The width of the video file in pixels.
                         $id: "#root/videos/items/video_files/items/width"
                         title: Width
                         type:
@@ -536,6 +597,7 @@ definitions:
                           - integer
                         default: 0
                       height:
+                        description: The height of the video file in pixels.
                         $id: "#root/videos/items/video_files/items/height"
                         title: Height
                         type:
@@ -544,6 +606,7 @@ definitions:
                           - integer
                         default: 0
                       link:
+                        description: The URL link to the video file.
                         $id: "#root/videos/items/video_files/items/link"
                         title: Link
                         type: string
@@ -560,11 +623,13 @@ definitions:
                     type: object
                     properties:
                       id:
+                        description: The unique identifier of the video picture.
                         $id: "#root/videos/items/video_pictures/items/id"
                         title: Id
                         type: integer
                         default: 0
                       picture:
+                        description: The image representation of the video picture.
                         $id: "#root/videos/items/video_pictures/items/picture"
                         title: Picture
                         type:
@@ -573,6 +638,7 @@ definitions:
                         default: ""
                         pattern: ^.*$
                       nr:
+                        description: The number associated with the video picture.
                         $id: "#root/videos/items/video_pictures/items/nr"
                         title: Nr
                         type: integer
@@ -593,27 +659,32 @@ definitions:
         type: object
         properties:
           page:
+            description: The page number of the current results.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
+            description: Number of videos per page in the current response.
             $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
+            description: Total number of videos available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           url:
+            description: The URL for the current request.
             $id: "#root/url"
             title: Url
             type: string
             default: ""
             pattern: ^.*$
           videos:
+            description: An array of popular videos.
             $id: "#root/videos"
             title: Videos
             type: array
@@ -624,11 +695,13 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the video.
                   $id: "#root/videos/items/id"
                   title: Id
                   type: integer
                   default: 0
                 width:
+                  description: Width of the video in pixels.
                   $id: "#root/videos/items/width"
                   title: Width
                   type:
@@ -637,6 +710,7 @@ definitions:
                     - "null"
                   default: 0
                 height:
+                  description: Height of the video in pixels.
                   $id: "#root/videos/items/height"
                   title: Height
                   type:
@@ -645,45 +719,53 @@ definitions:
                     - "null"
                   default: 0
                 url:
+                  description: URL to access the video.
                   $id: "#root/videos/items/url"
                   title: Url
                   type: string
                   default: ""
                   pattern: ^.*$
                 image:
+                  description: URL of the video's thumbnail image.
                   $id: "#root/videos/items/image"
                   title: Image
                   type: string
                   default: ""
                   pattern: ^.*$
                 duration:
+                  description: Duration of the video in seconds.
                   $id: "#root/videos/items/duration"
                   title: Duration
                   type: integer
                   default: 0
                 user:
+                  description: Information about the user who uploaded the video.
                   $id: "#root/videos/items/user"
                   title: User
                   type: object
                   properties:
                     id:
+                      description: User's unique identifier.
                       $id: "#root/videos/items/user/id"
                       title: Id
                       type: integer
                       default: 0
                     name:
+                      description: User's name.
                       $id: "#root/videos/items/user/name"
                       title: Name
                       type: string
                       default: ""
                       pattern: ^.*$
                     url:
+                      description: URL of the user's profile.
                       $id: "#root/videos/items/user/url"
                       title: Url
                       type: string
                       default: ""
                       pattern: ^.*$
                 video_files:
+                  description: Array of video files available for the video.
                   $id: "#root/videos/items/video_files"
                   title: Video_files
                   type: array
@@ -694,23 +776,27 @@ definitions:
                     type: object
                     properties:
                       id:
+                        description: Unique identifier for the video file.
                         $id: "#root/videos/items/video_files/items/id"
                         title: Id
                         type: integer
                         default: 0
                       quality:
+                        description: Quality of the video file.
                         $id: "#root/videos/items/video_files/items/quality"
                         title: Quality
                         type: string
                         default: ""
                         pattern: ^.*$
                       file_type:
+                        description: Type of video file (e.g., mp4).
                         $id: "#root/videos/items/video_files/items/file_type"
                         title: File_type
                         type: string
                         default: ""
                         pattern: ^.*$
                       width:
+                        description: Width of the video in pixels.
                         $id: "#root/videos/items/video_files/items/width"
                         title: Width
                         type:
@@ -719,6 +805,7 @@ definitions:
                           - "null"
                         default: 0
                       height:
+                        description: Height of the video in pixels.
                         $id: "#root/videos/items/video_files/items/height"
                         title: Height
                         type:
@@ -727,12 +814,14 @@ definitions:
                           - "null"
                         default: 0
                       link:
+                        description: URL to access the video file.
                         $id: "#root/videos/items/video_files/items/link"
                         title: Link
                         type: string
                         default: ""
                         pattern: ^.*$
                 video_pictures:
+                  description: Array of pictures associated with the video.
                   $id: "#root/videos/items/video_pictures"
                   title: Video_pictures
                   type: array
@@ -743,17 +832,20 @@ definitions:
                     type: object
                     properties:
                       id:
+                        description: Unique identifier for the picture.
                         $id: "#root/videos/items/video_pictures/items/id"
                         title: Id
                         type: integer
                         default: 0
                       picture:
+                        description: URL of the picture.
                         $id: "#root/videos/items/video_pictures/items/picture"
                         title: Picture
                         type: string
                         default: ""
                         pattern: ^.*$
                       nr:
+                        description: Number associated with the picture.
                         $id: "#root/videos/items/video_pictures/items/nr"
                         title: Nr
                         type: integer
@@ -783,6 +875,7 @@ definitions:
               title: Items
               type: object
               properties:
+                description: Description of the collection.
                 id:
                   $id: "#root/collections/items/id"
                   title: Id
@@ -795,13 +888,6 @@ definitions:
                   type: string
                   default: ""
                   pattern: ^.*$
-                description:
-                  $id: "#root/collections/items/description"
-                  title: Description
-                  type:
-                    - string
-                    - "null"
-                  default:
                 private:
                   $id: "#root/collections/items/private"
                   title: Private
@@ -823,27 +909,32 @@ definitions:
                   type: integer
                   default: 0
           page:
+            description: Current page number.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           per_page:
+            description: Number of items per page.
             $id: "#root/per_page"
             title: Per_page
             type: integer
             default: 0
           total_results:
+            description: Total number of results available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           next_page:
+            description: Link to the next page of results.
             $id: "#root/next_page"
             title: Next_page
             type: string
             default: ""
             pattern: ^.*$
           prev_page:
+            description: Link to the previous page of results.
             $id: "#root/prev_page"
             title: Prev_page
             type: string

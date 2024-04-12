@@ -53,14 +53,17 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         properties:
           user_created_at:
+            description: The date and time when the user account was created.
             type:
               - "null"
               - string
           created_at:
+            description: The date and time when the user account was created.
             type:
               - "null"
               - string
           custom_attributes:
+            description: Custom attributes associated with the user.
             type:
               - "null"
               - array
@@ -68,34 +71,42 @@ definitions:
               type: object
               properties:
                 key:
+                  description: The key associated with a custom attribute.
                   type:
                     - "null"
                     - string
                 name:
+                  description: The name of the custom attribute.
                   type:
                     - "null"
                     - string
                 value:
+                  description: The value of the custom attribute.
                   type:
                     - "null"
                     - string
           dept:
+            description: The department to which the user belongs.
             type:
               - "null"
               - string
           email:
+            description: The email address of the user.
             type:
               - "null"
               - string
           employee_unique_id:
+            description: The unique identifier assigned to the employee.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the user.
             type:
               - "null"
               - string
           group_ids:
+            description: The IDs of the groups the user belongs to.
             type:
               - "null"
               - array
@@ -104,10 +115,12 @@ definitions:
                 - "null"
                 - string
           id:
+            description: The unique identifier for the user.
             type:
               - "null"
               - string
           im_group_ids:
+            description: The IDs of the IM groups the user belongs to.
             type:
               - "null"
               - array
@@ -116,54 +129,67 @@ definitions:
                 - "null"
                 - string
           language:
+            description: The preferred language of the user.
             type:
               - "null"
               - string
           last_client_version:
+            description: The last client version used by the user.
             type:
               - "null"
               - string
           last_login_time:
+            description: The date and time of the user's last login.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the user.
             type:
               - "null"
               - string
           phone_number:
+            description: The phone number associated with the user.
             type:
               - "null"
               - string
           plan_united_type:
+            description: The type of plan the user is currently subscribed to.
             type:
               - "null"
               - string
           pmi:
+            description: The Personal Meeting ID associated with the user.
             type:
               - "null"
               - number
           role_id:
+            description: The role ID defining the user's permissions.
             type:
               - "null"
               - string
           status:
+            description: The status of the user account.
             type:
               - "null"
               - string
           timezone:
+            description: The timezone set for the user.
             type:
               - "null"
               - string
           type:
+            description: The type of user account.
             type:
               - "null"
               - number
           verified:
+            description: Indicates whether the user's account is verified.
             type:
               - "null"
               - number
           display_name:
+            description: The name displayed for the user.
             type:
               - "null"
               - string
@@ -221,50 +247,62 @@ definitions:
         type: object
         properties:
           assistant_id:
+            description: The ID of the assistant assigned to the meeting
             type:
               - "null"
               - string
           host_email:
+            description: The email of the meeting host
             type:
               - "null"
               - string
           host_id:
+            description: The ID of the meeting host
             type:
               - "null"
               - string
           id:
+            description: The unique ID of the meeting
             type:
               - "null"
               - number
           uuid:
+            description: The universally unique identifier (UUID) of the meeting
             type:
               - "null"
               - string
           agenda:
+            description: The agenda or main purpose of the meeting
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the meeting was created
             type:
               - "null"
               - string
           duration:
+            description: The duration of the meeting in minutes
             type:
               - "null"
               - number
           encrypted_password:
+            description: The encrypted password for joining the meeting
             type:
               - "null"
               - string
           h323_password:
+            description: The H.323 password for joining the meeting
             type:
               - "null"
               - string
           join_url:
+            description: The URL for joining the meeting
             type:
               - "null"
               - string
           chat_join_url:
+            description: The URL for joining the meeting chat
             type:
               - "null"
               - string
@@ -278,34 +316,42 @@ definitions:
                 - object
               properties:
                 duration:
+                  description: The duration of the meeting occurrence in minutes
                   type:
                     - "null"
                     - number
                 occurrence_id:
+                  description: The ID of the meeting occurrence
                   type:
                     - "null"
                     - string
                 start_time:
+                  description: The start time of the meeting occurrence
                   type:
                     - "null"
                     - string
                 status:
+                  description: The status of the meeting occurrence
                   type:
                     - "null"
                     - string
           password:
+            description: The password for joining the meeting
             type:
               - "null"
               - string
           pmi:
+            description: The Personal Meeting ID of the host
             type:
               - "null"
               - string
           pre_schedule:
+            description: Indicates if the meeting was pre-scheduled
             type:
               - "null"
               - boolean
           pstn_password:
+            description: The password for joining by phone (PSTN) to the meeting
             type:
               - "null"
               - string
@@ -315,34 +361,42 @@ definitions:
               - object
             properties:
               end_date_time:
+                description: The end date and time for recurring meetings
                 type:
                   - "null"
                   - string
               end_times:
+                description: The number of times the recurring meeting ends
                 type:
                   - "null"
                   - number
               monthly_day:
+                description: The day in the month for monthly recurring meetings
                 type:
                   - "null"
                   - number
               monthly_week:
+                description: The week number in the month for monthly recurring meetings
                 type:
                   - "null"
                   - number
               monthly_week_day:
+                description: The day of the week for monthly recurring meetings
                 type:
                   - "null"
                   - number
               repeat_interval:
+                description: The interval between recurring meetings
                 type:
                   - "null"
                   - number
               type:
+                description: The type of recurrence for the meeting
                 type:
                   - "null"
                   - number
               weekly_days:
+                description: The days of the week for weekly recurring meetings
                 type:
                   - "null"
                   - string
@@ -352,22 +406,29 @@ definitions:
               - object
             properties:
               allow_multiple_devices:
+                description: Allows participants to join from multiple devices
                 type:
                   - "null"
                   - boolean
               alternative_hosts:
+                description: List of alternative hosts for the meeting
                 type:
                   - "null"
                   - string
               alternative_hosts_email_notification:
+                description:
+                  Notification setting for alternative hosts joining the
+                  meeting
                 type:
                   - "null"
                   - boolean
               alternative_host_update_polls:
+                description: Enables alternative hosts to update polls in the meeting
                 type:
                   - "null"
                   - boolean
               approval_type:
+                description: The type of approval required for joining the meeting
                 type:
                   - "null"
                   - number
@@ -377,6 +438,9 @@ definitions:
                   - object
                 properties:
                   approved_list:
+                    description:
+                      List of approved countries or regions to join the
+                      meeting
                     type:
                       - "null"
                       - array
@@ -385,6 +449,7 @@ definitions:
                         - "null"
                         - string
                   denied_list:
+                    description: List of denied countries or regions to join the meeting
                     type:
                       - "null"
                       - array
@@ -393,26 +458,34 @@ definitions:
                         - "null"
                         - string
                   enable:
+                    description: Enables country/region approval for joining the meeting
                     type:
                       - "null"
                       - boolean
                   method:
+                    description:
+                      The approval method for countries or regions to join
+                      the meeting
                     type:
                       - "null"
                       - string
               audio:
+                description: Audio settings for the meeting
                 type:
                   - "null"
                   - string
               audio_conference_info:
+                description: Information about audio conference options for the meeting
                 type:
                   - "null"
                   - string
               authentication_domains:
+                description: Domains that require authentication to join the meeting
                 type:
                   - "null"
                   - string
               authentication_exception:
+                description: Exceptions for participants who can join without authentication
                 type:
                   - "null"
                   - array
@@ -434,23 +507,28 @@ definitions:
                         - "null"
                         - string
               authentication_name:
+                description: Name required for authentication to join the meeting
                 type:
                   - "null"
                   - string
               authentication_option:
+                description: Options for authentication to join the meeting
                 type:
                   - "null"
                   - string
               auto_recording:
+                description: Automatically record the meeting
                 type:
                   - "null"
                   - string
               breakout_room:
+                description: Settings for breakout rooms in the meeting
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Enables breakout rooms feature
                     type:
                       - "null"
                       - boolean
@@ -476,26 +554,32 @@ definitions:
                               - "null"
                               - string
               calendar_type:
+                description: The type of calendar used for scheduling the meeting
                 type:
                   - "null"
                   - number
               close_registration:
+                description: Closes meeting registration at a certain time
                 type:
                   - "null"
                   - boolean
               cn_meeting:
+                description: Indicates if the meeting is for China-based participants
                 type:
                   - "null"
                   - boolean
               contact_email:
+                description: Email of the meeting contact person
                 type:
                   - "null"
                   - string
               contact_name:
+                description: Name of the meeting contact person
                 type:
                   - "null"
                   - string
               custom_keys:
+                description: Custom keys and values set for the meeting
                 type:
                   - "null"
                   - array
@@ -513,38 +597,47 @@ definitions:
                         - "null"
                         - string
               email_notification:
+                description: Notification settings for meeting-related emails
                 type:
                   - "null"
                   - boolean
               device_testing:
+                description: Allows testing devices before joining the meeting
                 type:
                   - "null"
                   - boolean
               email_in_attendee_report:
+                description: Includes email addresses in the attendee report
                 type:
                   - "null"
                   - boolean
               enable_dedicated_group_chat:
+                description: Enables dedicated group chat for the meeting
                 type:
                   - "null"
                   - boolean
               encryption_type:
+                description: The type of encryption used for the meeting
                 type:
                   - "null"
                   - string
               enforce_login:
+                description: Enforces login to join the meeting
                 type:
                   - "null"
                   - boolean
               enforce_login_domains:
+                description: Domains required for login enforcement to join the meeting
                 type:
                   - "null"
                   - string
               focus_mode:
+                description: Activates focus mode during the meeting
                 type:
                   - "null"
                   - boolean
               global_dial_in_countries:
+                description: List of countries with global dial-in access
                 type:
                   - "null"
                   - array
@@ -553,6 +646,7 @@ definitions:
                     - "null"
                     - string
               global_dial_in_numbers:
+                description: Global dial-in numbers for the meeting
                 type:
                   - "null"
                   - array
@@ -582,27 +676,33 @@ definitions:
                         - "null"
                         - string
               host_video:
+                description: Host's video settings for the meeting
                 type:
                   - "null"
                   - boolean
               in_meeting:
+                description: Settings for in-meeting experience
                 type:
                   - "null"
                   - boolean
               jbh_time:
+                description: The time for Join Before Host feature to be active
                 type:
                   - "null"
                   - number
               join_before_host:
+                description: Allows participants to join before the host
                 type:
                   - "null"
                   - boolean
               language_interpretation:
+                description: Settings for language interpretation during the meeting
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Enables language interpretation feature
                     type:
                       - "null"
                       - boolean
@@ -624,22 +724,27 @@ definitions:
                             - "null"
                             - string
               meeting_authentication:
+                description: Meeting authentication settings
                 type:
                   - "null"
                   - boolean
               mute_upon_entry:
+                description: Automatically mute participants upon entry
                 type:
                   - "null"
                   - boolean
               participant_video:
+                description: Participant video settings for the meeting
                 type:
                   - "null"
                   - boolean
               private_meeting:
+                description: Indicates if the meeting is private
                 type:
                   - "null"
                   - boolean
               resources:
+                description: Resources available for the meeting
                 type:
                   - "null"
                   - array
@@ -649,118 +754,148 @@ definitions:
                     - object
                   properties:
                     resource_type:
+                      description: The type of the resource
                       type:
                         - "null"
                         - string
                     resource_id:
+                      description: The ID of the resource
                       type:
                         - "null"
                         - string
                     permission_level:
+                      description: The permission level for accessing resources
                       type:
                         - "null"
                         - string
               registrants_confirmation_email:
+                description: Email sent to registrants confirming meeting registration
                 type:
                   - "null"
                   - boolean
               registrants_email_notification:
+                description: Notification settings for registrants joining the meeting
                 type:
                   - "null"
                   - boolean
               registration_type:
+                description: The type of registration required for joining the meeting
                 type:
                   - "null"
                   - number
               request_permission_to_unmute_participants:
+                description: Requests permission to unmute participants
                 type:
                   - "null"
                   - boolean
               show_join_info:
+                description: Shows info for joining the meeting
                 type:
                   - "null"
                   - boolean
               show_share_button:
+                description: Displays the share button during the meeting
                 type:
                   - "null"
                   - boolean
               sign_language_interpretation:
+                description:
+                  Settings for sign language interpretation during the
+                  meeting
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   enable:
+                    description: Enables sign language interpretation feature
                     type:
                       - "null"
                       - boolean
               use_pmi:
+                description: Whether to use Personal Meeting ID for the meeting
                 type:
                   - "null"
                   - boolean
               waiting_room:
+                description: Enables waiting room for participants before joining
                 type:
                   - "null"
                   - boolean
               waiting_room_options:
+                description: Options for waiting room settings
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Enables waiting room feature
                     type:
                       - "null"
                       - boolean
                   admit_type:
+                    description: The type of admission to the waiting room
                     type:
                       - "null"
                       - number
                   auto_admit:
+                    description: Auto admits participants from the waiting room
                     type:
                       - "null"
                       - number
                   internal_user_auto_admit:
+                    description: Automatically admits internal users to the meeting
                     type:
                       - "null"
                       - number
               watermark:
+                description: Adds a watermark to meeting recordings
                 type:
                   - "null"
                   - boolean
               host_save_video_order:
+                description: Specifies the order in which host videos are saved
                 type:
                   - "null"
                   - boolean
               internal_meeting:
+                description: Indicates if the meeting is internal
                 type:
                   - "null"
                   - boolean
               continuous_meeting_chat:
+                description: Settings for continuous meeting chat
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Enables continuous meeting chat feature
                     type:
                       - "null"
                       - boolean
                   auto_add_invited_external_users:
+                    description: Automatically add invited external users to the chat
                     type:
                       - "null"
                       - boolean
                   channel_id:
+                    description: The channel ID for the continuous meeting chat
                     type:
                       - "null"
                       - string
               participant_focused_meeting:
+                description: Settings for participant-focused meeting experience
                 type:
                   - "null"
                   - boolean
               push_change_to_calendar:
+                description: Pushes changes made to the meeting to the calendar
                 type:
                   - "null"
                   - boolean
           registration_url:
+            description: The URL for meeting registration
             type:
               - "null"
               - string
@@ -774,38 +909,47 @@ definitions:
                 - object
               properties:
                 resource_type:
+                  description: The type of the resource
                   type:
                     - "null"
                     - string
                 resource_id:
+                  description: The ID of the resource
                   type:
                     - "null"
                     - string
                 permission_level:
+                  description: The permission level for accessing resources
                   type:
                     - "null"
                     - string
           start_time:
+            description: The start time of the meeting
             type:
               - "null"
               - string
           start_url:
+            description: The URL for starting the meeting
             type:
               - "null"
               - string
           status:
+            description: The status of the meeting
             type:
               - "null"
               - string
           timezone:
+            description: The timezone of the meeting
             type:
               - "null"
               - string
           topic:
+            description: The topic or title of the meeting
             type:
               - "null"
               - string
           tracking_fields:
+            description: Tracking fields associated with the meeting
             type:
               - "null"
               - array
@@ -815,18 +959,22 @@ definitions:
                 - object
               properties:
                 field:
+                  description: Tracking field label
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value of the tracking field
                   type:
                     - "null"
                     - string
                 visible:
+                  description: Visibility settings for the tracking field
                   type:
                     - "null"
                     - boolean
           type:
+            description: The type of meeting
             type:
               - "null"
               - number
@@ -874,30 +1022,41 @@ definitions:
         type: object
         properties:
           meeting_id:
+            description:
+              The unique identifier of the meeting the registrant registered
+              for.
             type:
               - "null"
               - number
           id:
+            description: The unique identifier of the registrant.
             type:
               - "null"
               - string
           address:
+            description: The registrant's physical mailing address.
             type:
               - "null"
               - string
           city:
+            description: The registrant's city.
             type:
               - "null"
               - string
           comments:
+            description: Any additional comments or notes provided by the registrant.
             type:
               - "null"
               - string
           country:
+            description: The registrant's country.
             type:
               - "null"
               - string
           custom_questions:
+            description:
+              An array of custom questions and their responses submitted
+              by the registrant.
             type:
               - "null"
               - array
@@ -907,70 +1066,91 @@ definitions:
                 - object
               properties:
                 title:
+                  description: The title or description of the custom question.
                   type:
                     - "null"
                     - string
                 value:
+                  description: The registrant's response to the custom question.
                   type:
                     - "null"
                     - string
           email:
+            description: The registrant's email address.
             type:
               - "null"
               - string
           first_name:
+            description: The registrant's first name.
             type:
               - "null"
               - string
           industry:
+            description: The industry or field in which the registrant works.
             type:
               - "null"
               - string
           job_title:
+            description: The job title of the registrant.
             type:
               - "null"
               - string
           last_name:
+            description: The registrant's last name.
             type:
               - "null"
               - string
           no_of_employees:
+            description: The number of employees in the registrant's organization.
             type:
               - "null"
               - string
           org:
+            description: The registrant's organization or company.
             type:
               - "null"
               - string
           phone:
+            description: The registrant's phone number.
             type:
               - "null"
               - string
           purchasing_time_frame:
+            description:
+              The time frame within which the registrant plans to make
+              a purchase.
             type:
               - "null"
               - string
           role_in_purchase_process:
+            description: The role of the registrant in the purchasing process.
             type:
               - "null"
               - string
           state:
+            description: The registrant's state or region.
             type:
               - "null"
               - string
           status:
+            description:
+              The status of the registrant's registration (e.g., approved,
+              pending, cancelled).
             type:
               - "null"
               - string
           zip:
+            description: The registrant's zip or postal code.
             type:
               - "null"
               - string
           create_time:
+            description: The timestamp when the registrant was created.
             type:
               - "null"
               - string
           join_url:
+            description: The URL link to join the meeting associated with the registrant.
             type:
               - "null"
               - string
@@ -1018,22 +1198,29 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the meeting poll.
             type:
               - "null"
               - string
           meeting_id:
+            description: Identifier of the meeting associated with the poll.
             type:
               - "null"
               - number
           status:
+            description: Status of the meeting poll (e.g., open, closed).
             type:
               - "null"
               - string
           anonymous:
+            description:
+              Indicates if the poll responses are displayed anonymously
+              or not.
             type:
               - "null"
               - boolean
           poll_type:
+            description: Type of the poll (e.g., multiple choice, rating).
             type:
               - "null"
               - number
@@ -1047,14 +1234,17 @@ definitions:
                 - object
               properties:
                 answer_max_character:
+                  description: Maximum character length for answers.
                   type:
                     - "null"
                     - number
                 answer_min_character:
+                  description: Minimum character length for answers.
                   type:
                     - "null"
                     - number
                 answer_required:
+                  description: Indicates if answering the question is required.
                   type:
                     - "null"
                     - boolean
@@ -1063,14 +1253,17 @@ definitions:
                     - "null"
                     - array
                   items:
+                    description: Possible answer options for the question.
                     type:
                       - "null"
                       - string
                 case_sensitive:
+                  description: Specifies if answers are case-sensitive.
                   type:
                     - "null"
                     - boolean
                 name:
+                  description: Name or title of the question.
                   type:
                     - "null"
                     - string
@@ -1084,6 +1277,7 @@ definitions:
                       - object
                     properties:
                       prompt_question:
+                        description: Question or statement to prompt an answer.
                         type:
                           - "null"
                           - string
@@ -1092,22 +1286,27 @@ definitions:
                           - "null"
                           - array
                         items:
+                          description: Correct answers for prompt questions.
                           type:
                             - "null"
                             - string
                 rating_max_label:
+                  description: Label denoting the maximum rating value.
                   type:
                     - "null"
                     - string
                 rating_max_value:
+                  description: Highest value in the rating scale.
                   type:
                     - "null"
                     - number
                 rating_min_label:
+                  description: Label denoting the minimum rating value.
                   type:
                     - "null"
                     - string
                 rating_min_value:
+                  description: Lowest value in the rating scale.
                   type:
                     - "null"
                     - number
@@ -1116,18 +1315,22 @@ definitions:
                     - "null"
                     - array
                   items:
+                    description: Correct answers for multiple-choice questions.
                     type:
                       - "null"
                       - string
                 show_as_dropdown:
+                  description: Determines the presentation of answer options.
                   type:
                     - "null"
                     - boolean
                 type:
+                  description: Type of question (e.g., multiple choice, text, rating).
                   type:
                     - "null"
                     - string
           title:
+            description: Title of the poll or the question set.
             type:
               - "null"
               - string
@@ -1175,30 +1378,41 @@ definitions:
         type: object
         properties:
           meeting_uuid:
+            description:
+              The universally unique identifier of the meeting where the
+              poll was conducted.
             type:
               - "null"
               - string
           meeting_id:
+            description: The unique identifier of the meeting where the poll was conducted.
             type:
               - "null"
               - integer
           email:
+            description: The email address of the participant who answered the poll.
             type:
               - "null"
               - string
           name:
+            description: The name of the poll for which the results are being fetched.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the participant who answered the poll.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the participant who answered the poll.
             type:
               - "null"
               - string
           question_details:
+            description:
+              Details of each question in the poll along with the participant's
+              answers.
             type:
               - "null"
               - array
@@ -1208,18 +1422,26 @@ definitions:
                 - object
               properties:
                 answer:
+                  description: The answer chosen by the participant for this question.
                   type:
                     - "null"
                     - string
                 date_time:
+                  description:
+                    The date and time when the participant answered this
+                    question.
                   type:
                     - "null"
                     - string
                 polling_id:
+                  description:
+                    The unique identifier of the poll question that the
+                    participant answered.
                   type:
                     - "null"
                     - string
                 question:
+                  description: The actual question that the participant answered.
                   type:
                     - "null"
                     - string
@@ -1266,6 +1488,9 @@ definitions:
         type: object
         properties:
           meeting_id:
+            description:
+              The unique identifier for the meeting associated with the
+              registration questions.
             type:
               - "null"
               - integer
@@ -1279,6 +1504,7 @@ definitions:
                 - object
               properties:
                 answers:
+                  description: The array of answers provided for the custom question.
                   type:
                     - "null"
                     - array
@@ -1287,14 +1513,21 @@ definitions:
                       - "null"
                       - string
                 required:
+                  description:
+                    Indicates if the custom question is required to be
+                    answered.
                   type:
                     - "null"
                     - boolean
                 title:
+                  description: The title of the custom question.
                   type:
                     - "null"
                     - string
                 type:
+                  description:
+                    The type of the custom question (e.g., text, multiple
+                    choice).
                   type:
                     - "null"
                     - string
@@ -1308,10 +1541,14 @@ definitions:
                 - object
               properties:
                 field_name:
+                  description: The name of the registration question field.
                   type:
                     - "null"
                     - string
                 required:
+                  description:
+                    Indicates if the registration question is required
+                    to be answered.
                   type:
                     - "null"
                     - boolean
@@ -1386,38 +1623,47 @@ definitions:
         type: object
         properties:
           host_email:
+            description: The email address of the host of the webinar.
             type:
               - "null"
               - string
           host_id:
+            description: The unique identifier of the host of the webinar.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the webinar.
             type:
               - "null"
               - number
           uuid:
+            description: The universally unique identifier of the webinar.
             type:
               - "null"
               - string
           agenda:
+            description: The topic or agenda of the webinar.
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the webinar was created.
             type:
               - "null"
               - string
           duration:
+            description: The duration of the webinar in minutes.
             type:
               - "null"
               - number
           join_url:
+            description: The URL to join the webinar.
             type:
               - "null"
               - string
           occurrences:
+            description: List of occurrences for the webinar.
             type:
               - "null"
               - array
@@ -1427,159 +1673,197 @@ definitions:
                 - object
               properties:
                 duration:
+                  description: The duration of a specific occurrence.
                   type:
                     - "null"
                     - number
                 occurrence_id:
+                  description: The unique identifier of the occurrence.
                   type:
                     - "null"
                     - string
                 start_time:
+                  description: The start time of the occurrence.
                   type:
                     - "null"
                     - string
                 status:
+                  description: The status of the occurrence.
                   type:
                     - "null"
                     - string
           password:
+            description: The password required to join the webinar.
             type:
               - "null"
               - string
           recurrence:
+            description: Details about the recurrence settings of the webinar.
             type:
               - "null"
               - object
             properties:
               end_date_time:
+                description: The end date and time of the recurrence.
                 type:
                   - "null"
                   - string
               end_times:
+                description: The number of times the recurrence ends.
                 type:
                   - "null"
                   - number
               monthly_day:
+                description: The day of the month for monthly recurrence.
                 type:
                   - "null"
                   - number
               monthly_week:
+                description: The week of the month for monthly recurrence.
                 type:
                   - "null"
                   - number
               monthly_week_day:
+                description: The day of the week for monthly recurrence.
                 type:
                   - "null"
                   - number
               repeat_interval:
+                description: The interval at which the recurrence repeats.
                 type:
                   - "null"
                   - number
               type:
+                description: The type of recurrence (e.g., daily, weekly, monthly).
                 type:
                   - "null"
                   - number
               weekly_days:
+                description: The days of the week for weekly recurrence.
                 type:
                   - "null"
                   - string
           settings:
+            description: Settings configuration for the webinar.
             type:
               - "null"
               - object
             properties:
               allow_multiple_devices:
+                description: Indicates if joining from multiple devices is allowed.
                 type:
                   - "null"
                   - boolean
               alternative_hosts:
+                description: List of alternative hosts for the webinar.
                 type:
                   - "null"
                   - string
               alternative_host_update_polls:
+                description: Indicates if alternative host can update polls.
                 type:
                   - "null"
                   - boolean
               approval_type:
+                description: The type of approval required to join the webinar.
                 type:
                   - "null"
                   - number
               attendees_and_panelists_reminder_email_notification:
+                description: Notification settings for attendees and panelists reminders.
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Indicates if notifications are enabled.
                     type:
                       - "null"
                       - boolean
                   type:
+                    description: The type of notification (e.g., email, SMS).
                     type:
                       - "null"
                       - number
               audio:
+                description: Audio settings for the webinar.
                 type:
                   - "null"
                   - string
               authentication_domains:
+                description: Domains allowed for authentication.
                 type:
                   - "null"
                   - string
               authentication_name:
+                description: Name for authentication.
                 type:
                   - "null"
                   - string
               authentication_option:
+                description: Authentication options for joining the webinar.
                 type:
                   - "null"
                   - string
               auto_recording:
+                description: Indicates if automatic recording is enabled.
                 type:
                   - "null"
                   - string
               close_registration:
+                description: Indicates if registration is closed.
                 type:
                   - "null"
                   - boolean
               contact_email:
+                description: Email contact for the webinar.
                 type:
                   - "null"
                   - string
               contact_name:
+                description: Name of the contact person for the webinar.
                 type:
                   - "null"
                   - string
               email_language:
+                description: The language used for email notifications.
                 type:
                   - "null"
                   - string
               follow_up_absentees_email_notification:
+                description: Notification settings for follow up emails to absentees.
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Indicates if the feature is enabled.
                     type:
                       - "null"
                       - boolean
                   type:
+                    description: The type of notification (e.g., email, SMS).
                     type:
                       - "null"
                       - number
               follow_up_attendees_email_notification:
+                description: Notification settings for follow up emails to attendees.
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Indicates if the feature is enabled.
                     type:
                       - "null"
                       - boolean
                   type:
+                    description: The type of notification (e.g., email, SMS).
                     type:
                       - "null"
                       - number
               global_dial_in_countries:
+                description: List of countries allowed for global dial-in.
                 type:
                   - "null"
                   - array
@@ -1588,27 +1872,33 @@ definitions:
                     - "null"
                     - string
               hd_video:
+                description: Indicates if HD video is enabled.
                 type:
                   - "null"
                   - boolean
               hd_video_for_attendees:
+                description: Indicates if HD video is enabled for attendees.
                 type:
                   - "null"
                   - boolean
               host_video:
+                description: Indicates if host video is enabled.
                 type:
                   - "null"
                   - boolean
               language_interpretation:
+                description: Configuration for language interpretation.
                 type:
                   - "null"
                   - object
                 properties:
                   enable:
+                    description: Indicates if language interpretation is enabled.
                     type:
                       - "null"
                       - boolean
                   interpreters:
+                    description: List of interpreters.
                     type:
                       - "null"
                       - array
@@ -1618,135 +1908,168 @@ definitions:
                         - object
                       properties:
                         email:
+                          description: Email of the interpreter.
                           type:
                             - "null"
                             - string
                         languages:
+                          description: Languages the interpreter is proficient in.
                           type:
                             - "null"
                             - string
               panelist_authentication:
+                description: Authentication settings for panelists.
                 type:
                   - "null"
                   - boolean
               meeting_authentication:
+                description: Authentication settings for the meeting.
                 type:
                   - "null"
                   - boolean
               add_watermark:
+                description: Indicates if watermarking is enabled.
                 type:
                   - "null"
                   - boolean
               add_audio_watermark:
+                description: Indicates if audio watermarking is enabled.
                 type:
                   - "null"
                   - boolean
               notify_registrants:
+                description: Indicates if registrants are notified.
                 type:
                   - "null"
                   - boolean
               on_demand:
+                description: Indicates if the webinar is available on demand.
                 type:
                   - "null"
                   - boolean
               panelists_invitation_email_notification:
+                description: Notification settings for panelists invitations.
                 type:
                   - "null"
                   - boolean
               panelists_video:
+                description: Indicates if panelists video is enabled.
                 type:
                   - "null"
                   - boolean
               post_webinar_survey:
+                description: Configuration for post-webinar survey.
                 type:
                   - "null"
                   - boolean
               practice_session:
+                description: Indicates if practice session is enabled.
                 type:
                   - "null"
                   - boolean
               question_and_answer:
+                description: Settings for question and answer session.
                 type:
                   - "null"
                   - object
                 properties:
                   allow_anonymous_questions:
+                    description: Indicates if anonymous questions are allowed.
                     type:
                       - "null"
                       - boolean
                   answer_questions:
+                    description: Indicates if questions can be answered.
                     type:
                       - "null"
                       - string
                   attendees_can_comment:
+                    description: Indicates if attendees can comment.
                     type:
                       - "null"
                       - boolean
                   attendees_can_upvote:
+                    description: Indicates if attendees can upvote questions.
                     type:
                       - "null"
                       - boolean
                   allow_auto_reply:
+                    description: Indicates if auto reply is allowed.
                     type:
                       - "null"
                       - boolean
                   auto_reply_text:
+                    description: Text for auto-reply.
                     type:
                       - "null"
                       - string
                   enable:
+                    description: Indicates if question and answer session is enabled.
                     type:
                       - "null"
                       - boolean
               registrants_confirmation_email:
+                description: Configuration for registrants confirmation email.
                 type:
                   - "null"
                   - boolean
               registrants_email_notification:
+                description: Notification settings for registrants.
                 type:
                   - "null"
                   - boolean
               registrants_restrict_number:
+                description: The maximum number of registrants allowed.
                 type:
                   - "null"
                   - number
               registration_type:
+                description: The type of registration (e.g., automatic, manual).
                 type:
                   - "null"
                   - number
               send_1080p_video_to_attendees:
+                description: Indicates if 1080p video is sent to attendees.
                 type:
                   - "null"
                   - boolean
               show_share_button:
+                description: Indicates if share button is displayed.
                 type:
                   - "null"
                   - boolean
               survey_url:
+                description: The URL for the survey related to the webinar.
                 type:
                   - "null"
                   - string
               enable_session_branding:
+                description: Indicates if session branding is enabled.
                 type:
                   - "null"
                   - boolean
           start_time:
+            description: The start time of the webinar.
             type:
               - "null"
               - string
           start_url:
+            description: The URL to start the webinar.
             type:
               - "null"
               - string
           timezone:
+            description: The timezone setting for the webinar.
             type:
               - "null"
               - string
           topic:
+            description: The topic or title of the webinar.
             type:
               - "null"
               - string
           tracking_fields:
+            description: List of tracking fields associated with the webinar.
             type:
               - "null"
               - array
@@ -1756,22 +2079,27 @@ definitions:
                 - object
               properties:
                 field:
+                  description: The name of the tracking field.
                   type:
                     - "null"
                     - string
                 value:
+                  description: The value of the tracking field.
                   type:
                     - "null"
                     - string
           type:
+            description: The type of the webinar.
             type:
               - "null"
               - number
           is_simulive:
+            description: Indicates if the webinar is a simulated live event.
             type:
               - "null"
               - boolean
           record_file_id:
+            description: The unique identifier of the recorded webinar file.
             type:
               - "null"
               - string
@@ -1818,42 +2146,56 @@ definitions:
         type: object
         properties:
           webinar_id:
+            description:
+              The unique identifier of the webinar that the panelist is
+              associated with.
             type:
               - "null"
               - number
           id:
+            description: The unique identifier of the webinar panelist.
             type:
               - "null"
               - string
           email:
+            description: The email address of the webinar panelist.
             type:
               - "null"
               - string
           name:
+            description: The name of the webinar panelist.
             type:
               - "null"
               - string
           join_url:
+            description: The URL that the panelist can use to join the webinar.
             type:
               - "null"
               - string
           virtual_background_id:
+            description: The identifier of the virtual background chosen by the panelist.
             type:
               - "null"
               - string
           name_tag_id:
+            description:
+              The unique identifier of the name tag associated with the
+              panelist.
             type:
               - "null"
               - string
           name_tag_name:
+            description: The name of the name tag associated with the panelist.
             type:
               - "null"
               - string
           name_tag_pronouns:
+            description: The pronouns associated with the name tag of the panelist.
             type:
               - "null"
               - string
           name_tag_description:
+            description: Description associated with the name tag of the panelist.
             type:
               - "null"
               - string
@@ -1900,30 +2242,39 @@ definitions:
         type: object
         properties:
           webinar_id:
+            description:
+              The unique identifier of the webinar that the registrant
+              has registered for.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the registrant.
             type:
               - "null"
               - string
           address:
+            description: The registrant's street address.
             type:
               - "null"
               - string
           city:
+            description: The city where the registrant is located.
             type:
               - "null"
               - string
           comments:
+            description: Any additional comments provided by the registrant.
             type:
               - "null"
               - string
           country:
+            description: The country where the registrant is located.
             type:
               - "null"
               - string
           custom_questions:
+            description: Custom questions and responses submitted by the registrant.
             type:
               - "null"
               - array
@@ -1933,70 +2284,87 @@ definitions:
                 - object
               properties:
                 title:
+                  description: The title of the custom question.
                   type:
                     - "null"
                     - string
                 value:
+                  description: The response provided by the registrant.
                   type:
                     - "null"
                     - string
           email:
+            description: The email address of the registrant.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the registrant.
             type:
               - "null"
               - string
           industry:
+            description: The industry the registrant is associated with.
             type:
               - "null"
               - string
           job_title:
+            description: The job title of the registrant.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the registrant.
             type:
               - "null"
               - string
           no_of_employees:
+            description: The number of employees in the registrant's organization.
             type:
               - "null"
               - string
           org:
+            description: The organization name of the registrant.
             type:
               - "null"
               - string
           phone:
+            description: The phone number of the registrant.
             type:
               - "null"
               - string
           purchasing_time_frame:
+            description: The timeframe in which the registrant plans to make a purchase.
             type:
               - "null"
               - string
           role_in_purchase_process:
+            description: The registrant's role in the purchase decision-making process.
             type:
               - "null"
               - string
           state:
+            description: The state or region where the registrant is located.
             type:
               - "null"
               - string
           status:
+            description: The status of the registrant's registration for the webinar.
             type:
               - "null"
               - string
           zip:
+            description: The ZIP or postal code of the registrant's location.
             type:
               - "null"
               - string
           create_time:
+            description: The timestamp when the registrant record was created.
             type:
               - "null"
               - string
           join_url:
+            description: The URL for the registrant to join the webinar.
             type:
               - "null"
               - string
@@ -2044,26 +2412,34 @@ definitions:
         type: object
         properties:
           webinar_uuid:
+            description:
+              The unique identifier for the webinar that the attendee is
+              associated with
             type:
               - "null"
               - string
           id:
+            description: A unique identifier for the attendee
             type:
               - "null"
               - string
           address:
+            description: The attendee's physical address
             type:
               - "null"
               - string
           city:
+            description: The city where the attendee is located
             type:
               - "null"
               - string
           comments:
+            description: Any additional comments provided by the attendee
             type:
               - "null"
               - string
           country:
+            description: The country where the attendee is located
             type:
               - "null"
               - string
@@ -2077,70 +2453,91 @@ definitions:
                 - object
               properties:
                 title:
+                  description: The title of the custom question answered by the attendee
                   type:
                     - "null"
                     - string
                 value:
+                  description:
+                    The answer provided by the attendee for the custom
+                    question
                   type:
                     - "null"
                     - string
           email:
+            description: The email address of the attendee
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the attendee
             type:
               - "null"
               - string
           industry:
+            description: The industry the attendee is associated with
             type:
               - "null"
               - string
           job_title:
+            description: The job title of the attendee
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the attendee
             type:
               - "null"
               - string
           no_of_employees:
+            description: The number of employees in the attendee's organization
             type:
               - "null"
               - string
           org:
+            description: The organization the attendee belongs to
             type:
               - "null"
               - string
           phone:
+            description: The phone number of the attendee
             type:
               - "null"
               - string
           purchasing_time_frame:
+            description: The timeframe within which the attendee plans to make a purchase
             type:
               - "null"
               - string
           role_in_purchase_process:
+            description:
+              The role of the attendee in the purchase decision-making
+              process
             type:
               - "null"
               - string
           state:
+            description: The state or region where the attendee is located
             type:
               - "null"
               - string
           status:
+            description: The current status of the attendee
             type:
               - "null"
               - string
           zip:
+            description: The ZIP or postal code of the attendee's location
             type:
               - "null"
               - string
           create_time:
+            description: The timestamp when the attendee's record was created
             type:
               - "null"
               - string
           join_url:
+            description: The URL for the attendee to join the webinar
             type:
               - "null"
               - string
@@ -2187,22 +2584,27 @@ definitions:
         type: object
         properties:
           webinar_id:
+            description: Unique identifier of the webinar the poll is associated with.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the webinar poll.
             type:
               - "null"
               - string
           status:
+            description: Status of the webinar poll (e.g., open, closed).
             type:
               - "null"
               - string
           anonymous:
+            description: Indicates if the poll responses are anonymous or not.
             type:
               - "null"
               - boolean
           poll_type:
+            description: Type of the poll (e.g., multiple choice, rating).
             type:
               - "null"
               - number
@@ -2216,18 +2618,22 @@ definitions:
                 - object
               properties:
                 answer_max_character:
+                  description: Maximum number of characters allowed for an answer.
                   type:
                     - "null"
                     - number
                 answer_min_character:
+                  description: Minimum number of characters required for an answer.
                   type:
                     - "null"
                     - number
                 answer_required:
+                  description: Indicates if an answer to the question is required.
                   type:
                     - "null"
                     - boolean
                 answers:
+                  description: List of possible answers for the question.
                   type:
                     - "null"
                     - array
@@ -2236,14 +2642,17 @@ definitions:
                       - "null"
                       - string
                 case_sensitive:
+                  description: Indicates if the answer is case-sensitive.
                   type:
                     - "null"
                     - boolean
                 name:
+                  description: Name or title of the question.
                   type:
                     - "null"
                     - string
                 prompts:
+                  description: List of prompts associated with the question.
                   type:
                     - "null"
                     - array
@@ -2253,10 +2662,12 @@ definitions:
                       - object
                     properties:
                       prompt_question:
+                        description: The prompt question related to the main question.
                         type:
                           - "null"
                           - string
                       prompt_right_answers:
+                        description: List of right answers for the prompt question.
                         type:
                           - "null"
                           - array
@@ -2265,22 +2676,27 @@ definitions:
                             - "null"
                             - string
                 rating_max_label:
+                  description: Label for the maximum rating value.
                   type:
                     - "null"
                     - string
                 rating_max_value:
+                  description: Maximum value for the rating scale.
                   type:
                     - "null"
                     - number
                 rating_min_label:
+                  description: Label for the minimum rating value.
                   type:
                     - "null"
                     - string
                 rating_min_value:
+                  description: Minimum value for the rating scale.
                   type:
                     - "null"
                     - number
                 right_answers:
+                  description: List of correct answers for the question.
                   type:
                     - "null"
                     - array
@@ -2289,14 +2705,21 @@ definitions:
                       - "null"
                       - string
                 show_as_dropdown:
+                  description:
+                    Indicates if the answer choices should be shown as
+                    a dropdown menu.
                   type:
                     - "null"
                     - boolean
                 type:
+                  description:
+                    Type of the question (e.g., single choice, multiple
+                    choice, text).
                   type:
                     - "null"
                     - string
           title:
+            description: Title or name of the webinar poll.
             type:
               - "null"
               - string
@@ -2341,18 +2764,24 @@ definitions:
         type: object
         properties:
           webinar_uuid:
+            description:
+              The unique identifier of the webinar where the poll results
+              were collected.
             type:
               - "null"
               - string
           email:
+            description: The email address of the participant who answered the poll.
             type:
               - "null"
               - string
           name:
+            description: The name of the participant who answered the poll.
             type:
               - "null"
               - string
           question_details:
+            description: Details of the poll questions answered by the participant.
             type:
               - "null"
               - array
@@ -2362,18 +2791,22 @@ definitions:
                 - object
               properties:
                 answer:
+                  description: The participant's answer to the poll question.
                   type:
                     - "null"
                     - string
                 date_time:
+                  description: Date and time when the participant answered the poll.
                   type:
                     - "null"
                     - string
                 polling_id:
+                  description: Unique ID for the polling question.
                   type:
                     - "null"
                     - string
                 question:
+                  description: The poll question that was answered by the participant.
                   type:
                     - "null"
                     - string
@@ -2419,10 +2852,14 @@ definitions:
         type: object
         properties:
           webinar_id:
+            description:
+              Unique identifier for the webinar associated with the registration
+              questions
             type:
               - "null"
               - string
           custom_questions:
+            description: Custom questions for webinar registration
             type:
               - "null"
               - array
@@ -2432,6 +2869,7 @@ definitions:
                 - object
               properties:
                 answers:
+                  description: Array containing answers provided for the custom question
                   type:
                     - "null"
                     - array
@@ -2440,18 +2878,24 @@ definitions:
                       - "null"
                       - string
                 required:
+                  description: Indicates if the custom question is required for registration
                   type:
                     - "null"
                     - boolean
                 title:
+                  description: Title of the custom question displayed during registration
                   type:
                     - "null"
                     - string
                 type:
+                  description:
+                    Type of the custom question (e.g., text, dropdown,
+                    checkbox)
                   type:
                     - "null"
                     - string
           questions:
+            description: Standard questions for webinar registration
             type:
               - "null"
               - array
@@ -2461,10 +2905,14 @@ definitions:
                 - object
               properties:
                 field_name:
+                  description: Name or identifier of the standard question field
                   type:
                     - "null"
                     - string
                 required:
+                  description:
+                    Indicates if the standard question is required for
+                    registration
                   type:
                     - "null"
                     - boolean
@@ -2510,26 +2958,32 @@ definitions:
         type: object
         properties:
           webinar_id:
+            description: Unique identifier for the associated webinar
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the tracking source
             type:
               - "null"
               - string
           registration_count:
+            description: Number of registrations from the tracking source
             type:
               - "null"
               - number
           source_name:
+            description: Name or label of the tracking source
             type:
               - "null"
               - string
           tracking_url:
+            description: URL where tracking information is captured
             type:
               - "null"
               - string
           visitor_count:
+            description: Number of visitors from the tracking source
             type:
               - "null"
               - number
@@ -2574,18 +3028,24 @@ definitions:
         type: object
         properties:
           webinar_uuid:
+            description:
+              The unique identifier of the webinar session associated with
+              the Q&A data
             type:
               - "null"
               - string
           email:
+            description: The email address of the attendee who asked the question
             type:
               - "null"
               - string
           name:
+            description: The name of the attendee who asked the question
             type:
               - "null"
               - string
           question_details:
+            description: Details of the questions including answers
             type:
               - "null"
               - array
@@ -2595,10 +3055,12 @@ definitions:
                 - object
               properties:
                 answer:
+                  description: The answer provided to the question
                   type:
                     - "null"
                     - string
                 question:
+                  description: The actual question asked by the attendee
                   type:
                     - "null"
                     - string
@@ -2640,10 +3102,12 @@ definitions:
         type: object
         properties:
           meeting_uuid:
+            description: UUID of the meeting
             type:
               - "null"
               - string
           custom_keys:
+            description: Custom keys associated with the meeting
             type:
               - "null"
               - array
@@ -2653,50 +3117,62 @@ definitions:
                 - object
               properties:
                 key:
+                  description: Custom key name
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value associated with the custom key
                   type:
                     - "null"
                     - string
           dept:
+            description: Department to which the meeting belongs
             type:
               - "null"
               - string
           duration:
+            description: Duration of the meeting in minutes
             type:
               - "null"
               - number
           end_time:
+            description: End time of the meeting
             type:
               - "null"
               - string
           host_id:
+            description: ID of the meeting host
             type:
               - "null"
               - string
           id:
+            description: ID of the meeting
             type:
               - "null"
               - number
           participants_count:
+            description: Number of participants in the meeting
             type:
               - "null"
               - number
           start_time:
+            description: Start time of the meeting
             type:
               - "null"
               - string
           topic:
+            description: Topic or subject of the meeting
             type:
               - "null"
               - string
           total_minutes:
+            description: Total duration of the meeting in minutes
             type:
               - "null"
               - number
           tracking_fields:
+            description: Tracking fields associated with the meeting
             type:
               - "null"
               - array
@@ -2706,26 +3182,32 @@ definitions:
                 - object
               properties:
                 field:
+                  description: Field name for tracking
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value associated with the tracking field
                   type:
                     - "null"
                     - string
           type:
+            description: Type of the meeting
             type:
               - "null"
               - number
           user_email:
+            description: Email of the user associated with the meeting
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the meeting
             type:
               - "null"
               - string
           uuid:
+            description: UUID associated with the meeting
             type:
               - "null"
               - string
@@ -2772,66 +3254,86 @@ definitions:
         type: object
         properties:
           meeting_uuid:
+            description: Unique identifier for the meeting.
             type:
               - "null"
               - string
           meeting_id:
+            description: ID of the meeting the participant attended.
             type:
               - "null"
               - integer
           customer_key:
+            description:
+              Unique key identifying the customer associated with the meeting
+              participant.
             type:
               - "null"
               - string
           duration:
+            description: The duration of the participant's attendance in the meeting.
             type:
               - "null"
               - number
           failover:
+            description: Indicator for meeting failover status.
             type:
               - "null"
               - boolean
           id:
+            description: Unique identifier for the meeting participant.
             type:
               - "null"
               - string
           join_time:
+            description: The time when the participant joined the meeting.
             type:
               - "null"
               - string
           leave_time:
+            description: The time when the participant left the meeting.
             type:
               - "null"
               - string
           name:
+            description: Name of the meeting participant.
             type:
               - "null"
               - string
           registrant_id:
+            description:
+              ID of the registrant who registered the participant for the
+              meeting.
             type:
               - "null"
               - string
           user_email:
+            description: Email address of the meeting participant.
             type:
               - "null"
               - string
           user_id:
+            description: Unique identifier for the user.
             type:
               - "null"
               - string
           status:
+            description: Status of the meeting participant (e.g., active, inactive).
             type:
               - "null"
               - string
           bo_mtg_id:
+            description: Back office meeting ID associated with the participant.
             type:
               - "null"
               - string
           participant_user_id:
+            description: User ID associated with the meeting participant.
             type:
               - "null"
               - string
           attentiveness_score:
+            description: The attentiveness score of the meeting participant.
             type:
               - "null"
               - string
@@ -2876,6 +3378,7 @@ definitions:
         type: object
         properties:
           webinar_uuid:
+            description: UUID of the webinar
             type:
               - "null"
               - string
@@ -2889,42 +3392,52 @@ definitions:
                 - object
               properties:
                 key:
+                  description: Custom key associated with the webinar
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value corresponding to the custom key
                   type:
                     - "null"
                     - string
           dept:
+            description: Department associated with the webinar
             type:
               - "null"
               - string
           duration:
+            description: Duration of the webinar in minutes
             type:
               - "null"
               - number
           end_time:
+            description: End time of the webinar
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the webinar
             type:
               - "null"
               - number
           participants_count:
+            description: Number of participants in the webinar
             type:
               - "null"
               - number
           start_time:
+            description: Start time of the webinar
             type:
               - "null"
               - string
           topic:
+            description: Topic of the webinar
             type:
               - "null"
               - string
           total_minutes:
+            description: Total duration of the webinar in minutes
             type:
               - "null"
               - number
@@ -2938,26 +3451,32 @@ definitions:
                 - object
               properties:
                 field:
+                  description: Tracking field associated with the webinar
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value corresponding to the tracking field
                   type:
                     - "null"
                     - string
           type:
+            description: Type of webinar
             type:
               - "null"
               - number
           user_email:
+            description: Email of the user who hosted the webinar
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user who hosted the webinar
             type:
               - "null"
               - string
           uuid:
+            description: UUID of the webinar
             type:
               - "null"
               - string
@@ -3002,50 +3521,68 @@ definitions:
         type: object
         properties:
           webinar_uuid:
+            description: Unique identifier for the webinar session.
             type:
               - "null"
               - string
           customer_key:
+            description: Unique identifier for the customer using the webinar service.
             type:
               - "null"
               - string
           duration:
+            description: Duration of time the participant spent in the webinar session.
             type:
               - "null"
               - number
           failover:
+            description:
+              Indicator of whether failover functionality was triggered
+              during the webinar session.
             type:
               - "null"
               - boolean
           id:
+            description: Unique identifier for the participant in the webinar session.
             type:
               - "null"
               - string
           join_time:
+            description: Timestamp when the participant joined the webinar session.
             type:
               - "null"
               - string
           leave_time:
+            description: Timestamp when the participant left the webinar session.
             type:
               - "null"
               - string
           name:
+            description: Name of the participant in the webinar session.
             type:
               - "null"
               - string
           registrant_id:
+            description: Unique identifier for the registrant of the webinar session.
             type:
               - "null"
               - string
           status:
+            description:
+              Current status of the participant in the webinar session
+              (e.g., active, inactive).
             type:
               - "null"
               - string
           user_email:
+            description: Email address of the participant in the webinar session.
             type:
               - "null"
               - string
           user_id:
+            description:
+              Unique identifier for the user associated with the participant
+              in the webinar session.
             type:
               - "null"
               - string

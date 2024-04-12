@@ -3,39 +3,50 @@
   "type": "object",
   "properties": {
     "guid": {
+      "description": "The globally unique identifier for the activity",
       "type": ["null", "string"]
     },
     "kind": {
+      "description": "The kind of activity",
       "type": ["null", "string"]
     },
     "project": {
       "type": ["null", "object"],
       "additionalProperties": true,
-      "properties": {}
+      "properties": {
+        "description": "Information about the project associated with the activity"
+      }
     },
     "secondary_resources": {
       "type": ["null", "array"],
       "items": {
+        "description": "Additional resources related to the activity",
         "type": ["null", "string"]
       }
     },
     "project_id": {
+      "description": "The unique identifier for the project",
       "type": ["null", "integer"]
     },
     "occurred_at": {
+      "description": "The timestamp when the activity occurred",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "performed_by": {
+      "description": "The entity who performed the activity",
       "$ref": "person.json"
     },
     "message": {
+      "description": "Description or message associated with the activity",
       "type": ["null", "string"]
     },
     "highlight": {
+      "description": "A flag indicating if the activity is highlighted",
       "type": ["null", "string"]
     },
     "project_version": {
+      "description": "The version of the project",
       "type": ["null", "integer"]
     },
     "changes": {
@@ -44,18 +55,23 @@
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier for the change",
             "type": ["null", "integer"]
           },
           "kind": {
+            "description": "The kind of the change",
             "type": ["null", "string"]
           },
           "change_type": {
+            "description": "The type of change made",
             "type": ["null", "string"]
           },
           "original_values": {
+            "description": "The original values before the change",
             "type": ["null", "object"]
           },
           "new_values": {
+            "description": "The new values after the change",
             "type": ["null", "object"]
           }
         }
@@ -67,9 +83,11 @@
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier for the primary resource",
             "type": ["null", "integer"]
           },
           "kind": {
+            "description": "The kind of the primary resource",
             "type": ["null", "string"]
           }
         }

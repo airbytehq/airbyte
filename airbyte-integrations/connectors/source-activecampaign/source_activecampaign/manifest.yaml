@@ -818,6 +818,7 @@ definitions:
               - string
               - "null"
           links:
+            description: Contains additional URLs related to the deals data.
             type: object
             properties:
               dealActivities:
@@ -1134,6 +1135,7 @@ definitions:
               - string
               - "null"
           links:
+            description: Contains links related to the fetched lists data.
             type: object
             properties:
               contactGoalLists:

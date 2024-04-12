@@ -10,6 +10,7 @@
       "format": "date-time"
     },
     "addresses": {
+      "description": "List of addresses associated with the user",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -129,6 +130,7 @@
       "type": ["null", "string"]
     },
     "default_address": {
+      "description": "Default address of the user",
       "type": ["null", "object"],
       "properties": {
         "first_name": {
@@ -198,6 +200,7 @@
       }
     },
     "emailListIds": {
+      "description": "List of email list IDs subscribed by the user",
       "type": ["null", "array"],
       "items": {
         "description": "IDs of the email lists associated with the user."
@@ -275,12 +278,14 @@
       "type": ["null", "boolean"]
     },
     "secondMostRecentOrderCards": {
+      "description": "Details of the second most recent order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the second most recent order cards."
       }
     },
     "unsubscribedChannelIds": {
+      "description": "List of channel IDs the user has unsubscribed from",
       "type": ["null", "array"],
       "items": {
         "description": "IDs of the channels from which the user unsubscribed."
@@ -308,12 +313,14 @@
       "type": ["null", "string"]
     },
     "mostRecentOrderCards": {
+      "description": "Details of the most recent order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the most recent order cards."
       }
     },
     "itblInternal": {
+      "description": "Internal details specific to the platform",
       "type": ["null", "object"],
       "properties": {
         "emailDomain": {
@@ -342,6 +349,7 @@
       "format": "date-time"
     },
     "subscribedMessageTypeIds": {
+      "description": "List of message type IDs user has subscribed to",
       "type": ["null", "array"],
       "items": {
         "description": "IDs of the message types the user is subscribed to."
@@ -352,6 +360,7 @@
       "type": ["null", "string"]
     },
     "unsubscribedMessageTypeIds": {
+      "description": "List of message type IDs the user has unsubscribed from",
       "type": ["null", "array"],
       "items": {
         "description": "IDs of the message types from which the user unsubscribed."
@@ -366,6 +375,7 @@
       "type": ["null", "string"]
     },
     "thirdMostRecentOrderCards": {
+      "description": "Details of the third most recent order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the third most recent order cards."
@@ -382,12 +392,14 @@
       "format": "date-time"
     },
     "businessLines": {
+      "description": "List of business lines the user is associated with",
       "type": ["null", "array"],
       "items": {
         "description": "Business lines associated with the user."
       }
     },
     "secondOrderCards": {
+      "description": "Details of the second order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the second order cards."
@@ -419,12 +431,14 @@
       "type": ["null", "string"]
     },
     "thirdOrderCards": {
+      "description": "Details of the third order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the third order cards."
       }
     },
     "firstOrderCards": {
+      "description": "Details of the first order cards related to the user",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the first order cards."

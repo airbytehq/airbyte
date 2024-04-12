@@ -19,6 +19,9 @@ streams:
           - id
         properties:
           business_details:
+            description:
+              Details related to the business associated with the merchant
+              account
             oneOf:
               - type: "null"
               - type: object
@@ -107,10 +110,12 @@ streams:
                       - "null"
                       - string
           currency_iso_code:
+            description: ISO code of the currency used for transactions
             type:
               - "null"
               - string
           funding_details:
+            description: Information about the funding source for the merchant account
             oneOf:
               - type: "null"
               - type: object
@@ -140,9 +145,13 @@ streams:
                       - "null"
                       - string
           id:
+            description: Unique identifier for the merchant account
             type:
               - string
           individual_details:
+            description:
+              Details pertaining to the individual linked to the merchant
+              account
             oneOf:
               - type: "null"
               - type: object
@@ -243,6 +252,7 @@ streams:
                       - "null"
                       - string
           status:
+            description: Current status of the merchant account
             type:
               - "null"
               - string
@@ -251,7 +261,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /merchant_accounts
         http_method: GET
         request_parameters: {}
@@ -290,6 +304,7 @@ streams:
           - created_at
         properties:
           addresses:
+            description: Customer addresses associated with the customer profile.
             type:
               - "null"
               - array
@@ -297,67 +312,83 @@ streams:
               type: object
               properties:
                 company:
+                  description: Company name if applicable.
                   type:
                     - "null"
                     - string
                 country_code_alpha2:
+                  description: Two-letter country code.
                   type:
                     - "null"
                     - string
                 country_code_alpha3:
+                  description: Three-letter country code.
                   type:
                     - "null"
                     - string
                 country_code_numeric:
+                  description: Numeric country code.
                   type:
                     - "null"
                     - string
                 country_name:
+                  description: Full country name.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the address was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: Unique identifier for the customer.
                   type:
                     - "null"
                     - string
                 extended_address:
+                  description: Additional address information.
                   type:
                     - "null"
                     - string
                 first_name:
+                  description: First name of the customer associated with the address.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Unique identifier for the address.
                   type:
                     - "null"
                     - string
                 last_name:
+                  description: Last name of the customer associated with the address.
                   type:
                     - "null"
                     - string
                 locality:
+                  description: City or locality.
                   type:
                     - "null"
                     - string
                 postal_code:
+                  description: Postal code or ZIP code.
                   type:
                     - "null"
                     - string
                 region:
+                  description: State, province, or region.
                   type:
                     - "null"
                     - string
                 street_address:
+                  description: Street address.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the address was last updated.
                   type:
                     - "null"
                     - string
@@ -986,6 +1017,7 @@ streams:
               - "null"
               - string
           masterpass_cards:
+            description: Masterpass cards associated with the customer profile.
             type:
               - "null"
               - array
@@ -993,6 +1025,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the card.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -1064,107 +1097,133 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number (BIN).
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of card.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the cardholder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the card is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the card was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the card was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: Unique identifier for the customer.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the card is debit.
                   type:
                     - "null"
                     - string
                 default:
+                  description: Flag indicating if the card is the default payment method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the card is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the card.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the card.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the card.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the card has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the card is healthcare-related.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL to the card image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the card.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the card number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked card number for security.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the card is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the card is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the card.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token for the card.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the card number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the card was last updated.
                   type:
                     - "null"
                     - string
@@ -2927,6 +2986,7 @@ streams:
               - "null"
               - string
           samsung_pay_cards:
+            description: Samsung Pay cards associated with the customer profile.
             type:
               - "null"
               - array
@@ -2934,6 +2994,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the card.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -3005,107 +3066,133 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number (BIN).
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of card.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the cardholder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the card is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the card was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the card was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: Unique identifier for the customer.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the card is debit.
                   type:
                     - "null"
                     - string
                 default:
+                  description: Flag indicating if the card is the default payment method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the card is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the card.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the card.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the card.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the card has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the card is healthcare-related.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL to the card image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the card.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the card number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked card number for security.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the card is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the card is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the card.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token for the card.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the card number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the card was last updated.
                   type:
                     - "null"
                     - string
@@ -3545,6 +3632,7 @@ streams:
                     - "null"
                     - string
           visa_checkout_cards:
+            description: Visa Checkout cards associated with the customer profile.
             type:
               - "null"
               - array
@@ -3552,6 +3640,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the card.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -3623,107 +3712,133 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number (BIN).
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of card.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the cardholder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the card is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the card was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the card was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: Unique identifier for the customer.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the card is debit.
                   type:
                     - "null"
                     - string
                 default:
+                  description: Flag indicating if the card is the default payment method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the card is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the card.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the card.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the card.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the card has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the card is healthcare-related.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL to the card image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the card.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the card number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked card number for security.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the card is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the card is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the card.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token for the card.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the card number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the card was last updated.
                   type:
                     - "null"
                     - string
@@ -3737,7 +3852,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /customers/advanced_search
         http_method: POST
         request_parameters: {}
@@ -3779,37 +3898,48 @@ streams:
           - id
         properties:
           amount:
+            description: The amount of the discount applied in this discount stream
             type:
               - "null"
               - number
           current_billing_cycle:
+            description:
+              The current billing cycle number during which this discount
+              is being applied
             type:
               - "null"
               - number
           description:
+            description: The description of the discount stream
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the discount stream
             type:
               - string
           kind:
+            description: Type or category of the discount stream
             type:
               - "null"
               - string
           name:
+            description: Name associated with the discount stream
             type:
               - "null"
               - string
           never_expires:
+            description: Indicates if the discount stream never expires
             type:
               - "null"
               - boolean
           number_of_billing_cycles:
+            description: Total number of billing cycles for which the discount is applicable
             type:
               - "null"
               - number
           quantity:
+            description: Quantity of items to which this discount applies
             type:
               - "null"
               - number
@@ -3818,7 +3948,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /discounts/
         http_method: GET
         request_parameters: {}
@@ -3849,6 +3983,9 @@ streams:
           - id
         properties:
           add_ons:
+            description:
+              List of additional features or services that can be added to
+              the subscription.
             type:
               - "null"
               - array
@@ -3856,63 +3993,78 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The cost of the add-on.
                   type:
                     - "null"
                     - number
                 current_billing_cycle:
+                  description: The current billing cycle for the add-on.
                   type:
                     - "null"
                     - number
                 description:
+                  description: Description of the add-on.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Unique identifier for the add-on.
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of add-on.
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the add-on.
                   type:
                     - "null"
                     - string
                 never_expires:
+                  description: Flag indicating if the add-on never expires.
                   type:
                     - "null"
                     - boolean
                 number_of_billing_cycles:
+                  description: Total number of billing cycles for the add-on.
                   type:
                     - "null"
                     - number
                 quantity:
+                  description: Quantity of the add-on.
                   type:
                     - "null"
                     - number
           billing_day_of_month:
+            description: Day of the month when billing occurs.
             type:
               - "null"
               - number
           billing_frequency:
+            description: Frequency of billing.
             type:
               - "null"
               - number
           created_at:
+            description: Timestamp when the plan was created.
             type:
               - "null"
               - string
             format: date-time
           currency_iso_code:
+            description: ISO currency code for pricing.
             type:
               - "null"
               - string
           description:
+            description: Description of the plan.
             type:
               - "null"
               - string
           discounts:
+            description: List of discounts applied to the subscription.
             type:
               - "null"
               - array
@@ -3920,69 +4072,86 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The amount of discount applied.
                   type:
                     - "null"
                     - number
                 current_billing_cycle:
+                  description: The current billing cycle for the discount.
                   type:
                     - "null"
                     - number
                 description:
+                  description: Description of the discount.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Unique identifier for the discount.
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of discount.
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the discount.
                   type:
                     - "null"
                     - string
                 never_expires:
+                  description: Flag indicating if the discount never expires.
                   type:
                     - "null"
                     - boolean
                 number_of_billing_cycles:
+                  description: Total number of billing cycles for the discount.
                   type:
                     - "null"
                     - number
                 quantity:
+                  description: Quantity of the discount.
                   type:
                     - "null"
                     - number
           id:
+            description: Unique identifier for the plan.
             type:
               - string
           name:
+            description: Name of the plan.
             type:
               - "null"
               - string
           number_of_billing_cycles:
+            description: Total number of billing cycles for the plan.
             type:
               - "null"
               - number
           price:
+            description: Price of the plan.
             type:
               - "null"
               - number
           trial_duration:
+            description: Duration of the trial period.
             type:
               - "null"
               - number
           trial_duration_unit:
+            description: Unit of time for the trial duration.
             type:
               - "null"
               - string
           trial_period:
+            description: Flag indicating if a trial period is available.
             type:
               - "null"
               - boolean
           updated_at:
+            description: Timestamp when the plan was last updated.
             type:
               - "null"
               - string
@@ -3992,7 +4161,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /plans/
         http_method: GET
         request_parameters: {}
@@ -4024,18 +4197,22 @@ streams:
           - created_at
         properties:
           acquirer_reference_number:
+            description: The reference number assigned by the acquirer for the transaction
             type:
               - "null"
               - string
           additional_processor_response:
+            description: Additional response provided by the processor for the transaction
             type:
               - "null"
               - string
           amount:
+            description: The amount of the transaction
             type:
               - "null"
               - string
           android_pay_card_details:
+            description: Details specific to an Android Pay payment method
             oneOf:
               - type: "null"
               - type: object
@@ -4246,6 +4423,7 @@ streams:
                       - "null"
                       - string
           apple_pay_details:
+            description: Details specific to an Apple Pay payment method
             oneOf:
               - type: "null"
               - type: object
@@ -4436,23 +4614,28 @@ streams:
                       - "null"
                       - string
           authorization_expires_at:
+            description: Date and time when the authorization for the transaction expires
             type:
               - "null"
               - string
             format: date-time
           avs_error_response_code:
+            description: Response code for Address Verification Service (AVS) error
             type:
               - "null"
               - string
           avs_postal_code_response_code:
+            description: Response code for postal code verification in AVS
             type:
               - "null"
               - string
           avs_street_address_response_code:
+            description: Response code for street address verification in AVS
             type:
               - "null"
               - string
           billing_details:
+            description: Details of the billing address
             oneOf:
               - type: "null"
               - type: object
@@ -4524,14 +4707,17 @@ streams:
                       - string
                     format: date-time
           channel:
+            description: The channel through which the transaction was processed
             type:
               - "null"
               - string
           created_at:
+            description: Date and time when the transaction was created
             type:
               - string
             format: date-time
           credit_card_details:
+            description: Details specific to a credit card payment method
             oneOf:
               - type: "null"
               - type: object
@@ -4714,15 +4900,18 @@ streams:
                       - string
                     format: date-time
           currency_iso_code:
+            description: ISO code of the currency used in the transaction
             type:
               - "null"
               - string
           custom_fields:
+            description: Custom fields associated with the transaction
             type:
               - "null"
               - object
             additionalProperties: true
           customer_details:
+            description: Details of the customer associated with the transaction
             oneOf:
               - type: "null"
               - type: object
@@ -8173,10 +8362,12 @@ streams:
                       - "null"
                       - string
           cvv_response_code:
+            description: Response code for Card Verification Value (CVV) check
             type:
               - "null"
               - string
           disbursement_details:
+            description: Details of the disbursement associated with the transaction
             oneOf:
               - type: "null"
               - type: object
@@ -8211,10 +8402,12 @@ streams:
                       - "null"
                       - boolean
           discount_amount:
+            description: The amount of discount applied to the transaction
             type:
               - "null"
               - number
           discounts:
+            description: List of discounts applied to the transaction
             type:
               - "null"
               - array
@@ -8222,42 +8415,52 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The amount of the discount
                   type:
                     - "null"
                     - number
                 current_billing_cycle:
+                  description: Current billing cycle of the discount
                   type:
                     - "null"
                     - number
                 description:
+                  description: Description of the discount
                   type:
                     - "null"
                     - string
                 id:
+                  description: Unique identifier of the discount
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of discount
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the discount
                   type:
                     - "null"
                     - string
                 never_expires:
+                  description: Flag indicating if the discount never expires
                   type:
                     - "null"
                     - boolean
                 number_of_billing_cycles:
+                  description: Number of billing cycles the discount is applicable
                   type:
                     - "null"
                     - number
                 quantity:
+                  description: Quantity of the discount
                   type:
                     - "null"
                     - number
           disputes:
+            description: List of disputes associated with the transaction
             type:
               - "null"
               - array
@@ -8265,31 +8468,38 @@ streams:
               type: object
               properties:
                 amount_disputed:
+                  description: The amount disputed in the dispute
                   type:
                     - "null"
                     - number
                 amount_won:
+                  description: The amount won in the dispute
                   type:
                     - "null"
                     - number
                 case_number:
+                  description: Case number of the dispute
                   type:
                     - "null"
                     - string
                 chargeback_protection_level:
+                  description: Level of chargeback protection for the dispute
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the dispute was created
                   type:
                     - "null"
                     - string
                   format: date-time
                 currency_iso_code:
+                  description: ISO code of the currency in the dispute
                   type:
                     - "null"
                     - string
                 evidence:
+                  description: Evidence provided for the dispute
                   anyOf:
                     - type: object
                       properties:
@@ -8342,26 +8552,32 @@ streams:
                               - "null"
                               - string
                 graphql_id:
+                  description: Unique graphql identifier for the dispute
                   type:
                     - "null"
                     - string
                 id:
+                  description: Unique identifier of the dispute
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of dispute
                   type:
                     - "null"
                     - string
                 merchant_account_id:
+                  description: Merchant account associated with the dispute
                   type:
                     - "null"
                     - string
                 original_dispute_id:
+                  description: Original dispute ID if applicable
                   type:
                     - "null"
                     - string
                 paypal_messages:
+                  description: Messages related to the dispute from PayPal
                   type:
                     - "null"
                     - array
@@ -8369,81 +8585,100 @@ streams:
                     type: object
                     properties:
                       message:
+                        description: Message content
                         type:
                           - "null"
                           - string
                       send_at:
+                        description: Date and time the message was sent
                         type:
                           - "null"
                           - string
                         format: date-time
                       sender:
+                        description: Sender of the message
                         type:
                           - "null"
                           - string
                 processor_comments:
+                  description: Comments provided by the processor for the dispute
                   type:
                     - "null"
                     - string
                 reason:
+                  description: Reason for the dispute
                   type:
                     - "null"
                     - string
                 reason_code:
+                  description: Code indicating the reason for the dispute
                   type:
                     - "null"
                     - string
                 reason_description:
+                  description: Description of the reason for the dispute
                   type:
                     - "null"
                     - string
                 received_date:
+                  description: Date when the dispute was received
                   type:
                     - "null"
                     - string
                   format: date
                 reference_number:
+                  description: Reference number for the dispute
                   type:
                     - "null"
                     - string
                 reply_by_date:
+                  description: Date by which a reply is required for the dispute
                   type:
                     - "null"
                     - string
                   format: date
                 status:
+                  description: Current status of the dispute
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the dispute was last updated
                   type:
                     - "null"
                     - string
                   format: date-time
           escrow_status:
+            description: Status of the transaction in escrow
             type:
               - "null"
               - string
           gateway_rejection_reason:
+            description: Reason for rejection by the gateway
             type:
               - "null"
               - string
           global_id:
+            description: Global identifier for the transaction
             type:
               - "null"
               - string
           graphql_id:
+            description: GraphQL identifier for the transaction
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the transaction
             type:
               - string
           installment_count:
+            description: Number of installments for the transaction
             type:
               - "null"
               - number
           masterpass_card_details:
+            description: Details specific to a Masterpass payment method
             oneOf:
               - type: "null"
               - type: object
@@ -8626,10 +8861,12 @@ streams:
                       - string
                     format: date-time
           merchant_account_id:
+            description: Merchant account associated with the transaction
             type:
               - "null"
               - string
           merchant_address:
+            description: Address of the merchant
             oneOf:
               - type: "null"
               - type: object
@@ -8701,74 +8938,94 @@ streams:
                       - string
                     format: date-time
           merchant_identification_number:
+            description: Identification number of the merchant
             type:
               - "null"
               - string
           merchant_name:
+            description: Name of the merchant
             type:
               - "null"
               - string
           network_response_code:
+            description: Response code from the network for the transaction
             type:
               - "null"
               - string
           network_response_text:
+            description: Response text from the network for the transaction
             type:
               - "null"
               - string
           network_transaction_id:
+            description: Network transaction identifier
             type:
               - "null"
               - string
           order_id:
+            description: Identifier for the order associated with the transaction
             type:
               - "null"
               - string
           payment_instrument_type:
+            description: Type of payment instrument used in the transaction
             type:
               - "null"
               - string
           pin_verified:
+            description: Flag indicating if the PIN was verified for the transaction
             type:
               - "null"
               - boolean
           plan_id:
+            description: Identifier of the plan associated with the transaction
             type:
               - "null"
               - string
           processed_with_network_token:
+            description:
+              Flag indicating if the transaction was processed with a network
+              token
             type:
               - "null"
               - boolean
           processor_authorization_code:
+            description: Authorization code provided by the processor
             type:
               - "null"
               - string
           processor_response_code:
+            description: Response code from the processor for the transaction
             type:
               - "null"
               - string
           processor_response_text:
+            description: Response text from the processor for the transaction
             type:
               - "null"
               - string
           processor_response_type:
+            description: Type of response received from the processor
             type:
               - "null"
               - string
           processor_settlement_response_code:
+            description: Settlement response code from the processor
             type:
               - "null"
               - string
           processor_settlement_response_text:
+            description: Settlement response text from the processor
             type:
               - "null"
               - string
           purchase_order_number:
+            description: Purchase order number associated with the transaction
             type:
               - "null"
               - string
           paypal_details:
+            description: Details specific to a PayPal payment method
             oneOf:
               - type: "null"
               - type: object
@@ -8968,34 +9225,41 @@ streams:
                       - string
                     format: date-time
           recurring:
+            description: Flag indicating if the transaction is a recurring payment
             type:
               - "null"
               - boolean
           refund_ids:
+            description: Identifiers of refunds associated with the transaction
             type:
               - "null"
               - array
             items:
               type: string
           refund_global_ids:
+            description: Global identifiers of refunds associated with the transaction
             type:
               - "null"
               - array
             items:
               type: string
           refunded_transaction_id:
+            description: Identifier of the transaction that was refunded
             type:
               - "null"
               - string
           response_emv_data:
+            description: EMV data included in the response
             type:
               - "null"
               - string
           retrieval_reference_number:
+            description: Reference number for transaction retrieval
             type:
               - "null"
               - string
           samsung_pay_card_details:
+            description: Details specific to a Samsung Pay payment method
             oneOf:
               - type: "null"
               - type: object
@@ -9178,22 +9442,29 @@ streams:
                       - string
                     format: date-time
           sca_exemption_requested:
+            description:
+              Flag indicating if Strong Customer Authentication exemption
+              was requested
             type:
               - "null"
               - string
           service_fee_amount:
+            description: Amount of service fee associated with the transaction
             type:
               - "null"
               - number
           settlement_batch_id:
+            description: Identifier of the settlement batch for the transaction
             type:
               - "null"
               - string
           shipping_amount:
+            description: Amount associated with shipping for the transaction
             type:
               - "null"
               - number
           shipping_details:
+            description: Details of the shipping address
             oneOf:
               - type: "null"
               - type: object
@@ -9265,14 +9536,17 @@ streams:
                       - string
                     format: date-time
           ships_from_postal_code:
+            description: Postal code of the location from which the shipment originates
             type:
               - "null"
               - string
           status:
+            description: Current status of the transaction
             type:
               - "null"
               - string
           status_history:
+            description: History of statuses associated with the transaction
             type:
               - "null"
               - array
@@ -9280,27 +9554,33 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The amount associated with the status
                   type:
                     - "null"
                     - number
                 status:
+                  description: Status of the transaction
                   type:
                     - "null"
                     - string
                 timestamp:
+                  description: Timestamp when the status was recorded
                   type:
                     - "null"
                     - string
                   format: date-time
                 transaction_source:
+                  description: Source of the transaction
                   type:
                     - "null"
                     - string
                 user:
+                  description: User associated with the status update
                   type:
                     - "null"
                     - string
           subscription_details:
+            description: Details related to a subscription associated with the transaction
             oneOf:
               - type: "null"
               - type: object
@@ -9316,31 +9596,40 @@ streams:
                       - string
                     format: date-time
           subscription_id:
+            description: Identifier of the subscription associated with the transaction
             type:
               - "null"
               - string
           tax_amount:
+            description: Amount of tax applied to the transaction
             type:
               - "null"
               - number
           tax_exempt:
+            description: Flag indicating if the transaction is tax exempt
             type:
               - "null"
               - boolean
           terminal_identification_number:
+            description:
+              Identification number of the terminal where the transaction
+              was processed
             type:
               - "null"
               - string
           type:
+            description: Type of the transaction
             type:
               - "null"
               - string
           updated_at:
+            description: Date and time when the transaction was last updated
             type:
               - "null"
               - string
             format: date-time
           venmo_account_details:
+            description: Details specific to a Venmo payment method
             oneOf:
               - type: "null"
               - type: object
@@ -9535,6 +9824,7 @@ streams:
                       - "null"
                       - string
           visa_checkout_card_details:
+            description: Details specific to a Visa Checkout payment method
             oneOf:
               - type: "null"
               - type: object
@@ -9717,6 +10007,7 @@ streams:
                       - string
                     format: date-time
           voice_referral_number:
+            description: Referral number for voice authorization
             type:
               - "null"
               - string
@@ -9725,7 +10016,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /transactions/advanced_search
         http_method: POST
         request_parameters: {}
@@ -9768,6 +10063,7 @@ streams:
           - created_at
         properties:
           add_ons:
+            description: Additional services or features added to the subscription.
             type:
               - "null"
               - array
@@ -9775,71 +10071,88 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The amount charged for the add-on.
                   type:
                     - "null"
                     - number
                 current_billing_cycle:
+                  description: The current billing cycle for the add-on.
                   type:
                     - "null"
                     - number
                 description:
+                  description: Description of the add-on.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Identifier for the add-on.
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of add-on.
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the add-on.
                   type:
                     - "null"
                     - string
                 never_expires:
+                  description: Flag indicating if the add-on never expires.
                   type:
                     - "null"
                     - boolean
                 number_of_billing_cycles:
+                  description: Number of billing cycles for the add-on.
                   type:
                     - "null"
                     - number
                 quantity:
+                  description: Quantity of the add-on.
                   type:
                     - "null"
                     - number
           balance:
+            description: Current balance of the subscription.
             type:
               - "null"
               - number
           billing_day_of_month:
+            description: Day of the month when billing occurs.
             type:
               - "null"
               - number
           billing_period_start_date:
+            description: Start date of the current billing period.
             type:
               - "null"
               - string
             format: date-time
           created_at:
+            description: Date and time when the subscription was created.
             type:
               - string
             format: date-time
           current_billing_cycle:
+            description: Current billing cycle number.
             type:
               - "null"
               - number
           days_past_due:
+            description: Number of days the subscription is past due.
             type:
               - "null"
               - number
           description:
+            description: Description of the subscription.
             type:
               - "null"
               - string
           discounts:
+            description: Discounts applied to the subscription.
             type:
               - "null"
               - array
@@ -9847,100 +10160,124 @@ streams:
               type: object
               properties:
                 amount:
+                  description: The amount of the discount.
                   type:
                     - "null"
                     - number
                 current_billing_cycle:
+                  description: The current billing cycle for the discount.
                   type:
                     - "null"
                     - number
                 description:
+                  description: Description of the discount.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Identifier for the discount.
                   type:
                     - "null"
                     - string
                 kind:
+                  description: Type of discount.
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the discount.
                   type:
                     - "null"
                     - string
                 never_expires:
+                  description: Flag indicating if the discount never expires.
                   type:
                     - "null"
                     - boolean
                 number_of_billing_cycles:
+                  description: Number of billing cycles for the discount.
                   type:
                     - "null"
                     - number
                 quantity:
+                  description: Quantity of the discount.
                   type:
                     - "null"
                     - number
           failure_count:
+            description: Number of failed billing attempts.
             type:
               - "null"
               - number
           first_billing_date:
+            description: Date of the first billing cycle.
             type:
               - "null"
               - string
             format: date
           id:
+            description: Identifier for the subscription.
             type:
               - string
           merchant_account_id:
+            description: Identifier for the merchant's account.
             type:
               - "null"
               - string
           never_expires:
+            description: Flag indicating if the subscription never expires.
             type:
               - "null"
               - boolean
           next_bill_amount:
+            description: Amount due for the next billing cycle.
             type:
               - "null"
               - number
           next_billing_date:
+            description: Date of the next billing cycle.
             type:
               - "null"
               - string
             format: date
           next_billing_period_amount:
+            description: Amount for the next billing period.
             type:
               - "null"
               - number
           number_of_billing_cycles:
+            description: Total number of billing cycles for the subscription.
             type:
               - "null"
               - number
           paid_through_date:
+            description: Date until which the subscription is paid for.
             type:
               - "null"
               - string
             format: date-time
           payment_method_token:
+            description: Token for the payment method used.
             type:
               - "null"
               - string
           plan_id:
+            description: Identifier for the subscription plan.
             type:
               - "null"
               - string
           price:
+            description: Price of the subscription.
             type:
               - "null"
               - number
           status:
+            description: Current status of the subscription.
             type:
               - "null"
               - string
           transactions:
+            description: List of transactions related to the subscription.
             type:
               - "null"
               - array
@@ -9948,18 +10285,22 @@ streams:
               type: object
               properties:
                 acquirer_reference_number:
+                  description: Reference number from the acquirer.
                   type:
                     - "null"
                     - string
                 additional_processor_response:
+                  description: Additional response from the processor.
                   type:
                     - "null"
                     - string
                 amount:
+                  description: Amount of the transaction.
                   type:
                     - "null"
                     - string
                 android_pay_card_details:
+                  description: Details of the Android Pay card used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -10170,6 +10511,7 @@ streams:
                             - "null"
                             - string
                 apple_pay_details:
+                  description: Details of the Apple Pay transaction.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -10360,23 +10702,28 @@ streams:
                             - "null"
                             - string
                 authorization_expires_at:
+                  description: Date and time when the authorization expires.
                   type:
                     - "null"
                     - string
                   format: date-time
                 avs_error_response_code:
+                  description: Error response code for AVS.
                   type:
                     - "null"
                     - string
                 avs_postal_code_response_code:
+                  description: Response code for AVS postal code.
                   type:
                     - "null"
                     - string
                 avs_street_address_response_code:
+                  description: Response code for AVS street address.
                   type:
                     - "null"
                     - string
                 billing_details:
+                  description: Billing details associated with the transaction.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -10448,15 +10795,18 @@ streams:
                             - string
                           format: date-time
                 channel:
+                  description: Channel through which the transaction was made.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time of transaction creation.
                   type:
                     - "null"
                     - string
                   format: date-time
                 credit_card_details:
+                  description: Details of the credit card used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -10639,14 +10989,17 @@ streams:
                             - string
                           format: date-time
                 currency_iso_code:
+                  description: ISO code of the transaction currency.
                   type:
                     - "null"
                     - string
                 custom_fields:
+                  description: Custom fields associated with the transaction.
                   type:
                     - "null"
                     - string
                 customer_details:
+                  description: Details of the customer associated with the transaction.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -14097,10 +14450,12 @@ streams:
                             - "null"
                             - string
                 cvv_response_code:
+                  description: Response code for CVV verification.
                   type:
                     - "null"
                     - string
                 disbursement_details:
+                  description: Details of the disbursement associated with the transaction.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -14135,10 +14490,12 @@ streams:
                             - "null"
                             - boolean
                 discount_amount:
+                  description: Amount of discount applied to the transaction.
                   type:
                     - "null"
                     - number
                 discounts:
+                  description: Discounts applied to the transaction.
                   type:
                     - "null"
                     - array
@@ -14146,42 +14503,52 @@ streams:
                     type: object
                     properties:
                       amount:
+                        description: The amount of the discount.
                         type:
                           - "null"
                           - number
                       current_billing_cycle:
+                        description: The current billing cycle for the discount.
                         type:
                           - "null"
                           - number
                       description:
+                        description: Description of the discount.
                         type:
                           - "null"
                           - string
                       id:
+                        description: Identifier for the discount.
                         type:
                           - "null"
                           - string
                       kind:
+                        description: Type of discount.
                         type:
                           - "null"
                           - string
                       name:
+                        description: Name of the discount.
                         type:
                           - "null"
                           - string
                       never_expires:
+                        description: Flag indicating if the discount never expires.
                         type:
                           - "null"
                           - boolean
                       number_of_billing_cycles:
+                        description: Number of billing cycles for the discount.
                         type:
                           - "null"
                           - number
                       quantity:
+                        description: Quantity of the discount.
                         type:
                           - "null"
                           - number
                 disputes:
+                  description: Disputes associated with the transaction.
                   type:
                     - "null"
                     - array
@@ -14189,31 +14556,38 @@ streams:
                     type: object
                     properties:
                       amount_disputed:
+                        description: Amount disputed in the dispute.
                         type:
                           - "null"
                           - number
                       amount_won:
+                        description: Amount won in the dispute.
                         type:
                           - "null"
                           - number
                       case_number:
+                        description: Case number for the dispute.
                         type:
                           - "null"
                           - string
                       chargeback_protection_level:
+                        description: Protection level against chargebacks.
                         type:
                           - "null"
                           - string
                       created_at:
+                        description: Date and time of dispute creation.
                         type:
                           - "null"
                           - string
                         format: date-time
                       currency_iso_code:
+                        description: ISO code of the dispute currency.
                         type:
                           - "null"
                           - string
                       evidence:
+                        description: Evidence provided for the dispute.
                         anyOf:
                           - type: object
                             properties:
@@ -14266,26 +14640,34 @@ streams:
                                     - "null"
                                     - string
                       graphql_id:
+                        description: GraphQL identifier for the dispute.
                         type:
                           - "null"
                           - string
                       id:
+                        description: Identifier for the dispute.
                         type:
                           - "null"
                           - string
                       kind:
+                        description: Type of dispute.
                         type:
                           - "null"
                           - string
                       merchant_account_id:
+                        description:
+                          Identifier for the merchant's account associated
+                          with the dispute.
                         type:
                           - "null"
                           - string
                       original_dispute_id:
+                        description: Identifier of the original dispute.
                         type:
                           - "null"
                           - string
                       paypal_messages:
+                        description: Messages related to Paypal in the dispute.
                         type:
                           - "null"
                           - array
@@ -14293,82 +14675,101 @@ streams:
                           type: object
                           properties:
                             message:
+                              description: Message content.
                               type:
                                 - "null"
                                 - string
                             send_at:
+                              description: Date and time when the message was sent.
                               type:
                                 - "null"
                                 - string
                               format: date-time
                             sender:
+                              description: Sender of the message.
                               type:
                                 - "null"
                                 - string
                       processor_comments:
+                        description: Comments from the processor on the dispute.
                         type:
                           - "null"
                           - string
                       reason:
+                        description: Reason for the dispute.
                         type:
                           - "null"
                           - string
                       reason_code:
+                        description: Code representing the reason for the dispute.
                         type:
                           - "null"
                           - string
                       reason_description:
+                        description: Description of the reason for the dispute.
                         type:
                           - "null"
                           - string
                       received_date:
+                        description: Date when the dispute was received.
                         type:
                           - "null"
                           - string
                         format: date
                       reference_number:
+                        description: Reference number for the dispute.
                         type:
                           - "null"
                           - string
                       reply_by_date:
+                        description: Date by which a reply is required.
                         type:
                           - "null"
                           - string
                         format: date
                       status:
+                        description: Current status of the dispute.
                         type:
                           - "null"
                           - string
                       updated_at:
+                        description: Date and time of last update.
                         type:
                           - "null"
                           - string
                         format: date-time
                 escrow_status:
+                  description: Status of the transaction in escrow.
                   type:
                     - "null"
                     - string
                 gateway_rejection_reason:
+                  description: Reason for rejection by the gateway.
                   type:
                     - "null"
                     - string
                 global_id:
+                  description: Global identifier for the transaction.
                   type:
                     - "null"
                     - string
                 graphql_id:
+                  description: GraphQL identifier for the transaction.
                   type:
                     - "null"
                     - string
                 id:
+                  description: Identifier for the transaction.
                   type:
                     - "null"
                     - string
                 installment_count:
+                  description: Number of installments for the transaction.
                   type:
                     - "null"
                     - number
                 masterpass_card_details:
+                  description: Details of the Masterpass card used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -14551,10 +14952,12 @@ streams:
                             - string
                           format: date-time
                 merchant_account_id:
+                  description: Identifier for the merchant's account.
                   type:
                     - "null"
                     - string
                 merchant_address:
+                  description: Address of the merchant.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -14626,74 +15029,92 @@ streams:
                             - string
                           format: date-time
                 merchant_identification_number:
+                  description: Identification number of the merchant.
                   type:
                     - "null"
                     - string
                 merchant_name:
+                  description: Name of the merchant.
                   type:
                     - "null"
                     - string
                 network_response_code:
+                  description: Response code from the network.
                   type:
                     - "null"
                     - string
                 network_response_text:
+                  description: Response text from the network.
                   type:
                     - "null"
                     - string
                 network_transaction_id:
+                  description: Transaction ID from the network.
                   type:
                     - "null"
                     - string
                 order_id:
+                  description: Order ID associated with the transaction.
                   type:
                     - "null"
                     - string
                 payment_instrument_type:
+                  description: Type of payment instrument used.
                   type:
                     - "null"
                     - string
                 pin_verified:
+                  description: Flag indicating if the PIN was verified.
                   type:
                     - "null"
                     - boolean
                 plan_id:
+                  description: Identifier for the subscription plan.
                   type:
                     - "null"
                     - string
                 processed_with_network_token:
+                  description: Flag indicating if processed with network token.
                   type:
                     - "null"
                     - boolean
                 processor_authorization_code:
+                  description: Authorization code from the processor.
                   type:
                     - "null"
                     - string
                 processor_response_code:
+                  description: Response code from the processor.
                   type:
                     - "null"
                     - string
                 processor_response_text:
+                  description: Response text from the processor.
                   type:
                     - "null"
                     - string
                 processor_response_type:
+                  description: Type of response from the processor.
                   type:
                     - "null"
                     - string
                 processor_settlement_response_code:
+                  description: Settlement response code from the processor.
                   type:
                     - "null"
                     - string
                 processor_settlement_response_text:
+                  description: Settlement response text from the processor.
                   type:
                     - "null"
                     - string
                 purchase_order_number:
+                  description: Purchase order number associated with the transaction.
                   type:
                     - "null"
                     - string
                 paypal_details:
+                  description: Details associated with Paypal payment.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -14893,34 +15314,41 @@ streams:
                             - string
                           format: date-time
                 recurring:
+                  description: Flag indicating if the transaction is recurring.
                   type:
                     - "null"
                     - boolean
                 refund_ids:
+                  description: IDs for refunds associated with the transaction.
                   type:
                     - "null"
                     - array
                   items:
                     type: string
                 refund_global_ids:
+                  description: Global IDs for refunds associated with the transaction.
                   type:
                     - "null"
                     - array
                   items:
                     type: string
                 refunded_transaction_id:
+                  description: ID of the refunded transaction.
                   type:
                     - "null"
                     - string
                 response_emv_data:
+                  description: EMV data in the response.
                   type:
                     - "null"
                     - string
                 retrieval_reference_number:
+                  description: Reference number for retrieval.
                   type:
                     - "null"
                     - string
                 samsung_pay_card_details:
+                  description: Details of the Samsung Pay card used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -15103,22 +15531,27 @@ streams:
                             - string
                           format: date-time
                 sca_exemption_requested:
+                  description: Flag indicating if SCA exemption was requested.
                   type:
                     - "null"
                     - string
                 service_fee_amount:
+                  description: Amount of service fee.
                   type:
                     - "null"
                     - number
                 settlement_batch_id:
+                  description: ID of the settlement batch.
                   type:
                     - "null"
                     - string
                 shipping_amount:
+                  description: Amount for shipping.
                   type:
                     - "null"
                     - number
                 shipping_details:
+                  description: Details of the shipping.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -15190,14 +15623,17 @@ streams:
                             - string
                           format: date-time
                 ships_from_postal_code:
+                  description: Postal code from where the shipment is sent.
                   type:
                     - "null"
                     - string
                 status:
+                  description: Current status of the transaction.
                   type:
                     - "null"
                     - string
                 status_history:
+                  description: History of status changes for the transaction.
                   type:
                     - "null"
                     - array
@@ -15205,27 +15641,33 @@ streams:
                     type: object
                     properties:
                       amount:
+                        description: Amount associated with the status change.
                         type:
                           - "null"
                           - number
                       status:
+                        description: Updated status of the transaction.
                         type:
                           - "null"
                           - string
                       timestamp:
+                        description: Timestamp of the status change.
                         type:
                           - "null"
                           - string
                         format: date-time
                       transaction_source:
+                        description: Source of the transaction.
                         type:
                           - "null"
                           - string
                       user:
+                        description: User responsible for the status change.
                         type:
                           - "null"
                           - string
                 subscription_details:
+                  description: Details of the subscription associated with the transaction.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -15241,31 +15683,38 @@ streams:
                             - string
                           format: date-time
                 subscription_id:
+                  description: Identifier for the subscription associated with the transaction.
                   type:
                     - "null"
                     - string
                 tax_amount:
+                  description: Amount of tax applied to the transaction.
                   type:
                     - "null"
                     - number
                 tax_exempt:
+                  description: Flag indicating if the transaction is tax exempt.
                   type:
                     - "null"
                     - boolean
                 terminal_identification_number:
+                  description: Terminal identification number associated with the transaction.
                   type:
                     - "null"
                     - string
                 type:
+                  description: Type of the transaction.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time of last update.
                   type:
                     - "null"
                     - string
                   format: date-time
                 venmo_account_details:
+                  description: Details of the Venmo account used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -15460,6 +15909,7 @@ streams:
                             - "null"
                             - string
                 visa_checkout_card_details:
+                  description: Details of the Visa Checkout card used.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -15642,22 +16092,27 @@ streams:
                             - string
                           format: date-time
                 voice_referral_number:
+                  description: Referral number for voice transaction.
                   type:
                     - "null"
                     - string
           trial_duration:
+            description: Duration of the trial period.
             type:
               - "null"
               - number
           trial_duration_unit:
+            description: Unit of the trial period duration.
             type:
               - "null"
               - string
           trial_period:
+            description: Flag indicating if the subscription is in trial period.
             type:
               - "null"
               - boolean
           updated_at:
+            description: Date and time of last update.
             type:
               - "null"
               - string
@@ -15667,7 +16122,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /subscriptions/advanced_search
         http_method: GET
         request_parameters: {}
@@ -15710,31 +16169,40 @@ streams:
           - received_date
         properties:
           amount_disputed:
+            description: The amount disputed in the dispute case
             type:
               - "null"
               - number
           amount_won:
+            description: The amount successfully won by the merchant
             type:
               - "null"
               - number
           case_number:
+            description: The unique case number assigned to the dispute
             type:
               - "null"
               - string
           chargeback_protection_level:
+            description: The level of protection against chargebacks for the merchant
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the dispute case was created
             type:
               - "null"
               - string
             format: date-time
           currency_iso_code:
+            description: The ISO code representing the currency
             type:
               - "null"
               - string
           evidence:
+            description:
+              Any evidence provided by either party during the dispute resolution
+              process
             anyOf:
               - type: object
                 properties:
@@ -15787,25 +16255,31 @@ streams:
                         - "null"
                         - string
           graphql_id:
+            description: The unique ID generated for the dispute in the GraphQL system
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the dispute case
             type:
               - string
           kind:
+            description: The type or category of the dispute
             type:
               - "null"
               - string
           merchant_account_id:
+            description: The ID of the merchant account associated with the dispute
             type:
               - "null"
               - string
           original_dispute_id:
+            description: The ID of the original dispute, if this is a follow-up case
             type:
               - "null"
               - string
           paypal_messages:
+            description: Messages related to the dispute from PayPal
             type:
               - "null"
               - array
@@ -15813,52 +16287,66 @@ streams:
               type: object
               properties:
                 message:
+                  description: The content of the message
                   type:
                     - "null"
                     - string
                 send_at:
+                  description: The timestamp when the message was sent
                   type:
                     - "null"
                     - string
                   format: date-time
                 sender:
+                  description: The sender of the message
                   type:
                     - "null"
                     - string
           processor_comments:
+            description:
+              Comments or notes from the payment processor related to the
+              dispute
             type:
               - "null"
               - string
           reason:
+            description: The reason provided for disputing the transaction
             type:
               - "null"
               - string
           reason_code:
+            description: The code representing the reason for dispute
             type:
               - "null"
               - string
           reason_description:
+            description: A detailed description of the reason for dispute
             type:
               - "null"
               - string
           received_date:
+            description: The date when the dispute was received by the merchant
             type:
               - string
             format: date
           reference_number:
+            description: The reference number associated with the dispute case
             type:
               - "null"
               - string
           reply_by_date:
+            description: The deadline for the merchant to reply to the dispute
             type:
               - "null"
               - string
             format: date
           status:
+            description: The current status of the dispute case
             type:
               - "null"
               - string
           updated_at:
+            description: The timestamp when the dispute case was last updated
             type:
               - "null"
               - string
@@ -15868,7 +16356,11 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{% elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{% elif config['environment'] == 'Production' %}api.braintreegateway.com:443{% endif %}/merchants/{{config['merchant_id']}}
+          https://{% if config['environment'] == 'Development' %}localhost:3000{% elif
+          config['environment'] == 'Sandbox' %}api.sandbox.braintreegateway.com:443{%
+          elif config['environment'] == 'Qa' %}gateway.qa.braintreepayments.com:443{%
+          elif config['environment'] == 'Production' %}api.braintreegateway.com:443{%
+          endif %}/merchants/{{config['merchant_id']}}
         path: /disputes/advanced_search
         http_method: POST
         request_parameters: {}

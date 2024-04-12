@@ -5,21 +5,26 @@
   "type": ["object", "null"],
   "properties": {
     "gid": {
+      "description": "Unique identifier for the memberships data",
       "type": ["string", "null"]
     },
     "resource_type": {
+      "description": "Type of resource this membership belongs to",
       "type": ["string", "null"]
     },
     "portfolio": {
       "type": ["object", "null"],
       "properties": {
         "gid": {
+          "description": "Unique identifier for the portfolio",
           "type": ["string", "null"]
         },
         "resource_type": {
+          "description": "Type of the resource (e.g., project, task) that the portfolio belongs to",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "Name of the portfolio",
           "type": ["string", "null"]
         }
       }
@@ -28,12 +33,15 @@
       "type": ["object", "null"],
       "properties": {
         "gid": {
+          "description": "Unique identifier for the user",
           "type": ["string", "null"]
         },
         "resource_type": {
+          "description": "Type of the resource (e.g., team, user) that the user belongs to",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "Name of the user",
           "type": ["string", "null"]
         }
       }

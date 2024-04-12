@@ -14,6 +14,7 @@
       "type": ["null", "boolean"]
     },
     "attributes": {
+      "description": "Details about the attributes of the product.",
       "type": ["null", "array"],
       "items": {
         "description": "List of custom attributes associated with the product.",
@@ -29,6 +30,7 @@
       "type": ["null", "integer"]
     },
     "deactivate_on": {
+      "description": "The date on which the product will be deactivated.",
       "type": ["null", "array"],
       "items": {
         "description": "List of reasons or events that might lead to product deactivation.",
@@ -40,6 +42,7 @@
       "type": ["null", "string"]
     },
     "images": {
+      "description": "Images related to the product.",
       "type": ["null", "array"],
       "items": {
         "description": "List of images associated with the product.",
@@ -51,6 +54,7 @@
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Additional information or custom data related to the product.",
       "type": ["null", "object"],
       "properties": {
         "description": "Custom key-value pairs associated with the product."
@@ -61,6 +65,7 @@
       "type": ["null", "string"]
     },
     "package_dimensions": {
+      "description": "Dimensions of the package in which the product is shipped.",
       "type": ["null", "object"],
       "properties": {
         "width": {
@@ -114,6 +119,7 @@
       "type": ["null", "string"]
     },
     "features": {
+      "description": "List of features offered by the product.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

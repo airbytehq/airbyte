@@ -100,306 +100,382 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the contact.
             type:
               - "null"
               - integer
           first_name:
+            description: First name of the contact.
             type:
               - "null"
               - string
           last_name:
+            description: Last name of the contact.
             type:
               - "null"
               - string
           subscription_status:
+            description: Status of subscription for the contact.
             type:
               - "null"
               - integer
           job_title:
+            description: Job title of the contact.
             type:
               - "null"
               - string
           email:
+            description: Primary email address of the contact.
             type:
               - "null"
               - string
           emails:
+            description: List of email addresses associated with the contact.
             type:
               - "null"
               - array
           work_number:
+            description: Work phone number of the contact.
             type:
               - "null"
               - string
           external_id:
+            description: External ID associated with the contact.
             type:
               - "null"
               - string
           mobile_number:
+            description: Mobile phone number of the contact.
             type:
               - "null"
               - string
           address:
+            description: Physical address of the contact.
             type:
               - "null"
               - string
           city:
+            description: City of the contact's location.
             type:
               - "null"
               - string
           state:
+            description: State of the contact's location.
             type:
               - "null"
               - string
           zipcode:
+            description: Zip code of the contact's location.
             type:
               - "null"
               - string
           country:
+            description: Country of the contact's location.
             type:
               - "null"
               - string
           sales_accounts:
+            description: List of sales accounts associated with the contact.
             type:
               - "null"
               - array
           territory_id:
+            description: ID of the territory associated with the contact.
             type:
               - "null"
               - integer
           lead_source_id:
+            description: ID representing the lead source of the contact.
             type:
               - "null"
               - integer
           owner_id:
+            description: ID of the owner assigned to the contact.
             type:
               - "null"
               - integer
           subscription_types:
+            description: Types of subscriptions associated with the contact.
             type:
               - "null"
               - string
           medium:
+            description: Medium of communication with the contact.
             type:
               - "null"
               - string
           campaign_id:
+            description: ID of the campaign associated with the contact.
             type:
               - "null"
               - integer
           keyword:
+            description: Keyword related to the contact.
             type:
               - "null"
               - string
           time_zone:
+            description: Time zone of the contact.
             type:
               - "null"
               - string
           facebook:
+            description: Facebook profile URL of the contact.
             type:
               - "null"
               - string
           twitter:
+            description: Twitter profile URL of the contact.
             type:
               - "null"
               - string
           linkedin:
+            description: LinkedIn profile URL of the contact.
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp indicating when the contact was created.
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp indicating when the contact was last updated.
             type:
               - "null"
               - string
           contact_status_id:
+            description: ID representing the status of the contact.
             type:
               - "null"
               - integer
           sales_account_id:
+            description: ID of the sales account associated with the contact.
             type:
               - "null"
               - integer
           lifecycle_stage_id:
+            description: ID representing the lifecycle stage of the contact.
             type:
               - "null"
               - integer
           display_name:
+            description: Name to be displayed for the contact.
             type:
               - "null"
               - string
           avatar:
+            description: Avatar image URL of the contact.
             type:
               - "null"
               - string
           last_seen:
+            description: Timestamp of the last seen activity of the contact.
             type:
               - "null"
               - string
           lead_score:
+            description: Score indicating the lead quality of the contact.
             type:
               - "null"
               - integer
           last_contacted:
+            description: Timestamp of the last contact made with the contact.
             type:
               - "null"
               - string
           open_deals_amount:
+            description: Total amount of open deals associated with the contact.
             type:
               - "null"
               - string
           won_deals_amount:
+            description: Total amount of won deals associated with the contact.
             type:
               - "null"
               - string
           links:
+            description: List of links related to the contact.
             type:
               - "null"
               - object
           last_contacted_sales_activity_mode:
+            description: Sales activity mode of the last contact made with the contact.
             type:
               - "null"
               - string
           custom_field:
+            description: Custom field data related to the contact.
             type:
               - "null"
               - object
           last_contacted_mode:
+            description: Mode of the last contact made with the contact.
             type:
               - "null"
               - string
           recent_note:
+            description: Recent note added related to the contact.
             type:
               - "null"
               - string
           won_deals_count:
+            description: Count of won deals associated with the contact.
             type:
               - "null"
               - integer
           last_contacted_via_sales_activity:
+            description: Indicates if the last contact was made via sales activity.
             type:
               - "null"
               - string
           completed_sales_sequences:
+            description: List of completed sales sequences associated with the contact.
             type:
               - "null"
               - string
           active_sales_sequences:
+            description: List of active sales sequences associated with the contact.
             type:
               - "null"
               - string
           web_form_ids:
+            description: IDs of web forms associated with the contact.
             type:
               - "null"
               - string
           open_deals_count:
+            description: Count of open deals associated with the contact.
             type:
               - "null"
               - integer
           last_assigned_at:
+            description: Timestamp of the last time the contact was assigned.
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the contact.
             type:
               - "null"
               - array
           is_deleted:
+            description: Flag indicating if the contact is deleted.
             type:
               - "null"
               - boolean
           team_user_ids:
+            description: IDs of team users associated with the contact.
             type:
               - "null"
               - string
           work_email:
+            description: Work email address of the contact.
             type:
               - "null"
               - string
           customer_fit:
+            description: Fit of the contact as a potential customer.
             type:
               - "null"
               - integer
           whatsapp_subscription_status:
+            description: Status of WhatsApp subscription for the contact.
             type:
               - "null"
               - integer
           phone_numbers:
+            description: List of phone numbers associated with the contact.
             type:
               - "null"
               - array
           first_seen_chat:
+            description: Timestamp of initial chat seen with the contact.
             type:
               - "null"
               - string
           latest_campaign:
+            description: Latest campaign the contact was associated with.
             type:
               - "null"
               - string
           latest_source:
+            description: Latest source of the contact.
             type:
               - "null"
               - string
           unsubscription_reason:
+            description: Reason for the unsubscription status of the contact.
             type:
               - "null"
               - string
           first_campaign:
+            description: First campaign the contact was associated with.
             type:
               - "null"
               - string
           total_sessions:
+            description: Total sessions related to the contact.
             type:
               - "null"
               - string
           mcr_id:
+            description: ID associated with the contact in a specific system.
             type:
               - "null"
               - integer
           last_campaign:
+            description: Last campaign the contact was associated with.
             type:
               - "null"
               - string
           last_medium:
+            description: Last medium used to contact the contact.
             type:
               - "null"
               - string
           last_seen_chat:
+            description: Timestamp of the last chat seen with the contact.
             type:
               - "null"
               - string
           first_medium:
+            description: First medium used to contact the contact.
             type:
               - "null"
               - string
           other_unsubscription_reason:
+            description: Reason for other unsubscription status of the contact.
             type:
               - "null"
               - string
           system_tags:
+            description: Tags associated with the contact in the system.
             type:
               - "null"
               - array
           latest_medium:
+            description: Latest medium used to contact the contact.
             type:
               - "null"
               - string
           first_source:
+            description: First source of the contact.
             type:
               - "null"
               - string
           sms_subscription_status:
+            description: Status of SMS subscription for the contact.
             type:
               - "null"
               - integer
           locale:
+            description: Language locale of the contact.
             type:
               - "null"
               - string
           last_source:
+            description: Last source of the contact.
             type:
               - "null"
               - string
@@ -450,242 +526,332 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier of the account
             type:
               - "null"
               - integer
           name:
+            description: Full name of the account
             type:
               - "null"
               - string
           address:
+            description: Physical address of the account
             type:
               - "null"
               - string
           city:
+            description: City where the account is located
             type:
               - "null"
               - string
           state:
+            description: State or region where the account is located
             type:
               - "null"
               - string
           zipcode:
+            description: Postal code or ZIP code of the account's location
             type:
               - "null"
               - string
           country:
+            description: Country where the account is located
             type:
               - "null"
               - string
           industry_type_id:
+            description:
+              Identification of the industry type the account operates
+              in
             type:
               - "null"
               - integer
           business_type_id:
+            description:
+              Identification of the type of business the account belongs
+              to
             type:
               - "null"
               - integer
           number_of_employees:
+            description: Total number of employees working in the account
             type:
               - "null"
               - integer
           annual_revenue:
+            description: Yearly revenue generated by the account in a specific currency
             type:
               - "null"
               - number
           website:
+            description: Official website of the account
             type:
               - "null"
               - string
           phone:
+            description: Primary phone number of the account
             type:
               - "null"
               - string
           owner_id:
+            description: Unique identifier of the user who owns or manages the account
             type:
               - "null"
               - integer
           facebook:
+            description: Facebook profile or page associated with the account
             type:
               - "null"
               - string
           twitter:
+            description: Twitter handle associated with the account
             type:
               - "null"
               - string
           linkedin:
+            description: LinkedIn profile associated with the account
             type:
               - "null"
               - string
           territory_id:
+            description:
+              Identification of the sales territory to which the account
+              belongs
             type:
               - "null"
               - integer
           created_at:
+            description: Date and time when the account was created
             type:
               - "null"
               - string
           updated_at:
+            description: Date and time when the account was last updated
             type:
               - "null"
               - string
           parent_sales_account_id:
+            description:
+              Identifier of the parent sales account if the account is
+              a subsidiary
             type:
               - "null"
               - integer
           first_name:
+            description: First name of the primary contact person of the account
             type:
               - "null"
               - string
           last_name:
+            description: Last name of the primary contact person of the account
             type:
               - "null"
               - string
           display_name:
+            description: Name used for displaying the account in user interfaces
             type:
               - "null"
               - string
           avatar:
+            description: Avatar or profile picture representing the account
             type:
               - "null"
               - string
           job_title:
+            description: Job title of the primary contact person of the account
             type:
               - "null"
               - string
           email:
+            description: Primary email address of the account
             type:
               - "null"
               - string
           emails:
+            description: List of email addresses associated with the account
             type:
               - "null"
               - array
           time_zone:
+            description: Time zone of the account's location
             type:
               - "null"
               - string
           work_number:
+            description: Work phone number of the primary contact person of the account
             type:
               - "null"
               - string
           mobile_number:
+            description:
+              Mobile phone number of the primary contact person of the
+              account
             type:
               - "null"
               - string
           last_seen:
+            description: Date and time when the account was last seen or accessed
             type:
               - "null"
               - string
           lead_score:
+            description:
+              Score indicating the likelihood of the account becoming a
+              qualified lead
             type:
               - "null"
               - integer
           last_contacted:
+            description: Date and time when the account was last contacted
             type:
               - "null"
               - string
           open_deals_amount:
+            description: Total value of open deals with the account
             type:
               - "null"
               - string
           won_deals_amount:
+            description: Total value of won deals with the account
             type:
               - "null"
               - string
           links:
+            description: List of web links or URLs related to the account
             type:
               - "null"
               - object
           last_contacted_sales_activity_mode:
+            description:
+              Mode of the sales activity during the last contact made with
+              the account
             type:
               - "null"
               - string
           custom_field:
+            description: Custom field to store additional data specific to the account
             type:
               - "null"
               - object
           keyword:
+            description: Keyword associated with the account for easy search and categorization
             type:
               - "null"
               - string
           medium:
+            description:
+              Medium channel used for marketing or communication with the
+              account
             type:
               - "null"
               - string
           last_contacted_mode:
+            description: Mode of the last contact made with the account
             type:
               - "null"
               - string
           recent_note:
+            description: Most recent note or comment added to the account
             type:
               - "null"
               - string
           won_deals_count:
+            description: Number of won deals associated with the account
             type:
               - "null"
               - integer
           last_contacted_via_sales_activity:
+            description:
+              Indication of whether the last contact was made via sales
+              activity
             type:
               - "null"
               - string
           completed_sales_sequences:
+            description: List of finished sales sequences associated with the account
             type:
               - "null"
               - string
           active_sales_sequences:
+            description: List of ongoing sales sequences associated with the account
             type:
               - "null"
               - string
           web_form_ids:
+            description:
+              List of web form identifiers used for lead generation from
+              the account
             type:
               - "null"
               - array
           open_deals_count:
+            description: Number of open deals associated with the account
             type:
               - "null"
               - integer
           last_assigned_at:
+            description: Date and time when the account was last assigned to a user
             type:
               - "null"
               - string
           tags:
+            description:
+              Tags or labels attached to the account for classification
+              and organization
             type:
               - "null"
               - array
           is_deleted:
+            description: Flag indicating if the account has been deleted
             type:
               - "null"
               - boolean
           team_user_ids:
+            description:
+              List of user identifiers belonging to the team associated
+              with the account
             type:
               - "null"
               - array
           external_id:
+            description: External identifier for linking the account to external systems
             type:
               - "null"
               - string
           work_email:
+            description: Work email address of the primary contact person of the account
             type:
               - "null"
               - string
           subscription_status:
+            description:
+              Current status of subscription or service agreement with
+              the account
             type:
               - "null"
               - integer
           subscription_types:
+            description: List of subscription types or plans associated with the account
             type:
               - "null"
               - string
           customer_fit:
+            description:
+              Indication of how well the account aligns with the ideal
+              customer profile
             type:
               - "null"
               - string
           whatsapp_subscription_status:
+            description:
+              Subscription status for receiving WhatsApp messages from
+              the account
             type:
               - "null"
               - string
           phone_numbers:
+            description: List of phone numbers associated with the account
             type:
               - "null"
               - array
@@ -740,192 +906,240 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the deal.
             type:
               - "null"
               - integer
           name:
+            description: The name of the deal.
             type:
               - "null"
               - string
           amount:
+            description: The amount of the deal.
             type:
               - "null"
               - string
           currency_id:
+            description: The ID of the currency used for the deal.
             type:
               - "null"
               - integer
           base_currency_amount:
+            description: The amount of the deal in base currency.
             type:
               - "null"
               - string
           sales_account_id:
+            description: The ID of the sales account associated with the deal.
             type:
               - "null"
               - integer
           deal_stage_id:
+            description: The ID of the stage of the deal.
             type:
               - "null"
               - integer
           deal_reason_id:
+            description: The reason associated with the deal.
             type:
               - "null"
               - integer
           deal_type_id:
+            description: The ID of the deal type.
             type:
               - "null"
               - integer
           owner_id:
+            description: The ID of the owner of the deal.
             type:
               - "null"
               - integer
           expected_close:
+            description: The expected closing date of the deal.
             type:
               - "null"
               - string
           closed_date:
+            description: The date when the deal was closed.
             type:
               - "null"
               - string
           lead_source_id:
+            description: The ID of the lead source for the deal.
             type:
               - "null"
               - integer
           campaign_id:
+            description: The ID of the campaign associated with the deal.
             type:
               - "null"
               - integer
           deal_product_id:
+            description: The ID of the product associated with the deal.
             type:
               - "null"
               - integer
           deal_payment_status_id:
+            description: The ID of the payment status of the deal.
             type:
               - "null"
               - integer
           probability:
+            description: The probability of closing the deal.
             type:
               - "null"
               - integer
           created_at:
+            description: The date and time when the deal was created.
             type:
               - "null"
               - string
           updated_at:
+            description: The date and time when the deal was last updated.
             type:
               - "null"
               - string
           territory_id:
+            description: The ID of the territory associated with the deal.
             type:
               - "null"
               - integer
           deal_pipeline_id:
+            description: The ID of the deal pipeline.
             type: integer
           stage_updated_time:
+            description: The time when the stage was last updated.
             type:
               - "null"
               - string
           custom_field:
+            description: Custom fields associated with the deal.
             type:
               - "null"
               - object
           age:
+            description: The age of the deal in days.
             type:
               - "null"
               - integer
           links:
+            description: Related links associated with the deal.
             type:
               - "null"
               - object
           recent_note:
+            description: The most recent note added to the deal.
             type:
               - "null"
               - string
           completed_sales_sequences:
+            description: The completed sales sequences associated with the deal.
             type:
               - "null"
               - string
           active_sales_sequences:
+            description: The active sales sequences associated with the deal.
             type:
               - "null"
               - string
           web_form_id:
+            description: The ID of the web form through which the deal was captured.
             type:
               - "null"
               - integer
           upcoming_activities_time:
+            description: The time when upcoming activities are scheduled for the deal.
             type:
               - "null"
               - string
           collaboration:
+            description: Information about collaboration on the deal.
             type:
               - "null"
               - object
           last_assigned_at:
+            description: The date when the deal was last assigned.
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the deal.
             type:
               - "null"
               - array
           last_contacted_sales_activity_mode:
+            description: The mode of last contacted sales activity.
             type:
               - "null"
               - string
           last_contacted_via_sales_activity:
+            description: The method of last contacted via sales activity.
             type:
               - "null"
               - string
           expected_deal_value:
+            description: The expected value of the deal.
             type:
               - "null"
               - string
           is_deleted:
+            description: Indicates if the deal has been deleted.
             type:
               - "null"
               - boolean
           team_user_ids:
+            description: IDs of users in the team associated with the deal.
             type:
               - "null"
               - string
           avatar:
+            description: The avatar associated with the deal.
             type:
               - "null"
               - string
           fc_widget_collaboration:
+            description: Collaboration information specific to the FC widget.
             type:
               - "null"
               - object
           forecast_category:
+            description: The category for forecasting the deal.
             type:
               - "null"
               - integer
           deal_prediction_last_updated_at:
+            description: The date when the deal prediction was last updated.
             type:
               - "null"
               - string
           rotten_days:
+            description: Number of days since the deal has been marked as rotten.
             type:
               - "null"
               - integer
           has_products:
+            description: Indicates if the deal has associated products.
             type:
               - "null"
               - boolean
           products:
+            description: Products associated with the deal.
             type:
               - "null"
               - string
           last_deal_prediction:
+            description: The last prediction made for the deal.
             type:
               - "null"
               - string
           deal_prediction:
+            description: Prediction related to the deal.
             type:
               - "null"
               - integer
           freddy_forecast_metrics:
+            description: Freddy forecast metrics related to the deal.
             type:
               - "null"
               - string
@@ -964,192 +1178,240 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the deal
             type:
               - "null"
               - integer
           name:
+            description: Name of the deal
             type:
               - "null"
               - string
           amount:
+            description: Total amount associated with the deal
             type:
               - "null"
               - string
           currency_id:
+            description: ID of the currency used for the deal
             type:
               - "null"
               - integer
           base_currency_amount:
+            description: Amount in base currency
             type:
               - "null"
               - string
           sales_account_id:
+            description: ID of the sales account associated with the deal
             type:
               - "null"
               - integer
           deal_stage_id:
+            description: ID of the current stage of the deal
             type:
               - "null"
               - integer
           deal_reason_id:
+            description: ID of the reason related to the deal
             type:
               - "null"
               - integer
           deal_type_id:
+            description: ID of the deal type
             type:
               - "null"
               - integer
           owner_id:
+            description: ID of the owner of the deal
             type:
               - "null"
               - integer
           expected_close:
+            description: Expected closing date of the deal
             type:
               - "null"
               - string
           closed_date:
+            description: Date when the deal was closed
             type:
               - "null"
               - string
           lead_source_id:
+            description: ID of the lead source associated with the deal
             type:
               - "null"
               - integer
           campaign_id:
+            description: ID of the campaign associated with the deal
             type:
               - "null"
               - integer
           deal_product_id:
+            description: ID of the product associated with the deal
             type:
               - "null"
               - integer
           deal_payment_status_id:
+            description: ID representing the payment status of the deal
             type:
               - "null"
               - integer
           probability:
+            description: Probability of the deal closing
             type:
               - "null"
               - integer
           created_at:
+            description: Date and time when the deal was created
             type:
               - "null"
               - string
           updated_at:
+            description: Date and time when the deal was last updated
             type:
               - "null"
               - string
           territory_id:
+            description: ID of the territory associated with the deal
             type:
               - "null"
               - integer
           deal_pipeline_id:
+            description: ID of the deal pipeline to which the deal belongs
             type: integer
           stage_updated_time:
+            description: Time when the deal stage was last updated
             type:
               - "null"
               - string
           custom_field:
+            description: Custom fields associated with the deal
             type:
               - "null"
               - object
           age:
+            description: Age of the deal in days since its creation
             type:
               - "null"
               - integer
           links:
+            description: Links related to the deal
             type:
               - "null"
               - object
           recent_note:
+            description: Most recent note added to the deal
             type:
               - "null"
               - string
           completed_sales_sequences:
+            description: List of completed sales sequences for the deal
             type:
               - "null"
               - string
           active_sales_sequences:
+            description: List of active sales sequences associated with the deal
             type:
               - "null"
               - string
           web_form_id:
+            description: ID of the web form through which the deal was captured
             type:
               - "null"
               - integer
           upcoming_activities_time:
+            description: Time scheduled for upcoming activities related to the deal
             type:
               - "null"
               - string
           collaboration:
+            description: Collaboration details related to the deal
             type:
               - "null"
               - object
           last_assigned_at:
+            description: Date and time when the deal was last assigned
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the deal
             type:
               - "null"
               - array
           last_contacted_sales_activity_mode:
+            description: Mode of the last sales activity contact
             type:
               - "null"
               - string
           last_contacted_via_sales_activity:
+            description: Last sales activity contact method used
             type:
               - "null"
               - string
           expected_deal_value:
+            description: Expected value of the deal
             type:
               - "null"
               - string
           is_deleted:
+            description: Flag indicating if the deal is deleted
             type:
               - "null"
               - boolean
           team_user_ids:
+            description: IDs of team members associated with the deal
             type:
               - "null"
               - string
           avatar:
+            description: Avatar of the deal owner
             type:
               - "null"
               - string
           fc_widget_collaboration:
+            description: Collaboration details for FC widget
             type:
               - "null"
               - object
           forecast_category:
+            description: Forecast category of the deal
             type:
               - "null"
               - integer
           deal_prediction_last_updated_at:
+            description: Last updated date of the deal prediction
             type:
               - "null"
               - string
           rotten_days:
+            description: Number of days since the deal became rotten
             type:
               - "null"
               - integer
           has_products:
+            description: Flag indicating if the deal has associated products
             type:
               - "null"
               - boolean
           products:
+            description: List of products associated with the deal
             type:
               - "null"
               - string
           last_deal_prediction:
+            description: Last prediction for the deal
             type:
               - "null"
               - string
           deal_prediction:
+            description: Prediction related to the deal
             type:
               - "null"
               - integer
           freddy_forecast_metrics:
+            description: Freddy forecast metrics related to the deal
             type:
               - "null"
               - string
@@ -1188,192 +1450,242 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the deal
             type:
               - "null"
               - integer
           name:
+            description: Name of the deal
             type:
               - "null"
               - string
           amount:
+            description: The total value of the deal
             type:
               - "null"
               - string
           currency_id:
+            description: ID of the currency used for the deal
             type:
               - "null"
               - integer
           base_currency_amount:
+            description: The deal amount in the base currency
             type:
               - "null"
               - string
           sales_account_id:
+            description: ID of the sales account associated with the deal
             type:
               - "null"
               - integer
           deal_stage_id:
+            description: ID of the stage the deal is currently in
             type:
               - "null"
               - integer
           deal_reason_id:
+            description: ID of the reason for the deal
             type:
               - "null"
               - integer
           deal_type_id:
+            description: ID of the deal type
             type:
               - "null"
               - integer
           owner_id:
+            description: ID of the user who owns the deal
             type:
               - "null"
               - integer
           expected_close:
+            description: Expected close date of the deal
             type:
               - "null"
               - string
           closed_date:
+            description: The date when the deal was closed
             type:
               - "null"
               - string
           lead_source_id:
+            description: ID of the lead source for the deal
             type:
               - "null"
               - integer
           campaign_id:
+            description: ID of the campaign associated with the deal
             type:
               - "null"
               - integer
           deal_product_id:
+            description: ID of the product related to the deal
             type:
               - "null"
               - integer
           deal_payment_status_id:
+            description: ID of the payment status for the deal
             type:
               - "null"
               - integer
           probability:
+            description: Probability of the deal closing successfully
             type:
               - "null"
               - integer
           created_at:
+            description: The date and time when the deal was created
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp of the last update to the deal
             type:
               - "null"
               - string
           territory_id:
+            description: ID of the territory associated with the deal
             type:
               - "null"
               - integer
           deal_pipeline_id:
+            description: ID of the deal pipeline the deal belongs to
             type: integer
           stage_updated_time:
+            description: Timestamp of the last update to the deal stage
             type:
               - "null"
               - string
           custom_field:
+            description: Custom field data associated with the deal
             type:
               - "null"
               - object
           age:
+            description: The age of the deal in days
             type:
               - "null"
               - integer
           links:
+            description: Links associated with the deal
             type:
               - "null"
               - object
           recent_note:
+            description: Recent note added to the deal
             type:
               - "null"
               - string
           completed_sales_sequences:
+            description: The sales sequences that have been completed for the deal
             type:
               - "null"
               - string
           active_sales_sequences:
+            description:
+              The currently active sales sequences associated with the
+              deal
             type:
               - "null"
               - string
           web_form_id:
+            description: ID of the web form through which the deal was captured
             type:
               - "null"
               - integer
           upcoming_activities_time:
+            description: Time of upcoming activities related to the deal
             type:
               - "null"
               - string
           collaboration:
+            description: Collaboration details related to the deal
             type:
               - "null"
               - object
           last_assigned_at:
+            description: Timestamp of the last assignment of the deal
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the deal
             type:
               - "null"
               - array
           last_contacted_sales_activity_mode:
+            description: Mode of the last sales activity with the contact
             type:
               - "null"
               - string
           last_contacted_via_sales_activity:
+            description: Method of last contact via sales activity
             type:
               - "null"
               - string
           expected_deal_value:
+            description: The expected value of the deal
             type:
               - "null"
               - string
           is_deleted:
+            description: Flag indicating if the deal has been deleted
             type:
               - "null"
               - boolean
           team_user_ids:
+            description: IDs of the team members associated with the deal
             type:
               - "null"
               - string
           avatar:
+            description: Avatar of the deal owner
             type:
               - "null"
               - string
           fc_widget_collaboration:
+            description: Collaboration details for FC widget
             type:
               - "null"
               - object
           forecast_category:
+            description: Category for forecasting the deal
             type:
               - "null"
               - integer
           deal_prediction_last_updated_at:
+            description: Timestamp of the last update to the deal prediction
             type:
               - "null"
               - string
           rotten_days:
+            description: Number of days the deal has been rotten
             type:
               - "null"
               - integer
           has_products:
+            description: Flag indicating if the deal has associated products
             type:
               - "null"
               - boolean
           products:
+            description: List of products associated with the deal
             type:
               - "null"
               - string
           last_deal_prediction:
+            description: Last prediction associated with the deal
             type:
               - "null"
               - string
           deal_prediction:
+            description: Prediction associated with the deal
             type:
               - "null"
               - integer
           freddy_forecast_metrics:
+            description: Forecast metrics related to the deal
             type:
               - "null"
               - string
@@ -1400,70 +1712,87 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the task
             type:
               - "null"
               - integer
           title:
+            description: Title or name of the task
             type:
               - "null"
               - string
           description:
+            description: Details of the task
             type:
               - "null"
               - string
           due_date:
+            description: Date by which the task is due
             type:
               - "null"
               - string
           targetable_id:
+            description: ID of the target related to the task
             type:
               - "null"
               - integer
           targetable_type:
+            description: Type of target related to the task
             type:
               - "null"
               - string
           Possible:
+            description: Indicates if the task is possible or not
             type:
               - "null"
               - string
           owner_id:
+            description: User ID of the task owner
             type:
               - "null"
               - integer
           status:
+            description: Current status of the task
             type:
               - "null"
               - integer
           creater_id:
+            description: User ID of the task creator
             type:
               - "null"
               - integer
           created_at:
+            description: Date and time when the task was created
             type:
               - "null"
               - string
           updated_at:
+            description: Date and time when the task was last updated
             type:
               - "null"
               - string
           outcome_id:
+            description: ID of the outcome related to the task
             type:
               - "null"
               - integer
           task_type_id:
+            description: ID specifying the type of task
             type:
               - "null"
               - integer
           updater_id:
+            description: User ID of the person who last updated the task
             type:
               - "null"
               - integer
           targetables:
+            description: List of target entities associated with the task
             type:
               - "null"
               - array
           completed_date:
+            description: Date when the task was completed
             type:
               - "null"
               - string
@@ -1490,70 +1819,87 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier of the task
             type:
               - "null"
               - integer
           title:
+            description: Title or summary of the task
             type:
               - "null"
               - string
           description:
+            description: Details or notes associated with the task
             type:
               - "null"
               - string
           due_date:
+            description: Date by when the task should be completed
             type:
               - "null"
               - string
           targetable_id:
+            description: ID of the target associated with the task
             type:
               - "null"
               - integer
           targetable_type:
+            description: Type of the target associated with the task
             type:
               - "null"
               - string
           Possible:
+            description: Boolean flag indicating if the task is possible or not
             type:
               - "null"
               - string
           owner_id:
+            description: ID of the user who is assigned as the owner of the task
             type:
               - "null"
               - integer
           status:
+            description: Current status of the task (e.g., completed, pending)
             type:
               - "null"
               - integer
           creater_id:
+            description: ID of the user who created the task
             type:
               - "null"
               - integer
           created_at:
+            description: Date and time when the task was created
             type:
               - "null"
               - string
           updated_at:
+            description: Date and time when the task was last updated
             type:
               - "null"
               - string
           outcome_id:
+            description: ID of the outcome associated with the task
             type:
               - "null"
               - integer
           task_type_id:
+            description: ID of the task type (e.g., meeting, call) of the task
             type:
               - "null"
               - integer
           updater_id:
+            description: ID of the user who last updated the task
             type:
               - "null"
               - integer
           targetables:
+            description: Details of the target associated with the task
             type:
               - "null"
               - array
           completed_date:
+            description: Date and time when the task was completed
             type:
               - "null"
               - string
@@ -1580,130 +1926,162 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the appointment
             type:
               - "null"
               - integer
           from_date:
+            description: Starting date of the appointment
             type:
               - "null"
               - string
           date:
+            description: Date of the appointment
             type:
               - "null"
               - string
           Start:
+            description: Starting time of the appointment
             type:
               - "null"
               - string
           end_date:
+            description: Ending date of the appointment
             type:
               - "null"
               - string
           End:
+            description: Ending time of the appointment
             type:
               - "null"
               - string
           time_zone:
+            description: Time zone in which the appointment is scheduled
             type:
               - "null"
               - string
           title:
+            description: Title or name of the appointment
             type:
               - "null"
               - string
           description:
+            description: Brief description or summary of the appointment
             type:
               - "null"
               - string
           creater_id:
+            description: ID of the user who created the appointment
             type:
               - "null"
               - integer
           targetable_id:
+            description: ID of the target associated with the appointment
             type:
               - "null"
               - integer
           targetable_type:
+            description: Type of target associated with the appointment
             type:
               - "null"
               - string
           Possible:
+            description: Indicates if the appointment is possible or feasible to happen
             type:
               - "null"
               - string
           location:
+            description: Location where the appointment is scheduled
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp when the appointment was created
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp when the appointment was last updated
             type:
               - "null"
               - string
           is_allday:
+            description: Indicates if the appointment is scheduled for a full day
             type:
               - "null"
               - boolean
           appointment_attendees_attributes:
+            description: Attributes of attendees for the appointment
             type:
               - "null"
               - array
           outcome_id:
+            description: ID representing the outcome of the appointment
             type:
               - "null"
               - integer
           latitude:
+            description: Latitude of the location where the appointment is scheduled
             type:
               - "null"
               - string
           longitude:
+            description: Longitude of the location where the appointment is scheduled
             type:
               - "null"
               - string
           checkedin_at:
+            description: Timestamp when the attendee checked in
             type:
               - "null"
               - string
           checkedout_location:
+            description: Location where the attendee checked out
             type:
               - "null"
               - string
           can_checkin_checkout:
+            description: Flag to determine if both check-in and check-out are allowed
             type:
               - "null"
               - boolean
           checkedout_latitude:
+            description: Latitude of the location where the attendee checked out
             type:
               - "null"
               - string
           checkedin_duration:
+            description: Duration of time for which the attendee was checked in
             type:
               - "null"
               - string
           checkedout_longitude:
+            description: Longitude of the location where the attendee checked out
             type:
               - "null"
               - string
           targetables:
+            description: Targets assigned or related to the appointment
             type:
               - "null"
               - array
           can_checkin:
+            description: Flag to determine if check-in is allowed
             type:
               - "null"
               - boolean
           provider:
+            description: Provider of the appointment service
             type:
               - "null"
               - string
           checkedout_at:
+            description: Timestamp when the attendee checked out
             type:
               - "null"
               - string
           conference_id:
+            description: ID of the conference associated with the appointment
             type:
               - "null"
               - string
@@ -1731,130 +2109,164 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the appointment
             type:
               - "null"
               - integer
           from_date:
+            description: Starting date of the appointment
             type:
               - "null"
               - string
           date:
+            description: Date of the appointment
             type:
               - "null"
               - string
           Start:
+            description: Start time of the appointment
             type:
               - "null"
               - string
           end_date:
+            description: End date of the appointment
             type:
               - "null"
               - string
           End:
+            description: End time of the appointment
             type:
               - "null"
               - string
           time_zone:
+            description: Time zone of the appointment
             type:
               - "null"
               - string
           title:
+            description: Title or subject of the appointment
             type:
               - "null"
               - string
           description:
+            description: Description or notes about the appointment
             type:
               - "null"
               - string
           creater_id:
+            description: ID of the user who created the appointment
             type:
               - "null"
               - integer
           targetable_id:
+            description: ID of the targetable entity associated with the appointment
             type:
               - "null"
               - integer
           targetable_type:
+            description: Type of the targetable entity associated with the appointment
             type:
               - "null"
               - string
           Possible:
+            description: Possibility status of the appointment
             type:
               - "null"
               - string
           location:
+            description: Description of the appointment location
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp when the appointment was created
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp when the appointment was last updated
             type:
               - "null"
               - string
           is_allday:
+            description: Flag indicating if the appointment is an all-day event
             type:
               - "null"
               - boolean
           appointment_attendees_attributes:
+            description: Attributes of attendees related to the appointment
             type:
               - "null"
               - array
           outcome_id:
+            description: ID representing the outcome/status of the appointment
             type:
               - "null"
               - integer
           latitude:
+            description: Latitude coordinate of the appointment location
             type:
               - "null"
               - string
           longitude:
+            description: Longitude coordinate of the appointment location
             type:
               - "null"
               - string
           checkedin_at:
+            description: Timestamp when the attendee checked in
             type:
               - "null"
               - string
           checkedout_location:
+            description: Location description where the attendee checked out
             type:
               - "null"
               - string
           can_checkin_checkout:
+            description: Permission to perform check-in and check-out for the appointment
             type:
               - "null"
               - boolean
           checkedout_latitude:
+            description: Latitude coordinate when checking out
             type:
               - "null"
               - string
           checkedin_duration:
+            description:
+              Duration of time spent by the attendee in the checked-in
+              status
             type:
               - "null"
               - string
           checkedout_longitude:
+            description: Longitude coordinate when checking out
             type:
               - "null"
               - string
           targetables:
+            description: Details of targetable entities linked to the appointment
             type:
               - "null"
               - array
           can_checkin:
+            description: Permission to perform check-in for the appointment
             type:
               - "null"
               - boolean
           provider:
+            description: Provider of the appointment service
             type:
               - "null"
               - string
           checkedout_at:
+            description: Timestamp when the attendee checked out
             type:
               - "null"
               - string
           conference_id:
+            description: ID of the conference associated with the appointment
             type:
               - "null"
               - string

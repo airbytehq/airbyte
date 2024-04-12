@@ -48,34 +48,43 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the execution.
             type:
               - integer
           finished:
+            description: Timestamp indicating when the execution finished.
             type:
               - boolean
           mode:
+            description: Execution mode (e.g., manual, auto-triggered, or webhook-triggered).
             type:
               - string
           retryOf:
+            description: ID of the execution that this execution is a retry of.
             type:
               - "null"
               - string
           retrySuccessId:
+            description: ID of the successful retry of this execution.
             type:
               - "null"
               - integer
           startedAt:
+            description: Timestamp indicating when the execution started.
             type:
               - string
           stoppedAt:
+            description: Timestamp indicating when the execution stopped.
             type:
               - "null"
               - string
           workflowId:
+            description: Unique identifier for the workflow associated with the execution.
             type:
               - "null"
               - string
           waitTill:
+            description: Timestamp specifying when the execution is scheduled to resume.
             type:
               - "null"
               - string

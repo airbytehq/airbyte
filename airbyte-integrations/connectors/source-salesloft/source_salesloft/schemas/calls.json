@@ -3,25 +3,32 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the call entry",
       "type": "integer"
     },
     "to": {
+      "description": "Destination of the call, e.g., phone number",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "Duration of the call in seconds",
       "type": ["null", "integer"]
     },
     "sentiment": {
+      "description": "Emotional tone or feeling associated with the call",
       "type": ["null", "string"]
     },
     "disposition": {
+      "description": "Outcome or result of the call",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the call was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp indicating when the call was last updated",
       "type": "string",
       "format": "date-time"
     },
@@ -30,9 +37,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user associated with the call",
           "type": ["null", "string"]
         }
       }
@@ -42,6 +51,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the action related to the call",
           "type": ["null", "integer"]
         }
       }
@@ -51,9 +61,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the person who was called",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the person who was called",
           "type": ["null", "string"]
         }
       }
@@ -63,9 +75,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the CRM activity associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the CRM activity associated with the call",
           "type": ["null", "string"]
         }
       }
@@ -75,9 +89,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the note related to the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the note related to the call",
           "type": ["null", "string"]
         }
       }
@@ -87,9 +103,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the cadence associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the cadence associated with the call",
           "type": ["null", "string"]
         }
       }
@@ -99,9 +117,11 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the step in the cadence associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the step in the cadence associated with the call",
           "type": ["null", "string"]
         }
       }

@@ -7,8 +7,10 @@
       "type": ["null", "integer"]
     },
     "metaData": {
+      "description": "Additional metadata related to the fetched contact lists",
       "type": ["null", "object"],
       "properties": {
+        "description": "Contains description about the fetched data",
         "processing": {
           "description": "Indicates if the list is currently being processed.",
           "type": ["null", "string"]
@@ -76,10 +78,13 @@
       "type": ["null", "string"]
     },
     "filters": {
+      "description": "Contains filter criteria to fetch contact lists",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual filter items",
         "type": ["null", "array"],
         "items": {
+          "description": "Properties for each filter item",
           "type": ["null", "object"],
           "properties": {
             "filterFamily": {

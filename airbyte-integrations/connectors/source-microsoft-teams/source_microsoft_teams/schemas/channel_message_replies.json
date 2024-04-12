@@ -4,56 +4,71 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the message",
       "type": ["null", "string"]
     },
     "replyToId": {
+      "description": "The ID of the message to which this message is a reply",
       "type": ["null", "string"]
     },
     "etag": {
+      "description": "The entity tag used for concurrency control",
       "type": ["null", "string"]
     },
     "messageType": {
+      "description": "The type of the message",
       "type": ["null", "string"]
     },
     "createdDateTime": {
+      "description": "The date and time when the message was created",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "lastModifiedDateTime": {
+      "description": "The date and time when the message was last modified",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "lastEditedDateTime": {
+      "description": "The date and time when the message was last edited",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "deletedDateTime": {
+      "description": "The date and time the message was deleted, if applicable",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "subject": {
+      "description": "The subject of the message",
       "type": ["null", "string"]
     },
     "summary": {
+      "description": "A summary of the message content",
       "type": ["null", "string"]
     },
     "chatId": {
+      "description": "The unique identifier of the chat",
       "type": ["null", "string"]
     },
     "importance": {
+      "description": "The importance level of the message",
       "type": ["null", "string"]
     },
     "locale": {
+      "description": "The locale of the message",
       "type": ["null", "string"]
     },
     "webUrl": {
+      "description": "The web URL of the message",
       "type": ["null", "string"]
     },
     "policyViolation": {
+      "description": "Information about policy violations, if any",
       "type": ["null", "string"]
     },
     "from": {
@@ -74,15 +89,19 @@
           "additionalProperties": true,
           "properties": {
             "id": {
+              "description": "The ID of the user sending the message",
               "type": ["null", "string"]
             },
             "displayName": {
+              "description": "The display name of the user sending the message",
               "type": ["null", "string"]
             },
             "userIdentityType": {
+              "description": "The type of identity of the user",
               "type": ["null", "string"]
             },
             "tenantId": {
+              "description": "The tenant ID of the user's organization",
               "type": ["null", "string"]
             }
           }
@@ -94,9 +113,11 @@
       "additionalProperties": true,
       "properties": {
         "contentType": {
+          "description": "The type of content within the message body",
           "type": ["null", "string"]
         },
         "content": {
+          "description": "The content of the message body",
           "type": ["null", "string"]
         }
       }
@@ -106,9 +127,11 @@
       "additionalProperties": true,
       "properties": {
         "teamId": {
+          "description": "The ID of the team to which the channel belongs",
           "type": ["null", "string"]
         },
         "channelId": {
+          "description": "The ID of the channel in which the message is posted",
           "type": ["null", "string"]
         }
       }
@@ -120,21 +143,27 @@
         "additionalProperties": true,
         "properties": {
           "id": {
+            "description": "The unique identifier of the attachment",
             "type": ["null", "string"]
           },
           "contentType": {
+            "description": "The type of content within the attachment",
             "type": ["null", "string"]
           },
           "contentUrl": {
+            "description": "The URL to access the attachment content",
             "type": ["null", "string"]
           },
           "content": {
+            "description": "The content of the attachment",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the attachment",
             "type": ["null", "string"]
           },
           "thumbnailUrl": {
+            "description": "The URL to the thumbnail of the attachment",
             "type": ["null", "string"]
           }
         }
@@ -147,9 +176,11 @@
         "additionalProperties": true,
         "properties": {
           "id": {
+            "description": "The ID of the mentioned entity",
             "type": ["null", "integer"]
           },
           "mentionText": {
+            "description": "The text that mentions the entity",
             "type": ["null", "string"]
           },
           "mentioned": {
@@ -170,12 +201,15 @@
                 "additionalProperties": true,
                 "properties": {
                   "id": {
+                    "description": "The ID of the mentioned user",
                     "type": ["null", "string"]
                   },
                   "displayName": {
+                    "description": "The display name of the mentioned user",
                     "type": ["null", "string"]
                   },
                   "userIdentityType": {
+                    "description": "The type of identity of the mentioned user",
                     "type": ["null", "string"]
                   }
                 }
@@ -192,9 +226,11 @@
         "additionalProperties": true,
         "properties": {
           "reactionType": {
+            "description": "The type of reaction",
             "type": ["null", "string"]
           },
           "createdDateTime": {
+            "description": "The date and time when the reaction was created",
             "type": ["null", "string"],
             "format": "date-time",
             "airbyte_type": "timestamp_without_timezone"
@@ -217,12 +253,15 @@
                 "additionalProperties": true,
                 "properties": {
                   "id": {
+                    "description": "The ID of the reacting user",
                     "type": ["null", "string"]
                   },
                   "displayName": {
+                    "description": "The display name of the reacting user",
                     "type": ["null", "string"]
                   },
                   "userIdentityType": {
+                    "description": "The type of identity of the reacting user",
                     "type": ["null", "string"]
                   }
                 }

@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the system status tool",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or title of the system status tool",
       "type": ["null", "string"]
     },
     "action": {
+      "description": "The action performed or to be performed",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the system status tool",
       "type": ["null", "string"]
     },
     "success": {
+      "description": "Flag indicating if the action was successful",
       "type": ["null", "boolean"]
     },
     "message": {
+      "description": "Message related to the system status tool",
       "type": ["null", "string"]
     },
     "confirm": {
+      "description": "Whether user confirmation is required for this action",
       "type": ["null", "boolean"]
     }
   }

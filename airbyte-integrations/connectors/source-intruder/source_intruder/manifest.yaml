@@ -45,38 +45,47 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the issue.
             type:
               - "null"
               - integer
           severity:
+            description: Severity level of the issue.
             type:
               - "null"
               - string
           title:
+            description: Title of the issue.
             type:
               - "null"
               - string
           description:
+            description: Description of the issue.
             type:
               - "null"
               - string
           remediation:
+            description: Recommended remediation for the issue.
             type:
               - "null"
               - string
           snoozed:
+            description: Flag indicating if the issue is snoozed.
             type:
               - "null"
               - boolean
           snooze_reason:
+            description: Reason for snoozing the issue.
             type:
               - "null"
               - string
           snooze_until:
+            description: Timestamp until the issue is snoozed.
             type:
               - "null"
               - string
           occurrences:
+            description: Number of occurrences for the issue.
             type:
               - "null"
               - string
@@ -107,34 +116,42 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the occurrence issue.
             type:
               - "null"
               - integer
           target:
+            description: Specific target associated with the occurrence issue.
             type:
               - "null"
               - string
           port:
+            description: Port number related to the occurrence issue.
             type:
               - "null"
               - integer
           extra_info:
+            description: Additional information related to the occurrence issue.
             type:
               - "null"
               - object
           age:
+            description: Age of the intruder associated with the occurrence issue.
             type:
               - "null"
               - string
           snoozed:
+            description: Flag indicating if the occurrence issue is snoozed.
             type:
               - "null"
               - boolean
           snooze_reason:
+            description: Reason for snoozing the occurrence issue.
             type:
               - "null"
               - string
           snooze_until:
+            description: Timestamp until which the occurrence issue is snoozed.
             type:
               - "null"
               - string
@@ -151,14 +168,17 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the scan.
             type:
               - "null"
               - integer
           status:
+            description: The current status of the scan (e.g., 'pending', 'completed').
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the scan was created.
             type:
               - "null"
               - string
@@ -176,14 +196,17 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the target entity.
             type:
               - "null"
               - integer
           address:
+            description: The address of the target entity.
             type:
               - "null"
               - string
           tags:
+            description: Any tags associated with the target entity.
             type:
               - "null"
               - array

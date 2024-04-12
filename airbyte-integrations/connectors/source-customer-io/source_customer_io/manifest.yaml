@@ -45,18 +45,22 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the campaign
             type:
               - "null"
               - integer
           start_hour:
+            description: The hour at which the campaign starts
             type:
               - "null"
               - integer
           timezone:
+            description: The timezone in which the campaign is scheduled
             type:
               - "null"
               - string
           date_attribute:
+            description: The date attribute associated with the campaign
             type:
               - "null"
               - string
@@ -67,10 +71,14 @@ definitions:
             additionalProperties: true
             properties:
               id:
+                description:
+                  The unique identifier of the tag associated with the
+                  campaign
                 type:
                   - "null"
                   - integer
           event_name:
+            description: The name of the event associated with the campaign
             type:
               - "null"
               - string
@@ -81,46 +89,57 @@ definitions:
             additionalProperties: true
             properties:
               id:
+                description: The unique identifier of the trigger segment
                 type:
                   - "null"
                   - integer
           first_started:
+            description: The timestamp when the campaign was first started
             type:
               - "null"
               - integer
           frequency:
+            description: The frequency at which the campaign is scheduled to run
             type:
               - "null"
               - string
           state:
+            description: The current state of the campaign
             type:
               - "null"
               - string
           start_minutes:
+            description: The minutes after the hour at which the campaign starts
             type:
               - "null"
               - integer
           use_customer_timezone:
+            description: Indicates if the campaign should use the customer's timezone
             type:
               - "null"
               - boolean
           updated:
+            description: The timestamp when the campaign was last updated
             type:
               - "null"
               - integer
           deduplicate_id:
+            description: The unique identifier used for deduplication
             type:
               - "null"
               - string
           name:
+            description: The name of the campaign
             type:
               - "null"
               - string
           type:
+            description: The type of campaign
             type:
               - "null"
               - string
           active:
+            description: Indicates if the campaign is currently active
             type:
               - "null"
               - boolean
@@ -132,10 +151,12 @@ definitions:
                 - object
               properties:
                 id:
+                  description: The unique identifier of the message template
                   type:
                     - "null"
                     - integer
                 type:
+                  description: The type of message template
                   type:
                     - "null"
                     - string
@@ -147,18 +168,22 @@ definitions:
                 - object
               properties:
                 id:
+                  description: The unique identifier of the action
                   type:
                     - "null"
                     - integer
                 type:
+                  description: The type of action being performed
                   type:
                     - "null"
                     - string
           created_by:
+            description: The user who created the campaign
             type:
               - "null"
               - string
           created:
+            description: The timestamp when the campaign was created
             type:
               - "null"
               - integer
@@ -191,110 +216,137 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique ID of the campaign action
             type:
               - "null"
               - string
           recipient_environment_id:
+            description: ID of the recipient's environment
             type:
               - "null"
               - integer
           language:
+            description: Language setting for the email campaign action
             type:
               - "null"
               - string
           layout:
+            description: Layout template used for the email campaign action
             type:
               - "null"
               - string
           recipient:
+            description: Recipient's email address for the campaign action
             type:
               - "null"
               - string
           campaign_id:
+            description: ID of the campaign associated with the action
             type:
               - "null"
               - integer
           editor:
+            description: User ID of the editor who created the action
             type:
               - "null"
               - string
           preheader_text:
+            description: Text displayed before the email content in email previews
             type:
               - "null"
               - string
           from_id:
+            description: ID of the sender associated with the action
             type:
               - "null"
               - string
           bcc:
+            description: Blind carbon copy email addresses for the campaign action
             type:
               - "null"
               - string
           subject:
+            description: Subject line of the email campaign action
             type:
               - "null"
               - string
           reply_to:
+            description: Reply-to email address for the campaign action
             type:
               - "null"
               - string
           reply_to_id:
+            description: ID of the reply-to address associated with the action
             type:
               - "null"
               - string
           sending_state:
+            description: State of sending the campaign action (e.g., scheduled, sent)
             type:
               - "null"
               - string
           fake_bcc:
+            description: Fake blind carbon copy email addresses for the campaign action
             type:
               - "null"
               - boolean
           request_method:
+            description: HTTP request method used for sending the campaign action
             type:
               - "null"
               - string
           headers:
+            description: Email headers for the campaign action
             type:
               - "null"
               - string
           url:
+            description: URL associated with the campaign action
             type:
               - "null"
               - string
           from:
+            description: Sender's email address for the campaign action
             type:
               - "null"
               - string
           preprocessor:
+            description: Preprocessor settings for the email campaign action
             type:
               - "null"
               - string
           parent_action_id:
+            description: ID of the parent action, if any
             type:
               - "null"
               - integer
           deduplicate_id:
+            description: ID for deduplication purposes
             type:
               - "null"
               - string
           name:
+            description: Name of the campaign action
             type:
               - "null"
               - string
           created:
+            description: Timestamp for when the action was created
             type:
               - "null"
               - integer
           updated:
+            description: Timestamp for when the action was last updated
             type:
               - "null"
               - integer
           body:
+            description: Content body of the email campaign action
             type:
               - "null"
               - string
           type:
+            description: Type of campaign action (e.g., email, SMS)
             type:
               - "null"
               - string
@@ -314,56 +366,70 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of the newsletter.
             type:
               - "null"
               - integer
           content_ids:
+            description:
+              The unique identifier of the content associated with the
+              newsletter.
             type:
               - "null"
               - array
             additionalProperties: true
             properties:
               id:
+                description: The content ID.
                 type:
                   - "null"
                   - integer
           sent_at:
+            description: The timestamp indicating when the newsletter was sent.
             type:
               - "null"
               - array
             additionalProperties: true
             properties:
               id:
+                description: The ID of the timestamp.
                 type:
                   - "null"
                   - string
           tags:
+            description: The tags associated with the newsletter.
             type:
               - "null"
               - array
             additionalProperties: true
             properties:
               id:
+                description: The tag ID.
                 type:
                   - "null"
                   - integer
           deduplicate_id:
+            description: The ID used for deduplication purposes.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the newsletter.
             type:
               - "null"
               - string
           type:
+            description: The type of the newsletter.
             type:
               - "null"
               - string
           updated:
+            description: The timestamp indicating when the newsletter was last updated.
             type:
               - "null"
               - integer
           created:
+            description: The timestamp indicating when the newsletter was created.
             type:
               - "null"
               - integer

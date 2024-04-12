@@ -78,10 +78,12 @@ definitions:
             example: My Company Status
             description: Name of your page to be displayed
           page_description:
+            description: Description or summary of the content on the page.
             type:
               - "null"
               - string
           headline:
+            description: The headline or title of the page.
             type:
               - "null"
               - string
@@ -111,6 +113,7 @@ definitions:
               Website of your page.  Clicking on your statuspage image
               will link here.
           support_url:
+            description: URL to the support page for the service.
             type:
               - "null"
               - string
@@ -167,29 +170,40 @@ definitions:
               Allows you to customize the footer appearing on your notification
               emails.  Accepts Markdown for formatting
           activity_score:
+            description: The score representing the level of activity on the page.
             type: number
             format: float
           twitter_username:
+            description:
+              The username associated with the Twitter account for the
+              page.
             type:
               - "null"
               - string
           viewers_must_be_team_members:
+            description:
+              Flag indicating whether viewers must be team members to access
+              the page.
             type:
               - "null"
               - boolean
           ip_restrictions:
+            description: IP restrictions set for accessing the page.
             type:
               - "null"
               - string
           city:
+            description: The city associated with the page.
             type:
               - "null"
               - string
           state:
+            description: The state associated with the page.
             type:
               - "null"
               - string
           country:
+            description: The country associated with the page.
             type:
               - "null"
               - string
@@ -260,22 +274,27 @@ definitions:
               - string
             description: CSS Color
           favicon_logo:
+            description: URL to the favicon logo used for the page.
             type:
               - "null"
               - object
           transactional_logo:
+            description: URL to the logo used in transactional communications.
             type:
               - "null"
               - object
           hero_cover:
+            description: URL to the hero cover image displayed on the page.
             type:
               - "null"
               - object
           email_logo:
+            description: URL to the logo used for emails related to the page.
             type:
               - "null"
               - object
           twitter_logo:
+            description: URL to the logo displayed for Twitter integration.
             type:
               - "null"
               - object
@@ -407,6 +426,7 @@ definitions:
               The Page Access user this subscriber belongs to (only for
               audience-specific pages).
           created_at:
+            description: The date and time when the subscriber record was created.
             type:
               - "null"
               - string
@@ -432,6 +452,9 @@ definitions:
         type: object
         properties:
           email:
+            description:
+              Data related to subscribers who receive notifications via
+              email.
             type: object
             properties:
               active:
@@ -452,6 +475,7 @@ definitions:
                 description: The total number of subscribers found by the query.
             $schema: http://json-schema.org/schema#
           sms:
+            description: Data related to subscribers who receive SMS notifications.
             type: object
             properties:
               active:
@@ -472,6 +496,9 @@ definitions:
                 description: The total number of subscribers found by the query.
             $schema: http://json-schema.org/schema#
           webhook:
+            description:
+              Data related to subscribers who receive notifications via
+              webhook integration.
             type: object
             properties:
               active:
@@ -492,6 +519,7 @@ definitions:
                 description: The total number of subscribers found by the query.
             $schema: http://json-schema.org/schema#
           integration_partner:
+            description: Data related to subscribers who are integrated partners.
             type: object
             properties:
               active:
@@ -512,6 +540,9 @@ definitions:
                 description: The total number of subscribers found by the query.
             $schema: http://json-schema.org/schema#
           slack:
+            description:
+              Data related to subscribers who receive notifications via
+              Slack integration.
             type: object
             properties:
               active:
@@ -1141,11 +1172,13 @@ definitions:
               - string
             description: Component Group identifier
           created_at:
+            description: The timestamp when the component was created.
             type:
               - "null"
               - string
             format: date-time
           updated_at:
+            description: The timestamp when the component was last updated.
             type:
               - "null"
               - string
@@ -1251,17 +1284,21 @@ definitions:
               - boolean
             description: Should the metric be displayed
           tooltip_description:
+            description: Description displayed as a tooltip for the metrics data.
             type:
               - "null"
               - string
           backfilled:
+            description: Flag indicating whether data has been backfilled in the dataset.
             type:
               - "null"
               - boolean
           y_axis_min:
+            description: Minimum value for the Y-axis in the metrics visualization.
             type: number
             format: float
           y_axis_max:
+            description: Maximum value for the Y-axis in the metrics visualization.
             type: number
             format: float
           y_axis_hidden:
@@ -1275,32 +1312,39 @@ definitions:
               - string
             description: Suffix to describe the units on the graph
           decimal_places:
+            description: Number of decimal places used in the metrics values.
             type: integer
             format: int32
           most_recent_data_at:
+            description: Timestamp of the most recent data point in the dataset.
             type:
               - "null"
               - string
             format: date-time
           created_at:
+            description: Timestamp indicating when the metrics data was created.
             type:
               - "null"
               - string
             format: date-time
           updated_at:
+            description: Timestamp indicating when the metrics data was last updated.
             type:
               - "null"
               - string
             format: date-time
           last_fetched_at:
+            description: Timestamp indicating when the metrics data was last fetched.
             type:
               - "null"
               - string
             format: date-time
           backfill_percentage:
+            description: Percentage of data backfilled to fill gaps in the dataset.
             type: integer
             format: int32
           reference_name:
+            description: Name or identifier used as a reference for the metrics data.
             type:
               - "null"
               - string

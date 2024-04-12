@@ -51,25 +51,31 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the user.
             type:
               - string
           name:
+            description: The name of the user.
             type:
               - "null"
               - string
           email:
+            description: The email address of the user.
             type:
               - string
             format: email
           activated:
+            description: Flag indicating if the user account is activated or not.
             type:
               - "null"
               - boolean
           default_mailbox_id:
+            description: The default mailbox identifier associated with the user.
             type:
               - "null"
               - string
           salesforce_id:
+            description: The Salesforce identifier associated with the user.
             type:
               - "null"
               - string
@@ -221,59 +227,73 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique ID of the campaign
             type:
               - string
           name:
+            description: Name of the campaign
             type:
               - "null"
               - string
           creator:
+            description: Details of the campaign creator
             type:
               - "null"
               - object
             properties:
               id:
+                description: Unique ID of the campaign creator
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the campaign creator
                 type:
                   - "null"
                   - string
               email:
+                description: Email of the campaign creator
                 type:
                   - "null"
                   - string
           stats:
+            description: Statistics related to the campaign progress
             type:
               - "null"
               - object
             properties:
               prospects_contacted:
+                description: Number of prospects contacted
                 type:
                   - "null"
                   - integer
               prospects_reached:
+                description: Number of prospects reached
                 type:
                   - "null"
                   - integer
               prospects_opened:
+                description: Number of prospects who opened the campaign
                 type:
                   - "null"
                   - integer
               prospects_replied:
+                description: Number of prospects who replied
                 type:
                   - "null"
                   - integer
               prospects_bounced:
+                description: Number of prospects bounced
                 type:
                   - "null"
                   - integer
               prospects_optedout:
+                description: Number of prospects who opted out
                 type:
                   - "null"
                   - integer
               total_contacted:
+                description: Total number of prospects contacted
                 type:
                   - "null"
                   - integer

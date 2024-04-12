@@ -4,35 +4,45 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the conversation thread",
       "type": ["null", "string"]
     },
     "groupId": {
+      "description": "Unique identifier for the group associated with the conversation",
       "type": ["null", "string"]
     },
     "conversationId": {
+      "description": "Unique identifier for the conversation",
       "type": ["null", "string"]
     },
     "topic": {
+      "description": "Topic or subject of the conversation thread",
       "type": ["null", "string"]
     },
     "hasAttachments": {
+      "description": "Flag indicating if the conversation has attachments",
       "type": ["null", "boolean"]
     },
     "lastDeliveredDateTime": {
+      "description": "Date and time when the last message was delivered",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "uniqueSenders": {
+      "description": "Array of unique senders involved in the conversation thread",
       "type": ["null", "array"],
       "items": {
+        "description": "Unique identifier for each sender",
         "type": ["null", "string"]
       }
     },
     "preview": {
+      "description": "Preview text of the conversation thread content",
       "type": ["null", "string"]
     },
     "isLocked": {
+      "description": "Flag indicating if the conversation thread is locked",
       "type": ["null", "boolean"]
     }
   }

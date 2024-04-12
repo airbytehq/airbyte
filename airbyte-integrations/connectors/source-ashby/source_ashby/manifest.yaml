@@ -54,48 +54,63 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the application.
             type:
               - "null"
               - string
           createdAt:
+            description: Date and time when the application was created.
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: Date and time when the application was last updated.
             type:
               - "null"
               - string
             format: date-time
           candidate:
+            description: Information about the candidate who submitted the application.
             type:
               - "null"
               - object
           status:
+            description:
+              Current status of the application (e.g., pending, reviewed,
+              rejected).
             type:
               - "null"
               - string
           creditedToUser:
+            description: User who received credit for this application.
             type:
               - "null"
               - object
           customFields:
+            description:
+              Any custom fields or additional information associated with
+              the application.
             type:
               - "null"
               - array
           currentInterviewStage:
+            description: Current stage of the interview process for this application.
             type:
               - "null"
               - object
           archiveReason:
+            description: Reason for archiving the application.
             type:
               - "null"
               - string
           job:
+            description: Details of the job position for which the candidate applied.
             type:
               - "null"
               - object
           hiringTeam:
+            description: Information about the hiring team associated with this application.
             type:
               - "null"
               - array
@@ -112,18 +127,22 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the archive reason.
             type:
               - "null"
               - string
           text:
+            description: Text defining the archive reason in detail.
             type:
               - "null"
               - string
           reasonType:
+            description: Type of reason for archiving the item.
             type:
               - "null"
               - string
           isArchived:
+            description: Indicates whether the item is archived or not.
             type:
               - "null"
               - boolean
@@ -140,14 +159,17 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the candidate tag.
             type:
               - "null"
               - string
           title:
+            description: The title or name of the candidate tag.
             type:
               - "null"
               - string
           isArchived:
+            description: Indicates if the candidate tag is archived or active.
             type:
               - "null"
               - boolean
@@ -164,58 +186,72 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the candidate.
             type:
               - "null"
               - string
           name:
+            description: The name of the candidate.
             type:
               - "null"
               - string
           primaryEmailAddress:
+            description: Primary email address of the candidate.
             type:
               - "null"
               - object
           emailAddresses:
+            description: Array of email addresses of the candidate.
             type:
               - "null"
               - array
           phoneNumbers:
+            description: Array of phone numbers of the candidate.
             type:
               - "null"
               - array
           socialLinks:
+            description: Links to the candidate's social media profiles.
             type:
               - "null"
               - array
           tags:
+            description: Tags associated with the candidate for categorization.
             type:
               - "null"
               - array
           position:
+            description: The position or job title of the candidate.
             type:
               - "null"
               - string
           company:
+            description: The company name to which the candidate is associated.
             type:
               - "null"
               - string
           school:
+            description: The school or educational institution of the candidate.
             type:
               - "null"
               - string
           applicationIds:
+            description: Array of application IDs associated with the candidate.
             type:
               - "null"
               - array
           resumeFileHandle:
+            description: File handle of the candidate's resume.
             type:
               - "null"
               - object
           fileHandles:
+            description: File handles related to candidate files.
             type:
               - "null"
               - array
           customFields:
+            description: Custom fields specific to the candidate.
             type:
               - "null"
               - array
@@ -232,22 +268,29 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the custom field
             type:
               - "null"
               - string
           title:
+            description: Title or name of the custom field
             type:
               - "null"
               - string
           objectType:
+            description:
+              Type of object the custom field is associated with (e.g.,
+              user, organization)
             type:
               - "null"
               - string
           isArchived:
+            description: Flag indicating if the custom field is archived or not
             type:
               - "null"
               - boolean
           fieldType:
+            description: Type of the custom field (e.g., text, number, date)
             type:
               - "null"
               - string
@@ -264,18 +307,22 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the department.
             type:
               - "null"
               - string
           name:
+            description: The name of the department.
             type:
               - "null"
               - string
           parentId:
+            description: The id of the parent department, if any.
             type:
               - "null"
               - string
           isArchived:
+            description: Indicates if the department is archived or not.
             type:
               - "null"
               - boolean
@@ -292,30 +339,41 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the feedback form definition
             type:
               - "null"
               - string
           organizationId:
+            description:
+              The identifier of the organization to which the feedback
+              form belongs
             type:
               - "null"
               - string
           title:
+            description: The title of the feedback form
             type:
               - "null"
               - string
           isArchived:
+            description: Flag indicating if the feedback form is archived
             type:
               - "null"
               - boolean
           isDefaultForm:
+            description: Flag indicating if the feedback form is the default form
             type:
               - "null"
               - boolean
           formDefinition:
+            description: The definition of the feedback form
             type:
               - "null"
               - object
           interviewId:
+            description:
+              The identifier of the interview associated with the feedback
+              form
             type:
               - "null"
               - string
@@ -338,18 +396,28 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the interview schedule
             type:
               - "null"
               - string
           status:
+            description:
+              Current status of the interview schedule (e.g., scheduled,
+              completed, canceled)
             type:
               - "null"
               - string
           applicationId:
+            description:
+              Unique identifier for the job application associated with
+              the interview schedule
             type:
               - "null"
               - string
           interviewStageId:
+            description:
+              Identifier for the interview stage within the application
+              process
             type:
               - "null"
               - string
@@ -366,47 +434,66 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the job posting.
             type:
               - "null"
               - string
           title:
+            description: The title or position of the job posting.
             type:
               - "null"
               - string
           jobId:
+            description: Identifier for the specific job position.
             type:
               - "null"
               - string
           departmentName:
+            description: The name of the department where the job posting is listed.
             type:
               - "null"
               - string
           teamName:
+            description:
+              The name of the team or group within the department associated
+              with the job posting.
             type:
               - "null"
               - string
           locationName:
+            description: The name of the location where the job posting is based.
             type:
               - "null"
               - string
           employmentType:
+            description:
+              The type of employment associated with the job posting (e.g.
+              Full-time, Part-time, Contract, etc).
             type:
               - "null"
               - string
           isListed:
+            description:
+              Boolean flag indicating if the job posting is listed and
+              visible.
             type:
               - "null"
               - boolean
           publishedDate:
+            description: The date and time when the job posting was published.
             type:
               - "null"
               - string
             format: date-time
           externalLink:
+            description:
+              A link to an external source with more information about
+              the job posting.
             type:
               - "null"
               - string
           locationIds:
+            description: Array of location identifiers associated with the job posting.
             type:
               - "null"
               - object
@@ -423,54 +510,69 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the job listing.
             type:
               - "null"
               - string
           title:
+            description: Title or name of the job position.
             type:
               - "null"
               - string
           confidential:
+            description: Indicates if the job data is confidential or not.
             type:
               - "null"
               - boolean
           status:
+            description: Current status of the job listing (e.g., open, closed).
             type:
               - "null"
               - string
           employmentType:
+            description:
+              Type of employment for the job (e.g., full-time, part-time,
+              contract).
             type:
               - "null"
               - string
           locationId:
+            description: Unique identifier of the location where the job is based.
             type:
               - "null"
               - string
           departmentId:
+            description: Unique identifier of the department the job belongs to.
             type:
               - "null"
               - string
           defaultInterviewPlanId:
+            description: The default interview plan ID assigned to the job.
             type:
               - "null"
               - string
           interviewPlanIds:
+            description: List of interview plan IDs associated with the job.
             type:
               - "null"
               - array
           jobPostingIds:
+            description: List of job posting IDs linked to the job.
             type:
               - "null"
               - array
           hiringTeam:
+            description: Information about the hiring team responsible for the job.
             type:
               - "null"
               - array
           customFields:
+            description: Custom fields associated with the job.
             type:
               - "null"
               - array
           customRequisitionId:
+            description: Custom requisition ID for the job.
             type:
               - "null"
               - string
@@ -487,22 +589,27 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the location
             type:
               - "null"
               - string
           name:
+            description: The name of the location
             type:
               - "null"
               - string
           isArchived:
+            description: Indicates whether the location is archived or not
             type:
               - "null"
               - boolean
           address:
+            description: The physical address of the location
             type:
               - "null"
               - object
           isRemote:
+            description: Indicates whether the location allows remote work or not
             type:
               - "null"
               - boolean
@@ -519,23 +626,28 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the offer
             type:
               - "null"
               - string
           decidedAt:
+            description: The date and time when the offer was decided
             type:
               - "null"
               - string
             format: date-time
           applicationId:
+            description: The unique identifier of the application related to the offer
             type:
               - "null"
               - string
           acceptanceStatus:
+            description: The current status of the offer acceptance
             type:
               - "null"
               - string
           latestVersion:
+            description: The latest version information of the offer
             type:
               - "null"
               - object
@@ -552,14 +664,17 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the source
             type:
               - "null"
               - string
           title:
+            description: The title/name of the source
             type:
               - "null"
               - string
           isArchived:
+            description: Indicates whether the source is archived or not
             type:
               - "null"
               - boolean
@@ -577,18 +692,22 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the user.
             type:
               - "null"
               - string
           firstName:
+            description: User's first name.
             type:
               - "null"
               - string
           lastName:
+            description: User's last name.
             type:
               - "null"
               - string
           email:
+            description: User's email address.
             type:
               - "null"
               - string

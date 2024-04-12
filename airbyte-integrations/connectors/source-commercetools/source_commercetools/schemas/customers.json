@@ -4,111 +4,143 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier of the customer",
       "type": ["null", "string"]
     },
     "customerNumber": {
+      "description": "Unique number assigned to the customer",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "Key associated with the customer",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version of the customer data",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "Date and time when the customer was created",
       "type": ["null", "string"],
       "format": " date-time"
     },
     "createdBy": {
+      "description": "Identifier of the user who created the customer",
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
+      "description": "Date and time when the customer was last modified",
       "type": ["null", "string"],
       "format": " date-time"
     },
     "lastModifiedBy": {
+      "description": "Identifier of the user who last modified the customer",
       "$ref": "last_modified_by.json"
     },
     "email": {
+      "description": "Email address of the customer",
       "type": ["null", "string"]
     },
     "password": {
+      "description": "Password associated with the customer",
       "type": ["null", "string"]
     },
     "stores": {
+      "description": "List of stores associated with the customer",
       "type": ["null", "array"],
       "items": {
         "$ref": "key_reference.json"
       }
     },
     "firstName": {
+      "description": "First name of the customer",
       "type": ["null", "string"]
     },
     "lastName": {
+      "description": "Last name of the customer",
       "type": ["null", "string"]
     },
     "middleName": {
+      "description": "Middle name of the customer",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title (e.g., Mr., Mrs., Dr.) associated with the customer",
       "type": ["null", "string"]
     },
     "salutation": {
+      "description": "Salutation used for addressing the customer",
       "type": ["null", "string"]
     },
     "dateOfBirth": {
+      "description": "Date of birth of the customer",
       "type": ["null", "string"],
       "format": "date"
     },
     "companyName": {
+      "description": "Name of the company associated with the customer",
       "type": ["null", "string"]
     },
     "vatId": {
+      "description": "VAT identification number of the customer",
       "type": ["null", "string"]
     },
     "addresses": {
+      "description": "List of addresses associated with the customer",
       "type": ["null", "array"],
       "items": {
         "$ref": "address.json"
       }
     },
     "defaultShippingAddressId": {
+      "description": "ID of the default shipping address for the customer",
       "type": ["null", "string"]
     },
     "shippingAddressIds": {
+      "description": "List of shipping addresses' IDs",
       "type": ["null", "array"]
     },
     "defaultBillingAddressId": {
+      "description": "ID of the default billing address for the customer",
       "type": ["null", "string"]
     },
     "billingAddressIds": {
+      "description": "List of billing addresses' IDs",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "isEmailVerified": {
+      "description": "Indicates if the customer's email address has been verified",
       "type": ["null", "boolean"]
     },
     "externalId": {
+      "description": "External identifier associated with the customer",
       "type": ["null", "string"]
     },
     "customerGroup": {
+      "description": "Customer group to which the customer belongs",
       "$ref": "reference.json"
     },
     "custom": {
+      "description": "Custom data associated with the customer",
       "$ref": "custom.json"
     },
     "locale": {
+      "description": "Locale preferred by the customer",
       "type": ["null", "string"]
     },
     "authenticationMode": {
+      "description": "The mode of authentication for the customer",
       "type": ["null", "string"]
     },
     "lastMessageSequenceNumber": {
+      "description": "Sequence number of the last message related to the customer",
       "type": ["null", "integer"]
     },
     "versionModifiedAt": {
+      "description": "Date and time when the customer's version was last modified",
       "type": ["null", "string"]
     }
   }

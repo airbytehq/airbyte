@@ -2,41 +2,53 @@
   "type": ["null", "object"],
   "properties": {
     "integration": {
+      "description": "Details about any integration used by the customer.",
       "type": ["null", "integer"]
     },
     "first_name": {
+      "description": "First name of the customer.",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the customer.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address of the customer.",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number associated with the customer.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information or custom data related to the customer.",
       "type": ["null", "object"],
       "properties": {}
     },
     "domain": {
+      "description": "Domain or subdomain associated with the customer.",
       "type": ["null", "string"]
     },
     "customer_code": {
+      "description": "Unique code assigned to identify the customer.",
       "type": ["null", "string"]
     },
     "risk_action": {
+      "description": "Risk action associated with the customer.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the customer record.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "Date and time when the customer record was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the customer record was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

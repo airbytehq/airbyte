@@ -3,67 +3,86 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the routing outbound event.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or title of the routing outbound event.",
       "type": ["null", "string"]
     },
     "errorEntity": {
+      "description": "Details of the error entity associated with the event.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the error entity.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the error entity.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "Self URI of the error entity.",
           "type": ["null", "string"]
         }
       }
     },
     "relatedEntity": {
+      "description": "Details of the entity related to the routing outbound event.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the related entity.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the related entity.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "Self URI of the related entity.",
           "type": ["null", "string"]
         }
       }
     },
     "timestamp": {
+      "description": "Timestamp when the routing outbound event occurred.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "level": {
+      "description": "Level of severity for the event (e.g., INFO, WARNING, ERROR).",
       "type": ["null", "string"]
     },
     "category": {
+      "description": "The category of the routing outbound event.",
       "type": ["null", "string"]
     },
     "correlationId": {
+      "description": "The correlation ID of the routing outbound event.",
       "type": ["null", "string"]
     },
     "eventMessage": {
+      "description": "Message associated with the routing outbound event.",
       "type": "object",
       "properties": {
         "code": {
+          "description": "Error code related to the event message.",
           "type": ["null", "string"]
         },
         "message": {
+          "description": "Text message describing the event.",
           "type": ["null", "string"]
         },
         "messageWithParams": {
+          "description": "Message with parameters for the event.",
           "type": ["null", "string"]
         }
       }
     },
     "selfUri": {
+      "description": "Self URI of the routing outbound event.",
       "type": ["null", "string"]
     }
   }

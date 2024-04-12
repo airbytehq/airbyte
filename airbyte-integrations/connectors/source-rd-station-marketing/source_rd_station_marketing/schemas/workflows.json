@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the workflow.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the workflow.",
       "type": ["null", "string"]
     },
     "user_email_created": {
+      "description": "The email address of the user who created the workflow.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the workflow was created.",
       "type": ["null", "string"]
     },
     "user_email_updated": {
+      "description": "The email address of the user who last updated the workflow.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the workflow was last updated.",
       "type": ["null", "string"]
     }
   }

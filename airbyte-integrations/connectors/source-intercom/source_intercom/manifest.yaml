@@ -787,6 +787,9 @@ definitions:
               - type: string
               - type: "null"
           attachments:
+            description:
+              Represents the attachments associated with the conversation
+              part.
             type:
               - "null"
               - array
@@ -831,6 +834,7 @@ definitions:
                     - "null"
                     - integer
           author:
+            description: Represents the author of the conversation part.
             type:
               - "null"
               - object
@@ -1617,6 +1621,7 @@ definitions:
         type: object
         properties:
           assignee:
+            description: The assigned user responsible for the conversation.
             type:
               - "null"
               - object
@@ -1642,6 +1647,7 @@ definitions:
                   - "null"
                   - string
           source:
+            description: Source details of the conversation.
             type:
               - "null"
               - object
@@ -1677,6 +1683,7 @@ definitions:
                   - "null"
                   - string
               author:
+                description: Author of the source.
                 type:
                   - "null"
                   - object
@@ -1702,6 +1709,7 @@ definitions:
                       - "null"
                       - string
               attachments:
+                description: Attachments related to the conversation.
                 type:
                   - "null"
                   - array
@@ -1718,6 +1726,7 @@ definitions:
                   - "null"
                   - string
           contacts:
+            description: List of contacts involved in the conversation.
             type:
               - "null"
               - object
@@ -1737,11 +1746,13 @@ definitions:
                     - "null"
                     - string
           teammates:
+            description: List of teammates involved in the conversation.
             type:
               - "null"
               - object
             properties:
               admins:
+                description: Admin teammates involved in the conversation.
                 type:
                   - "null"
                   - array
@@ -1766,6 +1777,7 @@ definitions:
                   - "null"
                   - string
           first_contact_reply:
+            description: Timestamp indicating when the first contact replied.
             type:
               - "null"
               - object
@@ -1796,6 +1808,7 @@ definitions:
               - "null"
               - string
           conversation_message:
+            description: The main message content of the conversation.
             type:
               - "null"
               - object
@@ -1837,6 +1850,7 @@ definitions:
                             - integer
                   - type: "null"
               author:
+                description: The author of the conversation message.
                 type:
                   - "null"
                   - object
@@ -1892,6 +1906,7 @@ definitions:
                   - "null"
                   - string
           conversation_rating:
+            description: Ratings given to the conversation by the customer and teammate.
             type:
               - "null"
               - object
@@ -1902,6 +1917,7 @@ definitions:
                   - "null"
                   - integer
               customer:
+                description: Rating given by the customer.
                 type:
                   - "null"
                   - object
@@ -1927,6 +1943,7 @@ definitions:
                   - "null"
                   - string
               teammate:
+                description: Rating given by the teammate.
                 type:
                   - "null"
                   - object
@@ -1947,6 +1964,7 @@ definitions:
               - "null"
               - integer
           customer_first_reply:
+            description: Timestamp indicating when the customer first replied.
             type:
               - "null"
               - object
@@ -2010,6 +2028,7 @@ definitions:
               - "null"
               - integer
           sla_applied:
+            description: Service Level Agreement details applied to the conversation.
             type:
               - "null"
               - object
@@ -2030,6 +2049,7 @@ definitions:
               - "null"
               - string
           statistics:
+            description: Statistics related to the conversation.
             type:
               - "null"
               - object
@@ -2130,6 +2150,7 @@ definitions:
                   - "null"
                   - integer
           tags:
+            description: Tags applied to the conversation.
             type:
               - "null"
               - object
@@ -2144,6 +2165,7 @@ definitions:
                     - "null"
                     - integer
                 applied_by:
+                  description: User who applied the tag.
                   type:
                     - "null"
                     - object
@@ -2184,6 +2206,7 @@ definitions:
               - "null"
               - integer
           user:
+            description: The user related to the conversation.
             type:
               - "null"
               - object
@@ -2224,6 +2247,7 @@ definitions:
               - "null"
               - boolean
           topics:
+            description: Topics associated with the conversation.
             type:
               - "null"
               - object
@@ -2234,6 +2258,7 @@ definitions:
                   - "null"
                   - string
               topics:
+                description: List of topics related to the conversation.
                 type:
                   - "null"
                   - array
@@ -2305,6 +2330,7 @@ definitions:
         type: object
         properties:
           performed_by:
+            description: The user who performed the activity
             type:
               - "null"
               - object

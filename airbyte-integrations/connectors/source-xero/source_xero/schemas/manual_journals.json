@@ -2,45 +2,58 @@
   "type": ["null", "object"],
   "properties": {
     "Date": {
+      "description": "The date the manual journal was created or last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "LineAmountTypes": {
+      "description": "Types of line amounts specified in the manual journal.",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "Status of the manual journal (e.g., Draft, Posted).",
       "type": ["null", "string"]
     },
     "Narration": {
+      "description": "Narrative description of the manual journal.",
       "type": ["null", "string"]
     },
     "JournalLines": {
+      "description": "Details about the lines included in the manual journal.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "LineAmount": {
+            "description": "The amount specified for this journal line.",
             "type": ["null", "number"]
           },
           "Description": {
+            "description": "Description of the transaction in this journal line.",
             "type": ["null", "string"]
           },
           "TaxAmount": {
+            "description": "The tax amount associated with this journal line.",
             "type": ["null", "number"]
           },
           "AccountID": {
+            "description": "The unique identifier of the account associated with this journal line.",
             "type": ["null", "string"]
           },
           "AccountCode": {
+            "description": "The account code associated with this journal line.",
             "type": ["null", "string"]
           },
           "IsBlank": {
+            "description": "Indicates if the line is blank or has content.",
             "type": ["null", "boolean"]
           },
           "TaxType": {
+            "description": "The type of tax applied to this journal line.",
             "type": ["null", "string"]
           },
           "Tracking": {
+            "description": "Additional tracking information for this journal line.",
             "items": {
               "$ref": "tracking_categories.json"
             },
@@ -51,19 +64,24 @@
       }
     },
     "Url": {
+      "description": "URL link to access the manual journal.",
       "type": ["null", "string"]
     },
     "ShowOnCashBasisReports": {
+      "description": "Indicates whether the manual journal should be shown on cash basis reports.",
       "type": ["null", "boolean"]
     },
     "HasAttachments": {
+      "description": "Indicates whether the manual journal has attachments.",
       "type": ["null", "boolean"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time the manual journal was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ManualJournalID": {
+      "description": "Unique identifier for the manual journal.",
       "type": ["string"]
     }
   },

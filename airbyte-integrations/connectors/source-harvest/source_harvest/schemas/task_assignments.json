@@ -33,6 +33,7 @@
       "type": ["null", "string"]
     },
     "project": {
+      "description": "Details about the project the task assignment is associated with.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -50,6 +51,7 @@
       }
     },
     "task": {
+      "description": "Information related to the task assigned.",
       "type": ["null", "object"],
       "properties": {
         "id": {

@@ -44,6 +44,7 @@
       "type": ["null", "string"]
     },
     "to": {
+      "description": "Represents the destination status of the issue transition.",
       "type": ["null", "object"],
       "properties": {
         "description": {
@@ -67,6 +68,7 @@
           "type": ["null", "string"]
         },
         "statusCategory": {
+          "description": "Contains information about the category of the status.",
           "type": ["null", "object"],
           "properties": {
             "colorName": {

@@ -3,35 +3,45 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the refund",
       "type": ["null", "integer"]
     },
     "date_created": {
+      "description": "The date and time when the refund was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "The GMT date and time when the refund was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "amount": {
+      "description": "The amount refunded for this transaction",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason provided for the refund",
       "type": ["null", "string"]
     },
     "refunded_by": {
+      "description": "The user or account that processed the refund",
       "type": ["null", "integer"]
     },
     "refunded_payment": {
+      "description": "Details of the payment that was refunded",
       "type": ["null", "boolean"]
     },
     "meta_data": {
+      "description": "Additional information or metadata associated with the refund",
       "$ref": "meta_data.json"
     },
     "line_items": {
+      "description": "Details of the line items included in the refund",
       "$ref": "refund_line_items.json"
     },
     "api_refund": {
+      "description": "Flag indicating if the refund was processed via API",
       "type": ["null", "boolean"]
     }
   }

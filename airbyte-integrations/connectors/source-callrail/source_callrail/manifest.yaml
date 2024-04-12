@@ -69,300 +69,372 @@ definitions:
         type: object
         properties:
           answered:
+            description: Indicates whether the call was answered or not.
             type:
               - "null"
               - boolean
           business_phone_number:
+            description: The business phone number involved in the call.
             type:
               - "null"
               - string
           customer_city:
+            description: City of the customer involved in the call.
             type:
               - "null"
               - string
           customer_country:
+            description: Country of the customer involved in the call.
             type:
               - "null"
               - string
           customer_name:
+            description: Name of the customer involved in the call.
             type:
               - "null"
               - string
           customer_phone_number:
+            description: Phone number of the customer involved in the call.
             type:
               - "null"
               - string
           customer_state:
+            description: State of the customer involved in the call.
             type:
               - "null"
               - string
           direction:
+            description: Direction of the call, e.g., inbound or outbound.
             type:
               - "null"
               - string
           duration:
+            description: Duration of the call in seconds.
             type:
               - "null"
               - integer
           id:
+            description: Unique ID of the call.
             type:
               - "null"
               - string
           recording:
+            description: Link or details of the call recording.
             type:
               - "null"
               - string
           recording_duration:
+            description: Duration of the call recording.
             type:
               - "null"
               - integer
           recording_player:
+            description: Player used for playing the call recording.
             type:
               - "null"
               - string
           start_time:
+            description: Start time of the call.
             type:
               - "null"
               - string
             format: date-time
           tracking_phone_number:
+            description: Phone number used for tracking the call.
             type:
               - "null"
               - string
           voicemail:
+            description: Indicates if the call went to voicemail.
             type:
               - "null"
               - boolean
           call_type:
+            description: Type of the call, e.g., inbound, outbound, missed.
             type:
               - "null"
               - string
           company_id:
+            description: ID of the company associated with the call.
             type:
               - "null"
               - string
           company_name:
+            description: The name of the company associated with the call.
             type:
               - "null"
               - string
           company_time_zone:
+            description: Time zone of the company making/receiving the call.
             type:
               - "null"
               - string
           created_at:
+            description: Date and time when the call data was created.
             type:
               - "null"
               - string
             format: date-time
           device_type:
+            description: Type of device used for the call, e.g., mobile, desktop.
             type:
               - "null"
               - string
           first_call:
+            description: Indicates if this is the first call for the customer.
             type:
               - "null"
               - boolean
           formatted_call_type:
+            description: Formatted type of the call for display.
             type:
               - "null"
               - string
           formatted_customer_location:
+            description: Formatted customer location for display.
             type:
               - "null"
               - string
           formatted_business_phone_number:
+            description: Formatted business phone number for display.
             type:
               - "null"
               - string
           formatted_customer_name:
+            description: Formatted customer name for display.
             type:
               - "null"
               - string
           prior_calls:
+            description: Previous calls made/received by the customer.
             type:
               - "null"
               - integer
           formatted_customer_name_or_phone_number:
+            description: Formatted customer name or phone number for display.
             type:
               - "null"
               - string
           formatted_customer_phone_number:
+            description: Formatted customer phone number for display.
             type:
               - "null"
               - string
           formatted_duration:
+            description: Formatted call duration for display.
             type:
               - "null"
               - string
           formatted_tracking_phone_number:
+            description: Formatted tracking phone number for display.
             type:
               - "null"
               - string
           formatted_tracking_source:
+            description: Formatted tracking source for display.
             type:
               - "null"
               - string
           formatted_value:
+            description: Formatted call value for display.
             type:
               - "null"
               - string
           good_lead_call_id:
+            description: ID of a good lead call.
             type:
               - "null"
               - string
           good_lead_call_time:
+            description: Time of a good lead call.
             type:
               - "null"
               - string
             format: date-time
           lead_status:
+            description: Status of the lead associated with the call.
             type:
               - "null"
               - string
           note:
+            description: Additional notes or comments related to the call.
             type:
               - "null"
               - string
           source:
+            description: Source of the call, e.g., website, ad.
             type:
               - "null"
               - string
           source_name:
+            description: Name of the source associated with the call.
             type:
               - "null"
               - string
           tags:
+            description: Tags or labels associated with the call.
             type:
               - "null"
               - array
             items: {}
           total_calls:
+            description: Total number of calls related to the scenario.
             type:
               - "null"
               - integer
           value:
+            description: Value associated with the call, e.g., lead value.
             type:
               - "null"
               - string
           waveforms:
+            description: Waveform data of the call.
             type:
               - "null"
               - array
             items: {}
           tracker_id:
+            description: ID of the call tracker used.
             type:
               - "null"
               - string
           speaker_percent:
+            description: Percentage of speaking time for each participant.
             type:
               - "null"
               - array
             items: {}
           keywords:
+            description: Keywords relevant to the call.
             type:
               - "null"
               - string
           medium:
+            description: Medium through which the call was made/received.
             type:
               - "null"
               - string
           campaign:
+            description: The marketing campaign associated with the call.
             type:
               - "null"
               - string
           referring_url:
+            description: URL from which the call was referred.
             type:
               - "null"
               - string
           landing_page_url:
+            description: URL of the landing page associated with the call.
             type:
               - "null"
               - string
           last_requested_url:
+            description: Last requested URL by the customer during the call.
             type:
               - "null"
               - string
           referrer_domain:
+            description: Domain of the referrer for the call.
             type:
               - "null"
               - string
           utm_source:
+            description: UTM source information for the call.
             type:
               - "null"
               - string
           utm_medium:
+            description: UTM medium information for the call.
             type:
               - "null"
               - string
           utm_term:
+            description: UTM term information for the call.
             type:
               - "null"
               - string
           utm_content:
+            description: UTM content information for the call.
             type:
               - "null"
               - string
           utm_campaign:
+            description: UTM campaign information for the call.
             type:
               - "null"
               - string
           utma:
+            description: Google Analytics utma for the call.
             type:
               - "null"
               - string
           utmb:
+            description: Google Analytics utmb for the call.
             type:
               - "null"
               - string
           utmc:
+            description: Google Analytics utmc for the call.
             type:
               - "null"
               - string
           utmv:
+            description: Google Analytics utmv for the call.
             type:
               - "null"
               - string
           utmz:
+            description: Google Analytics utmz for the call.
             type:
               - "null"
               - string
           ga:
+            description: Google Analytics data associated with the call.
             type:
               - "null"
               - string
           gclid:
+            description: Google click ID associated with the call.
             type:
               - "null"
               - string
           fbclid:
+            description: Facebook click ID associated with the call.
             type:
               - "null"
               - string
           msclkid:
+            description: Microsoft click ID associated with the call.
             type:
               - "null"
               - string
           timeline_url:
+            description: URL for the call timeline or history.
             type:
               - "null"
               - string
           keywords_spotted:
+            description: Keywords spotted during the call.
             type:
               - "null"
               - array
             items: {}
             additionalProperties: true
           call_highlights:
+            description: Highlights or important points from the call.
             type:
               - "null"
               - array
             items: {}
             additionalProperties: true
           agent_email:
+            description: The email address of the agent associated with the call.
             type:
               - "null"
               - string
           keypad_entries:
+            description: Keypad entries made during the call.
             type:
               - "null"
               - string
@@ -387,75 +459,97 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the conversation.
             type:
               - "null"
               - string
           initial_tracker_id:
+            description: The initial tracker ID for the conversation.
             type:
               - "null"
               - string
           current_tracker_id:
+            description: The current tracker ID for the conversation.
             type:
               - "null"
               - string
           customer_name:
+            description: The name of the customer involved in the conversation.
             type:
               - "null"
               - string
           customer_phone_number:
+            description: The phone number of the customer involved in the conversation.
             type:
               - "null"
               - string
           initial_tracking_number:
+            description: The initial tracking number for the conversation.
             type:
               - "null"
               - string
           current_tracking_number:
+            description: The current tracking number for the conversation.
             type:
               - "null"
               - string
           last_message_at:
+            description: The timestamp of the last message in the conversation.
             type:
               - "null"
               - string
             format: date-time
           state:
+            description: The state of the conversation (e.g., open, closed).
             type:
               - "null"
               - string
           formatted_customer_phone_number:
+            description:
+              The formatted phone number of the customer involved in the
+              conversation.
             type:
               - "null"
               - string
           formatted_initial_tracking_number:
+            description: The formatted initial tracking number for the conversation.
             type:
               - "null"
               - string
           formatted_current_tracking_number:
+            description: The formatted current tracking number for the conversation.
             type:
               - "null"
               - string
           formatted_customer_name:
+            description: The formatted name of the customer involved in the conversation.
             type:
               - "null"
               - string
           company_time_zone:
+            description: The time zone of the company associated with the conversation.
             type:
               - "null"
               - string
           tracker_name:
+            description: The name of the tracker associated with the conversation.
             type:
               - "null"
               - string
           company_name:
+            description: The name of the company associated with the conversation.
             type:
               - "null"
               - string
           company_id:
+            description:
+              The unique identifier for the company associated with the
+              conversation.
             type:
               - "null"
               - string
           recent_messages:
+            description: A list of recent messages in the conversation.
             type:
               - "null"
               - array
@@ -465,14 +559,17 @@ definitions:
                 - object
               properties:
                 direction:
+                  description: The direction of the message (e.g., incoming or outgoing).
                   type:
                     - "null"
                     - string
                 content:
+                  description: The content of the message.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: The timestamp when the message was created.
                   type:
                     - "null"
                     - string
@@ -496,35 +593,43 @@ definitions:
         type: object
         properties:
           email:
+            description: The email address associated with the user account.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the user.
             type:
               - "null"
               - string
           created_at:
+            description: The date and time when the user account was created.
             type:
               - "null"
               - string
             format: date-time
           role:
+            description: The role or permission level assigned to the user.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the user.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the user.
             type:
               - "null"
               - string
           name:
+            description: The full name of the user.
             type:
               - "null"
               - string
           accepted:
+            description: Indicates if the user has accepted the terms and conditions.
             type:
               - "null"
               - boolean
@@ -547,70 +652,93 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the company.
             type:
               - "null"
               - string
           name:
+            description: Name of the company.
             type:
               - "null"
               - string
           status:
+            description: Status of the company (e.g., active, inactive).
             type:
               - "null"
               - string
           time_zone:
+            description: Time zone setting for the company.
             type:
               - "null"
               - string
           created_at:
+            description: Timestamp indicating when the company record was created.
             type:
               - "null"
               - string
             format: date-time
           disabled_at:
+            description: Timestamp indicating when the company was disabled.
             type:
               - "null"
               - string
             format: date-time
           dni_active:
+            description:
+              Indicates if Dynamic Number Insertion (DNI) is active for
+              the company.
             type:
               - "null"
               - boolean
           script_url:
+            description: URL of the script used by the company for tracking.
             type:
               - "null"
               - string
           callscore_enabled:
+            description: Indicates if Callscore feature is enabled for the company.
             type:
               - "null"
               - boolean
           lead_scoring_enabled:
+            description: Indicates if lead scoring feature is enabled for the company.
             type:
               - "null"
               - boolean
           swap_exclude_jquery:
+            description: Indicates if jQuery is excluded from swap.
             type:
               - "null"
               - string
           swap_ppc_override:
+            description:
+              Indicates if PPC (Pay-Per-Click) override is enabled for
+              swap.
             type:
               - "null"
               - string
           swap_landing_override:
+            description: Indicates if landing page override is enabled for swap.
             type:
               - "null"
               - string
           swap_cookie_duration:
+            description: Duration for which swap cookie is active.
             type: integer
           callscribe_enabled:
+            description: Indicates if Callscribe feature is enabled for the company.
             type:
               - "null"
               - boolean
           keyword_spotting_enabled:
+            description:
+              Indicates if keyword spotting feature is enabled for the
+              company.
             type:
               - "null"
               - boolean
           form_capture:
+            description: Indicates if form capture feature is enabled for the company.
             type:
               - "null"
               - boolean

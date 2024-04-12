@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier for the organization's client.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The textual information related to the organization's client.",
       "type": "string"
     }
   }

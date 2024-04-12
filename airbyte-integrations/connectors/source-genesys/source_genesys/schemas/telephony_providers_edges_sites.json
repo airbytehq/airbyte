@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the site",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the site",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Information about the division associated with the site",
       "type": "object",
       "properties": {
         "id": {
@@ -23,35 +26,45 @@
       }
     },
     "descriptions": {
+      "description": "Any additional descriptions or notes",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version of the data",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "Date and time when the data was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "Date and time when the data was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "User who last modified this data",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "User who created this data",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State of the site",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "Application that last modified this data",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "Application that created this data",
       "type": ["null", "string"]
     },
     "primarySites": {
+      "description": "Primary sites associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -66,6 +79,7 @@
       }
     },
     "secondarySites": {
+      "description": "Secondary sites associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -80,6 +94,7 @@
       }
     },
     "primaryEdges": {
+      "description": "Primary edges associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -94,6 +109,7 @@
       }
     },
     "secondaryEdges": {
+      "description": "Secondary edges associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -108,6 +124,7 @@
       }
     },
     "addraddressesess": {
+      "description": "Information about the site address",
       "type": "object",
       "properties": {
         "address": {
@@ -134,6 +151,7 @@
       }
     },
     "edges": {
+      "description": "Information about edges associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -148,28 +166,35 @@
       }
     },
     "edgeAutoUpdateConfig": {
+      "description": "Configuration for automatic updates on edges",
       "type": "object",
       "properties": {
         "timeZone": {
+          "description": "Time zone for the automatic update",
           "type": ["null", "string"]
         },
         "rrule": {
+          "description": "Recurrence rule for the automatic update",
           "type": ["null", "string"]
         },
         "start": {
+          "description": "Start date for the automatic update",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "end": {
+          "description": "End date for the automatic update",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "mediaRegionsUseLatencyBased": {
+      "description": "Flag indicating if media regions use latency-based routing",
       "type": ["null", "boolean"]
     },
     "location": {
+      "description": "Information about the location associated with the site",
       "type": "object",
       "properties": {
         "id": {
@@ -184,9 +209,11 @@
       }
     },
     "managed": {
+      "description": "Flag indicating if the site is managed",
       "type": ["null", "boolean"]
     },
     "ntpSettings": {
+      "description": "Network Time Protocol settings for the site",
       "type": "object",
       "properties": {
         "servers": {
@@ -195,12 +222,15 @@
       }
     },
     "mediaModel": {
+      "description": "Media model used at the site",
       "type": ["null", "string"]
     },
     "coreSite": {
+      "description": "Flag indicating if this site is a core site",
       "type": ["null", "boolean"]
     },
     "siteConnections": {
+      "description": "Connections associated with the site",
       "type": "array",
       "properties": {
         "id": {
@@ -215,6 +245,7 @@
       }
     },
     "selfUri": {
+      "description": "URI for this data",
       "type": ["null", "string"]
     }
   }

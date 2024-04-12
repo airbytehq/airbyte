@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date when the data was recorded",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the YouTube channel",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the YouTube video",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video was live or on-demand",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates if the viewer was subscribed to the channel",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code for the location targeted",
       "type": ["null", "string"]
     },
     "end_screen_element_type": {
+      "description": "The type of end screen element (e.g., video, playlist, subscribe)",
       "type": ["null", "string"]
     },
     "end_screen_element_id": {
+      "description": "The unique identifier for the end screen element",
       "type": ["null", "string"]
     },
     "end_screen_element_clicks": {
+      "description": "The total number of clicks on end screen elements",
       "type": ["null", "string"]
     },
     "end_screen_element_impressions": {
+      "description": "The total impressions of end screen elements",
       "type": ["null", "string"]
     },
     "end_screen_element_click_rate": {
+      "description": "The rate at which viewers click on end screen elements",
       "type": ["null", "string"]
     }
   }

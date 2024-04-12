@@ -35,6 +35,7 @@
       "type": ["null", "string"]
     },
     "merged_by": {
+      "description": "The user who merged the pull request.",
       "type": ["null", "object"],
       "properties": {
         "login": {

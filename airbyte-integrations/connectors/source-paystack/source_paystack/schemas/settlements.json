@@ -2,48 +2,62 @@
   "type": ["null", "object"],
   "properties": {
     "integration": {
+      "description": "Details of the integration associated with the settlement",
       "type": ["null", "integer"]
     },
     "subaccount": {
+      "description": "Details of the subaccount associated with the settlement",
       "type": ["null", "object"],
       "properties": {}
     },
     "settled_by": {
+      "description": "The entity responsible for settling the transaction",
       "type": ["null", "string"]
     },
     "settlement_date": {
+      "description": "The date and time the settlement was processed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "domain": {
+      "description": "The domain to which the settlement is related",
       "type": ["null", "string"]
     },
     "total_amount": {
+      "description": "The total amount of the settlement",
       "type": ["null", "integer"]
     },
     "total_fees": {
+      "description": "The total fees charged for the settlement",
       "type": ["null", "integer"]
     },
     "total_processed": {
+      "description": "The total amount processed for the settlement",
       "type": ["null", "integer"]
     },
     "deductions": {
+      "description": "Details of any deductions applied to the settlement",
       "type": ["null", "integer"]
     },
     "effective_amount": {
+      "description": "The actual amount received after deductions",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the settlement (e.g., pending, processed)",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the settlement",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The date and time the settlement was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time the settlement was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the analytics data is recorded",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the YouTube video",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates if the views are from live or on-demand content",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates the subscription status of viewers (subscribed or not subscribed)",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code representing the location of the traffic source",
       "type": ["null", "string"]
     },
     "traffic_source_type": {
+      "description": "The type of traffic source (e.g., External, YouTube search)",
       "type": ["null", "integer"]
     },
     "traffic_source_detail": {
+      "description": "Specific details about the traffic source",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views from the traffic source",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes for the traffic source",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average view duration in seconds for the given traffic source",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "The percentage of the average view duration for the given traffic source",
       "type": ["null", "number"]
     },
     "red_views": {
+      "description": "The number of views from returning viewers",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "The total watch time in minutes from returning viewers",
       "type": ["null", "number"]
     }
   }

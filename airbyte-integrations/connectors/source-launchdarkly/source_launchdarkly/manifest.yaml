@@ -46,26 +46,32 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the project
             type:
               - "null"
               - string
           key:
+            description: Unique key assigned to the project
             type:
               - "null"
               - string
           includeInSnippetByDefault:
+            description: Flag indicating inclusion in code snippet by default
             type:
               - "null"
               - boolean
           defaultClientSideAvailability:
+            description: Default availability setting for client-side usage
             type:
               - "null"
               - object
           name:
+            description: Name of the project
             type:
               - "null"
               - string
           tags:
+            description: Array of tags associated with the project
             type:
               - "null"
               - array
@@ -96,58 +102,80 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the environment
             type:
               - "null"
               - string
           _pubnub:
+            description: PubNub settings for real-time updates in the environment
             type:
               - "null"
               - object
           key:
+            description: Key used to access the environment's features
             type:
               - "null"
               - string
           name:
+            description: Name or title of the environment
             type:
               - "null"
               - string
           apiKey:
+            description: API key associated with the environment for authentication
             type:
               - "null"
               - string
           mobileKey:
+            description: Mobile key specific to the environment for mobile applications
             type:
               - "null"
               - string
           color:
+            description:
+              Color representation associated with the environment for
+              visual identification
             type:
               - "null"
               - string
           defaultTtl:
+            description: Default time-to-live (TTL) for feature flags in the environment
             type:
               - "null"
               - integer
           secureMode:
+            description: Flag indicating whether secure mode is enabled for the environment
             type:
               - "null"
               - boolean
           defaultTrackEvents:
+            description: Default tracking events configuration for the environment
             type:
               - "null"
               - boolean
           requireComments:
+            description:
+              Flag indicating whether comments are required for changes
+              in the environment
             type:
               - "null"
               - boolean
           confirmChanges:
+            description:
+              Flag indicating whether changes need confirmation before
+              application
             type:
               - "null"
               - boolean
           tags:
+            description:
+              Tags or labels associated with the environment for classification
+              or grouping
             type:
               - "null"
               - array
           approvalSettings:
+            description: Settings related to approval processes in the environment
             type:
               - "null"
               - object
@@ -172,78 +200,97 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the metrics data
             type:
               - "null"
               - string
           key:
+            description: Key identifying the metrics data
             type:
               - "null"
               - string
           experimentCount:
+            description: Total count of experiments associated with the metrics data
             type:
               - "null"
               - integer
           name:
+            description: Name of the metrics data
             type:
               - "null"
               - string
           kind:
+            description: Type of metrics data
             type:
               - "null"
               - string
           _attachedFlagCount:
+            description: Total count of attached flags for the metrics data
             type:
               - "null"
               - integer
           _links:
+            description: Links associated with the metrics data
             type:
               - "null"
               - object
           _site:
+            description: Site where the metrics data is used
             type:
               - "null"
               - object
           _access:
+            description: Access level for the metrics data
             type:
               - "null"
               - object
           tags:
+            description: Tags associated with the metrics data
             type:
               - "null"
               - array
           _creationDate:
+            description: Date when the metrics data was created
             type:
               - "null"
               - integer
           lastModified:
+            description: Date when the metrics data was last modified
             type:
               - "null"
               - object
           maintainerId:
+            description: ID of the maintainer of the metrics data
             type:
               - "null"
               - string
           _maintainer:
+            description: Maintainer of the metrics data
             type:
               - "null"
               - object
           description:
+            description: Description of the metrics data
             type:
               - "null"
               - string
           isNumeric:
+            description: Indicates if the metrics data is numeric or not
             type:
               - "null"
               - boolean
           successCriteria:
+            description: Criteria used to determine the success of the metrics data
             type:
               - "null"
               - string
           unit:
+            description: Unit of measurement for the metrics data
             type:
               - "null"
               - string
           eventKey:
+            description: Key associated with the event triggering the metrics data
             type:
               - "null"
               - string
@@ -260,62 +307,79 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the member
             type:
               - "null"
               - string
           firstName:
+            description: First name of the member
             type:
               - "null"
               - string
           lastName:
+            description: Last name of the member
             type:
               - "null"
               - string
           role:
+            description: Role assigned to the member in the system
             type:
               - "null"
               - string
           email:
+            description: Email address of the member
             type:
               - "null"
               - string
           _pendingInvite:
+            description: Indicates if there is a pending invitation for the member
             type:
               - "null"
               - boolean
           _verified:
+            description: Indicates if the member's account is verified
             type:
               - "null"
               - boolean
           isBeta:
+            description: Indicates if the member is part of a beta program
             type:
               - "null"
               - boolean
           customRoles:
+            description: Custom roles assigned to the member
             type:
               - "null"
               - array
           mfa:
+            description:
+              Indicates if multi-factor authentication is enabled for the
+              member
             type:
               - "null"
               - string
           excludedDashboards:
+            description: List of dashboards excluded for the member
             type:
               - "null"
               - array
           _lastSeen:
+            description: Timestamp for when the member was last seen
             type:
               - "null"
               - integer
           _lastSeenMetadata:
+            description: Additional metadata related to the last seen activity
             type:
               - "null"
               - object
           creationDate:
+            description: Timestamp for when the member account was created
             type:
               - "null"
               - integer
           oauthProviders:
+            description: OAuth providers linked to the member's account
             type:
               - "null"
               - array
@@ -332,50 +396,76 @@ definitions:
         type: object
         properties:
           _id:
+            description: The unique identifier for the audit log entry.
             type:
               - "null"
               - string
           _accountId:
+            description:
+              The unique identifier for the account related to the audit
+              log entry.
             type:
               - "null"
               - string
           date:
+            description: The date and time when the audit log entry was created.
             type:
               - "null"
               - integer
           accesses:
+            description:
+              Details regarding the accesses made during the audit log
+              entry.
             type:
               - "null"
               - array
           kind:
+            description: The category or type of the audit log entry.
             type:
               - "null"
               - string
           name:
+            description: The name or label associated with the audit log entry.
             type:
               - "null"
               - string
           description:
+            description:
+              Detailed information about the event or action captured in
+              the audit log entry.
             type:
               - "null"
               - string
           shortDescription:
+            description:
+              A brief summary or description of the event captured in the
+              audit log entry.
             type:
               - "null"
               - string
           comment:
+            description:
+              Any additional comment or note associated with the audit
+              log entry.
             type:
               - "null"
               - string
           member:
+            description:
+              Information about the member (user) associated with the audit
+              log entry.
             type:
               - "null"
               - object
           titleVerb:
+            description:
+              The verb or action described in the title of the audit log
+              entry.
             type:
               - "null"
               - string
           title:
+            description: The title or heading of the audit log entry.
             type:
               - "null"
               - string
@@ -401,74 +491,96 @@ definitions:
         type: object
         properties:
           _maintainer:
+            description: The maintainer of the feature flag
             type:
               - "null"
               - object
           _version:
+            description: The version of the feature flag
             type:
               - "null"
               - integer
           archived:
+            description: Indicates if the feature flag is archived
             type:
               - "null"
               - boolean
           clientSideAvailability:
+            description: Specifies client side availability of the feature flag
             type:
               - "null"
               - object
           creationDate:
+            description: Date when the feature flag was created
             type:
               - "null"
               - integer
           customProperties:
+            description: Custom properties associated with the feature flag
             type:
               - "null"
               - object
           description:
+            description: Description of the feature flag
             type:
               - "null"
               - string
           environments:
+            description: Environments where the feature flag is available
             type:
               - "null"
               - object
           experiments:
+            description: Experiments associated with the feature flag
             type:
               - "null"
               - object
           goalIds:
+            description: IDs of goals associated with the feature flag
             type:
               - "null"
               - array
           includeInSnippet:
+            description:
+              Indicates if the feature flag should be included in code
+              snippets
             type:
               - "null"
               - boolean
           key:
+            description: Unique key identifying the feature flag
             type:
               - "null"
               - string
           maintainerId:
+            description: ID of the maintainer of the feature flag
             type:
               - "null"
               - string
           name:
+            description: Name of the feature flag
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the feature flag
             type:
               - "null"
               - array
           temporary:
+            description: Indicates if the feature flag is temporary
             type:
               - "null"
               - boolean
           variationJsonSchema:
+            description: Schema of variations for the feature flag
             type:
               - "null"
               - object
           variations:
+            description:
+              Different variations or options available for the feature
+              flag
             type:
               - "null"
               - array

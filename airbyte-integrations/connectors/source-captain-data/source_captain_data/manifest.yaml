@@ -61,38 +61,49 @@ definitions:
         additionalProperties: true
         properties:
           project_uid:
+            description:
+              The unique identifier of the project associated with the
+              workspace.
             type:
               - "null"
               - string
           current_month_end:
+            description: The end date of the current month for the workspace.
             type:
               - "null"
               - string
           current_month_start:
+            description: The start date of the current month for the workspace.
             type:
               - "null"
               - string
           email:
+            description: The email address associated with the workspace.
             type:
               - "null"
               - string
           name:
+            description: The name of the workspace.
             type:
               - "null"
               - string
           plan_name:
+            description: The name of the plan associated with the workspace.
             type:
               - "null"
               - string
           tasks_left:
+            description: The number of tasks remaining in the workspace.
             type:
               - "null"
               - integer
           tasks_max:
+            description: The maximum number of tasks allowed in the workspace.
             type:
               - "null"
               - integer
           tasks_used:
+            description: The number of tasks currently used in the workspace.
             type:
               - "null"
               - integer
@@ -112,14 +123,17 @@ definitions:
         additionalProperties: true
         properties:
           created_at:
+            description: The timestamp when the workflow was created.
             type:
               - "null"
               - string
           name:
+            description: The name of the workflow.
             type:
               - "null"
               - string
           project_id:
+            description: The ID of the project to which the workflow belongs.
             type:
               - "null"
               - integer
@@ -127,24 +141,31 @@ definitions:
             items:
               properties:
                 name:
+                  description: The name of the step within the workflow.
                   type:
                     - "null"
                     - string
                 step_uid:
+                  description: The unique identifier of the step within the workflow.
                   type:
                     - "null"
                     - string
                 uid:
+                  description:
+                    The unique identifier of the step instance within the
+                    workflow.
                   type:
                     - "null"
                     - string
               type: object
             type: array
           template_uid:
+            description: The unique identifier of the template used for the workflow.
             type:
               - "null"
               - string
           uid:
+            description: The unique identifier of the workflow.
             type:
               - "null"
               - string
@@ -174,72 +195,89 @@ definitions:
         additionalProperties: true
         properties:
           accounts:
+            description: List of accounts associated with the job
             items:
               type:
                 - "null"
                 - string
             type: array
           configuration:
+            description: Configuration settings for the job
             type:
               - "null"
               - object
           error_message:
+            description: Description of any error occurred during the job execution
             type:
               - "null"
               - string
           finish_time:
+            description: Time when the job finished execution
             type:
               - "null"
               - string
           main_job_uid:
+            description: Unique identifier of the main job
             type:
               - "null"
               - string
           main_job_name:
+            description: Name of the main job
             type:
               - "null"
               - string
           name:
+            description: Name of the job
             type:
               - "null"
               - string
           number_inputs:
+            description: Number of input data sources used by the job
             type:
               - "null"
               - integer
           row_count:
+            description: Number of rows processed by the job
             type:
               - "null"
               - integer
           scheduled_time:
+            description: Time when the job was scheduled to run
             type:
               - "null"
               - string
           start_time:
+            description: Time when the job started execution
             type:
               - "null"
               - string
           status:
+            description: Current status of the job
             type:
               - "null"
               - string
           step_uid:
+            description: Unique identifier of the job step
             type:
               - "null"
               - string
           total_row_count:
+            description: Total number of rows expected to be processed by the job
             type:
               - "null"
               - integer
           uid:
+            description: Unique identifier of the job
             type:
               - "null"
               - string
           workflow_name:
+            description: Name of the workflow to which the job belongs
             type:
               - "null"
               - string
           workflow_uid:
+            description: Unique identifier of the workflow to which the job belongs
             type:
               - "null"
               - string
@@ -311,18 +349,22 @@ definitions:
         additionalProperties: true
         properties:
           job_uid:
+            description: The unique identifier for the job
             type:
               - "null"
               - string
           job_result_id:
+            description: The unique identifier for the job result
             type:
               - "null"
               - string
           results:
+            description: The actual result data of the job
             type:
               - "null"
               - object
           extracted_at:
+            description: The datetime when the job result was extracted
             type:
               - "null"
               - string

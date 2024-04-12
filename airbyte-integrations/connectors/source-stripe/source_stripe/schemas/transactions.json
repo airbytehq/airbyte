@@ -8,6 +8,7 @@
       "type": ["null", "integer"]
     },
     "amount_details": {
+      "description": "Additional details about the transaction amount such as currency, fees, and taxes.",
       "type": ["null", "object"],
       "properties": {
         "atm_fee": {
@@ -65,6 +66,7 @@
       "type": ["null", "string"]
     },
     "merchant_data": {
+      "description": "Information about the merchant involved in the transaction, like the merchant name, location, and ID.",
       "type": ["null", "object"],
       "properties": {
         "category": {

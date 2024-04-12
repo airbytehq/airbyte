@@ -33,110 +33,141 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique ID for the booking
             type:
               - "null"
               - number
           amount:
+            description: The total amount of the booking
             type:
               - "null"
               - number
           children_amount:
+            description: The number of children included in the booking
             type:
               - "null"
               - number
           placed:
+            description: Indicates if the booking is placed
             type:
               - "null"
               - number
           placed_manually:
+            description: Indicates if the booking was placed manually
             type:
               - "null"
               - number
           start:
+            description: Time when the booking starts
             type:
               - "null"
               - number
           end:
+            description: Time when the booking ends
             type:
               - "null"
               - number
           length:
+            description: Length of the booking
             type:
               - "null"
               - number
           status:
+            description: Status of the booking
             type:
               - "null"
               - string
           arrived:
+            description:
+              Indicates whether the guests associated with the booking
+              have arrived
             type:
               - "null"
               - number
           all_seated:
+            description: Indicates if all guests associated with the booking are seated
             type:
               - "null"
               - number
           guest_left:
+            description: Indicates if the guest has left
             type:
               - "null"
               - number
           comment:
+            description:
+              Any additional comments or special requests related to the
+              booking
             type:
               - "null"
               - string
           confirmed:
+            description: Indicates if the booking is confirmed
             type:
               - "null"
               - number
           waitinbar:
+            description: Indicates if the guest has to wait in the bar
             type:
               - "null"
               - number
           internet_booking:
+            description: Indicates if the booking was made online
             type:
               - "null"
               - number
           internet_booking_confirmed:
+            description: Indicates if the internet booking is confirmed
             type:
               - "null"
               - number
           paid:
+            description: Indicates if the booking has been paid for
             type:
               - "null"
               - number
           langid:
+            description: Language ID of the booking
             type:
               - "null"
               - number
           meal:
+            description: Type of meal booked
             type:
               - "null"
               - string
           tables:
+            description: Information about the tables assigned to the booking
             type:
               - "null"
               - number
           meal_abbr:
+            description: Abbreviated form of the meal type
             type:
               - "null"
               - string
           table_ids:
+            description: IDs of the tables associated with the booking
             type:
               - "null"
               - number
           products:
+            description: List of products associated with the booking
             type:
               - "null"
               - number
           waitinlist:
+            description: Indicates if the guest is on the waiting list
             type:
               - "null"
               - number
           date:
+            description: The date of the booking
             type:
               - "null"
               - string
           time:
+            description: Time of the booking
             type:
               - "null"
               - string
@@ -144,82 +175,104 @@ definitions:
             type: object
             properties:
               id:
+                description: Unique ID for the guest
                 type:
                   - "null"
                   - number
               firstname:
+                description: Guest's first name
                 type:
                   - "null"
                   - string
               lastname:
+                description: Guest's last name
                 type:
                   - "null"
                   - string
               name:
+                description: Guest's full name
                 type:
                   - "null"
                   - string
               address:
+                description: Guest's address
                 type:
                   - "null"
                   - string
               postalcode:
+                description: Guest's postal code
                 type:
                   - "null"
                   - string
               city:
+                description: Guest's city
                 type:
                   - "null"
                   - string
               company:
+                description: Guest's company
                 type:
                   - "null"
                   - string
               telephone:
+                description: Guest's telephone number
                 type:
                   - "null"
                   - string
               mobile:
+                description: Guest's mobile number
                 type:
                   - "null"
                   - string
               email:
+                description: Guest's email address
                 type:
                   - "null"
                   - string
               comment:
+                description: Additional comments or notes for the guest
                 type:
                   - "null"
                   - string
               other_contact:
+                description: Other contact information for the guest
                 type:
                   - "null"
                   - string
               restaurant_newsletter:
+                description:
+                  Indicates if the guest is subscribed to the restaurant
+                  newsletter
                 type:
                   - "null"
                   - boolean
           booking_date:
+            description: The date of the booking
             type:
               - "null"
               - number
           payStarted:
+            description: Indicates if the payment for the booking has started
             type:
               - "null"
               - boolean
           payClosed:
+            description: Indicates if the payment for the booking is closed
             type:
               - "null"
               - boolean
           payCharged:
+            description: Indicates if the payment for the booking is charged
             type:
               - "null"
               - boolean
           payActivated:
+            description: Indicates if the payment for the booking is activated
             type:
               - "null"
               - boolean
           has_message:
+            description: Indicates if there is a message associated with the booking
             type:
               - "null"
               - number

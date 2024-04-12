@@ -2,47 +2,60 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "The unique identifier of the tag.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of resource that the tag is attached to.",
       "type": ["null", "string"]
     },
     "color": {
+      "description": "The color associated with the tag.",
       "type": ["null", "string"]
     },
     "followers": {
+      "description": "List of followers associated with the tag.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "The unique identifier of the follower.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource the follower is associated with.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the follower.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "name": {
+      "description": "The name of the tag.",
       "type": ["null", "string"]
     },
     "permalink_url": {
+      "description": "The permalink URL of the tag.",
       "type": ["null", "string"]
     },
     "workspace": {
+      "description": "The workspace to which the tag belongs.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "The unique identifier of the workspace.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource the workspace is associated with.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the workspace.",
           "type": ["null", "string"]
         }
       }

@@ -4,32 +4,41 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the epic.",
       "type": ["null", "integer"]
     },
     "kind": {
+      "description": "A type or category associated with the epic.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief overview or summary of the epic.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the epic was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the epic was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "project_id": {
+      "description": "The identifier of the project to which the epic belongs.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the epic.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL link to access more details about the epic.",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "A label or tag assigned to the epic.",
       "$ref": "label.json"
     }
   }

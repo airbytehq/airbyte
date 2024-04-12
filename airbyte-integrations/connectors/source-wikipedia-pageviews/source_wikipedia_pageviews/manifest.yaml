@@ -66,18 +66,29 @@ definitions:
         type: object
         properties:
           project:
+            description: Name of the Wikipedia project hosting the article
             type: string
           access:
+            description:
+              Type of access method used for viewing the article (e.g.,
+              desktop, mobile, etc.)
             type: string
           article:
+            description: Title of the Wikipedia article
             type: string
           agent:
+            description:
+              Type of user agent accessing the article (e.g., user, spider,
+              etc.)
             type: string
           granularity:
+            description: The time granularity for the data (e.g., hourly, daily)
             type: string
           timestamp:
+            description: Date and time when the views data was recorded
             type: string
           views:
+            description: Number of views received by the article
             type: integer
             format: int64
         $schema: http://json-schema.org/schema#
@@ -95,14 +106,19 @@ definitions:
         type: object
         properties:
           project:
+            description: Name of the Wikipedia project
             type: string
           access:
+            description: Type of access for the article views (desktop/mobile)
             type: string
           year:
+            description: Year when the data was fetched
             type: string
           month:
+            description: Month when the data was fetched
             type: string
           day:
+            description: Day of the month when the data was fetched
             type: string
           articles:
             type: array
@@ -110,11 +126,14 @@ definitions:
               type: object
               properties:
                 rank:
+                  description: Rank of the article based on views
                   type: integer
                   format: int32
                 article:
+                  description: Title of the Wikipedia article
                   type: string
                 views:
+                  description: Number of views for the article
                   type: integer
                   format: int64
         $schema: http://json-schema.org/schema#

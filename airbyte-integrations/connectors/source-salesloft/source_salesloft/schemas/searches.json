@@ -4,117 +4,152 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the record",
       "type": ["null", "integer"]
     },
     "user": {
+      "description": "Details of the user",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the user",
           "type": ["null", "string"]
         },
         "_href": {
+          "description": "Link to the user's details",
           "type": ["null", "string"]
         }
       }
     },
     "user_slug": {
+      "description": "Unique identifier for the user",
       "type": ["null", "string"]
     },
     "primary_calendar_id": {
+      "description": "ID of the primary calendar",
       "type": ["null", "string"]
     },
     "primary_calendar_name": {
+      "description": "Name of the primary calendar",
       "type": ["null", "string"]
     },
     "email_address": {
+      "description": "Email address associated with the record",
       "type": ["null", "string"]
     },
     "user_details": {
+      "description": "Details of the user",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "calendar_type": {
+      "description": "Type of calendar",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title of the record",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the record",
       "type": ["null", "string"]
     },
     "location": {
+      "description": "Location of the record",
       "type": ["null", "string"]
     },
     "default_meeting_length": {
+      "description": "Default length of a meeting",
       "type": ["null", "integer"]
     },
     "availability_limit_enabled": {
+      "description": "Indicates if availability limit is enabled",
       "type": ["null", "boolean"]
     },
     "availability_limit": {
+      "description": "Limit on availability",
       "type": ["null", "integer"]
     },
     "schedule_delay": {
+      "description": "Delay in scheduling meetings",
       "type": ["null", "integer"]
     },
     "buffer_time_duration": {
+      "description": "Duration of buffer time between meetings",
       "type": ["null", "integer"]
     },
     "schedule_buffer_enabled": {
+      "description": "Indicates if scheduling buffer is enabled",
       "type": ["null", "boolean"]
     },
     "times_available": {
+      "description": "Times available for scheduling",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "allow_booking_on_behalf": {
+      "description": "Indicates if booking on behalf of someone else is allowed",
       "type": ["null", "boolean"]
     },
     "allow_booking_overtime": {
+      "description": "Indicates if booking overtime is allowed",
       "type": ["null", "boolean"]
     },
     "allow_event_overlap": {
+      "description": "Indicates if event overlap is allowed",
       "type": ["null", "boolean"]
     },
     "allow_event_detail": {
+      "description": "Indicates if event details are allowed",
       "type": ["null", "boolean"]
     },
     "enable_dynamic_location": {
+      "description": "Indicates if dynamic location is enabled",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "Date and time when the record was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the record was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "time_zone": {
+      "description": "Time zone of the record",
       "type": ["null", "string"]
     },
     "primary_calendar_connection_failed": {
+      "description": "Indicates if the primary calendar connection failed",
       "type": ["null", "boolean"]
     },
     "enable_calendar_sync": {
+      "description": "Indicates if calendar sync is enabled",
       "type": ["null", "boolean"]
     },
     "reschedule_meetings_enabled": {
+      "description": "Indicates if rescheduling of meetings is enabled",
       "type": ["null", "boolean"]
     },
     "active_meeting_url": {
+      "description": "Details about the active meeting URL",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "url": {
+          "description": "The URL for the active meeting",
           "type": ["null", "string"]
         },
         "created_at": {
+          "description": "Date and time when the active meeting URL was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "Date and time when the active meeting URL was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         }

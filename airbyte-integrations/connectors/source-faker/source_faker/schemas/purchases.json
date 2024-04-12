@@ -2,30 +2,44 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": { "type": "integer" },
-    "user_id": { "type": "integer" },
-    "product_id": { "type": "integer" },
+    "id": {
+      "description": "Unique identifier for the purchase record.",
+      "type": "integer"
+    },
+    "user_id": {
+      "description": "Unique identifier for the user making the purchase.",
+      "type": "integer"
+    },
+    "product_id": {
+      "description": "Unique identifier for the product being purchased.",
+      "type": "integer"
+    },
     "created_at": {
+      "description": "The date and time when the purchase record was created.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "updated_at": {
+      "description": "The date and time when the purchase record was last updated.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "added_to_cart_at": {
+      "description": "The date and time the product was added to the cart by the user.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "purchased_at": {
+      "description": "The date and time the purchase was completed.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "returned_at": {
+      "description": "The date and time the purchased product was returned by the user.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"

@@ -27,9 +27,12 @@
       "type": ["null", "string"]
     },
     "settings": {
+      "description": "Contains the configuration settings for the goals data.",
       "properties": {
         "conditions": {
+          "description": "Contains the list of conditions that need to be met for the goals.",
           "items": {
+            "description": "Defines a specific condition for the goals.",
             "properties": {
               "operator": {
                 "description": "The comparison operator used in the condition",

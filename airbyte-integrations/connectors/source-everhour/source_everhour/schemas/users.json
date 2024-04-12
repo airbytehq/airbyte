@@ -4,99 +4,135 @@
   "additionalProperties": true,
   "properties": {
     "isEmailVerified": {
+      "description": "Flag indicating if the user's email is verified",
       "type": ["null", "boolean"]
     },
     "resourcePlannerAccess": {
+      "description": "Access permissions for the resource planner",
       "type": ["null", "object"],
       "properties": {
         "viewMine": {
+          "description": "Permission to view own resources in the planner",
           "type": ["null", "boolean"]
         },
         "editMine": {
+          "description": "Permission to edit own resources in the planner",
           "type": ["null", "boolean"]
         },
         "viewAll": {
+          "description": "Permission to view all resources in the planner",
           "type": ["null", "boolean"]
         },
         "editAll": {
+          "description": "Permission to edit all resources in the planner",
           "type": ["null", "boolean"]
         }
       }
     },
     "timeTrackingPolicy": {
+      "description": "User's time tracking policy configuration",
       "type": ["null", "object"],
       "properties": {
         "allowTimeWithoutTask": {
+          "description": "Allow time entry without associating with a task",
           "type": ["null", "boolean"]
         },
         "allowManualTimeInput": {
+          "description": "Allow manual time entry",
           "type": ["null", "boolean"]
         },
         "allowFutureTime": {
+          "description": "Allow entries for future dates",
           "type": ["null", "boolean"]
         },
         "allowTimeWithoutEstimate": {
+          "description": "Allow time entry without a specific task estimate",
           "type": ["null", "boolean"]
         },
         "allowExceedEstimate": {
+          "description": "Allow time entries to exceed estimated time",
           "type": ["null", "boolean"]
         },
         "allowManageEstimates": {
+          "description": "Allow user to manage time estimates",
           "type": ["null", "boolean"]
         }
       }
     },
     "avatarUrl": {
+      "description": "URL of the user's avatar image",
       "type": ["null", "string"]
     },
     "avatarUrlLarge": {
+      "description": "URL of the user's larger avatar image",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier of the user",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "User's email address",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "User's name",
       "type": ["null", "string"]
     },
     "headline": {
+      "description": "User's headline or job title",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp of user creation",
       "type": ["null", "string"]
     },
     "groups": {
+      "description": "Groups the user belongs to",
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": {
+        "description": "Individual group item",
+        "type": "string"
+      }
     },
     "status": {
+      "description": "User's current status",
       "type": ["null", "string"]
     },
     "role": {
+      "description": "User's role or position",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of user account",
       "type": ["null", "string"]
     },
     "costHistory": {
+      "description": "History of costs related to the user",
       "type": ["null", "array"],
-      "items": { "type": "object" }
+      "items": {
+        "description": "Individual cost history item",
+        "type": "object"
+      }
     },
     "rate": {
+      "description": "User's hourly rate",
       "type": ["null", "integer"]
     },
     "cost": {
+      "description": "Cost associated with the user",
       "type": ["null", "integer"]
     },
     "budget": {
+      "description": "User's budget information",
       "type": ["null", "object"]
     },
     "enableResourcePlanner": {
+      "description": "Flag indicating if the user can access the resource planner",
       "type": ["null", "boolean"]
     },
     "capacity": {
+      "description": "User's capacity for work",
       "type": ["null", "integer"]
     }
   }

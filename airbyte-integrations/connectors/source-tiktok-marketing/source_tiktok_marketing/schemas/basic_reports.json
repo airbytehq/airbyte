@@ -31,6 +31,7 @@
       "type": ["null", "integer"]
     },
     "metrics": {
+      "description": "A list of metrics for which data should be retrieved such as views, likes, comments, or shares.",
       "type": ["null", "object"],
       "properties": {
         "campaign_name": {
@@ -360,6 +361,7 @@
       }
     },
     "dimensions": {
+      "description": "A list of dimensions for which data should be retrieved such as time, user demographics, or content type.",
       "type": ["null", "object"],
       "properties": {
         "stat_time_day": {

@@ -4,21 +4,27 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the channel tab.",
       "type": ["null", "string"]
     },
     "groupId": {
+      "description": "The unique identifier of the group the channel belongs to.",
       "type": ["null", "string"]
     },
     "channelId": {
+      "description": "The unique identifier of the channel to which the tab belongs.",
       "type": ["null", "string"]
     },
     "displayName": {
+      "description": "The display name of the channel tab.",
       "type": ["null", "string"]
     },
     "webUrl": {
+      "description": "The URL of the web page linked to by the tab.",
       "type": ["null", "string"]
     },
     "sortOrderIndex": {
+      "description": "The index used to determine the order of tabs within a channel.",
       "type": ["null", "string"]
     },
     "teamsApp": {
@@ -26,12 +32,15 @@
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "The unique identifier of the Microsoft Teams app.",
           "type": ["null", "string"]
         },
         "displayName": {
+          "description": "The display name of the Microsoft Teams app.",
           "type": ["null", "string"]
         },
         "distributionMethod": {
+          "description": "The method used to distribute the app.",
           "type": ["null", "string"]
         }
       }
@@ -41,24 +50,31 @@
       "additionalProperties": true,
       "properties": {
         "entityId": {
+          "description": "The unique identifier representing the content entity.",
           "type": ["null", "string"]
         },
         "contentUrl": {
+          "description": "The URL to the content displayed in the tab.",
           "type": ["null", "string"]
         },
         "removeUrl": {
+          "description": "The URL used to remove the tab.",
           "type": ["null", "string"]
         },
         "websiteUrl": {
+          "description": "The URL of the associated website for the tab.",
           "type": ["null", "string"]
         },
         "wikiTabId": {
+          "description": "The unique identifier of the tab in a wiki.",
           "type": ["null", "integer"]
         },
         "wikiDefaultTab": {
+          "description": "Boolean flag indicating if this is the default tab in a wiki.",
           "type": ["null", "boolean"]
         },
         "hasContent": {
+          "description": "Boolean flag indicating if the tab has content.",
           "type": ["null", "boolean"]
         }
       }

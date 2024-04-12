@@ -48,6 +48,7 @@
       "type": ["string", "null"]
     },
     "tiers": {
+      "description": "Contains information about price tiers",
       "type": ["array", "null"],
       "items": {
         "type": "object",
@@ -68,6 +69,7 @@
       }
     },
     "parent_periods": {
+      "description": "Contains information about the parent periods",
       "type": ["array", "null"],
       "items": {
         "type": "object",

@@ -188,70 +188,87 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Timestamp of when the activity was last updated
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of when the activity occurred
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp of when the activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the activity
             type:
               - "null"
               - string
           _type:
+            description: Type of activity performed
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the activity
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the activity
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the activity
             type:
               - "null"
               - string
           import_id:
+            description: ID related to data import
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the activity
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the activity
             type:
               - "null"
               - string
           source:
+            description: Source of the activity data
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the activity
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user associated with the activity
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the activity
             type:
               - "null"
               - string
           users:
+            description: List of users related to the activity
             type:
               - "null"
               - array
@@ -271,58 +288,76 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Date and time when the note activity was last updated
             type:
               - "null"
               - string
           date_created:
+            description: Date and time when the note activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the note activity
             type:
               - "null"
               - string
           _type:
+            description: Type of note activity data being fetched
             type:
               - "null"
               - string
           contact_id:
+            description:
+              Unique identifier of the contact associated with the note
+              activity
             type:
               - "null"
               - string
           created_by:
+            description: User ID of the creator of the note activity
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the note activity
             type:
               - "null"
               - string
           lead_id:
+            description: Unique identifier of the lead associated with the note activity
             type:
               - "null"
               - string
           organization_id:
+            description:
+              Unique identifier of the organization associated with the
+              note activity
             type:
               - "null"
               - string
           note:
+            description: Actual note content or information recorded
             type:
               - "null"
               - string
           updated_by:
+            description: User ID of the last user who updated the note activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the note activity
             type:
               - "null"
               - string
           user_id:
+            description: User ID associated with the note activity
             type:
               - "null"
               - string
           user_name:
+            description: Username associated with the note activity
             type:
               - "null"
               - string
@@ -342,78 +377,99 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Timestamp when the activity was last updated
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the email thread activity
             type:
               - "null"
               - string
           _type:
+            description:
+              Type of email thread activity, such as email, call, meeting,
+              etc.
             type:
               - "null"
               - string
           contact_id:
+            description: Identifier of the contact associated with the activity
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the activity
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the activity
             type:
               - "null"
               - string
           lead_id:
+            description: Identifier of the lead associated with the activity
             type:
               - "null"
               - string
           organization_id:
+            description: Identifier of the organization associated with the activity
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the activity
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user associated with the activity
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the activity
             type:
               - "null"
               - string
           latest_normalized_subject:
+            description: Normalized subject of the latest email
             type:
               - "null"
               - string
           participants:
+            description: List of participants involved in the activity
             type:
               - "null"
               - array
           activity_at:
+            description: Timestamp of the activity
             type:
               - "null"
               - string
           users:
+            description: List of users involved in the activity
             type:
               - "null"
               - array
           latest_emails:
+            description: Latest emails associated with the activity
             type:
               - "null"
               - array
           n_emails:
+            description: Number of emails in the thread
             type:
               - "null"
               - number
@@ -434,202 +490,252 @@ definitions:
         additionalProperties: true
         properties:
           cc:
+            description: Carbon copy recipients of the email
             type:
               - "null"
               - array
           attachments:
+            description: List of attachments included in the email
             type:
               - "null"
               - array
           email_account_id:
+            description: ID of the email account used to send/receive the email
             type:
               - "null"
               - string
           user_id:
+            description: User ID associated with the email activity
             type:
               - "null"
               - string
           has_reply:
+            description: Flag indicating if the email has a reply
             type:
               - "null"
               - boolean
           thread_id:
+            description: ID of the email thread
             type:
               - "null"
               - string
           message_ids:
+            description: IDs of the messages related to the email
             type:
               - "null"
               - array
           created_by:
+            description: User ID who created the email
             type:
               - "null"
               - string
           subject:
+            description: Subject of the email
             type:
               - "null"
               - string
           sequence_name:
+            description: Name of the email sequence
             type:
               - "null"
               - string
           users:
+            description: List of users associated with the email activity
             type:
               - "null"
               - array
           body_html:
+            description: HTML content of the email body
             type:
               - "null"
               - string
           updated_by:
+            description: User ID who last updated the email
             type:
               - "null"
               - string
           body_text:
+            description: Plaintext content of the email body
             type:
               - "null"
               - string
           opens_summary:
+            description: Summary of email open activities
             type:
               - "null"
               - string
           template_name:
+            description: Name of the email template used
             type:
               - "null"
               - string
           date_scheduled:
+            description: Timestamp when the email is scheduled to be sent
             type:
               - "null"
               - string
           sequence_id:
+            description: ID of the email sequence
             type:
               - "null"
               - string
           to:
+            description: Recipients of the email
             type:
               - "null"
               - array
           sender:
+            description: Information about the sender of the email
             type:
               - "null"
               - string
           direction:
+            description: Direction of the email (inbound/outbound)
             type:
               - "null"
               - string
           bcc:
+            description: Blind carbon copy recipients of the email
             type:
               - "null"
               - array
           lead_id:
+            description: ID of the lead associated with the email
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the email activity
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the email
             type:
               - "null"
               - string
           body_text_quoted:
+            description: Quoted plaintext content in reply email
             type:
               - "null"
               - array
           send_as_id:
+            description: ID of the sender used to send the email
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact related to the email
             type:
               - "null"
               - string
           followup_sequence_id:
+            description: ID of the follow-up sequence
             type:
               - "null"
               - string
           template_id:
+            description: ID of the email template used
             type:
               - "null"
               - string
           body_preview:
+            description: Preview text of the email body
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the email
             type:
               - "null"
               - string
           in_reply_to_id:
+            description: ID of the email to which this is a reply
             type:
               - "null"
               - string
           send_attempts:
+            description: Number of sending attempts made for the email
             type:
               - "null"
               - array
           envelope:
+            description: Envelope information of the email
             type:
               - "null"
               - object
           followup_sequence_delay:
+            description: Delay before sending a follow-up email
             type:
               - "null"
               - string
           opens:
+            description: Number of times the email was opened
             type:
               - "null"
               - array
           status:
+            description: Status of the email activity
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the email
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of the activity
             type:
               - "null"
               - string
           need_smtp_credentials:
+            description: Flag indicating if SMTP credentials are required
             type:
               - "null"
               - boolean
           date_updated:
+            description: Timestamp when the email was last updated
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the email was created
             type:
               - "null"
               - string
           bulk_email_action_id:
+            description: ID of bulk email action associated with the email
             type:
               - "null"
               - string
           sequence_subscription_id:
+            description: ID of the sequence subscription
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the email activity
             type:
               - "null"
               - string
           _type:
+            description: Type of email activity
             type:
               - "null"
               - string
           date_sent:
+            description: Timestamp when the email was sent
             type:
               - "null"
               - string
           body_html_quoted:
+            description: Quoted HTML content in reply email
             type:
               - "null"
               - array
           references:
+            description: References of the email
             type:
               - "null"
               - array
@@ -649,134 +755,169 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Timestamp when the SMS activity was last updated
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of the activity
             type:
               - "null"
               - string
           attachments:
+            description: Attachments associated with the SMS activity
             type:
               - "null"
               - array
           date_scheduled:
+            description: Timestamp when the SMS activity was scheduled to be sent
             type:
               - "null"
               - string
           error_message:
+            description: Error message, if any, associated with the SMS activity
             type:
               - "null"
               - string
           local_phone_formatted:
+            description: Formatted local phone number used in the SMS activity
             type:
               - "null"
               - string
           sequence_id:
+            description: ID of the sequence associated with the SMS activity
             type:
               - "null"
               - string
           sequence_name:
+            description: Name of the sequence associated with the SMS activity
             type:
               - "null"
               - string
           sequence_subscription_id:
+            description:
+              ID of the subscription to the sequence associated with the
+              SMS activity
             type:
               - "null"
               - string
           source:
+            description: Source from which the SMS activity originated
             type:
               - "null"
               - string
           template_id:
+            description: ID of the template used in the SMS activity
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the SMS activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the SMS activity
             type:
               - "null"
               - string
           _type:
+            description: Type of SMS activity
             type:
               - "null"
               - string
           date_sent:
+            description: Timestamp when the SMS activity was sent
             type:
               - "null"
               - string
           direction:
+            description: Direction of the SMS activity (incoming/outgoing)
             type:
               - "null"
               - string
           status:
+            description: Status of the SMS activity
             type:
               - "null"
               - string
           cost:
+            description: Cost incurred for the SMS activity
             type:
               - "null"
               - string
           local_phone:
+            description: Local phone number used in the SMS activity
             type:
               - "null"
               - string
           local_country_iso:
+            description: ISO code of the local country for the SMS activity
             type:
               - "null"
               - string
           remote_phone:
+            description: Remote phone number used in the SMS activity
             type:
               - "null"
               - string
           remote_phone_formatted:
+            description: Formatted remote phone number used in the SMS activity
             type:
               - "null"
               - string
           remote_country_iso:
+            description: ISO code of the remote country for the SMS activity
             type:
               - "null"
               - string
           text:
+            description: Text content of the SMS activity
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the SMS activity
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the SMS activity
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the SMS activity
             type:
               - "null"
               - string
           user_id:
+            description: User ID associated with the SMS activity
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the SMS activity
             type:
               - "null"
               - string
           created_by:
+            description: User ID who created the SMS activity
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the SMS activity
             type:
               - "null"
               - string
           updated_by:
+            description: User ID who last updated the SMS activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the SMS activity
             type:
               - "null"
               - string
@@ -796,214 +937,267 @@ definitions:
         additionalProperties: true
         properties:
           source:
+            description: Source of the call activity
             type:
               - "null"
               - string
           forwarded_to:
+            description: Number the call was forwarded to
             type:
               - "null"
               - string
           is_forwarded:
+            description: Flag indicating if the call was forwarded
             type:
               - "null"
               - boolean
           note_html:
+            description: HTML-formatted additional notes related to the call activity
             type:
               - "null"
               - string
           parent_meeting_id:
+            description: ID of the parent meeting if the call is related to a meeting
             type:
               - "null"
               - string
           recording_duration:
+            description: Duration of the call recording in seconds
             type:
               - "null"
               - string
           sequence_id:
+            description: ID of the sequence associated with the call
             type:
               - "null"
               - string
           sequence_name:
+            description: Name of the sequence associated with the call
             type:
               - "null"
               - string
           sequence_subscription_id:
+            description: ID of the sequence subscription
             type:
               - "null"
               - string
           remote_phone_formatted:
+            description: Formatted remote phone number
             type:
               - "null"
               - string
           duration:
+            description: Duration of the call in seconds
             type:
               - "null"
               - number
           date_updated:
+            description: Timestamp when the call activity was last updated
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact involved in the call
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the call
             type:
               - "null"
               - string
           local_phone:
+            description: Local phone number called
             type:
               - "null"
               - string
           voicemail_duration:
+            description: Duration of the voicemail recording in seconds
             type:
               - "null"
               - number
           remote_phone:
+            description: Remote phone number called
             type:
               - "null"
               - string
           date_answered:
+            description: Timestamp when the call was answered
             type:
               - "null"
               - string
           disposition:
+            description: Outcome or status of the call
             type:
               - "null"
               - string
           remote_country_iso:
+            description: ISO code of the remote country for the call
             type:
               - "null"
               - string
           recording_expires_at:
+            description: Timestamp when the recording expires
             type:
               - "null"
               - string
           note:
+            description: Additional notes related to the call activity
             type:
               - "null"
               - string
           phone:
+            description: Phone number called
             type:
               - "null"
               - string
           transferred_to_user_id:
+            description: ID of the user to which the call is transferred
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the call
             type:
               - "null"
               - string
           local_country_iso:
+            description: ISO code of the local country for the call
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the call
             type:
               - "null"
               - string
           has_recording:
+            description: Flag indicating if the call has a recording
             type:
               - "null"
               - boolean
           coach_legs:
+            description: Number of coaching legs in the call
             type:
               - "null"
               - array
           dialer_saved_search_id:
+            description: ID of the saved search used for the dialer
             type:
               - "null"
               - string
           id:
+            description: ID of the call activity
             type:
               - "null"
               - string
           local_phone_formatted:
+            description: Formatted local phone number
             type:
               - "null"
               - string
           is_to_group_number:
+            description: Flag indicating if the call is made to a group number
             type:
               - "null"
               - boolean
           recording_url:
+            description: URL to access the call recording
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the call activity
             type:
               - "null"
               - string
           voicemail_url:
+            description: URL to access the voicemail recording
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the call activity
             type:
               - "null"
               - string
           transferred_from:
+            description: Number from which the call is transferred
             type:
               - "null"
               - string
           is_joinable:
+            description: Flag indicating if the call is joinable
             type:
               - "null"
               - boolean
           transferred_from_user_id:
+            description: ID of the user from which the call is transferred
             type:
               - "null"
               - string
           _type:
+            description: Type of call activity
             type:
               - "null"
               - string
           users:
+            description: List of users involved in the call
             type:
               - "null"
               - array
           updated_by:
+            description: ID of the user who last updated the call activity
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the call activity
             type:
               - "null"
               - string
           call_method:
+            description: The method used for the call (e.g., inbound, outbound)
             type:
               - "null"
               - string
           dialer_id:
+            description: ID of the dialer used for the call
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of the call activity
             type:
               - "null"
               - string
           cost:
+            description: Cost of the call
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user associated with the call
             type:
               - "null"
               - string
           status:
+            description: Status of the call activity
             type:
               - "null"
               - string
           transferred_to:
+            description: Number to which the call is transferred
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the call activity was created
             type:
               - "null"
               - string
           direction:
+            description: Direction of the call (e.g., inbound, outbound)
             type:
               - "null"
               - string
@@ -1023,42 +1217,52 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Timestamp when the activity was last updated
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of the activity
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the activity
             type:
               - "null"
               - string
           notetaker_id:
+            description: ID of the user who took notes during the activity
             type:
               - "null"
               - string
           provider_calendar_event_id:
+            description: ID of the event in the provider's calendar
             type:
               - "null"
               - string
           provider_calendar_type:
+            description: Type of provider's calendar
             type:
               - "null"
               - string
           summary:
+            description: Summary of the activity
             type:
               - "null"
               - string
           user_note:
+            description: User's notes on the activity
             type:
               - "null"
               - string
           user_note_date_updated:
+            description: Timestamp when the user's notes were last updated
             type:
               - "null"
               - string
           user_note_html:
+            description: User's notes in HTML format
             type:
               - "null"
               - string
@@ -1067,6 +1271,7 @@ definitions:
               - "null"
               - array
             items:
+              description: Unique identifiers of provider's calendar events
               type:
                 - "null"
                 - string
@@ -1075,6 +1280,7 @@ definitions:
               - "null"
               - array
             items:
+              description: Integration details associated with the activity
               type:
                 - "null"
                 - string
@@ -1083,6 +1289,7 @@ definitions:
               - "null"
               - array
             items:
+              description: Unique identifiers of calendar events
               type:
                 - "null"
                 - string
@@ -1091,102 +1298,127 @@ definitions:
               - "null"
               - array
             items:
+              description: Links to conference platforms
               type:
                 - "null"
                 - string
           created_by_name:
+            description: Name of the user who created the activity
             type:
               - "null"
               - string
           duration:
+            description: Duration of the activity
             type:
               - "null"
               - number
           updated_by_name:
+            description: Name of the user who last updated the activity
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the activity
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the activity
             type:
               - "null"
               - string
           attendees:
+            description: List of attendees in the meeting
             type:
               - "null"
               - array
           title:
+            description: Title of the activity
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the activity
             type:
               - "null"
               - string
           calendar_event_link:
+            description: Link to the calendar event
             type:
               - "null"
               - string
           note:
+            description: Notes related to the activity
             type:
               - "null"
               - string
           source:
+            description: Source of the activity data
             type:
               - "null"
               - string
           location:
+            description: Location of the activity
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user associated with the activity
             type:
               - "null"
               - string
           status:
+            description: Status of the activity
             type:
               - "null"
               - string
           _type:
+            description: Type of activity
             type:
               - "null"
               - string
           users:
+            description: List of users involved in the activity
             type:
               - "null"
               - array
           user_id:
+            description: ID of the user associated with the activity
             type:
               - "null"
               - string
           ends_at:
+            description: Timestamp when the activity ends
             type:
               - "null"
               - string
           is_recurring:
+            description: Flag indicating if the activity is recurring
             type:
               - "null"
               - boolean
           connected_account_id:
+            description: ID of the connected account
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the activity
             type:
               - "null"
               - string
           starts_at:
+            description: Timestamp when the activity starts
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the activity
             type:
               - "null"
               - string
@@ -1206,78 +1438,97 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Date of when the activity was updated
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who updated the activity
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who updated the activity
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization related to the activity
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the lead
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp of when the activity occurred
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the activity
             type:
               - "null"
               - string
           new_status_label:
+            description: Label of the new status for the lead
             type:
               - "null"
               - string
           old_status_label:
+            description: Label of the old status for the lead
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user linked to the activity
             type:
               - "null"
               - string
           old_status_id:
+            description: ID of the old status for the lead
             type:
               - "null"
               - string
           _type:
+            description: The type of activity represented
             type:
               - "null"
               - string
           users:
+            description: List of users associated with the activity
             type:
               - "null"
               - array
           user_id:
+            description: ID of the user linked to the activity
             type:
               - "null"
               - string
           new_status_id:
+            description: ID of the new status for the lead
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the activity
             type:
               - "null"
               - string
           date_created:
+            description: Date of when the activity was created
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the activity
             type:
               - "null"
               - string
@@ -1297,134 +1548,167 @@ definitions:
         additionalProperties: true
         properties:
           organization_id:
+            description: The ID of the organization associated with the activity
             type:
               - "null"
               - string
           _type:
+            description: The type of activity being recorded
             type:
               - "null"
               - string
           contact_id:
+            description: The ID of the contact associated with the activity
             type:
               - "null"
               - string
           created_by:
+            description: The ID of the user who created the activity
             type:
               - "null"
               - string
           created_by_name:
+            description: The name of the user who created the activity
             type:
               - "null"
               - string
           date_created:
+            description: The timestamp when the activity was created
             type:
               - "null"
               - string
           activity_at:
+            description: The timestamp of when the activity occurred
             type:
               - "null"
               - string
           new_pipeline_name:
+            description: The name of the new pipeline after the status change
             type:
               - "null"
               - string
           users:
+            description: A list of users associated with the activity
             type:
               - "null"
               - array
             items:
+              description: User details
               type:
                 - "null"
                 - string
           opportunity_value_period:
+            description: The period over which the opportunity value is calculated
             type:
               - "null"
               - string
           old_pipeline_name:
+            description: The name of the old pipeline before the status change
             type:
               - "null"
               - string
           opportunity_confidence:
+            description: The confidence level associated with the opportunity
             type:
               - "null"
               - integer
           date_updated:
+            description: The timestamp when the activity was last updated
             type:
               - "null"
               - string
           lead_id:
+            description: The ID of the lead associated with the activity
             type:
               - "null"
               - string
           new_status_id:
+            description: The ID of the new status after the change
             type:
               - "null"
               - string
           new_status_label:
+            description: The label of the new status after the change
             type:
               - "null"
               - string
           new_status_type:
+            description: The type of the new status after the change
             type:
               - "null"
               - string
           new_pipeline_id:
+            description: The ID of the new pipeline after the status change
             type:
               - "null"
               - string
           old_status_id:
+            description: The ID of the old status before the change
             type:
               - "null"
               - string
           old_status_label:
+            description: The label of the old status before the change
             type:
               - "null"
               - string
           old_status_type:
+            description: The type of the old status before the change
             type:
               - "null"
               - string
           old_pipeline_id:
+            description: The ID of the old pipeline before the status change
             type:
               - "null"
               - string
           opportunity_date_won:
+            description: The date when the opportunity was won
             type:
               - "null"
               - string
           opportunity_id:
+            description: The ID of the opportunity associated with the activity
             type:
               - "null"
               - string
           opportunity_value:
+            description: The value of the opportunity
             type:
               - "null"
               - number
           opportunity_value_formatted:
+            description: The formatted representation of the opportunity value
             type:
               - "null"
               - string
           opportunity_value_currency:
+            description: The currency in which the opportunity value is represented
             type:
               - "null"
               - string
           updated_by:
+            description: The ID of the user who updated the activity
             type:
               - "null"
               - string
           updated_by_name:
+            description: The name of the user who updated the activity
             type:
               - "null"
               - string
           user_id:
+            description: The ID of the user associated with the activity
             type:
               - "null"
               - string
           user_name:
+            description: The name of the user associated with the activity
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the activity
             type:
               - "null"
               - string
@@ -1445,74 +1729,92 @@ definitions:
         additionalProperties: true
         properties:
           _type:
+            description: Type of the activity completed on the task.
             type:
               - "null"
               - string
           id:
+            description: ID of the task activity.
             type:
               - "null"
               - string
           activity_at:
+            description: Timestamp when the activity was completed.
             type:
               - "null"
               - string
           task_assigned_to:
+            description: ID of the user to whom the task was assigned.
             type:
               - "null"
               - string
           task_assigned_to_name:
+            description: Name of the user to whom the task was assigned.
             type:
               - "null"
               - string
           user_name:
+            description: Name of the user related to the task activity.
             type:
               - "null"
               - string
           users:
+            description: List of users associated with the task activity.
             type:
               - "null"
               - array
           task_id:
+            description: ID of the task associated with the activity.
             type:
               - "null"
               - string
           task_text:
+            description: Description of the task.
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user related to the task activity.
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the task activity.
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the task activity.
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the task activity.
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the task activity.
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization related to the task activity.
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the task.
             type:
               - "null"
               - string
           date_created:
+            description: Timestamp when the task activity was created.
             type:
               - "null"
               - string
           date_updated:
+            description: Timestamp when the task activity was last updated.
             type:
               - "null"
               - string
@@ -1532,66 +1834,82 @@ definitions:
         additionalProperties: true
         properties:
           status_id:
+            description: ID indicating the status of the custom field
             date_updated:
               - "null"
               - string
           description:
+            description: Description of the custom field
             date_updated:
               - "null"
               - string
           back_reference_is_visible:
+            description: Specifies whether the back reference is visible
             date_updated:
               - "null"
               - string
           date_updated:
+            description: Date when the custom field was last updated
             date_updated:
               - "null"
               - string
           referenced_custom_type_id:
+            description: ID of the referenced custom type
             date_updated:
               - "null"
               - string
           name:
+            description: Name of the custom field
             date_updated:
               - "null"
               - string
           accepts_multiple_values:
+            description: Indicates if the custom field can accept multiple values
             date_updated:
               - "null"
               - boolean
           choices:
+            description: List of choices for the custom field
             date_updated:
               - "null"
               - array
           editable_with_roles:
+            description: List of roles that can edit this custom field
             date_updated:
               - "null"
               - array
           created_by:
+            description: UserID of the user who created the custom field
             date_updated:
               - "null"
               - string
           updated_by:
+            description: UserID of the user who last updated the custom field
             date_updated:
               - "null"
               - string
           type:
+            description: Type of the custom field data
             date_updated:
               - "null"
               - string
           organization_id:
+            description: ID of the organization to which the custom field belongs
             date_updated:
               - "null"
               - string
           is_shared:
+            description: Indicates if the custom field is shared
             date_updated:
               - "null"
               - boolean
           id:
+            description: Unique identifier of the custom field
             date_updated:
               - "null"
               - string
           date_created:
+            description: Date when the custom field was created
             date_updated:
               - "null"
               - string
@@ -1611,62 +1929,77 @@ definitions:
         additionalProperties: true
         properties:
           description:
+            description: Description of the custom field
             date_updated:
               - "null"
               - string
           name:
+            description: Name of the custom field
             date_updated:
               - "null"
               - string
           back_reference_is_visible:
+            description: Flag indicating if the back reference is visible
             date_updated:
               - "null"
               - string
           is_shared:
+            description: Flag indicating if the custom field is shared
             date_updated:
               - "null"
               - boolean
           referenced_custom_type_id:
+            description: ID of the custom type referenced by this custom field
             date_updated:
               - "null"
               - string
           choices:
+            description: List of choices available for selection
             date_updated:
               - "null"
               - array
           editable_with_roles:
+            description: List of roles allowed to edit this custom field
             date_updated:
               - "null"
               - array
           created_by:
+            description: ID of the user who created the custom field
             date_updated:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the custom field
             date_updated:
               - "null"
               - string
           type:
+            description: Data type of the custom field (e.g., text, number)
             date_updated:
               - "null"
               - string
           organization_id:
+            description: ID of the organization to which the custom field belongs
             date_updated:
               - "null"
               - string
           accepts_multiple_values:
+            description: Flag indicating if the field accepts multiple values
             date_updated:
               - "null"
               - boolean
           id:
+            description: Unique identifier for the custom field
             date_updated:
               - "null"
               - string
           date_created:
+            description: Date and time when the custom field was created
             date_updated:
               - "null"
               - string
           date_updated:
+            description: Date and time when the custom field was last updated
             date_updated:
               - "null"
               - string
@@ -1686,62 +2019,79 @@ definitions:
         additionalProperties: true
         properties:
           description:
+            description: The description or purpose of the custom field.
             date_updated:
               - "null"
               - string
           name:
+            description: The name or label of the custom field.
             date_updated:
               - "null"
               - string
           back_reference_is_visible:
+            description: Specifies if the back reference is visible or not.
             date_updated:
               - "null"
               - string
           is_shared:
+            description: Indicates whether the custom field is shared across the organization.
             date_updated:
               - "null"
               - boolean
           referenced_custom_type_id:
+            description: The ID of the custom type that this custom field references.
             date_updated:
               - "null"
               - string
           choices:
+            description: The available choices/options for the custom field.
             date_updated:
               - "null"
               - array
           editable_with_roles:
+            description: Roles that are allowed to edit this custom field.
             date_updated:
               - "null"
               - array
           created_by:
+            description: The user ID who created this custom field.
             date_updated:
               - "null"
               - string
           updated_by:
+            description: The user ID who last updated this custom field.
             date_updated:
               - "null"
               - string
           type:
+            description: The data type or format of the custom field.
             date_updated:
               - "null"
               - string
           organization_id:
+            description: The ID of the organization to which the custom field belongs.
             date_updated:
               - "null"
               - string
           accepts_multiple_values:
+            description:
+              Indicates whether the custom field accepts multiple values
+              or not.
             date_updated:
               - "null"
               - boolean
           id:
+            description: The unique identifier of the custom field.
             date_updated:
               - "null"
               - string
           date_created:
+            description: The date and time when the custom field was created.
             date_updated:
               - "null"
               - string
           date_updated:
+            description: The date and time when the custom field was last updated.
             date_updated:
               - "null"
               - string
@@ -1761,70 +2111,97 @@ definitions:
         additionalProperties: true
         properties:
           description:
+            description: Description of the custom field.
             date_updated:
               - "null"
               - string
           back_reference_is_visible:
+            description:
+              Determines if the back reference associated with this field
+              is visible.
             date_updated:
               - "null"
               - boolean
           choices:
+            description: List of choices that can be selected for this custom field.
             date_updated:
               - "null"
               - array
           is_shared:
+            description: Indicates whether this field is shared across multiple activities.
             date_updated:
               - "null"
               - boolean
           referenced_custom_type_id:
+            description: ID of the referenced custom type, if any.
             date_updated:
               - "null"
               - string
           name:
+            description: Name or label of the custom field.
             date_updated:
               - "null"
               - string
           custom_activity_type_id:
+            description: ID of the custom activity type to which this field belongs.
             date_updated:
               - "null"
               - string
           required:
+            description: Indicates whether this field is required to be filled in.
             date_updated:
               - "null"
               - boolean
           editable_with_roles:
+            description: Roles that have permission to edit this custom field.
             date_updated:
               - "null"
               - array
           created_by:
+            description: User ID who created this custom field.
             date_updated:
               - "null"
               - string
           updated_by:
+            description: User ID who last updated this custom field.
             date_updated:
               - "null"
               - string
           type:
+            description:
+              Type of data that this custom field can store (e.g., text,
+              number, date).
             date_updated:
               - "null"
               - string
           organization_id:
+            description: ID of the organization to which this custom field belongs.
             date_updated:
               - "null"
               - string
           accepts_multiple_values:
+            description:
+              Indicates whether this custom field can accept multiple values
+              or just a single value.
             date_updated:
               - "null"
               - boolean
           id:
+            description: Unique identifier for this custom field.
             date_updated:
               - "null"
               - string
           date_created:
+            description:
+              Timestamp indicating the date and time when this field was
+              created.
             date_updated:
               - "null"
               - string
           date_updated:
+            description:
+              Timestamp indicating the date and time when this field was
+              last updated.
             date_updated:
               - "null"
               - string
@@ -1844,46 +2221,57 @@ definitions:
         additionalProperties: true
         properties:
           email:
+            description: The email address of the user.
             type:
               - "null"
               - string
           organizations:
+            description: The list of organizations associated with the user.
             type:
               - "null"
               - array
           id:
+            description: The unique identifier for the user.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the user account was last updated.
             type:
               - "null"
               - string
           image:
+            description: The image associated with the user.
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when the user account was created.
             type:
               - "null"
               - string
           first_name:
+            description: The first name of the user.
             type:
               - "null"
               - string
           email_verification_token_generated_at:
+            description: The date and time when the email verification token was generated.
             type:
               - "null"
               - string
           email_verified_at:
+            description: The date and time when the user's email was verified.
             type:
               - "null"
               - string
           last_name:
+            description: The last name of the user.
             type:
               - "null"
               - string
           last_used_timezone:
+            description: The timezone last used by the user.
             type:
               - "null"
               - string
@@ -1903,6 +2291,7 @@ definitions:
         additionalProperties: true
         properties:
           phones:
+            description: The list of phone numbers associated with the contact
             type:
               - "null"
               - array
@@ -1912,34 +2301,42 @@ definitions:
                 - object
               properties:
                 phone_formatted:
+                  description: The formatted version of the phone number
                   type:
                     - "null"
                     - string
                 country:
+                  description: The country code of the phone number
                   type:
                     - "null"
                     - string
                 type:
+                  description: The type of phone number (mobile, office, etc.)
                   type:
                     - "null"
                     - string
                 phone:
+                  description: The phone number
                   type:
                     - "null"
                     - string
           organization_id:
+            description: The identifier of the organization the contact belongs to
             type:
               - "null"
               - string
           title:
+            description: The job title or position of the contact
             type:
               - "null"
               - string
           lead_id:
+            description: The identifier of the lead associated with the contact
             type:
               - "null"
               - string
           emails:
+            description: The list of email addresses associated with the contact
             type:
               - "null"
               - array
@@ -1949,42 +2346,52 @@ definitions:
                 - object
               properties:
                 type:
+                  description: The type of email address (work, personal, etc.)
                   type:
                     - "null"
                     - string
                 email:
+                  description: The email address
                   type:
                     - "null"
                     - string
           display_name:
+            description: The name used for displaying the contact
             type:
               - "null"
               - string
           name:
+            description: The full name of the contact
             type:
               - "null"
               - string
           created_by:
+            description: The user who created the contact data
             type:
               - "null"
               - string
           urls:
+            description: Additional URLs associated with the contact
             type:
               - "null"
               - array
           updated_by:
+            description: The user who last updated the contact data
             type:
               - "null"
               - string
           date_updated:
+            description: The date when the contact data was last updated
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the contact
             type:
               - "null"
               - string
           integration_links:
+            description: Links to external integrations related to the contact
             type:
               - "null"
               - array
@@ -1994,14 +2401,17 @@ definitions:
                 - object
               properties:
                 name:
+                  description: The name of the integration link
                   type:
                     - "null"
                     - string
                 url:
+                  description: The URL of the integration link
                   type:
                     - "null"
                     - string
           date_created:
+            description: The date when the contact data was created
             type:
               - "null"
               - string
@@ -2020,38 +2430,49 @@ definitions:
         additionalProperties: true
         properties:
           date_created:
+            description: The timestamp when the role was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The timestamp when the role was last updated.
             type:
               - "null"
               - string
           editable:
+            description: Indicates whether the role is editable or not.
             type:
               - "null"
               - boolean
           id:
+            description: The unique identifier for the role.
             type:
               - "null"
               - string
           name:
+            description: The name of the role.
             type:
               - "null"
               - string
           organization_id:
+            description: The identifier of the organization to which the role belongs.
             type:
               - "null"
               - string
           permissions:
+            description: The permissions assigned to the role.
             type:
               - "null"
               - array
           visibility_user_lcf_behavior:
+            description:
+              The behavior of user visibility for LCF (List-Context-Filtering)
+              fields.
             type:
               - "null"
               - string
           visibility_user_lcf_ids:
+            description: The list of user identifiers for LCF fields.
             type:
               - "null"
               - array
@@ -2075,14 +2496,19 @@ definitions:
         additionalProperties: true
         properties:
           label:
+            description: The name or label associated with the lead status.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the lead status.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier of the organization to which the lead status
+              belongs.
             type:
               - "null"
               - string
@@ -2102,22 +2528,31 @@ definitions:
         additionalProperties: true
         properties:
           label:
+            description: The display label or name of the opportunity status.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the opportunity status.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              Identifier of the organization associated with this opportunity
+              status.
             type:
               - "null"
               - string
           type:
+            description: Type of the opportunity status (e.g., 'open', 'won', 'lost').
             type:
               - "null"
               - string
           pipeline_id:
+            description:
+              Identifier of the pipeline to which this opportunity status
+              belongs.
             type:
               - "null"
               - string
@@ -2136,34 +2571,44 @@ definitions:
         additionalProperties: true
         properties:
           created_by:
+            description: The user who created the pipeline
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated the pipeline
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the pipeline was last updated
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when the pipeline was created
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the pipeline
             type:
               - "null"
               - string
           name:
+            description: The name of the pipeline
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier for the organization to which the pipeline
+              belongs
             type:
               - "null"
               - string
           statuses:
+            description: The different statuses associated with the pipeline
             type:
               - "null"
               - array
@@ -2173,14 +2618,17 @@ definitions:
                 - object
               properties:
                 id:
+                  description: The unique identifier for the status
                   type:
                     - "null"
                     - string
                 label:
+                  description: The label or name of the status
                   type:
                     - "null"
                     - string
                 type:
+                  description: The type of status
                   type:
                     - "null"
                     - string
@@ -2201,50 +2649,64 @@ definitions:
         additionalProperties: true
         properties:
           attachments:
+            description: Files attached to the email template.
             type:
               - "null"
               - array
           id:
+            description: The unique identifier for the email template.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier for the organization to which the email template
+              belongs.
             type:
               - "null"
               - string
           body:
+            description: The content or message body of the email template.
             type:
               - "null"
               - string
           created_by:
+            description: The user who created the email template.
             type:
               - "null"
               - string
           subject:
+            description: The subject or title of the email template.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the email template was last updated.
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated the email template.
             type:
               - "null"
               - string
           is_shared:
+            description: Indicates if the email template is shared with other users.
             type:
               - "null"
               - boolean
           date_created:
+            description: The date and time when the email template was created.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the email template.
             type:
               - "null"
               - string
           is_archived:
+            description: Indicates if the email template is archived.
             type:
               - "null"
               - boolean
@@ -2264,70 +2726,93 @@ definitions:
         additionalProperties: true
         properties:
           action:
+            description:
+              The action performed related to the event data, e.g., create,
+              update, delete.
             type:
               - "null"
               - string
           api_key_id:
+            description: The ID of the API key associated with the event.
             type:
               - "null"
               - string
           oauth_client_id:
+            description: The client ID associated with the OAuth authentication.
             type:
               - "null"
               - string
           oauth_scope:
+            description: The scope of access granted by OAuth.
             type:
               - "null"
               - string
           changed_fields:
+            description: Fields that were changed during the event.
             type:
               - "null"
               - array
           data:
+            description: The main data payload related to the event.
             type:
               - "null"
               - object
           date_created:
+            description: The date and time when the event was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the event was last updated.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier for the event data.
             type:
               - "null"
               - string
           lead_id:
+            description: The ID of the lead associated with the event.
             type:
               - "null"
               - string
           meta:
+            description: Additional metadata or information related to the event.
             type:
               - "null"
               - object
           object_id:
+            description:
+              The ID of the object related to the event, e.g., lead ID,
+              user ID.
             type:
               - "null"
               - string
           object_type:
+            description:
+              The type of object involved in the event, e.g., lead, user,
+              organization.
             type:
               - "null"
               - string
           organization_id:
+            description: The ID of the organization associated with the event.
             type:
               - "null"
               - string
           previous_data:
+            description: Previous data values before the event occurred.
             type:
               - "null"
               - object
           request_id:
+            description: The ID of the request that triggered the event.
             type:
               - "null"
               - string
           user_id:
+            description: The ID of the user associated with the event.
             type:
               - "null"
               - string
@@ -2353,10 +2838,12 @@ definitions:
         additionalProperties: true
         properties:
           status_id:
+            description: ID of the lead status
             type:
               - "null"
               - string
           opportunities:
+            description: List of opportunities associated with the lead
             type:
               - "null"
               - array
@@ -2366,142 +2853,177 @@ definitions:
                 - object
               properties:
                 contact_name:
+                  description: Name of the contact associated with the opportunity
                   type:
                     - "null"
                     - string
                 status_id:
+                  description: ID of the status of the opportunity
                   type:
                     - "null"
                     - string
                 lead_id:
+                  description: Lead ID associated with the opportunity
                   type:
                     - "null"
                     - string
                 user_id:
+                  description: ID of the user associated with the opportunity
                   type:
                     - "null"
                     - string
                 annualized_expected_value:
+                  description: Expected annualized value of the opportunity
                   type:
                     - "null"
                     - integer
                 id:
+                  description: Opportunity ID
                   type:
                     - "null"
                     - string
                 updated_by_name:
+                  description: Name of the user who last updated the opportunity
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value of the opportunity
                   type:
                     - "null"
                     - integer
                 date_created:
+                  description: Date when the opportunity was created
                   type:
                     - "null"
                     - string
                 integration_links:
+                  description: Integration links related to the opportunity
                   type:
                     - "null"
                     - array
                 created_by:
+                  description: User who created the opportunity
                   type:
                     - "null"
                     - string
                 status_display_name:
+                  description: Display name of the status of the opportunity
                   type:
                     - "null"
                     - string
                 value_currency:
+                  description: Currency of the value
                   type:
                     - "null"
                     - string
                 created_by_name:
+                  description: Name of the user who created the opportunity
                   type:
                     - "null"
                     - string
                 status_type:
+                  description: Type of status of the opportunity
                   type:
                     - "null"
                     - string
                 date_lost:
+                  description: Date when the opportunity was lost
                   type:
                     - "null"
                     - string
                 value_period:
+                  description: Period for which the value is applicable
                   type:
                     - "null"
                     - string
                 note:
+                  description: Additional note about the opportunity
                   type:
                     - "null"
                     - string
                 confidence:
+                  description: Confidence level in the opportunity
                   type:
                     - "null"
                     - integer
                 status_label:
+                  description: Label of the status of the opportunity
                   type:
                     - "null"
                     - string
                 user_name:
+                  description: Name of the user associated with the opportunity
                   type:
                     - "null"
                     - string
                 value_formatted:
+                  description: Formatted value of the opportunity
                   type:
                     - "null"
                     - string
                 updated_by:
+                  description: User who last updated the opportunity
                   type:
                     - "null"
                     - string
                 organization_id:
+                  description: Organization ID the opportunity belongs to
                   type:
                     - "null"
                     - string
                 contact_id:
+                  description: ID of the contact associated with the opportunity
                   type:
                     - "null"
                     - string
                 lead_name:
+                  description: Name of the lead associated with the opportunity
                   type:
                     - "null"
                     - string
                 date_won:
+                  description: Date when the opportunity was won
                   type:
                     - "null"
                     - string
                 expected_value:
+                  description: Expected value of the opportunity
                   type:
                     - "null"
                     - integer
                 annualized_value:
+                  description: Annualized value of the opportunity
                   type:
                     - "null"
                     - integer
                 date_updated:
+                  description: Date when the opportunity was last updated
                   type:
                     - "null"
                     - string
           id:
+            description: Lead ID
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the lead
             type:
               - "null"
               - string
           status_label:
+            description: Label of the lead status
             type:
               - "null"
               - string
           date_created:
+            description: Date when the lead was created
             type:
               - "null"
               - string
           integration_links:
+            description: List of integration links related to the lead
             type:
               - "null"
               - array
@@ -2511,43 +3033,53 @@ definitions:
                 - object
               properties:
                 name:
+                  description: Name of the link
                   type:
                     - "null"
                     - string
                 url:
+                  description: URL of the link
                   type:
                     - "null"
                     - string
           html_url:
+            description: URL for accessing lead details in HTML format
             type:
               - "null"
               - string
           created_by:
+            description: User who created the lead
             type:
               - "null"
               - string
           custom:
+            description: Custom fields specific to the lead
             type:
               - "null"
               - object
             properties:
               Current Vendor/Software:
+                description: Current vendor or software used
                 type:
                   - "null"
                   - string
               Industry:
+                description: Industry of the lead
                 type:
                   - "null"
                   - string
               Lead Owner:
+                description: Owner of the lead
                 type:
                   - "null"
                   - string
               Referral Source:
+                description: Source from which lead was referred
                 type:
                   - "null"
                   - string
           addresses:
+            description: List of addresses associated with the lead
             type:
               - "null"
               - array
@@ -2557,38 +3089,47 @@ definitions:
                 - object
               properties:
                 country:
+                  description: Country name
                   type:
                     - "null"
                     - string
                 city:
+                  description: City name
                   type:
                     - "null"
                     - string
                 label:
+                  description: Label for the address e.g., Home, Work
                   type:
                     - "null"
                     - string
                 address_2:
+                  description: Second line of the address
                   type:
                     - "null"
                     - string
                 address_1:
+                  description: First line of the address
                   type:
                     - "null"
                     - string
                 zipcode:
+                  description: Postal code
                   type:
                     - "null"
                     - string
                 state:
+                  description: State/Region name
                   type:
                     - "null"
                     - string
           display_name:
+            description: Name displayed for the lead
             type:
               - "null"
               - string
           tasks:
+            description: List of tasks associated with the lead
             type:
               - "null"
               - array
@@ -2598,10 +3139,12 @@ definitions:
                 - object
               properties: {}
           description:
+            description: Description or details about the lead
             type:
               - "null"
               - string
           contacts:
+            description: List of contacts associated with the lead
             type:
               - "null"
               - array
@@ -2611,26 +3154,32 @@ definitions:
                 - object
               properties:
                 display_name:
+                  description: Full name of the contact
                   type:
                     - "null"
                     - string
                 lead_id:
+                  description: Lead ID associated with the contact
                   type:
                     - "null"
                     - string
                 id:
+                  description: Contact ID
                   type:
                     - "null"
                     - string
                 urls:
+                  description: URLs associated with the contact
                   type:
                     - "null"
                     - array
                 date_created:
+                  description: Date when the contact was created
                   type:
                     - "null"
                     - string
                 integration_links:
+                  description: List of integration links related to the contact
                   type:
                     - "null"
                     - array
@@ -2640,30 +3189,37 @@ definitions:
                       - object
                     properties:
                       name:
+                        description: Name of the link
                         type:
                           - "null"
                           - string
                       url:
+                        description: URL of the link
                         type:
                           - "null"
                           - string
                 updated_by:
+                  description: User who last updated the contact
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the contact
                   type:
                     - "null"
                     - string
                 organization_id:
+                  description: Organization ID the contact belongs to
                   type:
                     - "null"
                     - string
                 created_by:
+                  description: User who created the contact
                   type:
                     - "null"
                     - string
                 phones:
+                  description: List of phone numbers for the contact
                   type:
                     - "null"
                     - array
@@ -2673,26 +3229,32 @@ definitions:
                       - object
                     properties:
                       country:
+                        description: Country code
                         type:
                           - "null"
                           - string
                       phone:
+                        description: Phone number
                         type:
                           - "null"
                           - string
                       phone_formatted:
+                        description: Formatted phone number
                         type:
                           - "null"
                           - string
                       type:
+                        description: Type of phone number e.g., Mobile, Office
                         type:
                           - "null"
                           - string
                 title:
+                  description: Job title of the contact
                   type:
                     - "null"
                     - string
                 emails:
+                  description: List of email addresses for the contact
                   type:
                     - "null"
                     - array
@@ -2702,38 +3264,47 @@ definitions:
                       - object
                     properties:
                       email:
+                        description: Email address
                         type:
                           - "null"
                           - string
                       type:
+                        description: Type of email e.g., Work, Personal
                         type:
                           - "null"
                           - string
                 date_updated:
+                  description: Date when the contact was last updated
                   type:
                     - "null"
                     - string
           updated_by:
+            description: User who last updated the lead
             type:
               - "null"
               - string
           name:
+            description: Name of the lead
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization the lead belongs to
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the lead
             type:
               - "null"
               - string
           url:
+            description: URL for accessing lead details in API format
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the lead was last updated
             type:
               - "null"
               - string
@@ -2760,122 +3331,152 @@ definitions:
         additionalProperties: true
         properties:
           integration_links:
+            description: Links to external integrations associated with the opportunity
             type:
               - "null"
               - array
           contact_id:
+            description: The ID of the contact associated with the opportunity
             type:
               - "null"
               - string
           organization_id:
+            description: The ID of the organization related to the opportunity
             type:
               - "null"
               - string
           value_currency:
+            description: The currency in which the value of the opportunity is specified
             type:
               - "null"
               - string
           user_id:
+            description: The ID of the user associated with the opportunity
             type:
               - "null"
               - string
           annualized_value:
+            description: The annual value of the opportunity
             type:
               - "null"
               - number
           id:
+            description: The unique ID of the opportunity
             type:
               - "null"
               - string
           updated_by_name:
+            description: The name of the user who last updated the opportunity
             type:
               - "null"
               - string
           created_by:
+            description: The ID of the user who created the opportunity
             type:
               - "null"
               - string
           status_type:
+            description: The type of the status of the opportunity
             type:
               - "null"
               - string
           created_by_name:
+            description: The name of the user who created the opportunity
             type:
               - "null"
               - string
           expected_value:
+            description: The expected value of the opportunity
             type:
               - "null"
               - number
           date_updated:
+            description: The date when the opportunity was last updated
             type:
               - "null"
               - string
           lead_name:
+            description: The name of the lead associated with the opportunity
             type:
               - "null"
               - string
           date_lost:
+            description: The date when the opportunity was lost
             type:
               - "null"
               - string
           status_id:
+            description: The ID of the status of the opportunity
             type:
               - "null"
               - string
           note:
+            description: Additional notes or comments related to the opportunity
             type:
               - "null"
               - string
           user_name:
+            description: The name of the user associated with the opportunity
             type:
               - "null"
               - string
           confidence:
+            description: The confidence level associated with the opportunity
             type:
               - "null"
               - number
           value_period:
+            description: The period for which the value of the opportunity is applicable
             type:
               - "null"
               - string
           status_display_name:
+            description: The display name of the status of the opportunity
             type:
               - "null"
               - string
           updated_by:
+            description: The ID of the user who last updated the opportunity
             type:
               - "null"
               - string
           value:
+            description: The value of the opportunity
             type:
               - "null"
               - number
           status_label:
+            description: The label representing the status of the opportunity
             type:
               - "null"
               - string
           date_won:
+            description: The date when the opportunity was won
             type:
               - "null"
               - string
           contact_name:
+            description: The name of the contact associated with the opportunity
             type:
               - "null"
               - string
           annualized_expected_value:
+            description: The expected annual value of the opportunity
             type:
               - "null"
               - number
           date_created:
+            description: The date when the opportunity was created
             type:
               - "null"
               - string
           lead_id:
+            description: The ID of the lead associated with the opportunity
             type:
               - "null"
               - string
           value_formatted:
+            description: The formatted representation of the value of the opportunity
             type:
               - "null"
               - string
@@ -2895,94 +3496,117 @@ definitions:
         additionalProperties: true
         properties:
           date_updated:
+            description: Date when the task was last updated
             type:
               - "null"
               - string
           date_created:
+            description: Date when the task was created
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the task
             type:
               - "null"
               - string
           _type:
+            description: Type of the task
             type:
               - "null"
               - string
           is_complete:
+            description: Flag indicating if the task is completed
             type:
               - "null"
               - boolean
           is_dateless:
+            description: Flag indicating if the task has no specific date
             type:
               - "null"
               - boolean
           assigned_to_name:
+            description: Name of the user to whom the task is assigned
             type:
               - "null"
               - string
           date:
+            description: Date of the task
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the task
             type:
               - "null"
               - string
           text:
+            description: Text content of the task
             type:
               - "null"
               - string
           due_date:
+            description: Due date of the task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the task
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization related to the task
             type:
               - "null"
               - string
           object_type:
+            description: Type of the object related to the task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the task
             type:
               - "null"
               - string
           assigned_to:
+            description: ID of the user to whom the task is assigned
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the task
             type:
               - "null"
               - string
           view:
+            description: View or visibility status of the task
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the task
             type:
               - "null"
               - string
           object_id:
+            description: ID of the object related to the task
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the task
             type:
               - "null"
               - string
@@ -3002,94 +3626,117 @@ definitions:
         additionalProperties: true
         properties:
           contact_id:
+            description: ID of the contact associated with the task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the task
             type:
               - "null"
               - string
           cleared_followups:
+            description: Number of cleared follow-up actions
             type:
               - "null"
               - array
           date_created:
+            description: Date when the task was created
             type:
               - "null"
               - string
           body_preview:
+            description: Preview of the email body
             type:
               - "null"
               - string
           is_complete:
+            description: Flag indicating if the task is complete
             type:
               - "null"
               - boolean
           created_by:
+            description: User ID who created the task
             type:
               - "null"
               - string
           emails:
+            description: Array of email addresses involved
             type:
               - "null"
               - array
           date_updated:
+            description: Date when the task was last updated
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the incoming email task
             type:
               - "null"
               - string
           assigned_to:
+            description: User ID to whom the task is assigned
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the task
             type:
               - "null"
               - string
           object_type:
+            description: Type of object the task is related to
             type:
               - "null"
               - string
           updated_by:
+            description: User ID who last updated the task
             type:
               - "null"
               - string
           _type:
+            description: Type of the incoming email task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the task
             type:
               - "null"
               - string
           subject:
+            description: Subject of the incoming email task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the task
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the task
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user to whom the task is assigned
             type:
               - "null"
               - string
           date:
+            description: Date of the incoming email task
             type:
               - "null"
               - string
           "view ":
+            description: View status of the incoming email task
             type:
               - "null"
               - string
@@ -3109,98 +3756,122 @@ definitions:
         additionalProperties: true
         properties:
           _type:
+            description: Type of the email_followup_task
             type:
               - "null"
               - string
           view:
+            description: View status of the task
             type:
               - "null"
               - string
           total_emails_count_in_thread:
+            description: Total count of emails in the same thread
             type:
               - "null"
               - integer
           updated_by_name:
+            description: Name of the user who last updated the task
             type:
               - "null"
               - string
           assigned_to:
+            description: ID of the user assigned to the task
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user assigned to the task
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the task
             type:
               - "null"
               - string
           is_complete:
+            description: Indicates if the task is complete
             type:
               - "null"
               - boolean
           created_by:
+            description: ID of the user who created the task
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the task
             type:
               - "null"
               - string
           date:
+            description: Date of the email_followup_task
             type:
               - "null"
               - string
           date_created:
+            description: Date when the task was created
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the task was last updated
             type:
               - "null"
               - string
           email_id:
+            description: ID of the email associated with the task
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the email_followup_task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the task
             type:
               - "null"
               - string
           object_id:
+            description: ID of the object associated with the task
             type:
               - "null"
               - string
           object_type:
+            description: Type of the object associated with the task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the task
             type:
               - "null"
               - string
           subject:
+            description: Subject of the email
             type:
               - "null"
               - string
           body_preview:
+            description: Preview of the email body content
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the task
             type:
               - "null"
               - string
@@ -3228,98 +3899,124 @@ definitions:
         additionalProperties: true
         properties:
           _type:
+            description: Type of the missed call task data
             type:
               - "null"
               - string
           view:
+            description: View related to the missed call task
             type:
               - "null"
               - string
           object_id:
+            description: ID of the object related to the missed call task
             type:
               - "null"
               - string
           object_type:
+            description: Type of object related to the missed call task
             type:
               - "null"
               - string
           is_complete:
+            description:
+              Flag indicating whether the missed call task is completed
+              or not
             type:
               - "null"
               - boolean
           assigned_to:
+            description: User ID to whom the task is assigned
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user to whom the task is assigned
             type:
               - "null"
               - string
           phone:
+            description: Phone number involved in the missed call activity
             type:
               - "null"
               - string
           phone_formatted:
+            description: Formatted version of the phone number
             type:
               - "null"
               - string
           phone_number_description:
+            description: Description of the phone number
             type:
               - "null"
               - string
           local_phone:
+            description: Local phone number involved in the missed call activity
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact related to the missed call task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact related to the missed call task
             type:
               - "null"
               - string
           date:
+            description: Date of the missed call activity
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the missed call task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the missed call task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the missed call task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization related to the missed call task
             type:
               - "null"
               - string
           created_by:
+            description: User ID who created the missed call task
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the missed call task
             type:
               - "null"
               - string
           updated_by:
+            description: User ID who last updated the missed call task
             type:
               - "null"
               - string
           date_created:
+            description: Date when the missed call task was created
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the missed call task
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the missed call task was last updated
             type:
               - "null"
               - string
@@ -3339,98 +4036,122 @@ definitions:
         additionalProperties: true
         properties:
           _type:
+            description: Type of the call task data
             type:
               - "null"
               - string
           view:
+            description: View associated with the call task
             type:
               - "null"
               - string
           recording_url:
+            description: URL to the recording of the call task
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the call task
             type:
               - "null"
               - string
           is_complete:
+            description: Flag indicating if the call task is complete
             type:
               - "null"
               - boolean
           assigned_to:
+            description: ID of the user to whom the call task is assigned
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user to whom the call task is assigned
             type:
               - "null"
               - string
           phone:
+            description: Phone number associated with the call task
             type:
               - "null"
               - string
           phone_formatted:
+            description: Formatted phone number for display purposes
             type:
               - "null"
               - string
           phone_number_description:
+            description: Description of the phone number
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the call task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the call task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the call task
             type:
               - "null"
               - string
           object_id:
+            description: ID of the object related to the call task
             type:
               - "null"
               - string
           object_type:
+            description: Type of the object related to the call task
             type:
               - "null"
               - string
           date:
+            description: Date of the call task
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the call task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the call task
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the call task
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the call task
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the call task
             type:
               - "null"
               - string
           date_created:
+            description: Date when the call task was created
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the call task
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the call task was last updated
             type:
               - "null"
               - string
@@ -3450,106 +4171,132 @@ definitions:
         additionalProperties: true
         properties:
           created_by:
+            description: ID of the user who created the voicemail task
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the voicemail task
             type:
               - "null"
               - string
           phone_formatted:
+            description: Formatted phone number associated with the voicemail task
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the voicemail task was last updated
             type:
               - "null"
               - string
           is_complete:
+            description: Flag indicating if the voicemail task is complete
             type:
               - "null"
               - boolean
           object_type:
+            description: Type of object related to the voicemail task
             type:
               - "null"
               - string
           assigned_to:
+            description: ID of the user to whom the voicemail task is assigned
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the voicemail task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the voicemail task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the voicemail task
             type:
               - "null"
               - string
           date_created:
+            description: Date when the voicemail task was created
             type:
               - "null"
               - string
           voicemail_duration:
+            description: Duration of the voicemail in seconds
             type:
               - "null"
               - number
           object_id:
+            description: ID of the object related to the voicemail task
             type:
               - "null"
               - string
           _type:
+            description: Type of voicemail task
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user to whom the voicemail task is assigned
             type:
               - "null"
               - string
           phone_number_description:
+            description: Description of the phone number
             type:
               - "null"
               - string
           phone:
+            description: Phone number associated with the voicemail task
             type:
               - "null"
               - string
           lead_id:
+            description: ID of the lead associated with the voicemail task
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the voicemail task
             type:
               - "null"
               - string
           local_phone:
+            description: Local phone number associated with the voicemail task
             type:
               - "null"
               - string
           view:
+            description: View details of the voicemail task
             type:
               - "null"
               - string
           voicemail_url:
+            description: URL where the voicemail recording can be accessed
             type:
               - "null"
               - string
           created_by_name:
+            description: Name of the user who created the voicemail task
             type:
               - "null"
               - string
           date:
+            description: Date of the voicemail task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization the voicemail task belongs to
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the voicemail task
             type:
               - "null"
               - string
@@ -3569,98 +4316,124 @@ definitions:
         additionalProperties: true
         properties:
           object_id:
+            description:
+              ID of the object related to the task (e.g., opportunity,
+              lead)
             type:
               - "null"
               - string
           view:
+            description: Flag to indicate if the task is viewable
             type:
               - "null"
               - string
           updated_by:
+            description: ID of the user who last updated the task
             type:
               - "null"
               - string
           date:
+            description: Due date of the task
             type:
               - "null"
               - string
           is_complete:
+            description: Flag to indicate if the task is complete
             type:
               - "null"
               - boolean
           created_by_name:
+            description: Name of the user who created the task
             type:
               - "null"
               - string
           lead_name:
+            description: Name of the lead associated with the task
             type:
               - "null"
               - string
           date_updated:
+            description: Date when the task was last updated
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the task
             type:
               - "null"
               - string
           assigned_to:
+            description: ID of the user to whom the task is assigned
             type:
               - "null"
               - string
           contact_id:
+            description: ID of the contact associated with the task
             type:
               - "null"
               - string
           contact_name:
+            description: Name of the contact associated with the task
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization associated with the task
             type:
               - "null"
               - string
           updated_by_name:
+            description: Name of the user who last updated the task
             type:
               - "null"
               - string
           _type:
+            description: Type of opportunity_due_task data
             type:
               - "null"
               - string
           opportunity_value_period:
+            description: Time period associated with the opportunity value
             type:
               - "null"
               - string
           assigned_to_name:
+            description: Name of the user to whom the task is assigned
             type:
               - "null"
               - string
           opportunity_note:
+            description: Notes related to the opportunity
             type:
               - "null"
               - string
           created_by:
+            description: ID of the user who created the task
             type:
               - "null"
               - string
           opportunity_value:
+            description: Value of the opportunity related to the task
             type:
               - "null"
               - number
           lead_id:
+            description: ID of the lead associated with the task
             type:
               - "null"
               - string
           date_created:
+            description: Date when the task was created
             type:
               - "null"
               - string
           object_type:
+            description: Type of the object related to the task
             type:
               - "null"
               - string
           opportunity_value_formatted:
+            description: Formatted value of the opportunity related to the task
             type:
               - "null"
               - string
@@ -3681,102 +4454,127 @@ definitions:
         additionalProperties: true
         properties:
           _type:
+            description: The type of incoming SMS task data
             type:
               - "null"
               - string
           view:
+            description: Indicates the view status of the incoming SMS task
             type:
               - "null"
               - string
           object_id:
+            description: The ID of the object associated with the task
             type:
               - "null"
               - string
           object_type:
+            description: The type of object associated with the task
             type:
               - "null"
               - string
           is_complete:
+            description: Indicates if the task has been completed
             type:
               - "null"
               - boolean
           local_phone:
+            description: The local phone number associated with the task
             type:
               - "null"
               - string
           remote_phone:
+            description: The remote phone number associated with the task
             type:
               - "null"
               - string
           remote_phone_description:
+            description: Description of the remote phone number
             type:
               - "null"
               - string
           remote_phone_formatted:
+            description: The formatted version of the remote phone number
             type:
               - "null"
               - string
           text:
+            description: The text message content of the incoming SMS
             type:
               - "null"
               - string
           assigned_to:
+            description: The ID of the user to whom the task is assigned
             type:
               - "null"
               - string
           assigned_to_name:
+            description: The name of the user to whom the task is assigned
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the incoming SMS task
             type:
               - "null"
               - string
           lead_id:
+            description: The ID of the lead associated with the task
             type:
               - "null"
               - string
           lead_name:
+            description: The name of the lead associated with the task
             type:
               - "null"
               - string
           contact_id:
+            description: The ID of the contact associated with the task
             type:
               - "null"
               - string
           contact_name:
+            description: The name of the contact associated with the task
             type:
               - "null"
               - string
           organization_id:
+            description: The ID of the organization associated with the task
             type:
               - "null"
               - string
           created_by:
+            description: The ID of the user who created the task
             type:
               - "null"
               - string
           created_by_name:
+            description: The name of the user who created the task
             type:
               - "null"
               - string
           updated_by:
+            description: The ID of the user who last updated the task
             type:
               - "null"
               - string
           date_created:
+            description: The date when the task was created
             type:
               - "null"
               - string
           updated_by_name:
+            description: The name of the user who last updated the task
             type:
               - "null"
               - string
           date_updated:
+            description: The date when the task was last updated
             type:
               - "null"
               - string
           date:
+            description: The date associated with the task
             type:
               - "null"
               - string
@@ -3796,26 +4594,36 @@ definitions:
         additionalProperties: true
         properties:
           identities:
+            description: List of identities associated with the connected account
             type:
               - "null"
               - array
           id:
+            description: The unique identifier of the connected account
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier of the organization to which the connected
+              account belongs
             type:
               - "null"
               - string
           user_id:
+            description:
+              The identifier of the user associated with the connected
+              account
             type:
               - "null"
               - string
           synced_calendars:
+            description: List of calendars synced with the connected Google account
             type:
               - "null"
               - array
           _type:
+            description: The type of connected account (e.g., Google)
             type:
               - "null"
               - string
@@ -3835,30 +4643,37 @@ definitions:
         additionalProperties: true
         properties:
           identities:
+            description: List of identities connected to the email account
             type:
               - "null"
               - array
           id:
+            description: A unique identifier for the email account
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization to which the email account belongs
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user associated with the email account
             type:
               - "null"
               - string
           smtp:
+            description: SMTP configuration details for the email account
             type:
               - "null"
               - object
           _type:
+            description: Type of email account
             type:
               - "null"
               - string
           imap:
+            description: IMAP configuration details for the email account
             type:
               - "null"
               - object
@@ -3879,26 +4694,32 @@ definitions:
         additionalProperties: true
         properties:
           identities:
+            description: Identities associated with the connected Zoom account
             type:
               - "null"
               - array
           id:
+            description: ID of the connected Zoom account
             type:
               - "null"
               - string
           organization_id:
+            description: ID of the organization to which the Zoom account is connected
             type:
               - "null"
               - string
           user_id:
+            description: ID of the user to whom the Zoom account belongs
             type:
               - "null"
               - string
           email:
+            description: Email address associated with the connected Zoom account
             type:
               - "null"
               - string
           _type:
+            description: Type of the connected Zoom account
             type:
               - "null"
               - string
@@ -3917,18 +4738,26 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the send_as data
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The unique ID of the organization related to the send_as
+              data
             type:
               - "null"
               - string
           allowed_user_id:
+            description: The unique ID of the user who is allowed for a specific action
             type:
               - "null"
               - string
           allowing_user_id:
+            description:
+              The unique ID of the user who is allowing the action for
+              another user
             type:
               - "null"
               - string
@@ -3948,54 +4777,75 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier of this email sequence.
             type:
               - "null"
               - string
           organization_id:
+            description: The ID of the organization to which this email sequence belongs.
             type:
               - "null"
               - string
           name:
+            description: The name or title of this email sequence.
             type:
               - "null"
               - string
           status:
+            description:
+              The current status of this email sequence (e.g., active,
+              paused, completed).
             type:
               - "null"
               - string
           schedule_id:
+            description: The ID of the schedule associated with this email sequence.
             type:
               - "null"
               - string
           timezone:
+            description:
+              The timezone in which the emails in this sequence should
+              be sent.
             type:
               - "null"
               - string
           steps:
+            description: An array containing the steps or stages of the email sequence.
             type:
               - "null"
               - array
           date_created:
+            description: The date and time when this email sequence was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when this email sequence was last updated.
             type:
               - "null"
               - string
           created_by_id:
+            description: The ID of the user who created this email sequence.
             type:
               - "null"
               - string
           updated_by_id:
+            description: The ID of the user who last updated this email sequence.
             type:
               - "null"
               - string
           allow_manual_enrollment:
+            description:
+              Indicates whether manual enrollment is allowed for this email
+              sequence.
             type:
               - "null"
               - boolean
           trigger_query:
+            description:
+              The query or condition that triggers the start of this email
+              sequence.
             type:
               - "null"
               - string
@@ -4015,62 +4865,83 @@ definitions:
         additionalProperties: true
         properties:
           status:
+            description: The status of the dialer data.
             type:
               - "null"
               - string
           user_id:
+            description:
+              The unique identifier of the user associated with the dialer
+              data.
             type:
               - "null"
               - string
           users:
+            description: The list of users associated with the dialer data.
             type:
               - "null"
               - array
           source_value:
+            description: The value of the data source for the dialer.
             type:
               - "null"
               - string
           source_type:
+            description: The type of the data source for the dialer.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the dialer data was last updated.
             type:
               - "null"
               - string
           caller_id:
+            description:
+              The unique identifier of the caller associated with the dialer
+              data.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The unique identifier of the organization associated with
+              the dialer data.
             type:
               - "null"
               - string
           ring_mode:
+            description: The ring mode set for the dialer.
             type:
               - "null"
               - string
           is_user_dependent:
+            description: Indicates whether the dialer data is dependent on a user.
             type:
               - "null"
               - boolean
           date_created:
+            description: The date and time when the dialer data was created.
             type:
               - "null"
               - string
           music_preference:
+            description: The preferred music setting for the dialer.
             type:
               - "null"
               - string
           type:
+            description: The type of dialer data.
             type:
               - "null"
               - string
           id:
+            description: The unique identifier of the dialer data.
             type:
               - "null"
               - string
           visibility_mode:
+            description: The visibility mode set for the dialer data.
             type:
               - "null"
               - string
@@ -4090,46 +4961,61 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the smart view.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier of the organization to which the smart view
+              belongs.
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when the smart view was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the smart view was last updated.
             type:
               - "null"
               - string
           name:
+            description: The name given to the smart view.
             type:
               - "null"
               - string
           query:
+            description: The main query criteria used to generate the smart view.
             type:
               - "null"
               - string
           s_query:
+            description:
+              Secondary query criteria used to further filter the smart
+              view results.
             type:
               - "null"
               - object
           type:
+            description: The type or category of the smart view.
             type:
               - "null"
               - string
           user_id:
+            description: The identifier of the user who created the smart view.
             type:
               - "null"
               - string
           is_shared:
+            description: Indicates if the smart view is shared with other users.
             type:
               - "null"
               - boolean
           is_user_dependent:
+            description: Indicates if the smart view is specific to a particular user.
             type:
               - "null"
               - boolean
@@ -4149,54 +5035,81 @@ definitions:
         additionalProperties: true
         properties:
           status:
+            description:
+              The current status of the email bulk action (e.g., pending,
+              in progress, completed)
             type:
               - "null"
               - string
           query:
+            description:
+              The query or criteria used to select leads for the email
+              bulk action
             type:
               - "null"
               - string
           template_id:
+            description:
+              The identifier for the email template to be used in the bulk
+              action
             type:
               - "null"
               - string
           contact_preference:
+            description:
+              The preferred method of contact for the email bulk action
+              (e.g., email, phone)
             type:
               - "null"
               - string
           n_leads:
+            description: The total number of leads in the email bulk action
             type:
               - "null"
               - number
           n_leads_processed:
+            description:
+              The number of leads that have been processed for the email
+              bulk action
             type:
               - "null"
               - number
           send_done_email:
+            description:
+              Flag indicating whether a completion email should be sent
+              after the bulk action is done
             type:
               - "null"
               - boolean
           id:
+            description: The unique identifier for the email bulk action
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier for the organization to which the email bulk
+              action belongs
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when the email bulk action was created
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when the email bulk action was last updated
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated the email bulk action
             type:
               - "null"
               - string
           created_by:
+            description: The user who created the email bulk action
             type:
               - "null"
               - string
@@ -4216,70 +5129,103 @@ definitions:
         additionalProperties: true
         properties:
           status:
+            description:
+              The current status of the bulk action, such as 'pending',
+              'running', 'completed', etc.
             type:
               - "null"
               - string
           query:
+            description: The query used to filter leads for this bulk action.
             type:
               - "null"
               - string
           action_type:
+            description:
+              The type of action being performed, such as 'pause', 'resume',
+              'cancel', etc.
             type:
               - "null"
               - string
           sequence_id:
+            description:
+              The identifier for the sequence associated with this bulk
+              action.
             type:
               - "null"
               - string
           sender_account_id:
+            description: The ID of the account sending this bulk action.
             type:
               - "null"
               - string
           sender_name:
+            description: The name of the sender associated with this bulk action.
             type:
               - "null"
               - string
           sender_email:
+            description:
+              The email address of the sender associated with this bulk
+              action.
             type:
               - "null"
               - string
           contact_preference:
+            description:
+              The preferred method of contact for the user, like 'email',
+              'phone', 'sms', etc.
             type:
               - "null"
               - string
           n_leads:
+            description: The total number of leads associated with this bulk action.
             type:
               - "null"
               - number
           n_leads_processed:
+            description:
+              The number of leads that have been processed as part of this
+              bulk action.
             type:
               - "null"
               - number
           send_done_email:
+            description:
+              A flag indicating whether a completion email should be sent
+              when the bulk action is finished.
             type:
               - "null"
               - boolean
           id:
+            description: The unique identifier for this bulk action.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier for the organization to which this bulk action
+              belongs.
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when this bulk action was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when this bulk action was last updated.
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated this bulk action.
             type:
               - "null"
               - string
           created_by:
+            description: The user who created this bulk action.
             type:
               - "null"
               - string
@@ -4299,46 +5245,63 @@ definitions:
         additionalProperties: true
         properties:
           status:
+            description:
+              The current status of this bulk action (e.g., pending, processing,
+              completed, failed).
             type:
               - "null"
               - string
           query:
+            description: The query used to select leads for this bulk action.
             type:
               - "null"
               - string
           n_leads:
+            description: The total number of leads targeted by this bulk action.
             type:
               - "null"
               - number
           n_leads_processed:
+            description: The number of leads processed in this bulk action.
             type:
               - "null"
               - number
           send_done_email:
+            description:
+              Flag indicating whether a notification email should be sent
+              when the bulk action is completed.
             type:
               - "null"
               - boolean
           id:
+            description: The unique identifier for this bulk action.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier of the organization associated with this bulk
+              action.
             type:
               - "null"
               - string
           date_created:
+            description: The date when this bulk action was created.
             type:
               - "null"
               - string
           date_updated:
+            description: The date when this bulk action was last updated.
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated this bulk action.
             type:
               - "null"
               - string
           created_by:
+            description: The user who created this bulk action.
             type:
               - "null"
               - string
@@ -4358,70 +5321,95 @@ definitions:
         additionalProperties: true
         properties:
           type:
+            description: Type of bulk action (update, delete, create, etc.)
             type:
               - "null"
               - string
           custom_field_name:
+            description: Name of custom field associated with the action
             type:
               - "null"
               - string
           custom_field_value:
+            description: Value of custom field associated with the action
             type:
               - "null"
               - string
           lead_status_id:
+            description: Identifier for the lead status associated with the action
             type:
               - "null"
               - string
           status:
+            description:
+              Current status of the bulk action (pending, processing, completed,
+              failed, etc.)
             type:
               - "null"
               - string
           query:
+            description: Query or criteria used to select objects for the bulk action
             type:
               - "null"
               - string
           n_leads:
+            description: Total number of leads included in the bulk action
             type:
               - "null"
               - number
           n_leads_processed:
+            description: Number of leads processed during the bulk action execution
             type:
               - "null"
               - number
           n_objects:
+            description:
+              Total number of objects included in the bulk action (leads,
+              contacts, etc.)
             type:
               - "null"
               - number
           n_objects_processed:
+            description: Number of objects processed during the bulk action execution
             type:
               - "null"
               - number
           send_done_email:
+            description:
+              Boolean flag indicating if a notification email should be
+              sent when the bulk action is completed
             type:
               - "null"
               - boolean
           id:
+            description: Unique identifier for the bulk action
             type:
               - "null"
               - string
           organization_id:
+            description:
+              Identifier for the organization to which the bulk action
+              belongs
             type:
               - "null"
               - string
           date_created:
+            description: Date and time when the bulk action was created
             type:
               - "null"
               - string
           date_updated:
+            description: Date and time when the bulk action was last updated
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated the bulk action
             type:
               - "null"
               - string
           created_by:
+            description: The user who created the bulk action
             type:
               - "null"
               - string
@@ -4441,38 +5429,49 @@ definitions:
         additionalProperties: true
         properties:
           date_created:
+            description: The date and time when this integration link was created.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for this integration link.
             type:
               - "null"
               - string
           type:
+            description: The type or category of this integration link.
             type:
               - "null"
               - string
           date_updated:
+            description: The date and time when this integration link was last updated.
             type:
               - "null"
               - string
           url:
+            description: The URL associated with this integration link.
             type:
               - "null"
               - string
           updated_by:
+            description: The user who last updated this integration link.
             type:
               - "null"
               - string
           organization_id:
+            description:
+              The identifier of the organization to which this integration
+              link belongs.
             type:
               - "null"
               - string
           name:
+            description: The name or label associated with this integration link.
             type:
               - "null"
               - string
           created_by:
+            description: The user who created this integration link.
             type:
               - "null"
               - string
@@ -4492,30 +5491,37 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the custom activity
             type:
               - "null"
               - string
           api_create_only:
+            description: Indicates if the activity can only be created via API
             type:
               - "null"
               - boolean
           created_by:
+            description: The user who created the custom activity
             type:
               - "null"
               - string
           date_created:
+            description: The date when the custom activity was created
             type:
               - "null"
               - string
           date_updated:
+            description: The date when the custom activity was last updated
             type:
               - "null"
               - string
           description:
+            description: Brief description of the custom activity
             type:
               - "null"
               - string
           editable_with_roles:
+            description: Roles allowed to edit this custom activity
             type:
               - "null"
               - array
@@ -4529,38 +5535,49 @@ definitions:
                 - object
               properties:
                 accepts_multiple_values:
+                  description: Indicates if the field accepts multiple values
                   type:
                     - "null"
                     - boolean
                 converting_to_type:
+                  description: The data type the field is converting into
                   type:
                     - "null"
                     - string
                 description:
+                  description: Description of the field
                   type:
                     - "null"
                     - string
                 editable_with_roles:
+                  description: Roles allowed to edit this field
                   type:
                     - "null"
                     - array
                 id:
+                  description: Unique identifier for the field
                   type:
                     - "null"
                     - string
                 is_shared:
+                  description:
+                    Indicates if the field is shared among multiple custom
+                    activities
                   type:
                     - "null"
                     - boolean
                 name:
+                  description: Name of the field
                   type:
                     - "null"
                     - string
                 required:
+                  description: Indicates if the field is required
                   type:
                     - "null"
                     - boolean
                 type:
+                  description: Data type of the field
                   type:
                     - "null"
                     - string

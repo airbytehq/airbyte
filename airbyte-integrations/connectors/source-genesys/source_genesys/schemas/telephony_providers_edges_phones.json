@@ -3,244 +3,315 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Identifier of the phone device",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the phone device",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Division information of the phone",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the division",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the division",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve division information",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional descriptions or notes related to the phone",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version of the phone metadata",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "Date and time when the phone metadata was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "Date and time when the phone metadata was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "User who last modified the phone metadata",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "User who created the phone metadata",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "Current state of the phone device",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "Application through which the phone metadata was last modified",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "Application through which the phone metadata was created",
       "type": ["null", "string"]
     },
     "site": {
+      "description": "Site information of the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the site",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the site",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve site information",
           "type": ["null", "string"]
         }
       }
     },
     "phoneBaseSettings": {
+      "description": "Base settings of the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the phone base settings",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the phone base settings",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve phone base settings information",
           "type": ["null", "string"]
         }
       }
     },
     "lineBaseSettings": {
+      "description": "Settings related to phone lines",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the line base settings",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the line base settings",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve line base settings information",
           "type": ["null", "string"]
         }
       }
     },
     "phoneMetaBase": {
+      "description": "Meta information about the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the phone meta base",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the phone meta base",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve phone meta base information",
           "type": ["null", "string"]
         }
       }
     },
     "lines": {
+      "description": "Information about phone lines",
       "type": "array",
       "properties": {
         "id": {
+          "description": "ID of the phone line",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the phone line",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve phone line information",
           "type": ["null", "string"]
         }
       }
     },
     "status": {
+      "description": "Status information of the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the phone status",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the phone status",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve phone status information",
           "type": ["null", "string"]
         }
       }
     },
     "secondaryStatus": {
+      "description": "Status information of the secondary edge",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the secondary status",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the secondary status",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve secondary status information",
           "type": ["null", "string"]
         }
       }
     },
     "userAgentInfo": {
+      "description": "Information about the user agent of the phone device",
       "type": "object",
       "properties": {
         "firmwareVersion": {
+          "description": "Version of the firmware",
           "type": ["null", "string"]
         },
         "manufacturer": {
+          "description": "Manufacturer of the phone device",
           "type": ["null", "string"]
         },
         "model": {
+          "description": "Model of the phone device",
           "type": ["null", "string"]
         }
       }
     },
     "capabilities": {
+      "description": "Telephony capabilities of the phone device",
       "type": "object",
       "properties": {
         "provisions": {
+          "description": "Provisioning status of the phone",
           "type": ["null", "boolean"]
         },
         "registers": {
+          "description": "Number of registration attempts",
           "type": ["null", "boolean"]
         },
         "dualRegisters": {
+          "description": "Ability to register on multiple servers simultaneously",
           "type": ["null", "boolean"]
         },
         "hardwareIdType": {
+          "description": "Type of hardware identifier used",
           "type": ["null", "string"]
         },
         "allowReboot": {
+          "description": "Whether the phone is allowed to be rebooted",
           "type": ["null", "boolean"]
         },
         "noRebalance": {
+          "description": "Indication of whether rebalancing is not allowed",
           "type": ["null", "boolean"]
         },
         "noCloudProvisioning": {
+          "description": "Whether cloud provisioning is disabled",
           "type": ["null", "boolean"]
         },
         "mediaCodecs": {
+          "description": "Supported media codecs for communication",
           "type": ["null", "string"]
         },
         "cdm": {
+          "description": "Support for Centralized Deployment Model",
           "type": ["null", "boolean"]
         }
       }
     },
     "webRtcUser": {
+      "description": "User information related to WebRTC",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the WebRTC user",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the WebRTC user",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve WebRTC user information",
           "type": ["null", "string"]
         }
       }
     },
     "primaryEdge": {
+      "description": "Primary edge information related to the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the primary edge",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the primary edge",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve primary edge information",
           "type": ["null", "string"]
         }
       }
     },
     "secondaryEdge": {
+      "description": "Secondary edge information related to the phone device",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the secondary edge",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the secondary edge",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to retrieve secondary edge information",
           "type": ["null", "string"]
         }
       }
     },
     "managed": {
+      "description": "Indicates if the phone device is managed",
       "type": ["null", "boolean"]
     },
     "selfUri": {
+      "description": "Self URI for fetching phone metadata",
       "type": ["null", "string"]
     }
   }

@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the segmentation.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name given to the segmentation.",
       "type": ["null", "string"]
     },
     "standard": {
+      "description": "The standard used for the segmentation.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The timestamp indicating when the segmentation was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp indicating when the segmentation was last updated.",
       "type": ["null", "string"]
     },
     "process_status": {
+      "description": "The status of the segmentation process.",
       "type": ["null", "string"]
     },
     "links": {
@@ -26,15 +32,19 @@
         "type": ["null", "object"],
         "properties": {
           "rel": {
+            "description": "The relationship type of the link.",
             "type": ["null", "string"]
           },
           "href": {
+            "description": "The URL link associated with the segmentation.",
             "type": ["null", "string"]
           },
           "media": {
+            "description": "The media type of the link.",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "The type of link.",
             "type": ["null", "string"]
           }
         }

@@ -83,67 +83,83 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the user.
             type:
               - integer
               - "null"
           name:
+            description: The full name of the user.
             type:
               - string
               - "null"
           email:
+            description: The email address associated with the user.
             type:
               - string
               - "null"
           phone:
+            description: The phone number of the user.
             type:
               - string
               - "null"
           status:
+            description: The current status of the user account.
             type:
               - integer
               - "null"
           preference:
+            description: User's general preferences.
             type:
               - integer
               - "null"
           mobile_app_preference:
+            description: User's preference for using the mobile app.
             type:
               - integer
               - "null"
           last_call_time:
+            description: The date and time of the user's last call.
             format: date-time
             type:
               - string
               - "null"
           last_seen_time:
+            description: The date and time when the user was last seen online.
             format: date-time
             type:
               - string
               - "null"
           confirmed:
+            description: Specifies if the user account has been confirmed or not.
             type:
               - boolean
               - "null"
           language:
+            description: The preferred language of the user.
             type:
               - string
               - "null"
           time_zone:
+            description: The time zone setting preferred by the user.
             type:
               - string
               - "null"
           deleted:
+            description: Indicates whether the user has been deleted.
             type:
               - boolean
               - "null"
           role:
+            description: The role or designation of the user.
             type:
               - string
               - "null"
           teams:
+            description: List of teams to which the user belongs.
             items:
               properties:
                 id:
+                  description: Unique identifier for the team.
                   type:
                     - integer
                     - "null"
@@ -172,14 +188,17 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the team.
             type:
               - integer
               - "null"
           name:
+            description: Name of the team.
             type:
               - string
               - "null"
           description:
+            description: Description of the team.
             type:
               - string
               - "null"
@@ -187,6 +206,7 @@ definitions:
             items:
               properties:
                 id:
+                  description: Unique identifier for the user within the team.
                   type:
                     - integer
                     - "null"
@@ -195,6 +215,9 @@ definitions:
               - array
               - "null"
           omni_channel:
+            description:
+              Boolean value indicating if the team can handle omnichannel
+              communications.
             type:
               - boolean
               - "null"
@@ -224,95 +247,120 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the call.
             type:
               - integer
               - "null"
           direction:
+            description: Indicates the direction of the call (e.g., inbound or outbound).
             type:
               - string
               - "null"
           parent_call_id:
+            description: The ID of the parent call, if the call is part of a chain.
             type:
               - integer
               - "null"
           root_call_id:
+            description: The ID of the root call in case of call chaining.
             type:
               - integer
               - "null"
           phone_number_id:
+            description: The ID of the phone number used for the call.
             type:
               - integer
               - "null"
           phone_number:
+            description: The phone number associated with the call.
             type:
               - string
               - "null"
           assigned_agent_id:
+            description: The ID of the agent assigned to the call.
             type:
               - integer
               - "null"
           assigned_agent_name:
+            description: The name of the agent assigned to the call.
             type:
               - string
               - "null"
           assigned_team_id:
+            description: The ID of the team assigned to handle the call.
             type:
               - integer
               - "null"
           assigned_team_name:
+            description: The name of the team assigned to handle the call.
             type:
               - string
               - "null"
           assigned_call_queue_id:
+            description: The ID of the call queue to which the call is assigned.
             type:
               - integer
               - "null"
           assigned_call_queue_name:
+            description: The name of the call queue to which the call is assigned.
             type:
               - string
               - "null"
           assigned_ivr_id:
+            description: The ID of the IVR associated with the call.
             type:
               - integer
               - "null"
           assigned_ivr_name:
+            description: The name of the IVR associated with the call.
             type:
               - string
               - "null"
           bill_duration:
+            description: The duration of the call in billing units.
             type:
               - number
               - "null"
           bill_duration_unit:
+            description: The unit of measurement for the billing duration.
             type:
               - string
               - "null"
           created_time:
+            description: The timestamp when the call was created.
             format: date-time
             type:
               - string
               - "null"
           updated_time:
+            description: The timestamp when the call information was last updated.
             format: date-time
             type:
               - string
               - "null"
           call_notes:
+            description: Additional notes or comments related to the call.
             type:
               - string
               - "null"
           integrated_resources:
+            description:
+              Information about integrated resources associated with the
+              call.
             items:
               properties:
                 integration_name:
+                  description: The name of the integrated resource.
                   type:
                     - string
                     - "null"
                 type:
+                  description: The type of integrated resource.
                   type:
                     - string
                     - "null"
                 id:
+                  description: The ID of the integrated resource.
                   type:
                     - string
                     - "null"
@@ -321,24 +369,30 @@ definitions:
               - array
               - "null"
           recording:
+            description: Information about call recordings.
             properties:
               id:
+                description: The unique identifier for the recording.
                 type:
                   - integer
                   - "null"
               url:
+                description: The URL to access the recording.
                 type:
                   - string
                   - "null"
               transcription_url:
+                description: The URL for any transcription of the recording.
                 type:
                   - string
                   - "null"
               duration:
+                description: The duration of the recording.
                 type:
                   - number
                   - "null"
               duration_unit:
+                description: The unit of measurement for the recording duration.
                 type:
                   - string
                   - "null"
@@ -346,100 +400,131 @@ definitions:
               - object
               - "null"
           recording_to_redact:
+            description:
+              Information about recordings that need to be redacted for
+              privacy or compliance reasons.
             type:
               - object
               - "null"
             properties:
               id:
+                description: The unique identifier for the recording to be redacted.
                 type:
                   - integer
                   - "null"
               url:
+                description: The URL of the recording to be redacted.
                 type:
                   - string
                   - "null"
               duration:
+                description: The duration of the recording to be redacted.
                 type:
                   - number
                   - "null"
               duration_unit:
+                description: The unit of measurement for the redacted recording duration.
                 type:
                   - string
                   - "null"
           participants:
+            description: Details of the participants involved in the call.
             type:
               - array
               - "null"
             items:
               properties:
                 id:
+                  description: The unique identifier for the participant.
                   type:
                     - integer
                     - "null"
                 call_id:
+                  description: The ID of the participant's call.
                   type:
                     - integer
                     - "null"
                 caller_id:
+                  description: The ID of the caller.
                   type:
                     - integer
                     - "null"
                 caller_number:
+                  description: The phone number of the caller.
                   type:
                     - string
                     - "null"
                 caller_name:
+                  description: The name of the caller.
                   type:
                     - string
                     - "null"
                 participant_id:
+                  description: The ID of the participant.
                   type:
                     - integer
                     - "null"
                 participant_type:
+                  description: The type of participant (e.g., agent, customer).
                   type:
                     - string
                     - "null"
                 connection_type:
+                  description: The type of connection used (e.g., VoIP, PSTN).
                   type:
                     - number
                     - "null"
                 call_status:
+                  description: The status of the participant's call.
                   type:
                     - integer
                     - "null"
                 duration:
+                  description:
+                    The duration of the participant's involvement in the
+                    call.
                   type:
                     - integer
                     - "null"
                 duration_unit:
+                  description: The unit of measurement for the participant's duration.
                   type:
                     - string
                     - "null"
                 cost:
+                  description: The cost incurred by the participant.
                   type:
                     - number
                     - "null"
                 cost_unit:
+                  description: The unit of measurement for the participant's cost.
                   type:
                     - string
                     - "null"
                 enqueued_time:
+                  description:
+                    The time when the participant was added to the call
+                    queue.
                   type:
                     - string
                     - "null"
                 created_time:
+                  description: The timestamp when the participant joined the call.
                   format: date-time
                   type:
                     - string
                     - "null"
                 updated_time:
+                  description:
+                    The timestamp when the participant's information was
+                    last updated.
                   format: date-time
                   type:
                     - string
                     - "null"
               type: object
           parallel_call_groups:
+            description: Information about parallel call groups, if any.
             type:
               - array
               - "null"
@@ -469,100 +554,147 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the call metrics record.
             type:
               - integer
               - "null"
           call_id:
+            description: Unique identifier for the call.
             type:
               - integer
               - "null"
           ivr_time:
+            description:
+              The time spent by the caller interacting with IVR (Interactive
+              Voice Response).
             type:
               - integer
               - "null"
           ivr_time_unit:
+            description:
+              The unit of measurement for the IVR time (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           hold_duration:
+            description: The total time the caller was put on hold during the call.
             type:
               - number
               - "null"
           hold_duration_unit:
+            description:
+              The unit of measurement for the hold duration (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           call_work_time:
+            description: The total time the call was actively worked on by agents.
             type:
               - number
               - "null"
           call_work_time_unit:
+            description:
+              The unit of measurement for the call work time (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           total_ringing_time:
+            description: The total time the call was ringing before being answered.
             type:
               - number
               - "null"
           total_ringing_time_unit:
+            description:
+              The unit of measurement for the total ringing time (e.g.,
+              seconds, minutes).
             type:
               - string
               - "null"
           talk_time:
+            description: The total time of conversation between the caller and agent(s).
             type:
               - number
               - "null"
           talk_time_unit:
+            description:
+              The unit of measurement for the talk time (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           answering_speed:
+            description: The time taken to answer the call by the agent.
             type:
               - number
               - "null"
           answering_speed_unit:
+            description:
+              The unit of measurement for the answering speed (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           recording_duration:
+            description: The total duration of the call recording.
             type:
               - number
               - "null"
           recording_duration_unit:
+            description:
+              The unit of measurement for the recording duration (e.g.,
+              seconds, minutes).
             type:
               - string
               - "null"
           bill_duration:
+            description: The total duration of the call including any billable time.
             type:
               - number
               - "null"
           bill_duration_unit:
+            description:
+              The unit of measurement for the bill duration (e.g., seconds,
+              minutes).
             type:
               - string
               - "null"
           cost:
+            description: The total cost incurred for the call.
             type:
               - number
               - "null"
           cost_unit:
+            description: The currency unit for the cost (e.g., USD, EUR).
             type:
               - string
               - "null"
           csat:
+            description: Customer Satisfaction feedback details.
             properties:
               transfer_made:
+                description:
+                  Indicates if any transfer was made during the call for
+                  CSAT feedback.
                 type:
                   - boolean
                   - "null"
               outcome:
+                description: The overall satisfaction outcome of the call.
                 type:
                   - string
                   - "null"
               time:
+                description: The time spent on the customer satisfaction survey.
                 type:
                   - number
                   - "null"
               time_unit:
+                description:
+                  The unit of measurement for the CSAT time (e.g., seconds,
+                  minutes).
                 type:
                   - string
                   - "null"
@@ -570,27 +702,33 @@ definitions:
               - object
               - "null"
           created_time:
+            description: The date and time when the call record was created.
             format: date-time
             type:
               - string
               - "null"
           updated_time:
+            description: The date and time when the call record was last updated.
             format: date-time
             type:
               - string
               - "null"
           tags:
+            description: List of tags associated with the call.
             items:
               properties:
                 id:
+                  description: Unique identifier for the tag.
                   type:
                     - integer
                     - "null"
                 name:
+                  description: The name of the tag.
                   type:
                     - string
                     - "null"
                 default:
+                  description: Indicates if the tag is set as default for the call.
                   type:
                     - boolean
                     - "null"

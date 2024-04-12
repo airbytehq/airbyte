@@ -13,6 +13,7 @@
       "type": ["null", "string"]
     },
     "orderDetails": {
+      "description": "Details of the vendor order.",
       "type": ["null", "object"],
       "properties": {
         "purchaseOrderDate": {

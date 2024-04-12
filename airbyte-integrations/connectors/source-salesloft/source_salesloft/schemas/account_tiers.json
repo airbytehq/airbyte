@@ -3,19 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the account tier",
       "type": "integer"
     },
     "name": {
+      "description": "The name of the account tier",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "The order in which the account tier is listed",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the account tier was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the account tier was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

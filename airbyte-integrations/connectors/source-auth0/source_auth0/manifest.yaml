@@ -72,14 +72,17 @@ definitions:
         additionalProperties: true
         properties:
           client_id:
+            description: Unique identifier for the client.
             type:
               - string
               - "null"
           tenant:
+            description: Tenant or domain associated with the client.
             type:
               - string
               - "null"
           owners:
+            description: List of owners or administrators of the client.
             type:
               - "null"
               - array
@@ -88,50 +91,62 @@ definitions:
                 - string
                 - "null"
           is_token_endpoint_ip_header_trusted:
+            description: Whether the token endpoint IP header is trusted.
             type:
               - boolean
               - "null"
           cross_origin_auth:
+            description: Whether cross-origin authentication is enabled for the client.
             type:
               - boolean
               - "null"
           callback_url_template:
+            description: Template for callback URLs used by the client.
             type:
               - boolean
               - "null"
           name:
+            description: Name or title of the client.
             type:
               - string
               - "null"
           description:
+            description: Description or overview of the client.
             type:
               - string
               - "null"
           global:
+            description: Whether the client settings are global.
             type:
               - boolean
               - "null"
           client_secret:
+            description: Client secret used for authentication.
             type:
               - string
               - "null"
           app_type:
+            description: Type of application (web, mobile, etc.) using this client.
             type:
               - string
               - "null"
           logo_uri:
+            description: URI for the client's logo or branding image.
             type:
               - string
               - "null"
           is_first_party:
+            description: Whether the client is considered a first-party application.
             type:
               - boolean
               - "null"
           oidc_conformant:
+            description: Whether the client conforms to OIDC standards.
             type:
               - boolean
               - "null"
           callbacks:
+            description: List of callback URLs registered for the client.
             type:
               - "null"
               - array
@@ -140,6 +155,9 @@ definitions:
                 - string
                 - "null"
           allowed_origins:
+            description:
+              List of origins that are allowed to make requests to this
+              client.
             type:
               - "null"
               - array
@@ -148,6 +166,7 @@ definitions:
                 - string
                 - "null"
           web_origins:
+            description: List of web origins allowed to authenticate with the client.
             type:
               - "null"
               - array
@@ -156,6 +175,7 @@ definitions:
                 - string
                 - "null"
           client_aliases:
+            description: Alternate names or aliases for the client.
             type:
               - "null"
               - array
@@ -164,6 +184,7 @@ definitions:
                 - string
                 - "null"
           allowed_clients:
+            description: List of clients that are allowed to access this client.
             type:
               - "null"
               - array
@@ -172,6 +193,9 @@ definitions:
                 - string
                 - "null"
           allowed_logout_urls:
+            description:
+              List of URLs where the client can be redirected after logging
+              out.
             type:
               - "null"
               - array
@@ -180,12 +204,14 @@ definitions:
                 - string
                 - "null"
           oidc_backchannel_logout:
+            description: Settings for OpenID Connect (OIDC) backchannel logout.
             type:
               - object
               - "null"
             additionalProperties: true
             properties:
               backchannel_logout_urls:
+                description: URLs used for backchannel logout.
                 type:
                   - "null"
                   - array
@@ -194,6 +220,7 @@ definitions:
                     - string
                     - "null"
           grant_types:
+            description: Types of grants allowed for the client.
             type:
               - "null"
               - array
@@ -202,28 +229,36 @@ definitions:
                 - string
                 - "null"
           jwt_configuration:
+            description:
+              Configuration settings for JSON Web Tokens (JWTs) used by
+              the client.
             type:
               - object
               - "null"
             additionalProperties: true
             properties:
               lifetime_in_seconds:
+                description: Lifetime duration of JWTs in seconds.
                 type:
                   - integer
                   - "null"
               secret_encoded:
+                description: Encoded secret used for JWT encryption.
                 type:
                   - boolean
                   - "null"
               scopes:
+                description: Scopes associated with the JWT.
                 type:
                   - object
                   - "null"
               alg:
+                description: Algorithm used for JWT signing and verification.
                 type:
                   - string
                   - "null"
           signing_keys:
+            description: Keys used for signing data associated with the client.
             type:
               - "null"
               - array
@@ -233,109 +268,136 @@ definitions:
                 - "null"
               additionalProperties: true
           encryption_key:
+            description: Key used for encryption associated with the client.
             type:
               - object
               - "null"
             additionalProperties: true
             properties:
               pub:
+                description: Public key for encryption.
                 type:
                   - string
                   - "null"
               cert:
+                description: Certificate used for encryption.
                 type:
                   - string
                   - "null"
               subject:
+                description: Subject or entity associated with the encryption key.
                 type:
                   - string
                   - "null"
           sso:
+            description: Single sign-on (SSO) configuration for the client.
             type:
               - boolean
               - "null"
           sso_disabled:
+            description: Whether SSO is disabled for the client.
             type:
               - boolean
               - "null"
           cross_origin_authentication:
+            description: Whether cross-origin authentication is supported.
             type:
               - boolean
               - "null"
           cross_origin_loc:
+            description: Cross-origin locations allowed for the client.
             type:
               - string
               - "null"
           custom_login_page_on:
+            description: Whether a custom login page is enabled for the client.
             type:
               - boolean
               - "null"
           custom_login_page:
+            description: Custom login page associated with the client.
             type:
               - string
               - "null"
           custom_login_page_preview:
+            description: Preview of the custom login page for the client.
             type:
               - string
               - "null"
           form_template:
+            description: Template for forms or UI elements used by the client.
             type:
               - string
               - "null"
           addons:
+            description: Additional features or functionalities added to the client.
             type:
               - object
               - "null"
             additionalProperties: true
           token_endpoint_auth_method:
+            description: Authentication method used for token endpoint requests.
             type:
               - string
               - "null"
           client_metadata:
+            description: Additional metadata associated with the client.
             type:
               - object
               - "null"
             additionalProperties: true
           mobile:
+            description: Whether the client is a mobile application.
             type:
               - object
               - "null"
             additionalProperties: true
           initiate_login_uri:
+            description: URI where logins are initiated for the client.
             type:
               - string
               - "null"
           native_social_login:
+            description: Support for native social logins.
             type:
               - object
               - "null"
             additionalProperties: true
           refresh_token:
+            description: Settings for refresh tokens associated with the client.
             type:
               - object
               - "null"
             properties:
               rotation_type:
+                description: Type of rotation (e.g., rotating) for refresh tokens.
                 type:
                   - string
                   - "null"
               expiration_type:
+                description:
+                  Type of expiration (e.g., absolute, sliding) for refresh
+                  tokens.
                 type:
                   - string
                   - "null"
               leeway:
+                description: Leeway duration for refresh token expiration.
                 type:
                   - integer
                   - "null"
           organization_usage:
+            description: Usage permissions for organizations.
             type:
               - string
               - "null"
           organization_require_behavior:
+            description: Required behavior for organization settings.
             type:
               - string
               - "null"
           client_authentication_methods:
+            description: Authentication methods supported by the client.
             type:
               - object
               - "null"
@@ -392,44 +454,54 @@ definitions:
         additionalProperties: true
         properties:
           _links:
+            description: Collection of hyperlinks related to the user
             type:
               - object
               - "null"
           user_id:
+            description: Unique identifier of the user
             type:
               - string
               - "null"
           username:
+            description: Username chosen by the user
             type:
               - string
               - "null"
           email:
+            description: Email address of the user
             type:
               - string
               - "null"
           email_verified:
+            description: Flag indicating if the user's email is verified
             type:
               - boolean
               - "null"
           phone_number:
+            description: Phone number of the user
             type:
               - string
               - "null"
           phone_verified:
+            description: Flag indicating if the user's phone number is verified
             type:
               - boolean
               - "null"
           created_at:
+            description: Timestamp of when the user account was created
             format: date-time
             type:
               - string
               - "null"
           updated_at:
+            description: Timestamp of when the user account was last updated
             format: date-time
             type:
               - string
               - "null"
           identities:
+            description: Array of identities linked to the user
             type:
               - "null"
               - array
@@ -440,32 +512,39 @@ definitions:
               additionalProperties: true
               properties:
                 connection:
+                  description: Identity provider connection
                   type:
                     - string
                     - "null"
           app_metadata:
+            description: Custom metadata associated with the user
             type:
               - object
               - "null"
             additionalProperties: true
           user_metadata:
+            description: Custom metadata associated with the user account
             type:
               - object
               - "null"
             additionalProperties: true
           picture:
+            description: URL of the user's profile picture
             type:
               - string
               - "null"
           name:
+            description: Full name of the user
             type:
               - string
               - "null"
           nickname:
+            description: Nickname or username chosen by the user
             type:
               - string
               - "null"
           multifactor:
+            description: Array of enabled multifactor authentication methods
             type:
               - "null"
               - array
@@ -475,26 +554,32 @@ definitions:
                 - string
                 - "null"
           last_ip:
+            description: IP address of the user's last login
             type:
               - string
               - "null"
           logins_count:
+            description: Total count of user logins
             type:
               - integer
               - "null"
           blocked:
+            description: Flag indicating if the user is blocked
             type:
               - boolean
               - "null"
           last_login:
+            description: Timestamp of user's last login
             type:
               - string
               - "null"
           given_name:
+            description: Given name of the user
             type:
               - string
               - "null"
           family_name:
+            description: Family name of the user
             type:
               - string
               - "null"
@@ -515,23 +600,28 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the organization.
             type:
               - string
               - "null"
           name:
+            description: The name of the organization.
             type:
               - string
               - "null"
           display_name:
+            description: The display name of the organization.
             type:
               - string
               - "null"
           branding:
+            description: Information about the branding of the organization.
             type:
               - object
               - "null"
             additionalProperties: true
           metadata:
+            description: Additional metadata associated with the organization.
             type:
               - object
               - "null"
@@ -564,22 +654,29 @@ definitions:
         additionalProperties: true
         properties:
           org_id:
+            description:
+              The unique identifier of the organization to which the member
+              belongs.
             type:
               - string
               - "null"
           user_id:
+            description: The unique identifier of the organization member.
             type:
               - string
               - "null"
           name:
+            description: The name of the organization member.
             type:
               - string
               - "null"
           email:
+            description: The email address of the organization member.
             type:
               - string
               - "null"
           picture:
+            description: URL to the profile picture of the organization member.
             type:
               - string
               - "null"
@@ -613,22 +710,33 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: The unique identifier for the organization member role.
             type:
               - string
               - "null"
           org_id:
+            description:
+              The unique identifier of the organization the member role
+              belongs to.
             type:
               - string
               - "null"
           user_id:
+            description:
+              The unique identifier of the user associated with the organization
+              member role.
             type:
               - string
               - "null"
           name:
+            description: The name of the organization member role.
             type:
               - string
               - "null"
           description:
+            description:
+              The detailed information describing the organization member
+              role.
             type:
               - string
               - "null"

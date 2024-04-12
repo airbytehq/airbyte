@@ -3,116 +3,145 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the success data entry.",
       "type": "integer"
     },
     "created_at": {
+      "description": "Timestamp when the success data was created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the success data was last updated.",
       "type": "string",
       "format": "date-time"
     },
     "succeeded_at": {
+      "description": "Timestamp when the success occurred.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "success_window_started_at": {
+      "description": "Timestamp when the success window started for tracking.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "user": {
+      "description": "Details of the user associated with the successful action.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the user associated.",
           "type": ["null", "string"]
         }
       }
     },
     "person": {
+      "description": "Details of the person associated with the successful action.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the person.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the person associated.",
           "type": ["null", "string"]
         }
       }
     },
     "latest_email": {
+      "description": "Details of the latest successful email sent.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the latest successful email.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the latest successful email.",
           "type": ["null", "string"]
         }
       }
     },
     "latest_call": {
+      "description": "Details of the latest successful phone call made.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the latest successful phone call.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the latest successful phone call.",
           "type": ["null", "string"]
         }
       }
     },
     "latest_action": {
+      "description": "Details of the latest successful action taken.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the latest successful action.",
           "type": ["null", "integer"]
         }
       }
     },
     "latest_cadence": {
+      "description": "Details of the latest successful cadence.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the latest successful cadence.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the latest successful cadence.",
           "type": ["null", "string"]
         }
       }
     },
     "latest_step": {
+      "description": "Details of the latest successful step in the process.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the latest successful step.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the latest successful step.",
           "type": ["null", "string"]
         }
       }
     },
     "counts": {
+      "description": "Total count of various successful actions.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "total_emails": {
+          "description": "Total number of successful emails sent.",
           "type": ["null", "integer"]
         },
         "total_calls": {
+          "description": "Total number of successful phone calls.",
           "type": ["null", "integer"]
         },
         "total_other_touches": {
+          "description": "Total number of other successful touches.",
           "type": ["null", "integer"]
         }
       }

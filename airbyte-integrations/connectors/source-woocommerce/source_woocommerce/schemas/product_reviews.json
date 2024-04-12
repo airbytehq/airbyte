@@ -3,35 +3,45 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the review.",
       "type": ["null", "integer"]
     },
     "date_created": {
+      "description": "The date and time when the review was created (local timezone).",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "The date and time when the review was created (GMT/UTC timezone).",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "product_id": {
+      "description": "The unique identifier of the product associated with the review.",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the review (e.g., pending, approved, spam).",
       "type": ["null", "string"]
     },
     "reviewer": {
+      "description": "The name or username of the reviewer.",
       "type": ["null", "string"]
     },
     "reviewer_email": {
+      "description": "The email address of the reviewer (optional).",
       "type": ["null", "string"]
     },
     "review": {
+      "description": "The text content of the review left by the reviewer.",
       "type": ["null", "string"]
     },
     "rating": {
+      "description": "The rating given in the review (e.g., 1 to 5 stars).",
       "type": ["null", "integer"]
     },
     "verified": {
+      "description": "Indicates whether the review has been verified as authentic (true/false).",
       "type": ["null", "boolean"]
     }
   }

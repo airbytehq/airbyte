@@ -57,12 +57,16 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           adChannelType:
+            description: The type of advertising channel for the campaign.
             type: string
           adamId:
+            description: The Apple ID of the app associated with the campaign.
             type: integer
           billingEvent:
+            description: The type of billing event for the campaign.
             type: string
           budgetAmount:
+            description: The total budget allocation for the campaign.
             anyOf:
               - type: "null"
               - properties:
@@ -72,67 +76,96 @@ definitions:
                     type: string
                 type: object
           budgetOrders:
+            description: List of budget orders associated with the campaign.
             type: array
           countriesOrRegions:
+            description: List of countries or regions targeted by the campaign.
             items:
+              description: Name of a specific country or region.
               type: string
             type: array
           countryOrRegionServingStateReasons:
+            description: Reasons for the serving state of a country or region.
             type: object
           creationTime:
+            description: The timestamp when the campaign was created.
             type: string
           dailyBudgetAmount:
+            description: The daily budget amount for the campaign.
             properties:
               amount:
+                description: The daily budget amount value.
                 type: string
               currency:
+                description: The currency used for the daily budget amount.
                 type: string
             type: object
           deleted:
+            description: Indicates if the campaign has been deleted.
             type: boolean
           displayStatus:
+            description: The display status of the campaign.
             type: string
           endTime:
+            description: The end time of the campaign.
             type: "null"
           id:
+            description: The unique identifier of the campaign.
             type: integer
           locInvoiceDetails:
+            description: Localized invoice details associated with the campaign.
             properties:
               billingContactEmail:
+                description: Email of the billing contact.
                 type: string
               buyerEmail:
+                description: Email of the buyer.
                 type: string
               buyerName:
+                description: Name of the buyer.
                 type: string
               clientName:
+                description: Name of the client associated with the order.
                 type:
                   - "null"
                   - string
               orderNumber:
+                description: Order number related to the invoice.
                 type:
                   - "null"
                   - string
             type: object
           modificationTime:
+            description: The timestamp when the campaign was last modified.
             type: string
           name:
+            description: The name of the campaign.
             type: string
           orgId:
+            description: The organization ID to which the campaign belongs.
             type: integer
           paymentModel:
+            description: The payment model used for the campaign.
             type: string
           sapinLawResponse:
+            description: Response related to SAPIN law compliance.
             type: string
           servingStateReasons:
+            description: Reasons for the serving state of the campaign.
             type: "null"
           servingStatus:
+            description: The serving status of the campaign.
             type: string
           startTime:
+            description: The start time of the campaign.
             type: string
           status:
+            description: The overall status of the campaign.
             type: string
           supplySources:
+            description: List of supply sources for the campaign.
             items:
+              description: Name of a specific supply source.
               type: string
             type: array
         type: object
@@ -159,51 +192,73 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           automatedKeywordsOptIn:
+            description: Flag indicating if automated keyword targeting is enabled
             type: boolean
           campaignId:
+            description: Unique identifier for the campaign to which the adgroup belongs
             type: integer
           cpaGoal:
+            description: Cost-per-acquisition goal for the adgroup
             type: "null"
           creationTime:
+            description: Timestamp indicating when the adgroup was created
             type: string
           defaultBidAmount:
             properties:
               amount:
+                description: Default bid amount
                 type: string
               currency:
+                description: Currency used for the bid amount
                 type: string
             type: object
           deleted:
+            description: Flag indicating if the adgroup is deleted
             type: boolean
           displayStatus:
+            description: Current display status of the adgroup
             type: string
           endTime:
+            description: Scheduled end time for the adgroup
             type: "null"
           id:
+            description: Unique identifier for the adgroup
             type: integer
           modificationTime:
+            description: Timestamp indicating when the adgroup was last modified
             type: string
           name:
+            description: Name of the adgroup
             type: string
           orgId:
+            description:
+              Unique identifier for the organization to which the adgroup
+              belongs
             type: integer
           pricingModel:
+            description: Pricing model used for the adgroup
             type: string
           servingStateReasons:
+            description: Reasons for the current serving state of the adgroup
             anyOf:
               - type: "null"
               - items:
                   type: string
                 type: array
           servingStatus:
+            description: Current serving status of the adgroup
             type: string
           startTime:
+            description: Scheduled start time for the adgroup
             type: string
           status:
+            description: Current status of the adgroup
             type: string
           targetingDimensions:
+            description: Dimensions for targeting specific audience
             properties:
               adminArea:
+                description: Administrative area targeting criteria
                 anyOf:
                   - type: "null"
                   - properties:
@@ -213,6 +268,7 @@ definitions:
                         type: array
                     type: object
               age:
+                description: Age targeting criteria
                 anyOf:
                   - type: "null"
                   - properties:
@@ -229,14 +285,17 @@ definitions:
                         type: array
                     type: object
               appCategories:
+                description: App categories targeting criteria
                 properties:
                   excluded:
+                    description: Excluded app categories
                     anyOf:
                       - type: "null"
                       - items:
                           type: integer
                         type: array
                   included:
+                    description: Included app categories
                     anyOf:
                       - type: "null"
                       - items:
@@ -244,17 +303,23 @@ definitions:
                         type: array
                 type: object
               appDownloaders:
+                description: App downloaders targeting criteria
                 properties:
                   excluded:
+                    description: Excluded app downloaders
                     items:
+                      description: Items representing specific app identifiers
                       type: string
                     type: array
                   included:
+                    description: Included app downloaders
                     items:
+                      description: Items representing specific app identifiers
                       type: string
                     type: array
                 type: object
               country:
+                description: Country targeting criteria
                 anyOf:
                   - type: "null"
                   - properties:
@@ -264,17 +329,23 @@ definitions:
                         type: array
                     type: object
               daypart:
+                description: Daypart targeting criteria
                 type: "null"
               deviceClass:
+                description: Device class targeting criteria
                 properties:
                   included:
+                    description: Included device classes
                     items:
+                      description: Items representing specific device classes
                       type: string
                     type: array
                 type: object
               gender:
+                description: Gender targeting criteria
                 type: "null"
               locality:
+                description: Locality targeting criteria
                 anyOf:
                   - type: "null"
                   - properties:
@@ -310,29 +381,40 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           adGroupId:
+            description: The ID of the ad group where the keyword is associated.
             type: integer
           bidAmount:
             properties:
               amount:
+                description: The bid amount for the keyword.
                 type: string
               currency:
+                description: The currency used for the bid amount.
                 type: string
             type: object
           campaignId:
+            description: The ID of the campaign to which the keyword belongs.
             type: integer
           creationTime:
+            description: The timestamp indicating when the keyword was created.
             type: string
           deleted:
+            description: Flag indicating whether the keyword is deleted or not.
             type: boolean
           id:
+            description: The unique ID of the keyword.
             type: integer
           matchType:
+            description: The match type of the keyword (e.g., broad, exact, phrase).
             type: string
           modificationTime:
+            description: The timestamp indicating when the keyword was last modified.
             type: string
           status:
+            description: The status of the keyword (e.g., active, paused).
             type: string
           text:
+            description: The actual keyword text.
             type: string
         type: object
   incremental_sync:
@@ -395,113 +477,171 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           campaignId:
+            description: ID of the campaign associated with the report data.
             type: integer
           date:
+            description: Date for which the report data is generated.
             type: string
           granularity:
             items:
               properties:
                 avgCPA:
+                  description: Average Cost Per Action for the campaign.
                   properties:
                     amount:
+                      description: Amount of average CPA.
                       type: string
                     currency:
+                      description: Currency in which the average CPA is measured.
                       type: string
                   type: object
                 avgCPM:
+                  description: Average Cost Per Mille for the campaign.
                   properties:
                     amount:
+                      description: Amount of average CPM.
                       type: string
                     currency:
+                      description: Currency in which the average CPM is measured.
                       type: string
                   type: object
                 avgCPT:
+                  description: Average Cost Per Tap for the campaign.
                   properties:
                     amount:
+                      description: Amount of average CPT.
                       type: string
                     currency:
+                      description: Currency in which the average CPT is measured.
                       type: string
                   type: object
                 conversionRate:
+                  description: Rate at which impressions or taps lead to app installs.
                   type: number
                 date:
+                  description: Date for which the granular data is reported.
                   type: string
                 impressions:
+                  description: Number of times the campaign ad was displayed.
                   type: integer
                 installs:
+                  description: Number of new app installs attributed to the campaign.
                   type: integer
                 latOffInstalls:
+                  description:
+                    Number of app installs occurring after a limited ad
+                    tracking ended.
                   type: integer
                 latOnInstalls:
+                  description:
+                    Number of app installs occurring during limited ad
+                    tracking.
                   type: integer
                 localSpend:
+                  description: Amount spent on the campaign in the local currency.
                   properties:
                     amount:
+                      description: Amount spent locally.
                       type: string
                     currency:
+                      description: Currency in which the local spend is measured.
                       type: string
                   type: object
                 newDownloads:
+                  description:
+                    Number of new app downloads directly attributed to
+                    the campaign.
                   type: integer
                 redownloads:
+                  description:
+                    Number of app downloads by users who had previously
+                    downloaded the app.
                   type: integer
                 taps:
+                  description: Number of taps on the campaign ad.
                   type: integer
                 ttr:
+                  description:
+                    Tap-through rate (TTR) measuring the rate of taps on
+                    the ad.
                   type: number
               type: object
             type: array
           metadata:
             properties:
               adChannelType:
+                description: Type of ad channel used for the campaign.
                 type: string
               app:
+                description: Information about the app associated with the campaign.
                 properties:
                   adamId:
+                    description: Apple ID for the app in the App Store.
                     type: integer
                   appName:
+                    description: Name of the app.
                     type: string
                 type: object
               billingEvent:
+                description: Type of billing event for the campaign (e.g., CPM, CPA).
                 type: string
               campaignId:
+                description: ID of the campaign associated with the metadata.
                 type: integer
               campaignName:
+                description: Name of the campaign.
                 type: string
               campaignStatus:
+                description: Status of the campaign (e.g., active, paused).
                 type: string
               countriesOrRegions:
+                description: List of countries or regions targeted by the campaign.
                 items:
                   type: string
                 type: array
               countryOrRegion:
+                description: Country or region targeted by the campaign.
                 type: string
               countryOrRegionServingStateReasons:
+                description:
+                  Reasons for the serving state of the campaign in specific
+                  countries or regions.
                 type: object
               dailyBudget:
+                description: Daily budget set for the campaign.
                 properties:
                   amount:
+                    description: Amount of the daily budget.
                     type: string
                   currency:
+                    description: Currency in which the daily budget is set.
                     type: string
                 type: object
               deleted:
+                description: Indication of whether the campaign is deleted.
                 type: boolean
               displayStatus:
+                description: Status of the campaign display (e.g., active, paused).
                 type: string
               modificationTime:
+                description: Timestamp of the last modification made to the campaign.
                 type: string
               orgId:
+                description: Organization ID associated with the campaign.
                 type: integer
               servingStateReasons:
+                description: Reasons for the serving state of the campaign.
                 type: "null"
               servingStatus:
+                description: Current serving status of the campaign.
                 type: string
               supplySources:
+                description: List of supply sources for displaying the campaign ads.
                 items:
                   type: string
                 type: array
               totalBudget:
+                description: Total budget set for the campaign.
                 anyOf:
                   - type: "null"
                   - properties:
@@ -512,6 +652,9 @@ definitions:
                     type: object
             type: object
           other:
+            description:
+              Placeholder for any additional data not covered in the specified
+              fields.
             type: boolean
         type: object
   adgroups_report_daily_stream:
@@ -545,105 +688,149 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           adGroupId:
+            description: The unique identifier of the ad group
             type: integer
           date:
+            description: The date of the data
             type: string
           granularity:
             items:
               properties:
                 avgCPA:
+                  description: Average Cost Per Action
                   properties:
                     amount:
+                      description: The amount of average CPA
                       type: string
                     currency:
+                      description: The currency of the average CPA
                       type: string
                   type: object
                 avgCPM:
+                  description: Average Cost Per Mille (impressions)
                   properties:
                     amount:
+                      description: The amount of average CPM
                       type: string
                     currency:
+                      description: The currency of the average CPM
                       type: string
                   type: object
                 avgCPT:
+                  description: Average Cost Per Tap
                   properties:
                     amount:
+                      description: The amount of average CPT
                       type: string
                     currency:
+                      description: The currency of the average CPT
                       type: string
                   type: object
                 conversionRate:
+                  description: The rate of conversions
                   type: number
                 date:
+                  description: The granularity date
                   type: string
                 impressions:
+                  description: The number of impressions
                   type: integer
                 installs:
+                  description: The number of installs
                   type: integer
                 latOffInstalls:
+                  description: The number of latent off-store installs
                   type: integer
                 latOnInstalls:
+                  description: The number of latent on-store installs
                   type: integer
                 localSpend:
+                  description: Local spend amount
                   properties:
                     amount:
+                      description: The amount of local spend
                       type: string
                     currency:
+                      description: The currency of the local spend
                       type: string
                   type: object
                 newDownloads:
+                  description: The number of new downloads
                   type: integer
                 redownloads:
+                  description: The number of redownloads
                   type: integer
                 taps:
+                  description: The number of taps
                   type: integer
                 ttr:
+                  description: Tap-through rate
                   type: number
               type: object
             type: array
           metadata:
             properties:
               adGroupDisplayStatus:
+                description: The display status of the ad group
                 type: string
               adGroupId:
+                description: The unique identifier of the ad group
                 type: integer
               adGroupName:
+                description: The name of the ad group
                 type: string
               adGroupServingStateReasons:
+                description: Reasons for the ad group serving state
                 type: "null"
               adGroupServingStatus:
+                description: The serving status of the ad group
                 type: string
               adGroupStatus:
+                description: The status of the ad group
                 type: string
               automatedKeywordsOptIn:
+                description: Flag indicating if automated keywords are opted-in
                 type: boolean
               campaignId:
+                description: The unique identifier of the campaign
                 type: integer
               countryOrRegion:
+                description: The country or region targeting
                 type: string
               cpaGoal:
+                description: The Cost Per Action goal
                 type: "null"
               defaultBidAmount:
+                description: The default bid amount
                 properties:
                   amount:
+                    description: The amount of the default bid
                     type: string
                   currency:
+                    description: The currency of the default bid amount
                     type: string
                 type: object
               deleted:
+                description: Indicator of whether the ad group is deleted
                 type: boolean
               endTime:
+                description: The end time of the ad group
                 type: "null"
               modificationTime:
+                description: The modification time of the ad group
                 type: string
               orgId:
+                description: The organization ID
                 type: integer
               pricingModel:
+                description: The pricing model used
                 type: string
               startTime:
+                description: The start time of the ad group
                 type: string
             type: object
           other:
+            description: Additional data or information
             type: boolean
         type: object
   keywords_report_daily_stream:
@@ -688,6 +875,7 @@ definitions:
         $schema: http://json-schema.org/schema#
         properties:
           date:
+            description: The date for which the report data is generated.
             type: string
           granularity:
             items:
@@ -695,43 +883,64 @@ definitions:
                 avgCPA:
                   properties:
                     amount:
+                      description: The average cost per acquisition.
                       type: string
                     currency:
+                      description:
+                        The currency in which the average cost per acquisition
+                        is represented.
                       type: string
                   type: object
                 avgCPT:
                   properties:
                     amount:
+                      description: The average cost per tap.
                       type: string
                     currency:
+                      description:
+                        The currency in which the average cost per tap
+                        is represented.
                       type: string
                   type: object
                 conversionRate:
+                  description: The conversion rate.
                   type: number
                 date:
                   type: string
                 impressions:
+                  description: The number of impressions.
                   type: integer
                 installs:
+                  description: The number of installs.
                   type: integer
                 latOffInstalls:
+                  description: The number of latent off installs.
                   type: integer
                 latOnInstalls:
+                  description: The number of latent on installs.
                   type: integer
                 localSpend:
                   properties:
                     amount:
+                      description: The local spend amount.
                       type: string
                     currency:
+                      description:
+                        The currency in which the local spend amount is
+                        represented.
                       type: string
                   type: object
                 newDownloads:
+                  description: The number of new downloads.
                   type: integer
                 redownloads:
+                  description: The number of redownloads.
                   type: integer
                 taps:
+                  description: The number of taps.
                   type: integer
                 ttr:
+                  description: The tap-through rate.
                   type: number
               type: object
             type: array
@@ -740,6 +949,7 @@ definitions:
               bidRecommendation:
                 properties:
                   bidMax:
+                    description: The maximum bid recommendation.
                     anyOf:
                       - type: "null"
                       - properties:
@@ -749,6 +959,7 @@ definitions:
                             type: string
                         type: object
                   bidMin:
+                    description: The minimum bid recommendation.
                     anyOf:
                       - type: "null"
                       - properties:
@@ -760,37 +971,51 @@ definitions:
                 type: object
             type: object
           keywordId:
+            description: The unique identifier for the keyword.
             type: integer
           metadata:
             properties:
               adGroupDeleted:
+                description: Indicates if the ad group is deleted.
                 type: boolean
               adGroupId:
+                description: The unique identifier for the ad group.
                 type: integer
               adGroupName:
+                description: The name of the ad group.
                 type: string
               bidAmount:
                 properties:
                   amount:
+                    description: The bid amount.
                     type: string
                   currency:
+                    description: The currency in which the bid amount is represented.
                     type: string
                 type: object
               countryOrRegion:
+                description: The country or region where the data is from.
                 type: string
               deleted:
+                description: Indicates if the keyword is deleted.
                 type: boolean
               keyword:
+                description: The keyword text.
                 type: string
               keywordDisplayStatus:
+                description: The display status of the keyword.
                 type: string
               keywordId:
+                description: The unique identifier for the keyword.
                 type: integer
               keywordStatus:
+                description: The status of the keyword.
                 type: string
               matchType:
+                description: The match type of the keyword.
                 type: string
               modificationTime:
+                description: The timestamp when the data was last modified.
                 type: string
             type: object
           other:

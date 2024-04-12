@@ -53,6 +53,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains related hypermedia links to navigate through the step data.",
       "type": ["null", "object"],
       "properties": {
         "step_context": {

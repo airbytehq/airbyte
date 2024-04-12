@@ -2,70 +2,90 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the feature. It serves as a unique identifier for the feature.",
       "type": ["string", "null"]
     },
     "description": {
+      "description": "The description of the feature. It provides more details about the purpose of the feature.",
       "type": ["string", "null"]
     },
     "project": {
+      "description": "The project to which the feature belongs.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "The type of the feature, e.g., A/B Test, Feature Toggle, etc.",
       "type": ["string", "null"]
     },
     "enabled": {
+      "description": "Indicates whether the feature is currently enabled or not.",
       "type": ["boolean", "null"]
     },
     "stale": {
+      "description": "Indicates if the feature data is stale and needs to be refreshed.",
       "type": ["boolean", "null"]
     },
     "strategies": {
+      "description": "The strategies associated with the feature.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "name": {
+            "description": "The name of the strategy.",
             "type": ["string", "null"]
           },
           "constraints": {
+            "description": "Constraints specific to the strategy.",
             "type": ["array", "null"]
           },
           "parameters": {
+            "description": "Additional parameters for the strategy.",
             "type": ["object", "null"]
           }
         }
       }
     },
     "strategy": {
+      "description": "The default strategy for the feature.",
       "type": ["string", "null"]
     },
     "parameters": {
+      "description": "Additional parameters associated with the feature.",
       "type": ["object", "null"]
     },
     "impressionData": {
+      "description": "Data related to the impressions of the feature.",
       "type": ["boolean", "null"]
     },
     "variants": {
+      "description": "Different variants or options available for the feature.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "name": {
+            "description": "The name of the variant.",
             "type": ["string", "null"]
           },
           "weight": {
+            "description": "The weight or probability of selection for the variant.",
             "type": ["integer", "null"]
           },
           "weightType": {
+            "description": "The type of weighting used for the variant, e.g., uniform, exponential, etc.",
             "type": ["string", "null"]
           },
           "stickiness": {
+            "description": "Indicates the stickiness of the variant.",
             "type": ["string", "null"]
           },
           "payload": {
+            "description": "Data payload associated with the variant.",
             "type": ["object", "null"]
           },
           "overrides": {
+            "description": "Any overrides specific to the variant.",
             "type": ["array", "null"]
           }
         }

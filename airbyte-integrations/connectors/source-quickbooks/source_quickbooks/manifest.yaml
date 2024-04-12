@@ -80,28 +80,35 @@ definitions:
           - object
         properties:
           CurrentBalanceWithSubAccounts:
+            description: The current balance of the account including sub-accounts
             type:
               - "null"
               - number
           AcctNum:
+            description: The account number associated with the account
             type:
               - "null"
               - string
           AccountSubType:
+            description: The specific subtype of the account
             type:
               - "null"
               - string
           Classification:
+            description: The classification or group to which the account belongs
             type:
               - "null"
               - string
           CurrencyRef:
+            description: The reference to the currency used for account transactions
             properties:
               name:
+                description: The name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: The value or code representing the currency
                 type:
                   - "null"
                   - string
@@ -109,29 +116,36 @@ definitions:
               - "null"
               - object
           Name:
+            description: The name or title of the account
             type:
               - "null"
               - string
           FullyQualifiedName:
+            description: The fully qualified name of the account
             type:
               - "null"
               - string
           Id:
+            description: The unique identifier of the account
             type:
               - "null"
               - string
           AccountType:
+            description: The general type or category of the account
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata information related to the account
             properties:
               CreateTime:
+                description: The date and time when the account was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The date and time when the account was last updated
                 format: date-time
                 type:
                   - "null"
@@ -140,24 +154,30 @@ definitions:
               - "null"
               - object
           CurrentBalance:
+            description: The current balance of the account excluding sub-accounts
             type:
               - "null"
               - number
           Active:
+            description: Indicates if the account is currently active or not
             type:
               - "null"
               - boolean
           domain:
+            description: Domain or context in which the account exists
             type:
               - "null"
               - string
           SubAccount:
+            description: Indicates if the account is a sub-account
             type:
               - "null"
               - boolean
           ParentRef:
+            description: Reference to the parent account if the account is a sub-account
             properties:
               value:
+                description: The unique identifier of the parent account
                 type:
                   - "null"
                   - string
@@ -165,14 +185,17 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: Token used for synchronization purposes
             type:
               - "null"
               - string
           sparse:
+            description: Indicator for sparse representation of data
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in airbyte integration
             type:
               - "null"
               - string
@@ -192,12 +215,17 @@ definitions:
           - object
         properties:
           APAccountRef:
+            description:
+              Reference to the Accounts Payable account associated with
+              the bill payment
             properties:
               name:
+                description: Name of the AP account
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the AP account
                 type:
                   - "null"
                   - string
@@ -205,12 +233,15 @@ definitions:
               - "null"
               - object
           DepartmentRef:
+            description: Reference to the department associated with the bill payment
             properties:
               name:
+                description: Name of the department
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the department
                 type:
                   - "null"
                   - string
@@ -218,112 +249,137 @@ definitions:
               - "null"
               - object
           CheckPayment:
+            description: Details of payment made via check
             type:
               - "null"
               - object
             properties:
               BankAccountRef:
+                description: Reference to the bank account used for the check payment
                 type:
                   - "null"
                   - object
                 properties:
                   name:
+                    description: Name of the bank account
                     type:
                       - "null"
                       - string
                   value:
+                    description: Value of the bank account
                     type:
                       - "null"
                       - string
               PrintStatus:
+                description: Status of the check print
                 type:
                   - "null"
                   - string
           CurrencyRef:
+            description: Reference to the currency used for the bill payment
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the currency
                 type:
                   - "null"
                   - string
           TotalAmt:
+            description: Total amount of the bill payment
             type:
               - "null"
               - number
           PayType:
+            description: Type of payment
             type:
               - "null"
               - string
           TxnDate:
+            description: Date of the bill payment
             type:
               - "null"
               - string
             format: date
           Id:
+            description: Unique identifier for the bill payment
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata related to the bill payment
             type:
               - "null"
               - object
             properties:
               LastUpdatedTime:
+                description: Timestamp of last update
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: Timestamp of creation
                 type:
                   - "null"
                   - string
                 format: date-time
           VendorRef:
+            description: Reference to the vendor associated with the bill payment
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the vendor
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the vendor
                 type:
                   - "null"
                   - string
           domain:
+            description: Domain information
             type:
               - "null"
               - string
           CreditCardPayment:
+            description: Details of payment made via credit card
             type:
               - "null"
               - object
             properties:
               CCAccountRef:
+                description: Reference to the credit card account used for the payment
                 type:
                   - "null"
                   - object
                 properties:
                   name:
+                    description: Name of the credit card account
                     type:
                       - "null"
                       - string
                   value:
+                    description: Value of the credit card account
                     type:
                       - "null"
                       - string
           SyncToken:
+            description: Token for syncing data
             type:
               - "null"
               - string
           Line:
+            description: Line items included in the bill payment
             type:
               - "null"
               - array
@@ -333,10 +389,12 @@ definitions:
                 - object
               properties:
                 Amount:
+                  description: Amount of the line item
                   type:
                     - "null"
                     - number
                 LinkedTxn:
+                  description: Links to related transactions
                   type:
                     - "null"
                     - array
@@ -346,26 +404,32 @@ definitions:
                       - object
                     properties:
                       TxnType:
+                        description: Type of the linked transaction
                         type:
                           - "null"
                           - string
                       TxnId:
+                        description: Identifier of the linked transaction
                         type:
                           - "null"
                           - string
           DocNumber:
+            description: Document number of the bill payment
             type:
               - "null"
               - string
           ExchangeRate:
+            description: Exchange rate used for the payment
             type:
               - "null"
               - number
           sparse:
+            description: Sparse information
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination
             type:
               - "null"
               - string
@@ -385,12 +449,15 @@ definitions:
           - object
         properties:
           SalesTermRef:
+            description: Sales term reference
             properties:
               name:
+                description: Sales term name
                 type:
                   - "null"
                   - string
               value:
+                description: Sales term value
                 type:
                   - "null"
                   - string
@@ -398,16 +465,20 @@ definitions:
               - "null"
               - object
           DocNumber:
+            description: Document number
             type:
               - "null"
               - string
           CurrencyRef:
+            description: Currency reference
             properties:
               name:
+                description: Currency name
                 type:
                   - "null"
                   - string
               value:
+                description: Currency value
                 type:
                   - "null"
                   - string
@@ -415,24 +486,30 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: Synchronization token
             type:
               - "null"
               - string
           Id:
+            description: Unique identifier
             type:
               - "null"
               - string
           Balance:
+            description: Balance amount
             type:
               - "null"
               - number
           APAccountRef:
+            description: Accounts Payable account reference
             properties:
               name:
+                description: Account name
                 type:
                   - "null"
                   - string
               value:
+                description: Account value
                 type:
                   - "null"
                   - string
@@ -440,18 +517,22 @@ definitions:
               - "null"
               - object
           DueDate:
+            description: Due date of the bill
             format: date
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata information
             properties:
               CreateTime:
+                description: Creation time
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Last updated time
                 format: date-time
                 type:
                   - "null"
@@ -460,13 +541,16 @@ definitions:
               - "null"
               - object
           LinkedTxn:
+            description: Linked transactions
             items:
               properties:
                 TxnId:
+                  description: Transaction ID
                   type:
                     - "null"
                     - string
                 TxnType:
+                  description: Transaction type
                   type:
                     - "null"
                     - string
@@ -477,33 +561,42 @@ definitions:
               - "null"
               - array
           Line:
+            description: Bill line items
             items:
               properties:
                 Id:
+                  description: Unique identifier
                   type:
                     - "null"
                     - string
                 LineNum:
+                  description: Line number
                   type:
                     - "null"
                     - integer
                 DetailType:
+                  description: Detail type
                   type:
                     - "null"
                     - string
                 Description:
+                  description: Description
                   type:
                     - "null"
                     - string
                 ItemBasedExpenseLineDetail:
+                  description: Item-based expense line detail
                   properties:
                     ItemRef:
+                      description: Item reference
                       properties:
                         name:
+                          description: Item name
                           type:
                             - "null"
                             - string
                         value:
+                          description: Item value
                           type:
                             - "null"
                             - string
@@ -511,12 +604,15 @@ definitions:
                         - "null"
                         - object
                     Qty:
+                      description: Quantity
                       type:
                         - "null"
                         - integer
                     TaxCodeRef:
+                      description: Tax code reference
                       properties:
                         value:
+                          description: Tax code value
                           type:
                             - "null"
                             - string
@@ -524,10 +620,12 @@ definitions:
                         - "null"
                         - object
                     BillableStatus:
+                      description: Billable status
                       type:
                         - "null"
                         - string
                     UnitPrice:
+                      description: Unit price
                       type:
                         - "null"
                         - number
@@ -535,22 +633,28 @@ definitions:
                     - "null"
                     - object
                 Amount:
+                  description: Amount
                   type:
                     - "null"
                     - number
                 AccountBasedExpenseLineDetail:
+                  description: Account-based expense line detail
                   properties:
                     BillableStatus:
+                      description: Billable status
                       type:
                         - "null"
                         - string
                     AccountRef:
+                      description: Account reference
                       properties:
                         name:
+                          description: Account name
                           type:
                             - "null"
                             - string
                         value:
+                          description: Account value
                           type:
                             - "null"
                             - string
@@ -558,8 +662,10 @@ definitions:
                         - "null"
                         - object
                     TaxCodeRef:
+                      description: Tax code reference
                       properties:
                         value:
+                          description: Tax code value
                           type:
                             - "null"
                             - string
@@ -567,12 +673,15 @@ definitions:
                         - "null"
                         - object
                     CustomerRef:
+                      description: Customer reference
                       properties:
                         name:
+                          description: Customer name
                           type:
                             - "null"
                             - string
                         value:
+                          description: Customer value
                           type:
                             - "null"
                             - string
@@ -589,21 +698,26 @@ definitions:
               - "null"
               - array
           domain:
+            description: Domain information
             type:
               - "null"
               - string
           TxnDate:
+            description: Transaction date
             format: date
             type:
               - "null"
               - string
           VendorRef:
+            description: Vendor reference
             properties:
               name:
+                description: Vendor name
                 type:
                   - "null"
                   - string
               value:
+                description: Vendor value
                 type:
                   - "null"
                   - string
@@ -611,35 +725,43 @@ definitions:
               - "null"
               - object
           TotalAmt:
+            description: Total amount
             type:
               - "null"
               - number
           ExchangeRate:
+            description: Exchange rate
             type:
               - "null"
               - number
           DepartmentRef:
+            description: Department reference
             type:
               - "null"
               - object
             properties:
               name:
+                description: Department name
                 type:
                   - "null"
                   - string
               value:
+                description: Department value
                 type:
                   - "null"
                   - string
           PrivateNote:
+            description: Private notes
             type:
               - "null"
               - string
           sparse:
+            description: Sparse data
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Airbyte cursor value
             type:
               - "null"
               - string
@@ -660,53 +782,70 @@ definitions:
           - object
         properties:
           BudgetEntryType:
+            description: Type of budget entry like expense or income
             type:
               - "null"
               - string
           Name:
+            description: The name or title of the budget entry
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the budget data
             type:
               - "null"
               - string
           Active:
+            description:
+              Flag indicating whether the budget is currently active or
+              inactive.
             type:
               - "null"
               - boolean
           EndDate:
+            description: The end date and time of the budget period
             format: date-time
             type:
               - "null"
               - string
           StartDate:
+            description: The start date and time of the budget period
             format: date-time
             type:
               - "null"
               - string
           BudgetType:
+            description: Type of budget like yearly or quarterly
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronization purposes
             type:
               - "null"
               - string
           Id:
+            description: The unique identifier for the budget entry
             type:
               - "null"
               - string
           BudgetDetail:
+            description:
+              Details of the budget including allocation for different
+              accounts, classes, customers, and departments.
             items:
               properties:
                 ClassRef:
+                  description: Reference to a class associated with the budget item
                   properties:
                     name:
+                      description: The name of the class
                       type:
                         - "null"
                         - string
                     value:
+                      description: The unique identifier of the class
                       type:
                         - "null"
                         - string
@@ -714,12 +853,17 @@ definitions:
                     - "null"
                     - object
                 DepartmentRef:
+                  description:
+                    Reference to a department associated with the budget
+                    item
                   properties:
                     name:
+                      description: The name of the department
                       type:
                         - "null"
                         - string
                     value:
+                      description: The unique identifier of the department
                       type:
                         - "null"
                         - string
@@ -727,12 +871,17 @@ definitions:
                     - "null"
                     - object
                 CustomerRef:
+                  description:
+                    Reference to a customer associated with the budget
+                    item
                   properties:
                     name:
+                      description: The name of the customer
                       type:
                         - "null"
                         - string
                     value:
+                      description: The unique identifier of the customer
                       type:
                         - "null"
                         - string
@@ -740,12 +889,17 @@ definitions:
                     - "null"
                     - object
                 AccountRef:
+                  description:
+                    Reference to an account associated with the budget
+                    item
                   properties:
                     name:
+                      description: The name of the account
                       type:
                         - "null"
                         - string
                     value:
+                      description: The unique identifier of the account
                       type:
                         - "null"
                         - string
@@ -753,11 +907,13 @@ definitions:
                     - "null"
                     - object
                 BudgetDate:
+                  description: The date and time for the budget entry
                   format: date-time
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: The amount allocated for the budget item
                   type:
                     - "null"
                     - number
@@ -768,13 +924,16 @@ definitions:
               - "null"
               - array
           MetaData:
+            description: Metadata related to the budget entry
             properties:
               CreateTime:
+                description: The date and time when the budget entry was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The date and time when the budget entry was last updated
                 format: date-time
                 type:
                   - "null"
@@ -783,6 +942,7 @@ definitions:
               - "null"
               - object
           airbyte_cursor:
+            description: Cursor used for pagination in data syncing
             type:
               - "null"
               - string
@@ -805,10 +965,12 @@ definitions:
           ParentRef:
             properties:
               name:
+                description: The name of the parent reference.
                 type:
                   - "null"
                   - string
               value:
+                description: The value of the parent reference.
                 type:
                   - "null"
                   - string
@@ -816,21 +978,25 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: The synchronization token for the class.
             type:
               - "null"
               - string
           domain:
+            description: The domain of the class.
             type:
               - "null"
               - string
           MetaData:
             properties:
               CreateTime:
+                description: The date and time when the class was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The date and time when the class was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -839,26 +1005,32 @@ definitions:
               - "null"
               - object
           Id:
+            description: The unique identifier of the class.
             type:
               - "null"
               - string
           Name:
+            description: The name of the class.
             type:
               - "null"
               - string
           SubClass:
+            description: Indicates if the class is a subclass or not.
             type:
               - "null"
               - boolean
           Active:
+            description: Indicates if the class is active or not.
             type:
               - "null"
               - boolean
           FullyQualifiedName:
+            description: The fully qualified name of the class.
             type:
               - "null"
               - string
           airbyte_cursor:
+            description: The cursor for Airbyte integration.
             type:
               - "null"
               - string
@@ -879,6 +1051,7 @@ definitions:
         additionalProperties: true
         properties:
           ClassRef:
+            description: Reference to a class associated with the credit memo.
             properties:
               name:
                 type:
@@ -892,6 +1065,7 @@ definitions:
               - "null"
               - object
           BillEmail:
+            description: Billing email address.
             properties:
               Address:
                 type:
@@ -901,18 +1075,22 @@ definitions:
               - "null"
               - object
           EmailStatus:
+            description: Status of the email sent with the credit memo.
             type:
               - "null"
               - string
           DocNumber:
+            description: Document number of the credit memo.
             type:
               - "null"
               - string
           Balance:
+            description: The remaining balance on the credit memo.
             type:
               - "null"
               - number
           CustomerMemo:
+            description: Memo provided by the customer.
             properties:
               value:
                 type:
@@ -922,6 +1100,7 @@ definitions:
               - "null"
               - object
           CurrencyRef:
+            description: Reference to the currency used for the credit memo.
             properties:
               name:
                 type:
@@ -935,14 +1114,17 @@ definitions:
               - "null"
               - object
           PrintStatus:
+            description: Status of printing the credit memo.
             type:
               - "null"
               - string
           SyncToken:
+            description: Token for synchronization purposes.
             type:
               - "null"
               - string
           Line:
+            description: Line items included in the credit memo.
             items:
               properties:
                 Amount:
@@ -958,6 +1140,7 @@ definitions:
                     - "null"
                     - string
                 SalesItemLineDetail:
+                  description: Details for sales item line.
                   properties:
                     ItemRef:
                       properties:
@@ -1001,6 +1184,7 @@ definitions:
                     - "null"
                     - string
                 SubTotalLineDetail:
+                  description: Details for subtotal line.
                   type:
                     - "null"
                     - object
@@ -1013,18 +1197,24 @@ definitions:
               - "null"
               - array
           TotalAmt:
+            description: Total amount on the credit memo.
             type:
               - "null"
               - number
           ApplyTaxAfterDiscount:
+            description:
+              Indicates whether tax is applied after any discount on the
+              credit memo.
             type:
               - "null"
               - boolean
           domain:
+            description: Domain of the credit memo data.
             type:
               - "null"
               - string
           SalesTermRef:
+            description: Reference to the sales term associated with the credit memo.
             properties:
               name:
                 type:
@@ -1038,6 +1228,7 @@ definitions:
               - "null"
               - object
           ShipAddr:
+            description: Shipping address details.
             properties:
               PostalCode:
                 type:
@@ -1071,6 +1262,7 @@ definitions:
               - "null"
               - object
           TxnTaxDetail:
+            description: Tax details associated with the credit memo.
             properties:
               TotalTax:
                 type:
@@ -1080,11 +1272,13 @@ definitions:
               - "null"
               - object
           TxnDate:
+            description: Transaction date of the credit memo.
             format: date
             type:
               - "null"
               - string
           CustomField:
+            description: Custom fields associated with the credit memo.
             items:
               properties:
                 Name:
@@ -1106,10 +1300,12 @@ definitions:
               - "null"
               - array
           Id:
+            description: Unique identifier for the credit memo.
             type:
               - "null"
               - string
           BillAddr:
+            description: Billing address details.
             properties:
               Line1:
                 type:
@@ -1143,6 +1339,7 @@ definitions:
               - "null"
               - object
           CustomerRef:
+            description: Reference to the customer associated with the credit memo.
             properties:
               name:
                 type:
@@ -1156,25 +1353,31 @@ definitions:
               - "null"
               - object
           RemainingCredit:
+            description: Remaining credit amount.
             type:
               - "null"
               - number
           ExchangeRate:
+            description: Exchange rate used for currency conversion.
             type:
               - "null"
               - number
           HomeTotalAmt:
+            description: Total amount in the home currency.
             type:
               - "null"
               - number
           MetaData:
+            description: Metadata associated with the credit memo.
             properties:
               CreateTime:
+                description: Date and time when the credit memo was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Date and time when the credit memo was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -1183,10 +1386,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Indicates whether the credit memo object is sparse.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte.
             type:
               - "null"
               - string
@@ -1207,12 +1412,15 @@ definitions:
           - object
         properties:
           DefaultTaxCodeRef:
+            description: Reference to the default tax code for the customer.
             properties:
               name:
+                description: Name of the default tax code.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the default tax code.
                 type:
                   - "null"
                   - string
@@ -1220,12 +1428,15 @@ definitions:
               - "null"
               - object
           SalesTermRef:
+            description: Reference to the sales term for the customer.
             properties:
               name:
+                description: Name of the sales term.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the sales term.
                 type:
                   - "null"
                   - string
@@ -1233,12 +1444,15 @@ definitions:
               - "null"
               - object
           PaymentMethodRef:
+            description: Reference to the payment method for the customer.
             properties:
               name:
+                description: Name of the payment method.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the payment method.
                 type:
                   - "null"
                   - string
@@ -1246,16 +1460,20 @@ definitions:
               - "null"
               - object
           ResaleNum:
+            description: Resale number of the customer.
             type:
               - "null"
               - string
           CurrencyRef:
+            description: Reference to the currency used by the customer.
             properties:
               name:
+                description: Name of the currency.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the currency.
                 type:
                   - "null"
                   - string
@@ -1263,40 +1481,50 @@ definitions:
               - "null"
               - object
           MiddleName:
+            description: Middle name of the customer.
             type:
               - "null"
               - string
           BillAddr:
+            description: Customer's billing address details.
             properties:
               Lat:
+                description: Latitude coordinate for the billing address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the billing address.
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Subdivision code for the country in the billing address.
                 type:
                   - "null"
                   - string
               Country:
+                description: Country in the billing address.
                 type:
                   - "null"
                   - string
               City:
+                description: City in the billing address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate for the billing address.
                 type:
                   - "null"
                   - string
               PostalCode:
+                description: Postal code in the billing address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the billing address.
                 type:
                   - "null"
                   - string
@@ -1304,8 +1532,10 @@ definitions:
               - "null"
               - object
           PrimaryEmailAddr:
+            description: Primary email address of the customer.
             properties:
               Address:
+                description: Email address.
                 type:
                   - "null"
                   - string
@@ -1313,24 +1543,30 @@ definitions:
               - "null"
               - object
           Balance:
+            description: The customer's current balance.
             type:
               - "null"
               - number
           CompanyName:
+            description: The name of the customer's company.
             type:
               - "null"
               - string
           FamilyName:
+            description: Last name of the customer.
             type:
               - "null"
               - string
           FullyQualifiedName:
+            description: The fully qualified name of the customer.
             type:
               - "null"
               - string
           PrimaryPhone:
+            description: Primary phone number of the customer.
             properties:
               FreeFormNumber:
+                description: Free-form primary phone number.
                 type:
                   - "null"
                   - string
@@ -1338,20 +1574,25 @@ definitions:
               - "null"
               - object
           BalanceWithJobs:
+            description: The total balance including jobs associated with the customer.
             type:
               - "null"
               - number
           BillWithParent:
+            description: Indicates if billing is done with the parent company.
             type:
               - "null"
               - boolean
           Level:
+            description: Customer's level or hierarchy in the organization.
             type:
               - "null"
               - integer
           ParentRef:
+            description: Reference to the parent entity or company.
             properties:
               value:
+                description: Unique identifier of the parent entity.
                 type:
                   - "null"
                   - string
@@ -1359,16 +1600,20 @@ definitions:
               - "null"
               - object
           PrintOnCheckName:
+            description: Name to be printed on checks for the customer.
             type:
               - "null"
               - string
           Job:
+            description: Job details associated with the customer.
             type:
               - "null"
               - boolean
           Mobile:
+            description: Mobile phone number of the customer.
             properties:
               FreeFormNumber:
+                description: Free-form mobile phone number.
                 type:
                   - "null"
                   - string
@@ -1376,29 +1621,36 @@ definitions:
               - "null"
               - object
           PreferredDeliveryMethod:
+            description: Customer's preferred delivery method.
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronization purposes.
             type:
               - "null"
               - string
           Taxable:
+            description: Indicates if the customer is taxable.
             type:
               - "null"
               - boolean
           DisplayName:
+            description: The customer's display name.
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata related to the customer.
             properties:
               CreateTime:
+                description: Timestamp of when the customer record was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Timestamp of when the customer record was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -1407,8 +1659,10 @@ definitions:
               - "null"
               - object
           WebAddr:
+            description: Customer's web address.
             properties:
               URI:
+                description: URI of the web address.
                 type:
                   - "null"
                   - string
@@ -1416,52 +1670,65 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier for the customer.
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the customer.
             type:
               - "null"
               - string
           Active:
+            description: Indicates whether the customer is active or inactive.
             type:
               - "null"
               - boolean
           GivenName:
+            description: First name of the customer.
             type:
               - "null"
               - string
           ShipAddr:
+            description: Customer's shipping address details.
             properties:
               Lat:
+                description: Latitude coordinate for the shipping address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the shipping address.
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Subdivision code for the country in the shipping address.
                 type:
                   - "null"
                   - string
               Country:
+                description: Country in the shipping address.
                 type:
                   - "null"
                   - string
               City:
+                description: City in the shipping address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate for the shipping address.
                 type:
                   - "null"
                   - string
               PostalCode:
+                description: Postal code in the shipping address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the shipping address.
                 type:
                   - "null"
                   - string
@@ -1469,8 +1736,10 @@ definitions:
               - "null"
               - object
           Fax:
+            description: Fax number of the customer.
             properties:
               FreeFormNumber:
+                description: Free-form fax number.
                 type:
                   - "null"
                   - string
@@ -1478,10 +1747,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Indicates if the data is sparse or complete.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor used for data pagination in Airbyte.
             type:
               - "null"
               - string
@@ -1504,10 +1775,12 @@ definitions:
           ParentRef:
             properties:
               name:
+                description: The name of the parent department.
                 type:
                   - "null"
                   - string
               value:
+                description: The unique identifier of the parent department.
                 type:
                   - "null"
                   - string
@@ -1517,11 +1790,13 @@ definitions:
           MetaData:
             properties:
               LastUpdatedTime:
+                description: The timestamp when the department was last updated.
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: The timestamp when the department was created.
                 type:
                   - "null"
                   - string
@@ -1530,34 +1805,46 @@ definitions:
               - "null"
               - object
           FullyQualifiedName:
+            description:
+              The fully qualified name of the department including the
+              parent department's name.
             type:
               - "null"
               - string
           Id:
+            description: The unique identifier for the department.
             type:
               - "null"
               - string
           domain:
+            description: The domain to which the department belongs.
             type:
               - "null"
               - string
           Name:
+            description: The name of the department.
             type:
               - "null"
               - string
           SyncToken:
+            description:
+              A token used for synchronization to track changes to the
+              department.
             type:
               - "null"
               - string
           SubDepartment:
+            description: Indicates if the department is a sub-department.
             type:
               - "null"
               - boolean
           Active:
+            description: Indicates if the department is active or inactive.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: A cursor used for pagination if applicable.
             type:
               - "null"
               - string
@@ -1577,12 +1864,15 @@ definitions:
           - object
         properties:
           DepartmentRef:
+            description: Reference to the department associated with the deposit
             properties:
               name:
+                description: Name of the department
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the department
                 type:
                   - "null"
                   - string
@@ -1590,12 +1880,15 @@ definitions:
               - "null"
               - object
           CurrencyRef:
+            description: Reference to the currency used in the deposit
             properties:
               name:
+                description: Name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the currency
                 type:
                   - "null"
                   - string
@@ -1603,14 +1896,18 @@ definitions:
               - "null"
               - object
           CashBack:
+            description: Details of cash back involved in the deposit
             properties:
               AccountRef:
+                description: Reference to the account associated with the cash back
                 properties:
                   name:
+                    description: Name of the account
                     type:
                       - "null"
                       - string
                   value:
+                    description: Value of the account
                     type:
                       - "null"
                       - string
@@ -1618,10 +1915,12 @@ definitions:
                   - "null"
                   - object
               Amount:
+                description: Amount of cash back
                 type:
                   - "null"
                   - number
               Memo:
+                description: Memo or note related to the cash back
                 type:
                   - "null"
                   - string
@@ -1629,33 +1928,42 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: Token for synchronization purposes
             type:
               - "null"
               - string
           Line:
+            description: Details of individual lines within the deposit
             items:
               properties:
                 Id:
+                  description: Unique identifier for the line
                   type:
                     - "null"
                     - string
                 LineNum:
+                  description: Line number
                   type:
                     - "null"
                     - integer
                 DetailType:
+                  description: Type of detail in the line
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: Amount in the line
                   type:
                     - "null"
                     - number
                 DepositLineDetail:
+                  description: Details specific to the deposit line
                   properties:
                     PaymentMethodRef:
+                      description: Reference to the payment method used for the line
                       properties:
                         value:
+                          description: Value of the payment method
                           type:
                             - "null"
                             - string
@@ -1663,12 +1971,15 @@ definitions:
                         - "null"
                         - object
                     AccountRef:
+                      description: Reference to the account associated with the line
                       properties:
                         name:
+                          description: Name of the account
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the account
                           type:
                             - "null"
                             - string
@@ -1676,6 +1987,7 @@ definitions:
                         - "null"
                         - object
                     CheckNum:
+                      description: Check number associated with the line
                       type:
                         - "null"
                         - string
@@ -1683,17 +1995,21 @@ definitions:
                     - "null"
                     - object
                 LinkedTxn:
+                  description: Details of linked transactions
                   items:
                     properties:
                       TxnLineId:
+                        description: Transaction Line ID
                         type:
                           - "null"
                           - string
                       TxnId:
+                        description: Transaction ID
                         type:
                           - "null"
                           - string
                       TxnType:
+                        description: Transaction type
                         type:
                           - "null"
                           - string
@@ -1710,13 +2026,16 @@ definitions:
               - "null"
               - array
           MetaData:
+            description: Metadata related to the deposit
             properties:
               CreateTime:
+                description: Timestamp of creation
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Timestamp of last update
                 format: date-time
                 type:
                   - "null"
@@ -1725,12 +2044,15 @@ definitions:
               - "null"
               - object
           DepositToAccountRef:
+            description: Reference to the account where the deposit should be placed
             properties:
               name:
+                description: Name of the account
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the account
                 type:
                   - "null"
                   - string
@@ -1738,35 +2060,43 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier for the deposit
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the deposit
             type:
               - "null"
               - string
           TxnDate:
+            description: Date of the transaction
             format: date
             type:
               - "null"
               - string
           TotalAmt:
+            description: Total amount of the deposit
             type:
               - "null"
               - number
           ExchangeRate:
+            description: Exchange rate used for the deposit
             type:
               - "null"
               - number
           PrivateNote:
+            description: Private note or comment related to the deposit
             type:
               - "null"
               - string
           sparse:
+            description: Flag indicating sparse representation
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for Airbyte integration
             type:
               - "null"
               - string
@@ -1787,13 +2117,16 @@ definitions:
           - object
         properties:
           HiredDate:
+            description: The date the employee was hired.
             format: date
             type:
               - "null"
               - string
           PrimaryPhone:
+            description: The primary phone details of the employee.
             properties:
               FreeFormNumber:
+                description: The phone number of the employee.
                 type:
                   - "null"
                   - string
@@ -1801,54 +2134,66 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: The sync token for synchronizing data.
             type:
               - "null"
               - string
           BillableTime:
+            description: The total time that is billable for the employee.
             type:
               - "null"
               - boolean
           DisplayName:
+            description: The name displayed for the employee.
             type:
               - "null"
               - string
           GivenName:
+            description: The given name of the employee.
             type:
               - "null"
               - string
           FamilyName:
+            description: The family name of the employee.
             type:
               - "null"
               - string
           Id:
+            description: The unique identifier for the employee.
             type:
               - "null"
               - string
           domain:
+            description: The domain associated with the employee.
             type:
               - "null"
               - string
           Active:
+            description: Specifies if the employee is currently active or not.
             type:
               - "null"
               - boolean
           BirthDate:
+            description: The birth date of the employee.
             format: date-time
             type:
               - "null"
               - string
           PrintOnCheckName:
+            description: The name displayed on the employee's checks.
             type:
               - "null"
               - string
           MetaData:
             properties:
               CreateTime:
+                description: The date and time the employee record was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The date and time the employee record was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -1857,58 +2202,71 @@ definitions:
               - "null"
               - object
           PrimaryAddr:
+            description: The primary address of the employee.
             type:
               - "null"
               - object
             properties: {}
           PrimaryEmailAddr:
+            description: The primary email address of the employee.
             type:
               - "null"
               - object
             properties: {}
           Title:
+            description: The job title of the employee.
             type:
               - "null"
               - string
           MiddleName:
+            description: The middle name of the employee.
             type:
               - "null"
               - string
           ReleasedDate:
+            description: The date when the employee was released or left the organization.
             type:
               - "null"
               - string
             format: date-time
           Mobile:
+            description: The mobile information of the employee.
             type:
               - "null"
               - object
             properties: {}
           Gender:
+            description: The gender of the employee.
             type:
               - "null"
               - string
           BillRate:
+            description: The billing rate of the employee.
             type:
               - "null"
               - number
           Suffix:
+            description: The suffix used by the employee.
             type:
               - "null"
               - string
           EmployeeNumber:
+            description: The unique number assigned to the employee.
             type:
               - "null"
               - string
           Organization:
+            description: The organization the employee belongs to.
             type:
               - "null"
               - boolean
           sparse:
+            description: Indicates if the data is sparse or not.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Field used for pagination in Airbyte integration.
             type:
               - "null"
               - string
@@ -1929,8 +2287,10 @@ definitions:
         additionalProperties: true
         properties:
           BillEmail:
+            description: Billing email address information.
             properties:
               Address:
+                description: Email address for billing communication.
                 type:
                   - "null"
                   - string
@@ -1938,32 +2298,40 @@ definitions:
               - "null"
               - object
           BillAddr:
+            description: Billing address information.
             properties:
               Lat:
+                description: Latitude coordinate of the address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the address.
                 type:
                   - "null"
                   - string
               Line2:
+                description: Second line of the address.
                 type:
                   - "null"
                   - string
               Line4:
+                description: Fourth line of the address.
                 type:
                   - "null"
                   - string
               Line3:
+                description: Third line of the address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate of the address.
                 type:
                   - "null"
                   - string
@@ -1971,21 +2339,26 @@ definitions:
               - "null"
               - object
           TxnStatus:
+            description: Transaction status.
             type:
               - "null"
               - string
           EmailStatus:
+            description: Email status.
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata information.
             properties:
               CreateTime:
+                description: Creation timestamp.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Last update timestamp.
                 format: date-time
                 type:
                   - "null"
@@ -1994,29 +2367,36 @@ definitions:
               - "null"
               - object
           TxnDate:
+            description: Transaction date.
             format: date
             type:
               - "null"
               - string
           SyncToken:
+            description: Synchronization token.
             type:
               - "null"
               - string
           DocNumber:
+            description: Document number.
             type:
               - "null"
               - string
           TotalAmt:
+            description: Total amount.
             type:
               - "null"
               - number
           CurrencyRef:
+            description: Currency reference information.
             properties:
               name:
+                description: Name of the currency.
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the currency.
                 type:
                   - "null"
                   - string
@@ -2024,12 +2404,15 @@ definitions:
               - "null"
               - object
           CustomerRef:
+            description: Customer reference information.
             properties:
               name:
+                description: Name of the customer reference.
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the customer reference.
                 type:
                   - "null"
                   - string
@@ -2037,16 +2420,20 @@ definitions:
               - "null"
               - object
           domain:
+            description: Domain information.
             type:
               - "null"
               - string
           Id:
+            description: Unique identifier.
             type:
               - "null"
               - string
           DeliveryInfo:
+            description: Delivery information.
             properties:
               DeliveryType:
+                description: Type of delivery.
                 type:
                   - "null"
                   - string
@@ -2054,35 +2441,46 @@ definitions:
               - "null"
               - object
           TxnTaxDetail:
+            description: Transaction tax detail information.
             properties:
               TotalTax:
+                description: Total tax amount.
                 type:
                   - "null"
                   - number
               TaxLine:
+                description: Tax line information.
                 items:
+                  description: Details of a tax line.
                   properties:
                     Amount:
+                      description: Amount of the tax line.
                       type:
                         - "null"
                         - number
                     TaxLineDetail:
+                      description: Tax line detail information.
                       properties:
                         PercentBased:
+                          description: Indicates if tax is percent-based.
                           type:
                             - "null"
                             - boolean
                         TaxPercent:
+                          description: Tax percentage.
                           type:
                             - "null"
                             - integer
                         NetAmountTaxable:
+                          description: Net amount taxable.
                           type:
                             - "null"
                             - number
                         TaxRateRef:
+                          description: Tax rate reference information.
                           properties:
                             value:
+                              description: Value of the tax rate reference.
                               type:
                                 - "null"
                                 - string
@@ -2093,6 +2491,7 @@ definitions:
                         - "null"
                         - object
                     DetailType:
+                      description: Type of detail for the tax line.
                       type:
                         - "null"
                         - string
@@ -2103,8 +2502,10 @@ definitions:
                   - "null"
                   - array
               TxnTaxCodeRef:
+                description: Transaction tax code reference information.
                 properties:
                   value:
+                    description: Value of the transaction tax code reference.
                     type:
                       - "null"
                       - string
@@ -2115,13 +2516,17 @@ definitions:
               - "null"
               - object
           LinkedTxn:
+            description: Linked transaction information.
             items:
+              description: Details of a linked transaction.
               properties:
                 TxnId:
+                  description: Identifier of the linked transaction.
                   type:
                     - "null"
                     - string
                 TxnType:
+                  description: Type of the linked transaction.
                   type:
                     - "null"
                     - string
@@ -2132,8 +2537,10 @@ definitions:
               - "null"
               - array
           CustomerMemo:
+            description: Customer memo information.
             properties:
               value:
+                description: Value of the customer memo.
                 type:
                   - "null"
                   - string
@@ -2141,43 +2548,55 @@ definitions:
               - "null"
               - object
           Line:
+            description: Line item information.
             items:
+              description: Details of a line item.
               properties:
                 Id:
+                  description: Unique identifier for the line item.
                   type:
                     - "null"
                     - string
                 LineNum:
+                  description: Line number.
                   type:
                     - "null"
                     - integer
                 DetailType:
+                  description: Type of detail for the line item.
                   type:
                     - "null"
                     - string
                 SubTotalLineDetail:
+                  description: Subtotal line detail.
                   type:
                     - "null"
                     - object
                   additionalProperties: true
                   properties: {}
                 Description:
+                  description: Description of the line item.
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: Amount of the line item.
                   type:
                     - "null"
                     - number
                 SalesItemLineDetail:
+                  description: Sales item line detail information.
                   properties:
                     ItemRef:
+                      description: Item reference information.
                       properties:
                         name:
+                          description: Name of the item reference.
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the item reference.
                           type:
                             - "null"
                             - string
@@ -2185,12 +2604,15 @@ definitions:
                         - "null"
                         - object
                     Qty:
+                      description: Quantity of the item.
                       type:
                         - "null"
                         - number
                     TaxCodeRef:
+                      description: Tax code reference information.
                       properties:
                         value:
+                          description: Value of the tax code reference.
                           type:
                             - "null"
                             - string
@@ -2198,6 +2620,7 @@ definitions:
                         - "null"
                         - object
                     UnitPrice:
+                      description: Unit price of the item.
                       type:
                         - "null"
                         - number
@@ -2212,25 +2635,32 @@ definitions:
               - "null"
               - array
           ApplyTaxAfterDiscount:
+            description: Indicates whether tax should be applied after discount.
             type:
               - "null"
               - boolean
           PrintStatus:
+            description: Print status.
             type:
               - "null"
               - string
           CustomField:
+            description: Custom field information.
             items:
+              description: Details of a custom field.
               properties:
                 DefinitionId:
+                  description: Unique identifier for the custom field definition.
                   type:
                     - "null"
                     - string
                 Name:
+                  description: Name of the custom field.
                   type:
                     - "null"
                     - string
                 Type:
+                  description: Type of the custom field.
                   type:
                     - "null"
                     - string
@@ -2241,40 +2671,50 @@ definitions:
               - "null"
               - array
           ExchangeRate:
+            description: Exchange rate.
             type:
               - "null"
               - number
           HomeTotalAmt:
+            description: Total amount in home currency.
             type:
               - "null"
               - number
           ShipAddr:
+            description: Shipping address information.
             properties:
               Lat:
+                description: Latitude coordinate of the shipping address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the address.
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Country subdivision code of the shipping address.
                 type:
                   - "null"
                   - string
               City:
+                description: City of the shipping address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate of the shipping address.
                 type:
                   - "null"
                   - string
               PostalCode:
+                description: Postal code of the shipping address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the shipping address.
                 type:
                   - "null"
                   - string
@@ -2282,10 +2722,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Sparse information.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Airbyte cursor for synchronization.
             type:
               - "null"
               - string
@@ -2305,10 +2747,12 @@ definitions:
           - object
         properties:
           AllowOnlineACHPayment:
+            description: Indicates whether online ACH payment is allowed.
             type:
               - "null"
               - boolean
           CustomerRef:
+            description: Reference to the customer associated with the invoice.
             properties:
               name:
                 type:
@@ -2322,6 +2766,7 @@ definitions:
               - "null"
               - object
           BillAddr:
+            description: The billing address of the customer.
             properties:
               CountrySubDivisionCode:
                 type:
@@ -2367,10 +2812,12 @@ definitions:
               - "null"
               - object
           DocNumber:
+            description: The document number of the invoice.
             type:
               - "null"
               - string
           CurrencyRef:
+            description: Reference to the currency used for the invoice.
             properties:
               name:
                 type:
@@ -2384,10 +2831,14 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: Token used for syncing data.
             type:
               - "null"
               - string
           DeliveryInfo:
+            description:
+              Information related to the delivery of goods or services
+              for the invoice.
             properties:
               DeliveryType:
                 type:
@@ -2397,6 +2848,7 @@ definitions:
               - "null"
               - object
           SalesTermRef:
+            description: Reference to the sales terms associated with the invoice.
             properties:
               value:
                 type:
@@ -2411,21 +2863,26 @@ definitions:
               - object
             additionalProperties: true
           AllowIPNPayment:
+            description: Indicates whether IPN payment is allowed.
             type:
               - "null"
               - boolean
           AllowOnlineCreditCardPayment:
+            description: Indicates whether online credit card payment is allowed.
             type:
               - "null"
               - boolean
           MetaData:
+            description: Metadata related to the invoice.
             properties:
               CreateTime:
+                description: The creation time of the invoice.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The last updated time of the invoice.
                 format: date-time
                 type:
                   - "null"
@@ -2434,10 +2891,12 @@ definitions:
               - "null"
               - object
           domain:
+            description: Domain associated with the invoice.
             type:
               - "null"
               - string
           CustomerMemo:
+            description: Memo associated with the customer of the invoice.
             properties:
               value:
                 type:
@@ -2447,6 +2906,7 @@ definitions:
               - "null"
               - object
           CustomField:
+            description: Custom fields associated with the invoice.
             items:
               properties:
                 Type:
@@ -2472,32 +2932,39 @@ definitions:
               - "null"
               - array
           Balance:
+            description: The balance amount of the invoice.
             type:
               - "null"
               - number
           AllowOnlinePayment:
+            description: Indicates whether online payment is allowed.
             type:
               - "null"
               - boolean
           DueDate:
+            description: The due date of the invoice.
             format: date
             type:
               - "null"
               - string
           TxnDate:
+            description: The transaction date of the invoice.
             format: date
             type:
               - "null"
               - string
           ExchangeRate:
+            description: The exchange rate used for currency conversion.
             type:
               - "null"
               - number
           HomeTotalAmt:
+            description: The total amount in the home currency.
             type:
               - "null"
               - number
           Line:
+            description: Line items within the invoice.
             items:
               properties:
                 SubTotalLineDetail:
@@ -2507,6 +2974,7 @@ definitions:
                   additionalProperties: true
                   properties: {}
                 LinkedTxn:
+                  description: Related transaction linked to the line item.
                   items:
                     properties:
                       TxnType:
@@ -2532,8 +3000,10 @@ definitions:
                     - "null"
                     - number
                 SalesItemLineDetail:
+                  description: Details specific to a sales item line.
                   properties:
                     ClassRef:
+                      description: Reference to the class of the sales item.
                       type:
                         - "null"
                         - object
@@ -2547,6 +3017,7 @@ definitions:
                             - "null"
                             - string
                     TaxCodeRef:
+                      description: Reference to the tax code for the item.
                       properties:
                         value:
                           type:
@@ -2560,11 +3031,13 @@ definitions:
                         - "null"
                         - number
                     ServiceDate:
+                      description: The service date for the item.
                       format: date
                       type:
                         - "null"
                         - string
                     ItemRef:
+                      description: Reference to the item sold.
                       properties:
                         name:
                           type:
@@ -2589,8 +3062,10 @@ definitions:
                     - "null"
                     - integer
                 DiscountLineDetail:
+                  description: Details of discount applied to the line item.
                   properties:
                     DiscountAccountRef:
+                      description: Reference to the account for the discount.
                       properties:
                         name:
                           type:
@@ -2630,16 +3105,20 @@ definitions:
               - "null"
               - array
           Id:
+            description: The unique identifier of the invoice.
             type:
               - "null"
               - string
           TxnTaxDetail:
+            description: Tax details associated with the invoice.
             properties:
               TotalTax:
+                description: Total tax amount in the invoice.
                 type:
                   - "null"
                   - number
               TaxLine:
+                description: Details of tax applied to the invoice.
                 items:
                   properties:
                     Amount:
@@ -2651,6 +3130,7 @@ definitions:
                         - "null"
                         - string
                     TaxLineDetail:
+                      description: Details of tax line.
                       properties:
                         NetAmountTaxable:
                           type:
@@ -2661,6 +3141,7 @@ definitions:
                             - "null"
                             - number
                         TaxRateRef:
+                          description: Reference to the tax rate used.
                           properties:
                             value:
                               type:
@@ -2683,6 +3164,7 @@ definitions:
                   - "null"
                   - array
               TxnTaxCodeRef:
+                description: Reference to the tax code for the invoice.
                 properties:
                   value:
                     type:
@@ -2695,10 +3177,12 @@ definitions:
               - "null"
               - object
           EmailStatus:
+            description: The email status of the invoice.
             type:
               - "null"
               - string
           LinkedTxn:
+            description: Related transaction linked to the invoice.
             items:
               properties:
                 TxnType:
@@ -2716,14 +3200,17 @@ definitions:
               - "null"
               - array
           PrintStatus:
+            description: The print status of the invoice.
             type:
               - "null"
               - string
           ApplyTaxAfterDiscount:
+            description: Indicates whether tax is applied after the discount.
             type:
               - "null"
               - boolean
           BillEmail:
+            description: The billing email address of the customer.
             properties:
               Address:
                 type:
@@ -2733,6 +3220,7 @@ definitions:
               - "null"
               - object
           ShipAddr:
+            description: The shipping address for the invoice.
             properties:
               City:
                 type:
@@ -2766,18 +3254,22 @@ definitions:
               - "null"
               - object
           PrivateNote:
+            description: Private note associated with the invoice.
             type:
               - "null"
               - string
           TotalAmt:
+            description: The total amount of the invoice.
             type:
               - "null"
               - number
           sparse:
+            description: Indicates if the invoice is sparse.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for syncing data.
             type:
               - "null"
               - string
@@ -2800,10 +3292,14 @@ definitions:
           IncomeAccountRef:
             properties:
               name:
+                description: The name of the income account associated with the item
                 type:
                   - "null"
                   - string
               value:
+                description:
+                  The unique value/id of the income account associated
+                  with the item
                 type:
                   - "null"
                   - string
@@ -2811,16 +3307,21 @@ definitions:
               - "null"
               - object
           PurchaseDesc:
+            description: Detailed description of the purchase of the item
             type:
               - "null"
               - string
           ExpenseAccountRef:
             properties:
               name:
+                description: The name of the expense account associated with the item
                 type:
                   - "null"
                   - string
               value:
+                description:
+                  The unique value/id of the expense account associated
+                  with the item
                 type:
                   - "null"
                   - string
@@ -2828,49 +3329,64 @@ definitions:
               - "null"
               - object
           InvStartDate:
+            description: The inventory start date for the item
             format: date
             type:
               - "null"
               - string
           Name:
+            description: The name of the item
             type:
               - "null"
               - string
           Active:
+            description: Indicates if the item is currently active or not
             type:
               - "null"
               - boolean
           FullyQualifiedName:
+            description: The fully qualified name of the item
             type:
               - "null"
               - string
           Description:
+            description: Brief description or notes about the item
             type:
               - "null"
               - string
           Id:
+            description: The unique identifier of the item
             type:
               - "null"
               - string
           Taxable:
+            description: Indicates if the item is taxable or not
             type:
               - "null"
               - boolean
           Type:
+            description: The type or category of the item
             type:
               - "null"
               - string
           TrackQtyOnHand:
+            description:
+              Indicates if the system should track the quantity on hand
+              for the item
             type:
               - "null"
               - boolean
           AssetAccountRef:
             properties:
               name:
+                description: The name of the asset account associated with the item
                 type:
                   - "null"
                   - string
               value:
+                description:
+                  The unique value/id of the asset account associated with
+                  the item
                 type:
                   - "null"
                   - string
@@ -2878,33 +3394,40 @@ definitions:
               - "null"
               - object
           domain:
+            description: The domain or category the item belongs to
             type:
               - "null"
               - string
           QtyOnHand:
+            description: The quantity of the item currently on hand
             type:
               - "null"
               - integer
           UnitPrice:
+            description: The price of a single unit of the item
             type:
               - "null"
               - number
           SyncToken:
+            description: The synchronization token for the item
             type:
               - "null"
               - string
           PurchaseCost:
+            description: The cost of purchasing the item
             type:
               - "null"
               - number
           MetaData:
             properties:
               CreateTime:
+                description: The creation timestamp of the item
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The timestamp when the item was last updated
                 format: date-time
                 type:
                   - "null"
@@ -2913,10 +3436,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Indicates if the item is sparse or not
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: The cursor used for pagination when fetching data
             type:
               - "null"
               - string
@@ -2936,12 +3461,15 @@ definitions:
           - object
         properties:
           TaxRateRef:
+            description: Reference to the tax rate used in the journal entry
             properties:
               name:
+                description: Name of the tax rate
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the tax rate
                 type:
                   - "null"
                   - string
@@ -2949,16 +3477,20 @@ definitions:
               - "null"
               - object
           DocNumber:
+            description: Document number associated with the journal entry
             type:
               - "null"
               - string
           CurrencyRef:
+            description: Reference to the currency used in the journal entry
             properties:
               name:
+                description: Name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the currency
                 type:
                   - "null"
                   - string
@@ -2966,37 +3498,49 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier of the journal entry
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the journal entry
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronization purposes
             type:
               - "null"
               - string
           Line:
+            description: Details of individual lines within the journal entry
             items:
               properties:
                 Id:
+                  description: Unique identifier of the line item
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: Amount of the line item
                   type:
                     - "null"
                     - number
                 JournalEntryLineDetail:
+                  description: Detailed information about the line item
                   properties:
                     AccountRef:
+                      description:
+                        Reference to the account associated with the line
+                        item
                       properties:
                         name:
+                          description: Name of the account
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the account
                           type:
                             - "null"
                             - string
@@ -3004,6 +3548,7 @@ definitions:
                         - "null"
                         - object
                     PostingType:
+                      description: Type of posting for the line item
                       type:
                         - "null"
                         - string
@@ -3011,10 +3556,12 @@ definitions:
                     - "null"
                     - object
                 DetailType:
+                  description: Type of detail for the line item
                   type:
                     - "null"
                     - string
                 Description:
+                  description: Description of the line item
                   type:
                     - "null"
                     - string
@@ -3025,33 +3572,40 @@ definitions:
               - "null"
               - array
           TxnDate:
+            description: Date of the journal entry
             format: date
             type:
               - "null"
               - string
           TxnTaxDetail:
+            description: Tax details associated with the journal entry
             type:
               - "null"
               - object
             properties:
               TotalTax:
+                description: Total tax amount for the journal entry
                 type:
                   - "null"
                   - number
               TxnTaxCodeRef:
+                description: Reference to the tax code used in the journal entry
                 type:
                   - "null"
                   - object
                 properties:
                   value:
+                    description: Value of the tax code
                     type:
                       - "null"
                       - string
                   name:
+                    description: Name of the tax code
                     type:
                       - "null"
                       - string
               TaxLine:
+                description: Individual tax lines within the journal entry
                 type:
                   - "null"
                   - array
@@ -3061,67 +3615,83 @@ definitions:
                     - object
                   properties:
                     DetailType:
+                      description: Type of detail for the tax line
                       type:
                         - "null"
                         - string
                     Amount:
+                      description: Amount of the tax line
                       type:
                         - "null"
                         - number
                     TaxLineDetail:
+                      description: Detailed information about the tax line
                       type:
                         - "null"
                         - object
                       properties:
                         TaxPercent:
+                          description: Tax percentage for the tax line
                           type:
                             - "null"
                             - number
                         OverrideDeltaAmount:
+                          description: Override delta amount for the tax line
                           type:
                             - "null"
                             - number
                         TaxInclusiveAmount:
+                          description: Tax-inclusive amount for the tax line
                           type:
                             - "null"
                             - number
                         PercentBased:
+                          description: If the tax is percent-based
                           type:
                             - "null"
                             - boolean
                         NetAmountTaxable:
+                          description: Net amount taxable for the tax line
                           type:
                             - "null"
                             - number
                         TaxRateRef:
+                          description: Reference to the tax rate for the tax line
                           type:
                             - "null"
                             - object
                           properties:
                             name:
+                              description: Name of the tax rate
                               type:
                                 - "null"
                                 - string
                             value:
+                              description: Value of the tax rate
                               type:
                                 - "null"
                                 - string
           PrivateNote:
+            description: Private note associated with the journal entry
             type:
               - "null"
               - string
           ExchangeRate:
+            description: Exchange rate used in the journal entry
             type:
               - "null"
               - number
           MetaData:
+            description: Metadata information about the journal entry
             properties:
               CreateTime:
+                description: Timestamp of when the journal entry was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Timestamp of when the journal entry was last updated
                 format: date-time
                 type:
                   - "null"
@@ -3130,14 +3700,17 @@ definitions:
               - "null"
               - object
           Adjustment:
+            description: An adjustment value for the journal entry
             type:
               - "null"
               - boolean
           sparse:
+            description: Sparse representation of the journal entry
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor used for Airbyte integration
             type:
               - "null"
               - string
@@ -3158,49 +3731,60 @@ definitions:
           - object
         properties:
           Name:
+            description: The name of the payment method.
             type:
               - "null"
               - string
           domain:
+            description: The domain associated with the payment method.
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata associated with the payment method.
             type:
               - "null"
               - object
             properties:
               LastUpdatedTime:
+                description: Date and time when the payment method was last updated.
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: Date and time when the payment method was created.
                 type:
                   - "null"
                   - string
                 format: date-time
           Id:
+            description: Unique identifier for the payment method.
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronizing data changes.
             type:
               - "null"
               - string
           Type:
+            description: The type of the payment method.
             type:
               - "null"
               - string
           Active:
+            description: Indicates whether the payment method is active or not.
             type:
               - "null"
               - boolean
           sparse:
+            description: Indicates if the payment method data is sparse or not.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination when fetching data from Airbyte.
             type:
               - "null"
               - string
@@ -3225,6 +3809,7 @@ definitions:
               - object
             properties:
               value:
+                description: The value of the account to which the payment is deposited
                 type:
                   - "null"
                   - string
@@ -3234,10 +3819,12 @@ definitions:
               - object
             properties:
               name:
+                description: The name of the currency used for the payment
                 type:
                   - "null"
                   - string
               value:
+                description: The value of the Currency reference
                 type:
                   - "null"
                   - string
@@ -3247,10 +3834,14 @@ definitions:
               - object
             properties:
               name:
+                description:
+                  The name of the Accounts Receivable (AR) account associated
+                  with the payment
                 type:
                   - "null"
                   - string
               value:
+                description: The value of the AR Account reference
                 type:
                   - "null"
                   - string
@@ -3324,34 +3915,42 @@ definitions:
                       - object
                     properties:
                       TxnType:
+                        description: The type of the linked transaction
                         type:
                           - "null"
                           - string
                       TxnId:
+                        description: The unique identifier of the linked transaction
                         type:
                           - "null"
                           - string
                 Amount:
+                  description: The amount associated with the payment line
                   type:
                     - "null"
                     - number
           ProcessPayment:
+            description: Indicator for processing the payment
             type:
               - "null"
               - boolean
           SyncToken:
+            description: Token used for syncing data to prevent conflicts
             type:
               - "null"
               - string
           PrivateNote:
+            description: Any private notes or comments related to the payment
             type:
               - "null"
               - string
           ExchangeRate:
+            description: The exchange rate used for currency conversion, if applicable
             type:
               - "null"
               - number
           TotalAmt:
+            description: The total amount of the payment transaction
             type:
               - "null"
               - number
@@ -3365,18 +3964,22 @@ definitions:
                 - object
               properties:
                 TxnType:
+                  description: The type of the linked transaction
                   type:
                     - "null"
                     - string
                 TxnId:
+                  description: The unique identifier of the linked transaction
                   type:
                     - "null"
                     - string
           UnappliedAmt:
+            description: The amount not yet applied to any specific transaction
             type:
               - "null"
               - number
           domain:
+            description: Domain information associated with the payment
             type:
               - "null"
               - string
@@ -3386,21 +3989,27 @@ definitions:
               - object
             properties:
               LastUpdatedTime:
+                description:
+                  The date and time when the payment transaction was last
+                  updated
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: The date and time when the payment transaction was created
                 type:
                   - "null"
                   - string
                 format: date-time
           TxnDate:
+            description: The date of the payment transaction
             type:
               - "null"
               - string
             format: date
           Id:
+            description: The unique identifier of the payment transaction
             type:
               - "null"
               - string
@@ -3410,6 +4019,7 @@ definitions:
               - object
             properties:
               value:
+                description: The value representing the payment method used
                 type:
                   - "null"
                   - string
@@ -3419,22 +4029,27 @@ definitions:
               - object
             properties:
               name:
+                description: The name of the customer who made the payment
                 type:
                   - "null"
                   - string
               value:
+                description: The value of the Customer reference
                 type:
                   - "null"
                   - string
           PaymentRefNum:
+            description: The reference number associated with the payment
             type:
               - "null"
               - string
           sparse:
+            description: Indicator for sparse representation
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for paging through API results
             type:
               - "null"
               - string
@@ -3454,34 +4069,42 @@ definitions:
           - object
         properties:
           Memo:
+            description: Memo or Notes
             type:
               - "null"
               - string
           DueDate:
+            description: Due Date of the Purchase Order
             type:
               - "null"
               - string
             format: date
           PrivateNote:
+            description: Private Note
             type:
               - "null"
               - string
           TxnTaxDetail:
+            description: Transaction Tax Details
             type:
               - "null"
               - object
             properties: {}
           EmailStatus:
+            description: Email Status
             type:
               - "null"
               - string
           ShipTo:
+            description: Shipping To Reference
             properties:
               name:
+                description: Name of the Destination
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Destination
                 type:
                   - "null"
                   - string
@@ -3489,12 +4112,15 @@ definitions:
               - "null"
               - object
           ClassRef:
+            description: Class Reference
             properties:
               name:
+                description: Name of the Class
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Class
                 type:
                   - "null"
                   - string
@@ -3502,12 +4128,15 @@ definitions:
               - "null"
               - object
           SalesTermRef:
+            description: Sales Term Reference
             properties:
               name:
+                description: Name of the Sales Term
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Sales Term
                 type:
                   - "null"
                   - string
@@ -3515,312 +4144,385 @@ definitions:
               - "null"
               - object
           CurrencyRef:
+            description: Currency Reference
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the Currency
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Currency
                 type:
                   - "null"
                   - string
           APAccountRef:
+            description: Account Payable Account Reference
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the Account
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Account
                 type:
                   - "null"
                   - string
           Id:
+            description: Purchase Order ID
             type:
               - "null"
               - string
           SyncToken:
+            description: Synchronization Token
             type:
               - "null"
               - string
           ShipAddr:
+            description: Shipping Address
             type:
               - "null"
               - object
             properties:
               Long:
+                description: Longitude
                 type:
                   - "null"
                   - string
               Id:
+                description: Address ID
                 type:
                   - "null"
                   - string
               Line3:
+                description: Third Line of the Address
                 type:
                   - "null"
                   - string
               Line2:
+                description: Second Line of the Address
                 type:
                   - "null"
                   - string
               Lat:
+                description: Latitude
                 type:
                   - "null"
                   - string
               Line1:
+                description: First Line of the Address
                 type:
                   - "null"
                   - string
           LinkedTxn:
+            description: Linked Transaction Information
             type:
               - "null"
               - array
             items:
+              description: Linked Transaction Details
               type:
                 - "null"
                 - object
               properties:
                 TxnType:
+                  description: Transaction Type
                   type:
                     - "null"
                     - string
                 TxnId:
+                  description: Transaction ID
                   type:
                     - "null"
                     - string
           VendorAddr:
+            description: Vendor Address
             type:
               - "null"
               - object
             properties:
               Long:
+                description: Longitude
                 type:
                   - "null"
                   - string
               Line4:
+                description: Fourth Line of the Address
                 type:
                   - "null"
                   - string
               Id:
+                description: Address ID
                 type:
                   - "null"
                   - string
               Line3:
+                description: Third Line of the Address
                 type:
                   - "null"
                   - string
               Line2:
+                description: Second Line of the Address
                 type:
                   - "null"
                   - string
               Lat:
+                description: Latitude
                 type:
                   - "null"
                   - string
               City:
+                description: City of the Vendor
                 type:
                   - "null"
                   - string
               Country:
+                description: Country of the Vendor
                 type:
                   - "null"
                   - string
               Line1:
+                description: First Line of the Address
                 type:
                   - "null"
                   - string
           domain:
+            description: Domain Information
             type:
               - "null"
               - string
           CustomField:
+            description: Custom Field Information
             type:
               - "null"
               - array
             items:
+              description: Custom Field Details
               type:
                 - "null"
                 - object
               properties:
                 Name:
+                  description: Name of the Custom Field
                   type:
                     - "null"
                     - string
                 DefinitionId:
+                  description: ID of the Field Definition
                   type:
                     - "null"
                     - string
                 Type:
+                  description: Type of the Custom Field
                   type:
                     - "null"
                     - string
           MetaData:
+            description: Metadata Information
             type:
               - "null"
               - object
             properties:
               LastUpdatedTime:
+                description: Last Updated Time
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: Creation Time
                 type:
                   - "null"
                   - string
                 format: date-time
           ExchangeRate:
+            description: Conversion Rate for Currency
             type:
               - "null"
               - number
           TotalAmt:
+            description: Total Amount
             type:
               - "null"
               - number
           POStatus:
+            description: Purchase Order Status
             type:
               - "null"
               - string
           VendorRef:
+            description: Vendor Reference
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the Vendor
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Vendor
                 type:
                   - "null"
                   - string
           TxnDate:
+            description: Transaction Date
             type:
               - "null"
               - string
             format: date
           DocNumber:
+            description: Document Number
             type:
               - "null"
               - string
           DepartmentRef:
+            description: Department Reference
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the Department
                 type:
                   - "null"
                   - string
               value:
+                description: Value of the Department
                 type:
                   - "null"
                   - string
           Line:
+            description: Line Item Details
             type:
               - "null"
               - array
             items:
+              description: Purchase Order Line Information
               type:
                 - "null"
                 - object
               properties:
                 Amount:
+                  description: Amount of the Line Item
                   type:
                     - "null"
                     - number
                 LineNum:
+                  description: Line Number
                   type:
                     - "null"
                     - integer
                 Id:
+                  description: ID of the Line Item
                   type:
                     - "null"
                     - string
                 DetailType:
+                  description: Type of Detail for the Line Item
                   type:
                     - "null"
                     - string
                 ItemBasedExpenseLineDetail:
+                  description: Details for Item Based Expense Line
                   type:
                     - "null"
                     - object
                   properties:
                     BillableStatus:
+                      description: Billable Status of the Line Item
                       type:
                         - "null"
                         - string
                     ClassRef:
+                      description: Class Reference for the Line Item
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the Class
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the Class
                           type:
                             - "null"
                             - string
                     ItemRef:
+                      description: Item Reference for the Line Item
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the Item
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the Item
                           type:
                             - "null"
                             - string
                     UnitPrice:
+                      description: Unit Price of the Line Item
                       type:
                         - "null"
                         - number
                     TaxCodeRef:
+                      description: Tax Code Reference
                       type:
                         - "null"
                         - object
                       properties:
                         value:
+                          description: Value of the Tax Code
                           type:
                             - "null"
                             - string
                     Qty:
+                      description: Quantity of the Line Item
                       type:
                         - "null"
                         - integer
                     CustomerRef:
+                      description: Customer Reference for the Line Item
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the Customer
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the Customer
                           type:
                             - "null"
                             - string
                 Description:
+                  description: Description of the Line Item
                   type:
                     - "null"
                     - string
           sparse:
+            description: Sparse Indicator
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for Airbyte Sync
             type:
               - "null"
               - string
@@ -3840,138 +4542,170 @@ definitions:
           - object
         properties:
           PrivateNote:
+            description: Private notes associated with the purchase
             type:
               - "null"
               - string
           PaymentType:
+            description: Type of payment for the purchase
             type:
               - "null"
               - string
           MetaData:
+            description: Metadata information for the purchase
             type:
               - "null"
               - object
             properties:
               LastUpdatedTime:
+                description: Timestamp when the purchase was last updated
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: Timestamp when the purchase was created
                 type:
                   - "null"
                   - string
                 format: date-time
           RemitToAddr:
+            description: Remittance address information
             type:
               - "null"
               - object
             properties:
               PostalCode:
+                description: Postal code of the remittance address
                 type:
                   - "null"
                   - string
               Lat:
+                description: Latitude of the remittance address
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Country subdivision code of the remittance address
                 type:
                   - "null"
                   - string
               Line1:
+                description: Address line 1 of the remittance address
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude of the remittance address
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the remittance address
                 type:
                   - "null"
                   - string
               City:
+                description: City of the remittance address
                 type:
                   - "null"
                   - string
           CurrencyRef:
+            description: Reference to the currency used for the purchase
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: Unique value of the currency
                 type:
                   - "null"
                   - string
           ExchangeRate:
+            description: Exchange rate used for conversion
             type:
               - "null"
               - number
           TotalAmt:
+            description: Total amount of the purchase
             type:
               - "null"
               - number
           PrintStatus:
+            description: Printing status of the purchase
             type:
               - "null"
               - string
           AccountRef:
+            description: Reference to the account associated with the purchase
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the account
                 type:
                   - "null"
                   - string
               value:
+                description: Unique value of the account
                 type:
                   - "null"
                   - string
           Id:
+            description: Unique identifier for the purchase
             type:
               - "null"
               - string
           EntityRef:
+            description: Reference to the entity associated with the purchase
             type:
               - "null"
               - object
             properties:
               name:
+                description: Name of the entity
                 type:
                   - "null"
                   - string
               type:
+                description: Type of the entity
                 type:
                   - "null"
                   - string
               value:
+                description: Unique value of the entity
                 type:
                   - "null"
                   - string
           TxnDate:
+            description: Transaction date of the purchase
             type:
               - "null"
               - string
             format: date
           domain:
+            description: Domain information
             type:
               - "null"
               - string
           Credit:
+            description: Total credit amount of the purchase
             type:
               - "null"
               - boolean
           SyncToken:
+            description: Synchronization token for the purchase
             type:
               - "null"
               - string
           Line:
+            description: Line items associated with the purchase
             type:
               - "null"
               - array
@@ -3981,36 +4715,44 @@ definitions:
                 - object
               properties:
                 ItemBasedExpenseLineDetail:
+                  description: Detailed information for item-based expense line
                   type:
                     - "null"
                     - object
                   properties:
                     ItemRef:
+                      description: Reference to the item associated with the expense
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the item
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique value of the item
                           type:
                             - "null"
                             - string
                     Qty:
+                      description: Quantity of the item
                       type:
                         - "null"
                         - integer
                     BillableStatus:
+                      description: Status of billable expense
                       type:
                         - "null"
                         - string
                     UnitPrice:
+                      description: Unit price of the item
                       type:
                         - "null"
                         - number
                     TaxCodeRef:
+                      description: Reference to the tax code used
                       type:
                         - "null"
                         - object
@@ -4020,41 +4762,50 @@ definitions:
                             - "null"
                             - string
                 AccountBasedExpenseLineDetail:
+                  description: Detailed information for account-based expense line
                   type:
                     - "null"
                     - object
                   properties:
                     AccountRef:
+                      description: Reference to the account for the expense
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the account
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique value of the account
                           type:
                             - "null"
                             - string
                     CustomerRef:
+                      description: Reference to the customer associated with the expense
                       type:
                         - "null"
                         - object
                       properties:
                         name:
+                          description: Name of the customer
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique value of the customer
                           type:
                             - "null"
                             - string
                     BillableStatus:
+                      description: Status of billable expense
                       type:
                         - "null"
                         - string
                     TaxCodeRef:
+                      description: Reference to the tax code used
                       type:
                         - "null"
                         - object
@@ -4064,27 +4815,33 @@ definitions:
                             - "null"
                             - string
                 Amount:
+                  description: Amount associated with the line item
                   type:
                     - "null"
                     - number
                 DetailType:
+                  description: Type of detail for the line item
                   type:
                     - "null"
                     - string
                 Description:
+                  description: Description of the line item
                   type:
                     - "null"
                     - string
                 Id:
+                  description: Unique identifier for the line item
                   type:
                     - "null"
                     - string
           PurchaseEx:
+            description: Purchase additional information
             type:
               - "null"
               - object
             properties:
               any:
+                description: Any additional information
                 type:
                   - "null"
                   - array
@@ -4094,51 +4851,63 @@ definitions:
                     - object
                   properties:
                     name:
+                      description: Name of the additional information
                       type:
                         - "null"
                         - string
                     scope:
+                      description: Scope of the additional information
                       type:
                         - "null"
                         - string
                     nil:
+                      description: Indicates if the value is nil
                       type:
                         - "null"
                         - boolean
                     globalScope:
+                      description: Global scope of the additional information
                       type:
                         - "null"
                         - boolean
                     value:
+                      description: Value details
                       type:
                         - "null"
                         - object
                       properties:
                         Name:
+                          description: Name of the value
                           type:
                             - "null"
                             - string
                         Value:
+                          description: Actual value
                           type:
                             - "null"
                             - string
                     declaredType:
+                      description: Declared type of the additional information
                       type:
                         - "null"
                         - string
                     typeSubstituted:
+                      description: Indicates if type is substituted
                       type:
                         - "null"
                         - boolean
           DocNumber:
+            description: Document number of the purchase
             type:
               - "null"
               - string
           sparse:
+            description: Indicates if the data is sparse
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Airbyte cursor reference
             type:
               - "null"
               - string
@@ -4160,6 +4929,7 @@ definitions:
           BillEmail:
             properties:
               Address:
+                description: Email address for billing contact.
                 type:
                   - "null"
                   - string
@@ -4169,10 +4939,12 @@ definitions:
           PaymentMethodRef:
             properties:
               name:
+                description: Name of the payment method for the refund receipt.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier of the payment method.
                 type:
                   - "null"
                   - string
@@ -4182,10 +4954,12 @@ definitions:
           CustomerRef:
             properties:
               name:
+                description: Name of the customer associated with the refund receipt.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier of the customer.
                 type:
                   - "null"
                   - string
@@ -4193,6 +4967,7 @@ definitions:
               - "null"
               - object
           SyncToken:
+            description: Token for synchronization purposes.
             type:
               - "null"
               - string
@@ -4200,28 +4975,34 @@ definitions:
             items:
               properties:
                 SubTotalLineDetail:
+                  description: Details related to subtotal line.
                   type:
                     - "null"
                     - object
                   additionalProperties: true
                   properties: {}
                 Id:
+                  description: Unique identifier of the line item.
                   type:
                     - "null"
                     - string
                 LineNum:
+                  description: Line number of the item within the refund receipt.
                   type:
                     - "null"
                     - integer
                 DetailType:
+                  description: Type of detail for the line item.
                   type:
                     - "null"
                     - string
                 Description:
+                  description: Description of the line item.
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: Amount associated with each line item.
                   type:
                     - "null"
                     - number
@@ -4230,10 +5011,12 @@ definitions:
                     ItemRef:
                       properties:
                         name:
+                          description: Name of the product or item.
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique identifier of the product or item.
                           type:
                             - "null"
                             - string
@@ -4241,12 +5024,14 @@ definitions:
                         - "null"
                         - object
                     Qty:
+                      description: Quantity of the item.
                       type:
                         - "null"
                         - number
                     TaxCodeRef:
                       properties:
                         value:
+                          description: Tax code value.
                           type:
                             - "null"
                             - string
@@ -4254,6 +5039,7 @@ definitions:
                         - "null"
                         - object
                     UnitPrice:
+                      description: Unit price of the item.
                       type:
                         - "null"
                         - number
@@ -4270,10 +5056,12 @@ definitions:
           CurrencyRef:
             properties:
               name:
+                description: Name of the currency.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the currency.
                 type:
                   - "null"
                   - string
@@ -4281,12 +5069,14 @@ definitions:
               - "null"
               - object
           Balance:
+            description: The remaining balance of the refund receipt.
             type:
               - "null"
               - integer
           TxnTaxDetail:
             properties:
               TotalTax:
+                description: Total tax amount for the refund receipt.
                 type:
                   - "null"
                   - integer
@@ -4296,10 +5086,12 @@ definitions:
           DepositToAccountRef:
             properties:
               name:
+                description: Name of the account where the deposit is made.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier of the account.
                 type:
                   - "null"
                   - string
@@ -4309,11 +5101,13 @@ definitions:
           MetaData:
             properties:
               CreateTime:
+                description: Timestamp when the refund receipt was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Timestamp of the last update to the refund receipt.
                 format: date-time
                 type:
                   - "null"
@@ -4324,6 +5118,9 @@ definitions:
           CustomerMemo:
             properties:
               value:
+                description:
+                  Memo or notes provided by the customer related to the
+                  refund receipt.
                 type:
                   - "null"
                   - string
@@ -4331,19 +5128,23 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier of the refund receipt.
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the refund receipt data.
             type:
               - "null"
               - string
           TxnDate:
+            description: Date of the refund receipt.
             format: date
             type:
               - "null"
               - string
           PrintStatus:
+            description: Status of printing the refund receipt.
             type:
               - "null"
               - string
@@ -4351,14 +5152,17 @@ definitions:
             items:
               properties:
                 DefinitionId:
+                  description: Identifier for the custom field definition.
                   type:
                     - "null"
                     - string
                 Name:
+                  description: Name of the custom field.
                   type:
                     - "null"
                     - string
                 Type:
+                  description: Type of the custom field.
                   type:
                     - "null"
                     - string
@@ -4371,30 +5175,37 @@ definitions:
           BillAddr:
             properties:
               Lat:
+                description: Latitude coordinate of the billing address.
                 type:
                   - "null"
                   - string
               Id:
+                description: The unique identifier of the billing address.
                 type:
                   - "null"
                   - string
               Line2:
+                description: Second line of the billing address.
                 type:
                   - "null"
                   - string
               Line4:
+                description: Fourth line of the billing address.
                 type:
                   - "null"
                   - string
               Line3:
+                description: Third line of the billing address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the billing address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate of the billing address.
                 type:
                   - "null"
                   - string
@@ -4402,30 +5213,37 @@ definitions:
               - "null"
               - object
           DocNumber:
+            description: Document number of the refund receipt.
             type:
               - "null"
               - string
           ApplyTaxAfterDiscount:
+            description: Flag indicating if tax should be applied after discount.
             type:
               - "null"
               - boolean
           ExchangeRate:
+            description: Exchange rate used for currency conversion.
             type:
               - "null"
               - number
           HomeTotalAmt:
+            description: Total amount in home currency.
             type:
               - "null"
               - number
           TotalAmt:
+            description: Total amount of the refund receipt.
             type:
               - "null"
               - number
           sparse:
+            description: Indicator if the data is sparse or not.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte.
             type:
               - "null"
               - string
@@ -4445,6 +5263,7 @@ definitions:
           - object
         properties:
           Balance:
+            description: Balance amount of the sales receipt.
             type:
               - "null"
               - integer
@@ -4454,10 +5273,12 @@ definitions:
               - object
             properties:
               name:
+                description: Name of the customer.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier for the customer.
                 type:
                   - "null"
                   - string
@@ -4471,18 +5292,22 @@ definitions:
                 - object
               properties:
                 TxnType:
+                  description: Type of the linked transaction.
                   type:
                     - "null"
                     - string
                 TxnId:
+                  description: Unique identifier for the linked transaction.
                   type:
                     - "null"
                     - string
           ApplyTaxAfterDiscount:
+            description: Flag indicating if tax should be applied after discount.
             type:
               - "null"
               - boolean
           PaymentRefNum:
+            description: Reference number for payment.
             type:
               - "null"
               - string
@@ -4492,10 +5317,12 @@ definitions:
               - object
             properties:
               TotalTax:
+                description: Total tax amount.
                 type:
                   - "null"
                   - integer
           PrintStatus:
+            description: Status of printing the sales receipt.
             type:
               - "null"
               - string
@@ -4505,11 +5332,13 @@ definitions:
               - object
             properties:
               LastUpdatedTime:
+                description: Timestamp of last update.
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: Timestamp of creation.
                 type:
                   - "null"
                   - string
@@ -4524,14 +5353,17 @@ definitions:
                 - object
               properties:
                 Name:
+                  description: Name of the custom field.
                   type:
                     - "null"
                     - string
                 DefinitionId:
+                  description: Unique identifier for the custom field definition.
                   type:
                     - "null"
                     - string
                 Type:
+                  description: Type of the custom field.
                   type:
                     - "null"
                     - string
@@ -4541,42 +5373,52 @@ definitions:
               - object
             properties:
               Long:
+                description: Longitude coordinate of the billing address.
                 type:
                   - "null"
                   - string
               Line2:
+                description: Second line of the billing address.
                 type:
                   - "null"
                   - string
               Lat:
+                description: Latitude coordinate of the billing address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the billing address.
                 type:
                   - "null"
                   - string
               Line3:
+                description: Third line of the billing address.
                 type:
                   - "null"
                   - string
               Line4:
+                description: Fourth line of the billing address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the billing address.
                 type:
                   - "null"
                   - string
           domain:
+            description: Domain information.
             type:
               - "null"
               - string
           SyncToken:
+            description: Token for synchronization purposes.
             type:
               - "null"
               - string
           EmailStatus:
+            description: Status of email communication for the sales receipt.
             type:
               - "null"
               - string
@@ -4591,6 +5433,7 @@ definitions:
               additionalProperties: true
               properties:
                 SubTotalLineDetail:
+                  description: Detail information for the subtotal line.
                   type:
                     - "null"
                     - object
@@ -4602,10 +5445,12 @@ definitions:
                     - object
                   properties:
                     PercentBased:
+                      description: Flag indicating if the discount is percentage-based.
                       type:
                         - "null"
                         - boolean
                     DiscountPercent:
+                      description: Percentage of discount applied.
                       type:
                         - "null"
                         - integer
@@ -4615,22 +5460,27 @@ definitions:
                         - object
                       properties:
                         name:
+                          description: Name of the discount account.
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique identifier for the discount account.
                           type:
                             - "null"
                             - string
                 Amount:
+                  description: Amount for the line item.
                   type:
                     - "null"
                     - number
                 LineNum:
+                  description: Line number for ordering.
                   type:
                     - "null"
                     - integer
                 DetailType:
+                  description: Type of detail for the line item.
                   type:
                     - "null"
                     - string
@@ -4645,18 +5495,22 @@ definitions:
                         - object
                       properties:
                         name:
+                          description: Name of the sales item.
                           type:
                             - "null"
                             - string
                         value:
+                          description: Unique identifier for the sales item.
                           type:
                             - "null"
                             - string
                     Qty:
+                      description: Quantity of the sales item.
                       type:
                         - "null"
                         - number
                     UnitPrice:
+                      description: Unit price of the sales item.
                       type:
                         - "null"
                         - number
@@ -4666,14 +5520,17 @@ definitions:
                         - object
                       properties:
                         value:
+                          description: Unique identifier for the tax code.
                           type:
                             - "null"
                             - string
                 Id:
+                  description: Unique identifier for the line item.
                   type:
                     - "null"
                     - string
                 Description:
+                  description: Description of the line item.
                   type:
                     - "null"
                     - string
@@ -4683,10 +5540,12 @@ definitions:
               - object
             properties:
               name:
+                description: Name of the currency used.
                 type:
                   - "null"
                   - string
               value:
+                description: Value representation of the currency.
                 type:
                   - "null"
                   - string
@@ -4696,23 +5555,28 @@ definitions:
               - object
             properties:
               name:
+                description: Name of the payment method.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier for the payment method.
                 type:
                   - "null"
                   - string
           TxnDate:
+            description: Date of the transaction.
             type:
               - "null"
               - string
             format: date
           Id:
+            description: Unique identifier for the sales receipt.
             type:
               - "null"
               - string
           DocNumber:
+            description: Document number or reference for the sales receipt.
             type:
               - "null"
               - string
@@ -4722,6 +5586,7 @@ definitions:
               - object
             properties:
               Address:
+                description: Email address for billing communication.
                 type:
                   - "null"
                   - string
@@ -4731,6 +5596,7 @@ definitions:
               - object
             properties:
               value:
+                description: Memo or notes attached to the sales receipt by the customer.
                 type:
                   - "null"
                   - string
@@ -4740,46 +5606,57 @@ definitions:
               - object
             properties:
               PostalCode:
+                description: Postal code of the shipping address.
                 type:
                   - "null"
                   - string
               Lat:
+                description: Latitude coordinate of the shipping address.
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Code for the country subdivision in the shipping address.
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the shipping address.
                 type:
                   - "null"
                   - string
               Country:
+                description: Country of the shipping address.
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate of the shipping address.
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier for the shipping address.
                 type:
                   - "null"
                   - string
               City:
+                description: City of the shipping address.
                 type:
                   - "null"
                   - string
           ExchangeRate:
+            description: Exchange rate used for currency conversion.
             type:
               - "null"
               - number
           HomeTotalAmt:
+            description: Total amount in the home currency.
             type:
               - "null"
               - number
           TotalAmt:
+            description: Total amount of the sales receipt.
             type:
               - "null"
               - number
@@ -4789,18 +5666,22 @@ definitions:
               - object
             properties:
               name:
+                description: Name of the account where the deposit is made.
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier for the deposit account.
                 type:
                   - "null"
                   - string
           sparse:
+            description: Sparse indicator for data.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte format.
             type:
               - "null"
               - string
@@ -4820,37 +5701,45 @@ definitions:
           - object
         properties:
           Id:
+            description: The unique identifier of the tax agency.
             type:
               - "null"
               - string
           TaxRegistrationNumber:
+            description: The tax registration number of the tax agency.
             type:
               - "null"
               - string
           domain:
+            description: The domain associated with the tax agency.
             type:
               - "null"
               - string
           SyncToken:
+            description: The synchronization token used for updates.
             type:
               - "null"
               - string
           TaxTrackedOnPurchases:
+            description: Indicates if taxes are tracked on purchases by the tax agency.
             type:
               - "null"
               - boolean
           DisplayName:
+            description: The display name of the tax agency.
             type:
               - "null"
               - string
           MetaData:
             properties:
               CreateTime:
+                description: The date and time when the tax agency was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: The date and time when the tax agency was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -4859,14 +5748,17 @@ definitions:
               - "null"
               - object
           TaxTrackedOnSales:
+            description: Indicates if taxes are tracked on sales by the tax agency.
             type:
               - "null"
               - boolean
           sparse:
+            description: Specifies if the response is sparse or full.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: The cursor for Airbyte integration.
             type:
               - "null"
               - string
@@ -4887,66 +5779,85 @@ definitions:
           - object
         properties:
           TaxGroup:
+            description: Group to which the tax code belongs
             type:
               - "null"
               - boolean
           PurchaseTaxRateList:
+            description: List of purchase tax rates associated with the tax code
             type:
               - "null"
               - object
             properties: {}
           Hidden:
+            description: Flag indicating if the tax code is hidden or not
             type:
               - "null"
               - boolean
           domain:
+            description: Domain information related to the tax code
             type:
               - "null"
               - string
           SyncToken:
+            description: Synchronization token for tracking changes to the tax code
             type:
               - "null"
               - string
           Active:
+            description: Flag indicating if the tax code is currently active or not
             type:
               - "null"
               - boolean
           Taxable:
+            description: Flag indicating if the tax code is taxable or not
             type:
               - "null"
               - boolean
           Description:
+            description: Description of the tax code
             type:
               - "null"
               - string
           Name:
+            description: Name of the tax code
             type:
               - "null"
               - string
           Id:
+            description: Unique identifier for the tax code
             type:
               - "null"
               - string
           SalesTaxRateList:
+            description: List of sales tax rates associated with the tax code
             properties:
               TaxRateDetail:
+                description:
+                  Details of the tax rate including tax order, reference,
+                  and type applicability
                 items:
                   properties:
                     TaxOrder:
+                      description: Order in which the tax rate is applied
                       type:
                         - "null"
                         - integer
                     TaxTypeApplicable:
+                      description: Type to which the tax rate is applicable
                       type:
                         - "null"
                         - string
                     TaxRateRef:
+                      description: Reference to the tax rate with name and value
                       properties:
                         name:
+                          description: Name of the tax rate
                           type:
                             - "null"
                             - string
                         value:
+                          description: Value of the tax rate
                           type:
                             - "null"
                             - string
@@ -4963,13 +5874,18 @@ definitions:
               - "null"
               - object
           MetaData:
+            description:
+              Metadata information including create time and last updated
+              time
             properties:
               CreateTime:
+                description: Timestamp when the tax code was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Timestamp when the tax code was last updated
                 format: date-time
                 type:
                   - "null"
@@ -4978,10 +5894,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Flag indicating if the tax code is sparse or not
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in airbyte
             type:
               - "null"
               - string
@@ -5002,16 +5920,19 @@ definitions:
           - object
         properties:
           SpecialTaxType:
+            description: Type of special tax associated with the rate, if applicable
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronization purposes
             type:
               - "null"
               - string
           AgencyRef:
             properties:
               value:
+                description: Reference to the agency associated with the tax rate
                 type:
                   - "null"
                   - string
@@ -5019,17 +5940,20 @@ definitions:
               - "null"
               - object
           Description:
+            description: Brief description of the tax rate
             type:
               - "null"
               - string
           MetaData:
             properties:
               CreateTime:
+                description: Date and time when the tax rate was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Date and time when the tax rate was last updated
                 format: date-time
                 type:
                   - "null"
@@ -5038,30 +5962,37 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier for the tax rate
             type:
               - "null"
               - string
           domain:
+            description: Domain related to the tax rate
             type:
               - "null"
               - string
           Active:
+            description: Indicates if the tax rate is currently active or not
             type:
               - "null"
               - boolean
           RateValue:
+            description: Value of the tax rate
             type:
               - "null"
               - number
           Name:
+            description: Name of the tax rate
             type:
               - "null"
               - string
           DisplayType:
+            description: Type of display for the tax rate
             type:
               - "null"
               - string
           EffectiveTaxRate:
+            description: The effective tax rate percentage
             anyOf:
               - properties:
                   RateValue:
@@ -5104,10 +6035,12 @@ definitions:
                     - "null"
                     - object
           sparse:
+            description: Indicates if the tax rate is sparse or not
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte
             type:
               - "null"
               - string
@@ -5128,61 +6061,81 @@ definitions:
           - object
         properties:
           Id:
+            description: Unique identifier for the term.
             type:
               - "null"
               - string
           DiscountPercent:
+            description: The percentage of discount that can be applied.
             type:
               - "null"
               - number
           DayOfMonthDue:
+            description: The specific day of the month by which the payment is due.
             type:
               - "null"
               - integer
           DiscountDayOfMonth:
+            description: The day of the month when a discount can be applied.
             type:
               - "null"
               - integer
           DueNextMonthDays:
+            description:
+              Number of days to wait before the amount is due in the next
+              month.
             type:
               - "null"
               - integer
           domain:
+            description: The domain or scope to which the term belongs.
             type:
               - "null"
               - string
           Type:
+            description: Specifies the type or category of the term.
             type:
               - "null"
               - string
           Active:
+            description: Indicates if the term is currently active or inactive.
             type:
               - "null"
               - boolean
           DueDays:
+            description:
+              Number of days within which the payment is due after the
+              invoice date.
             type:
               - "null"
               - integer
           SyncToken:
+            description: Token used for synchronization and concurrency control.
             type:
               - "null"
               - string
           Name:
+            description: The name or label assigned to the term.
             type:
               - "null"
               - string
           DiscountDays:
+            description:
+              Number of days during which the discount can be applied before
+              the due date.
             type:
               - "null"
               - integer
           MetaData:
             properties:
               CreateTime:
+                description: Date and time when the record was created.
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Date and time when the record was last updated.
                 format: date-time
                 type:
                   - "null"
@@ -5191,10 +6144,12 @@ definitions:
               - "null"
               - object
           sparse:
+            description: Indicates whether the term is complete or has missing values.
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: A cursor for pagination in Airbyte.
             type:
               - "null"
               - string
@@ -5214,16 +6169,21 @@ definitions:
           - object
         properties:
           HourlyRate:
+            description: Hourly rate for the time activity
             type:
               - "null"
               - integer
           CustomerRef:
             properties:
               name:
+                description: Name of the customer associated with the time activity
                 type:
                   - "null"
                   - string
               value:
+                description:
+                  Unique identifier for the customer related to the time
+                  activity
                 type:
                   - "null"
                   - string
@@ -5231,25 +6191,34 @@ definitions:
               - "null"
               - object
           Taxable:
+            description: Indicates if the time activity is taxable or not
             type:
               - "null"
               - boolean
           Description:
+            description: Description or details of the time activity
             type:
               - "null"
               - string
           Minutes:
+            description: Number of minutes spent on the activity
             type:
               - "null"
               - integer
           MetaData:
             properties:
               CreateTime:
+                description:
+                  Timestamp indicating the creation time of the time activity
+                  entry
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description:
+                  Timestamp indicating the last update time of the time
+                  activity entry
                 format: date-time
                 type:
                   - "null"
@@ -5260,10 +6229,12 @@ definitions:
           ItemRef:
             properties:
               name:
+                description: Name of the item associated with the time activity
                 type:
                   - "null"
                   - string
               value:
+                description: Unique identifier for the item linked to the time activity
                 type:
                   - "null"
                   - string
@@ -5271,29 +6242,37 @@ definitions:
               - "null"
               - object
           Id:
+            description: Unique identifier for the time activity entry
             type:
               - "null"
               - string
           domain:
+            description: Domain related to the time activity data
             type:
               - "null"
               - string
           TxnDate:
+            description: Date of the time activity
             format: date
             type:
               - "null"
               - string
           SyncToken:
+            description: Token used for synchronization purposes
             type:
               - "null"
               - string
           EmployeeRef:
             properties:
               name:
+                description: Name of the employee who performed the time activity
                 type:
                   - "null"
                   - string
               value:
+                description:
+                  Unique identifier for the employee associated with the
+                  time activity
                 type:
                   - "null"
                   - string
@@ -5301,22 +6280,27 @@ definitions:
               - "null"
               - object
           BillableStatus:
+            description: Indicates if the time activity is billable or non-billable
             type:
               - "null"
               - string
           NameOf:
+            description: Name of the time activity entry
             type:
               - "null"
               - string
           Hours:
+            description: Number of hours spent on the activity
             type:
               - "null"
               - integer
           sparse:
+            description: Indicates if the object is sparse
             type:
               - "null"
               - boolean
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte platform
             type:
               - "null"
               - string
@@ -5336,17 +6320,20 @@ definitions:
           - object
         properties:
           PrivateNote:
+            description: A private note attached to the transfer
             type:
               - "null"
               - string
           MetaData:
             properties:
               LastUpdatedTime:
+                description: The timestamp when the transfer was last updated
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: The timestamp when the transfer was created
                 type:
                   - "null"
                   - string
@@ -5355,37 +6342,45 @@ definitions:
               - "null"
               - object
           TxnDate:
+            description: The date of the transaction
             type:
               - "null"
               - string
             format: date
           Id:
+            description: The unique identifier of the transfer
             type:
               - "null"
               - string
           domain:
+            description: Domain information related to the transfer
             type:
               - "null"
               - string
           ExchangeRate:
+            description: The exchange rate of the transfer
             type:
               - "null"
               - number
           Amount:
+            description: The amount of the transfer
             type:
               - "null"
               - number
           SyncToken:
+            description: A token used for synchronization purposes
             type:
               - "null"
               - string
           ToAccountRef:
             properties:
               value:
+                description: The value of the account to which the transfer is made
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the account to which the transfer is made
                 type:
                   - "null"
                   - string
@@ -5395,10 +6390,12 @@ definitions:
           CurrencyRef:
             properties:
               value:
+                description: The value of the currency
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the currency
                 type:
                   - "null"
                   - string
@@ -5408,10 +6405,12 @@ definitions:
           FromAccountRef:
             properties:
               value:
+                description: The value of the account from which the transfer is made
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the account from which the transfer is made
                 type:
                   - "null"
                   - string
@@ -5419,6 +6418,7 @@ definitions:
               - "null"
               - object
           airbyte_cursor:
+            description: Cursor for pagination in Airbyte
             type:
               - "null"
               - string
@@ -5440,11 +6440,13 @@ definitions:
           MetaData:
             properties:
               LastUpdatedTime:
+                description: The date and time when the vendor credit was last updated
                 type:
                   - "null"
                   - string
                 format: date-time
               CreateTime:
+                description: The date and time when the vendor credit was created
                 type:
                   - "null"
                   - string
@@ -5453,28 +6455,34 @@ definitions:
               - "null"
               - object
           ExchangeRate:
+            description: The exchange rate used for currency conversion
             type:
               - "null"
               - number
           TotalAmt:
+            description: The total amount of the vendor credit
             type:
               - "null"
               - number
           SyncToken:
+            description: The synchronization token for optimistic concurrency control
             type:
               - "null"
               - string
           domain:
+            description: The domain to which the vendor credit belongs
             type:
               - "null"
               - string
           VendorRef:
             properties:
               value:
+                description: The value of the vendor reference
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the vendor reference
                 type:
                   - "null"
                   - string
@@ -5484,10 +6492,12 @@ definitions:
           DepartmentRef:
             properties:
               value:
+                description: The value of the department reference
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the department reference
                 type:
                   - "null"
                   - string
@@ -5497,10 +6507,12 @@ definitions:
           APAccountRef:
             properties:
               value:
+                description: The value of the Accounts Payable account reference
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the Accounts Payable account reference
                 type:
                   - "null"
                   - string
@@ -5508,11 +6520,13 @@ definitions:
               - "null"
               - object
           TxnDate:
+            description: The transaction date of the vendor credit
             type:
               - "null"
               - string
             format: date
           Id:
+            description: The unique identifier of the vendor credit
             type:
               - "null"
               - string
@@ -5520,6 +6534,7 @@ definitions:
             items:
               properties:
                 LineNum:
+                  description: The line number of the expense line
                   type:
                     - "null"
                     - integer
@@ -5528,10 +6543,12 @@ definitions:
                     CustomerRef:
                       properties:
                         value:
+                          description: The value of the customer reference
                           type:
                             - "null"
                             - string
                         name:
+                          description: The name of the customer reference
                           type:
                             - "null"
                             - string
@@ -5541,10 +6558,12 @@ definitions:
                     ClassRef:
                       properties:
                         value:
+                          description: The value of the class reference
                           type:
                             - "null"
                             - string
                         name:
+                          description: The name of the class reference
                           type:
                             - "null"
                             - string
@@ -5554,10 +6573,12 @@ definitions:
                     AccountRef:
                       properties:
                         value:
+                          description: The value of the account reference
                           type:
                             - "null"
                             - string
                         name:
+                          description: The name of the account reference
                           type:
                             - "null"
                             - string
@@ -5565,12 +6586,14 @@ definitions:
                         - "null"
                         - object
                     BillableStatus:
+                      description: Indicates if the expense is billable or not
                       type:
                         - "null"
                         - string
                     TaxCodeRef:
                       properties:
                         value:
+                          description: The value of the tax code reference
                           type:
                             - "null"
                             - string
@@ -5581,18 +6604,22 @@ definitions:
                     - "null"
                     - object
                 Id:
+                  description: The unique identifier of the expense line
                   type:
                     - "null"
                     - string
                 Amount:
+                  description: The amount of the expense line
                   type:
                     - "null"
                     - number
                 DetailType:
+                  description: The type of detail represented in the line
                   type:
                     - "null"
                     - string
                 Description:
+                  description: The description of the expense line
                   type:
                     - "null"
                     - string
@@ -5605,10 +6632,12 @@ definitions:
           CurrencyRef:
             properties:
               value:
+                description: The value of the currency reference
                 type:
                   - "null"
                   - string
               name:
+                description: The name of the currency reference
                 type:
                   - "null"
                   - string
@@ -5616,10 +6645,12 @@ definitions:
               - "null"
               - object
           DocNumber:
+            description: The document number associated with the vendor credit
             type:
               - "null"
               - string
           airbyte_cursor:
+            description: Cursor used for pagination by Airbyte
             type:
               - "null"
               - string
@@ -5640,12 +6671,15 @@ definitions:
           - object
         properties:
           GivenName:
+            description: Given name of the vendor
             type:
               - "null"
               - string
           PrimaryPhone:
+            description: Primary phone number of the vendor
             properties:
               FreeFormNumber:
+                description: Free form phone number
                 type:
                   - "null"
                   - string
@@ -5653,44 +6687,55 @@ definitions:
               - "null"
               - object
           AcctNum:
+            description: Account number associated with the vendor
             type:
               - "null"
               - string
           MiddleName:
+            description: Middle name of the vendor
             type:
               - "null"
               - string
           BillAddr:
+            description: Billing address of the vendor
             properties:
               Lat:
+                description: Latitude coordinate of the billing address
                 type:
                   - "null"
                   - string
               Id:
+                description: Unique identifier of the billing address
                 type:
                   - "null"
                   - string
               CountrySubDivisionCode:
+                description: Code representing the subdivision within the country
                 type:
                   - "null"
                   - string
               Country:
+                description: Country of the billing address
                 type:
                   - "null"
                   - string
               City:
+                description: City of the billing address
                 type:
                   - "null"
                   - string
               Long:
+                description: Longitude coordinate of the billing address
                 type:
                   - "null"
                   - string
               PostalCode:
+                description: Postal code of the billing address
                 type:
                   - "null"
                   - string
               Line1:
+                description: First line of the billing address
                 type:
                   - "null"
                   - string
@@ -5698,8 +6743,10 @@ definitions:
               - "null"
               - object
           PrimaryEmailAddr:
+            description: Primary email address of the vendor
             properties:
               Address:
+                description: Email address
                 type:
                   - "null"
                   - string
@@ -5707,28 +6754,35 @@ definitions:
               - "null"
               - object
           Balance:
+            description: Current balance owed by the vendor
             type:
               - "null"
               - number
           TaxIdentifier:
+            description: Tax identifier associated with the vendor
             type:
               - "null"
               - string
           CompanyName:
+            description: Name of the vendor's company
             type:
               - "null"
               - string
           FamilyName:
+            description: Family name of the vendor
             type:
               - "null"
               - string
           PrintOnCheckName:
+            description: Name to be printed on checks for the vendor
             type:
               - "null"
               - string
           WebAddr:
+            description: Web address of the vendor
             properties:
               URI:
+                description: URI representing the web address
                 type:
                   - "null"
                   - string
@@ -5736,8 +6790,10 @@ definitions:
               - "null"
               - object
           Mobile:
+            description: Mobile number associated with the vendor
             properties:
               FreeFormNumber:
+                description: Free form mobile number
                 type:
                   - "null"
                   - string
@@ -5745,12 +6801,15 @@ definitions:
               - "null"
               - object
           CurrencyRef:
+            description: Reference to the currency used
             properties:
               name:
+                description: Name of the currency
                 type:
                   - "null"
                   - string
               value:
+                description: Value representing the currency
                 type:
                   - "null"
                   - string
@@ -5758,20 +6817,25 @@ definitions:
               - "null"
               - object
           Vendor1099:
+            description: Indicates if the vendor is subject to 1099 reporting
             type:
               - "null"
               - boolean
           SyncToken:
+            description: Token used for synchronizing data changes
             type:
               - "null"
               - string
           DisplayName:
+            description: Name displayed for the vendor
             type:
               - "null"
               - string
           TermRef:
+            description: Reference to the payment terms
             properties:
               value:
+                description: Value representing the payment terms
                 type:
                   - "null"
                   - string
@@ -5779,13 +6843,16 @@ definitions:
               - "null"
               - object
           MetaData:
+            description: Metadata information related to the vendor
             properties:
               CreateTime:
+                description: Date and time when the vendor was created
                 format: date-time
                 type:
                   - "null"
                   - string
               LastUpdatedTime:
+                description: Date and time of the last update for the vendor
                 format: date-time
                 type:
                   - "null"
@@ -5794,8 +6861,10 @@ definitions:
               - "null"
               - object
           Fax:
+            description: Fax number associated with the vendor
             properties:
               FreeFormNumber:
+                description: Free form fax number
                 type:
                   - "null"
                   - string
@@ -5803,26 +6872,32 @@ definitions:
               - "null"
               - object
           Suffix:
+            description: Suffix for the vendor's name
             type:
               - "null"
               - string
           Id:
+            description: Unique identifier of the vendor
             type:
               - "null"
               - string
           domain:
+            description: Domain associated with the vendor
             type:
               - "null"
               - string
           Active:
+            description: Indicates if the vendor is currently active in the system
             type:
               - "null"
               - boolean
           Title:
+            description: Title of the vendor
             type:
               - "null"
               - string
           airbyte_cursor:
+            description: Cursor used in pagination for Airbyte integration
             type:
               - "null"
               - string

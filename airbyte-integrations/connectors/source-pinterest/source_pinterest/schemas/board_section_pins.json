@@ -37,6 +37,7 @@
       "type": ["null", "string"]
     },
     "board_owner": {
+      "description": "Details of the owner of the board the pins belong to",
       "type": ["null", "object"],
       "properties": {
         "username": {
@@ -50,6 +51,7 @@
       "type": ["null", "object"]
     },
     "media": {
+      "description": "Media content associated with the pins",
       "type": ["null", "object"],
       "properties": {
         "media_type": {
@@ -57,9 +59,11 @@
           "type": ["null", "string"]
         },
         "images": {
+          "description": "Different image sizes available for the pin",
           "type": ["null", "object"],
           "properties": {
             "150x150": {
+              "description": "Square thumbnail image sized at 150x150 resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
@@ -77,6 +81,7 @@
               }
             },
             "400x300": {
+              "description": "Image sized at 400x300 resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
@@ -94,6 +99,7 @@
               }
             },
             "600x": {
+              "description": "Image sized at 600x resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
@@ -111,6 +117,7 @@
               }
             },
             "1200x": {
+              "description": "Image sized at 1200x resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
@@ -128,6 +135,7 @@
               }
             },
             "originals": {
+              "description": "Original image file without any resizing",
               "type": ["null", "object"],
               "properties": {
                 "width": {

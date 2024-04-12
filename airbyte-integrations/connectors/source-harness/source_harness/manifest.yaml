@@ -53,14 +53,17 @@ definitions:
               - "null"
             properties:
               identifier:
+                description: Unique identifier for the organization
                 type:
                   - string
                   - "null"
               name:
+                description: The name of the organization
                 type:
                   - string
                   - "null"
               description:
+                description: A brief description of the organization
                 type:
                   - string
                   - "null"
@@ -70,18 +73,24 @@ definitions:
                   - "null"
                 properties:
                   identifier:
+                    description:
+                      Unique identifier for the tag associated with the
+                      organization
                     type:
                       - string
                       - "null"
           createdAt:
+            description: The date and time when the organization was created
             type:
               - number
               - "null"
           lastModifiedAt:
+            description: The date and time when the organization was last modified
             type:
               - number
               - "null"
           harnessManaged:
+            description: Whether the organization is managed by Harness or not
             type:
               - boolean
               - "null"

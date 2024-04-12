@@ -3,33 +3,42 @@
   "type": "object",
   "properties": {
     "cases": {
+      "description": "Total number of confirmed COVID-19 cases in Germany.",
       "type": "integer"
     },
     "deaths": {
+      "description": "Total number of deaths due to COVID-19 in Germany.",
       "type": "integer"
     },
     "recovered": {
+      "description": "Total number of recovered COVID-19 cases in Germany.",
       "type": "integer"
     },
     "weekIncidence": {
+      "description": "Incidence rate of new COVID-19 cases reported in a week per 100,000 inhabitants in Germany.",
       "type": "number"
     },
     "casesPer100k": {
+      "description": "Number of COVID-19 cases per 100,000 inhabitants in Germany.",
       "type": "number"
     },
     "casesPerWeek": {
+      "description": "Total number of new COVID-19 cases reported in a week in Germany.",
       "type": "integer"
     },
     "delta": {
       "type": "object",
       "properties": {
         "cases": {
+          "description": "Change in the number of new COVID-19 cases compared to the previous report.",
           "type": "integer"
         },
         "deaths": {
+          "description": "Change in the number of deaths due to COVID-19 compared to the previous report.",
           "type": "integer"
         },
         "recovered": {
+          "description": "Change in the number of recovered COVID-19 cases compared to the previous report.",
           "type": "integer"
         }
       },
@@ -39,15 +48,18 @@
       "type": "object",
       "properties": {
         "value": {
+          "description": "Current transmission rate (R) value for Germany.",
           "type": "number"
         },
         "rValue4Days": {
           "type": "object",
           "properties": {
             "value": {
+              "description": "Computed transmission rate (R) value based on data from the past 4 days.",
               "type": "number"
             },
             "date": {
+              "description": "Date of the R value report computed over the past 4 days.",
               "type": "string"
             }
           },
@@ -57,15 +69,18 @@
           "type": "object",
           "properties": {
             "value": {
+              "description": "Computed transmission rate (R) value based on data from the past 7 days.",
               "type": "number"
             },
             "date": {
+              "description": "Date of the R value report computed over the past 7 days.",
               "type": "string"
             }
           },
           "required": ["date", "value"]
         },
         "lastUpdate": {
+          "description": "Last update timestamp of the transmission rate (R) data.",
           "type": "string"
         }
       },
@@ -75,15 +90,19 @@
       "type": "object",
       "properties": {
         "cases7Days": {
+          "description": "Number of COVID-19 cases requiring hospitalization reported in the last 7 days.",
           "type": "integer"
         },
         "incidence7Days": {
+          "description": "Incidence rate of COVID-19 hospitalizations per 100,000 inhabitants in the last 7 days.",
           "type": "number"
         },
         "date": {
+          "description": "Date of the hospitalization data report.",
           "type": "string"
         },
         "lastUpdate": {
+          "description": "Last update timestamp of the hospitalization data.",
           "type": "string"
         }
       },
@@ -93,18 +112,23 @@
       "type": "object",
       "properties": {
         "source": {
+          "description": "Source of the COVID-19 data.",
           "type": "string"
         },
         "contact": {
+          "description": "Contact information for inquiries related to COVID-19 data.",
           "type": "string"
         },
         "info": {
+          "description": "Additional information or notes related to the COVID-19 data.",
           "type": "string"
         },
         "lastUpdate": {
+          "description": "Timestamp of the last update of the COVID-19 data.",
           "type": "string"
         },
         "lastCheckedForUpdate": {
+          "description": "Timestamp of the last check for updates in the COVID-19 data.",
           "type": "string"
         }
       },

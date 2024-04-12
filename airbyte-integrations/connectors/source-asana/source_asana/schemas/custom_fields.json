@@ -2,41 +2,52 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "The Globally Unique Identifier of the custom field.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "The type of the resource to which this custom field belongs.",
       "type": ["null", "string"]
     },
     "created_by": {
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "The Globally Unique Identifier of the user who created this custom field.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "The type of the resource which created this custom field.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the user who created this custom field.",
           "type": ["null", "string"]
         }
       }
     },
     "currency_code": {
+      "description": "The currency code associated with this custom field.",
       "type": ["null", "string"]
     },
     "custom_label": {
+      "description": "The custom label assigned to this custom field.",
       "type": ["null", "string"]
     },
     "custom_label_position": {
+      "description": "The position of the custom label in relation to the custom field value.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A description of the custom field to provide more context about its purpose.",
       "type": ["null", "string"]
     },
     "display_value": {
+      "description": "The displayed value of the custom field.",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Indicates if the custom field is enabled or not.",
       "type": ["null", "boolean"]
     },
     "enum_options": {
@@ -45,18 +56,23 @@
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "The Globally Unique Identifier of the enum option.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "The type of the resource which this enum option belongs to.",
             "type": ["null", "string"]
           },
           "color": {
+            "description": "The color associated with the enum option.",
             "type": ["null", "string"]
           },
           "enabled": {
+            "description": "Indicates if the enum option is enabled or not.",
             "type": ["null", "boolean"]
           },
           "name": {
+            "description": "The name of the enum option.",
             "type": ["null", "string"]
           }
         }
@@ -66,44 +82,57 @@
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "The Globally Unique Identifier of the selected enum value.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "The type of the resource which this selected enum value belongs to.",
           "type": ["null", "string"]
         },
         "color": {
+          "description": "The color associated with the selected enum value.",
           "type": ["null", "string"]
         },
         "enabled": {
+          "description": "Indicates if the enum value is enabled or not.",
           "type": ["null", "boolean"]
         },
         "name": {
+          "description": "The name of the selected enum value.",
           "type": ["null", "string"]
         }
       }
     },
     "format": {
+      "description": "The format of the custom field value.",
       "type": ["null", "string"]
     },
     "has_notifications_enabled": {
+      "description": "Indicates if notifications are enabled for this custom field.",
       "type": ["null", "boolean"]
     },
     "is_global_to_workspace": {
+      "description": "Indicates if the custom field is global to the entire workspace.",
       "type": ["null", "boolean"]
     },
     "number_value": {
+      "description": "The numerical value associated with the custom field.",
       "type": ["null", "number"]
     },
     "precision": {
+      "description": "The precision of the custom field value.",
       "type": ["null", "integer"]
     },
     "resource_subtype": {
+      "description": "The subtype of the resource type.",
       "type": ["null", "string"]
     },
     "text_value": {
+      "description": "The text value associated with the custom field.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of custom field, e.g., text, number, enum, etc.",
       "type": ["null", "string"]
     }
   }

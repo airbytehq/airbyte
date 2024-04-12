@@ -8,9 +8,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the first account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the first account category",
           "type": ["null", "string"]
         }
       }
@@ -19,9 +21,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the second account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the second account category",
           "type": ["null", "string"]
         }
       }
@@ -30,9 +34,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the third account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the third account category",
           "type": ["null", "string"]
         }
       }
@@ -41,9 +47,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the fourth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the fourth account category",
           "type": ["null", "string"]
         }
       }
@@ -52,9 +60,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the fifth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the fifth account category",
           "type": ["null", "string"]
         }
       }
@@ -63,9 +73,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the sixth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the sixth account category",
           "type": ["null", "string"]
         }
       }
@@ -74,9 +86,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the seventh account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the seventh account category",
           "type": ["null", "string"]
         }
       }
@@ -85,9 +99,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the eighth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the eighth account category",
           "type": ["null", "string"]
         }
       }
@@ -96,9 +112,11 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the ninth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the ninth account category",
           "type": ["null", "string"]
         }
       }
@@ -107,35 +125,44 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the tenth account category",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the tenth account category",
           "type": ["null", "string"]
         }
       }
     },
     "accountAvailableForPayments": {
+      "description": "Indicates if the account is available for payments",
       "type": ["boolean", "null"]
     },
     "accountType": {
+      "description": "Type of the account",
       "type": ["string", "null"]
     },
     "activeStatus": {
+      "description": "Status indicating if the account is active",
       "type": ["string", "null"]
     },
     "attachments": {
+      "description": "Attachments associated with the account",
       "type": ["boolean", "null"]
     },
     "banCode": {
+      "description": "Bank account number (BAN) code",
       "type": ["string", "null"]
     },
     "bank": {
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the bank associated with the account",
           "type": ["string", "null"]
         },
         "uuid": {
+          "description": "UUID for the bank associated with the account",
           "type": ["string", "null"]
         }
       }
@@ -144,60 +171,74 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Branch code associated with the account",
           "type": ["string", "null"]
         },
         "uuid": {
+          "description": "UUID for the branch associated with the account",
           "type": ["string", "null"]
         }
       }
     },
     "branchDescription": {
+      "description": "Description of the branch associated with the account",
       "type": ["null", "string"]
     },
     "calendar": {
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the calendar linked to the account",
           "type": ["string", "null"]
         },
         "uuid": {
+          "description": "UUID for the calendar linked to the account",
           "type": ["string", "null"]
         }
       }
     },
     "closedAccount": {
+      "description": "Indicates if the account is closed",
       "type": ["boolean", "null"]
     },
     "closingDate": {
+      "description": "Date when the account was closed",
       "type": ["null", "string"]
     },
     "code": {
+      "description": "Account code",
       "type": ["string", "null"]
     },
     "company": {
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the company associated with the account",
           "type": ["string", "null"]
         },
         "uuid": {
+          "description": "UUID for the company associated with the account",
           "type": ["string", "null"]
         }
       }
     },
     "countryCode": {
+      "description": "Country code of the account",
       "type": ["string", "null"]
     },
     "creationDate": {
+      "description": "Date when the account was created",
       "type": ["string", "null"]
     },
     "currency": {
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Currency code of the account",
           "type": ["string", "null"]
         },
         "uuid": {
+          "description": "UUID for the currency of the account",
           "type": ["string", "null"]
         }
       }
@@ -206,64 +247,82 @@
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "Code for the default group of the account",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the default group of the account",
           "type": ["null", "string"]
         }
       }
     },
     "description": {
+      "description": "Brief description of the account",
       "type": ["null", "string"]
     },
     "description2": {
+      "description": "Additional description field for the account",
       "type": ["null", "string"]
     },
     "documents": {
+      "description": "Documents associated with the account",
       "type": ["boolean", "null"]
     },
     "glAccount": {
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "General ledger (GL) account code",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "UUID for the GL account linked to the account",
           "type": ["null", "string"]
         }
       }
     },
     "ibanCode": {
+      "description": "International Bank Account Number (IBAN) code",
       "type": ["null", "string"]
     },
     "internalAccountCode": {
+      "description": "Internal code for the account",
       "type": ["null", "string"]
     },
     "marker1": {
+      "description": "Custom marker 1 for the account",
       "type": ["boolean", "null"]
     },
     "marker2": {
+      "description": "Custom marker 2 for the account",
       "type": ["boolean", "null"]
     },
     "marker3": {
+      "description": "Custom marker 3 for the account",
       "type": ["boolean", "null"]
     },
     "signatoryUsers": {
+      "description": "Users authorized as signatories for the account",
       "type": ["integer", "null"]
     },
     "statementIdentifier": {
+      "description": "Identifier for the account statement",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the account",
       "type": ["string", "null"]
     },
     "updateDate": {
+      "description": "Date when the account was last updated",
       "type": ["null", "string"]
     },
     "uuid": {
+      "description": "Unique identifier for the account",
       "type": ["string", "null"]
     },
     "zbaIdentifier": {
+      "description": "Zero balance account (ZBA) identifier",
       "type": ["null", "string"]
     }
   }

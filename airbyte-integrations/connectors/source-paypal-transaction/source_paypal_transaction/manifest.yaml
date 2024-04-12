@@ -852,8 +852,10 @@ definitions:
               - string
             format: date-time
           links:
+            description: List of links related to the fetched products.
             type: array
             items:
+              description: Individual link item in the list.
               type: object
               additionalProperties: true
               properties:
@@ -958,8 +960,10 @@ definitions:
               - string
             format: date-time
           links:
+            description: Contains links related to the product details.
             type: array
             items:
+              description: Individual link properties for a specific product.
               type:
                 - "null"
                 - object
@@ -2296,6 +2300,7 @@ definitions:
               - "null"
               - string
           payer:
+            description: Details of the payer who made the payment
             type:
               - "null"
               - object
@@ -2386,6 +2391,7 @@ definitions:
                       - "null"
                       - string
           transactions:
+            description: List of transactions associated with the payment
             type:
               - "null"
               - array
@@ -2731,6 +2737,7 @@ definitions:
               - string
             format: date-time
           links:
+            description: Collection of links related to the payment
             type: array
             items:
               type: object

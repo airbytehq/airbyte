@@ -3,88 +3,111 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the action",
       "type": "integer"
     },
     "due": {
+      "description": "Due date for the action",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "Timestamp for when the action was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp for when the action was last updated",
       "type": "string",
       "format": "date-time"
     },
     "type": {
+      "description": "Type of action",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the action",
       "type": ["null", "string"]
     },
     "due_on": {
+      "description": "Due date and time for the action",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "multitouch_group_id": {
+      "description": "Identifier for the multitouch group",
       "type": ["null", "integer"]
     },
     "action_details": {
+      "description": "Details of the action taken",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the action",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the action details",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "User responsible for the action",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user details",
           "type": ["null", "string"]
         }
       }
     },
     "person": {
+      "description": "Information about the person associated with the action",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the person",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the person details",
           "type": ["null", "string"]
         }
       }
     },
     "cadence": {
+      "description": "Cadence information related to the action",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the cadence",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the cadence details",
           "type": ["null", "string"]
         }
       }
     },
     "step": {
+      "description": "Step information related to the action",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the step",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the step details",
           "type": ["null", "string"]
         }
       }

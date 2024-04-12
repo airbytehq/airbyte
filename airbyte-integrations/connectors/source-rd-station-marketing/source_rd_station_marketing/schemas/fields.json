@@ -3,24 +3,30 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Universally unique identifier for the field.",
       "type": ["null", "string"]
     },
     "label": {
       "type": ["null", "object"],
       "properties": {
         "en-UD": {
+          "description": "Label for the field in English (UD variant).",
           "type": ["null", "string"]
         },
         "en-US": {
+          "description": "Label for the field in English (US variant).",
           "type": ["null", "string"]
         },
         "es-ES": {
+          "description": "Label for the field in Spanish (Spain variant).",
           "type": ["null", "string"]
         },
         "pt-BR": {
+          "description": "Label for the field in Portuguese (Brazil variant).",
           "type": ["null", "string"]
         },
         "default": {
+          "description": "Default label for the field.",
           "type": ["null", "string"]
         }
       }
@@ -29,35 +35,45 @@
       "type": ["null", "object"],
       "properties": {
         "en-UD": {
+          "description": "Name of the field in English (UD variant).",
           "type": ["null", "string"]
         },
         "en-US": {
+          "description": "Name of the field in English (US variant).",
           "type": ["null", "string"]
         },
         "es-ES": {
+          "description": "Name of the field in Spanish (Spain variant).",
           "type": ["null", "string"]
         },
         "pt-BR": {
+          "description": "Name of the field in Portuguese (Brazil variant).",
           "type": ["null", "string"]
         },
         "default": {
+          "description": "Default name of the field.",
           "type": ["null", "string"]
         }
       }
     },
     "api_identifier": {
+      "description": "Unique identifier for the field in the API.",
       "type": ["null", "string"]
     },
     "custom_field": {
+      "description": "Flag indicating if the field is custom or predefined.",
       "type": ["null", "boolean"]
     },
     "validation_rules": {
+      "description": "Rules or constraints applied to the field data.",
       "type": ["null", "object"]
     },
     "presentation_type": {
+      "description": "Type of presentation for the field (e.g., input, select, checkbox).",
       "type": ["null", "string"]
     },
     "data_type": {
+      "description": "Type of data stored in the field (e.g., text, number, boolean).",
       "type": ["null", "string"]
     }
   }

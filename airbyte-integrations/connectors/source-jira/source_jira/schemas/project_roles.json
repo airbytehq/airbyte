@@ -4,11 +4,14 @@
   "description": "Project Roles",
   "properties": {
     "actors": {
+      "description": "A list of actors assigned to the project role",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of an actor (group or user)",
         "type": ["null", "object"],
         "properties": {
           "actorGroup": {
+            "description": "Details of an actor group",
             "type": ["null", "object"],
             "properties": {
               "displayName": {
@@ -26,6 +29,7 @@
             }
           },
           "actorUser": {
+            "description": "Details of an actor user",
             "type": ["null", "object"],
             "properties": {
               "accountId": {

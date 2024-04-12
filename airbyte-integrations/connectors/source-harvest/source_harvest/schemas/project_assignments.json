@@ -41,6 +41,7 @@
       "type": ["null", "number"]
     },
     "project": {
+      "description": "Project information for the assignment",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -58,6 +59,7 @@
       }
     },
     "client": {
+      "description": "Client information for the project assignment",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -75,6 +77,7 @@
       }
     },
     "task_assignments": {
+      "description": "List of task assignments for the project",
       "type": ["null", "array"],
       "items": {
         "properties": {
@@ -103,6 +106,7 @@
             "type": ["null", "boolean"]
           },
           "task": {
+            "description": "Information about a specific task assigned",
             "properties": {
               "id": {
                 "description": "The unique identifier of the task",

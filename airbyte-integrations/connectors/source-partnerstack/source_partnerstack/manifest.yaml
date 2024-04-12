@@ -58,62 +58,77 @@ definitions:
         type: object
         properties:
           created_at:
+            description: Date and time when the customer data was created.
             type:
               - "null"
               - integer
           customer_key:
+            description: Unique identifier for the customer.
             type:
               - "null"
               - string
           email:
+            description: Email address of the customer.
             type:
               - "null"
               - string
           field_data:
+            description: Data related to the fields for the customer.
             type:
               - "null"
               - object
           fields:
+            description: Fields associated with the customer.
             type:
               - "null"
               - array
           key:
+            description: Key associated with the customer.
             type:
               - "null"
               - string
           meta:
+            description: Metadata related to the customer.
             type:
               - "null"
               - object
           name:
+            description: Name of the customer.
             type:
               - "null"
               - string
           partner_key:
+            description: Key associated with the partner.
             type:
               - "null"
               - string
           partnership_key:
+            description: Key associated with the partnership.
             type:
               - "null"
               - string
           provider_key:
+            description: Key associated with the provider.
             type:
               - "null"
               - string
           source_key:
+            description: Key associated with the data source.
             type:
               - "null"
               - string
           source_type:
+            description: Type of data source.
             type:
               - "null"
               - string
           test:
+            description: Flag indicating if the data is for testing purposes.
             type:
               - "null"
               - boolean
           updated_at:
+            description: Date and time when the customer data was last updated.
             type:
               - "null"
               - integer
@@ -130,82 +145,106 @@ definitions:
         type: object
         properties:
           created_at:
+            description: The date and time when the deal was created
             type:
               - "null"
               - integer
           key:
+            description: The unique identifier for the deal
             type:
               - "null"
               - string
           updated_at:
+            description: The date and time when the deal was last updated
             type:
               - "null"
               - integer
           account_name:
+            description: The name of the account associated with the deal
             type:
               - "null"
               - object
           amount:
+            description: The monetary value of the deal
             type:
               - "null"
               - integer
           close_date:
+            description: The date on which the deal was closed
             type:
               - "null"
               - string
           contact_first_name:
+            description:
+              The first name of the primary contact associated with the
+              deal
             type:
               - "null"
               - string
           contact_last_name:
+            description:
+              The last name of the primary contact associated with the
+              deal
             type:
               - "null"
               - string
           external_key:
+            description: An external identifier or key associated with the deal
             type:
               - "null"
               - string
           field_data:
+            description: Additional data related to the fields in the deal
             type:
               - "null"
               - object
           fields:
+            description: The fields and their values associated with the deal
             type:
               - "null"
               - array
           group_key:
+            description: The key used for grouping deals
             type:
               - "null"
               - string
           lost_reason:
+            description: The reason for losing the deal
             type:
               - "null"
               - string
           meta:
+            description: Additional metadata related to the deal
             type:
               - "null"
               - object
           mold_key:
+            description: The key used for categorizing deals
             type:
               - "null"
               - string
           partner_key:
+            description: The key identifying the partner associated with the deal
             type:
               - "null"
               - string
           source:
+            description: The source of the deal (e.g., online, offline, referral)
             type:
               - "null"
               - string
           stage:
+            description: The stage of the deal (e.g., prospecting, negotiation, closed)
             type:
               - "null"
               - string
           team:
+            description: The team responsible for managing the deal
             type:
               - "null"
               - object
           team_member:
+            description: The team member assigned to the deal
             type:
               - "null"
               - object
@@ -222,34 +261,42 @@ definitions:
         type: object
         properties:
           archived:
+            description: Indicates if the group is archived or not
             type:
               - "null"
               - boolean
           created_at:
+            description: The date and time when the group was created
             type:
               - "null"
               - integer
           default:
+            description: Specifies if the group is the default group
             type:
               - "null"
               - boolean
           features:
+            description: List of features associated with the group
             type:
               - "null"
               - object
           key:
+            description: Unique key assigned to the group
             type:
               - "null"
               - string
           name:
+            description: The name of the group
             type:
               - "null"
               - string
           slug:
+            description: Unique URL-friendly identifier for the group
             type:
               - "null"
               - string
           updated_at:
+            description: The date and time when the group was last updated
             type:
               - "null"
               - integer
@@ -266,54 +313,67 @@ definitions:
         type: object
         properties:
           amount:
+            description: The amount associated with the lead.
             type:
               - "null"
               - integer
           approved:
+            description: Indicates whether the lead has been approved or not.
             type:
               - "null"
               - boolean
           created_at:
+            description: The datetime when the lead was created.
             type:
               - "null"
               - integer
           external_key:
+            description: An external key or identifier for the lead.
             type:
               - "null"
               - string
           field_data:
+            description: Additional data related to the lead.
             type:
               - "null"
               - object
           fields:
+            description: The fields associated with the lead.
             type:
               - "null"
               - array
           group_key:
+            description: The key identifying the group to which the lead belongs.
             type:
               - "null"
               - string
           key:
+            description: The key or identifier for the lead.
             type:
               - "null"
               - string
           meta:
+            description: Any additional meta information related to the lead.
             type:
               - "null"
               - object
           mold_key:
+            description: The key identifying the mold associated with the lead.
             type:
               - "null"
               - string
           partner_key:
+            description: The key identifying the partner associated with the lead.
             type:
               - "null"
               - string
           status:
+            description: The status of the lead.
             type:
               - "null"
               - string
           updated_at:
+            description: The datetime when the lead was last updated.
             type:
               - "null"
               - integer
@@ -330,58 +390,72 @@ definitions:
         type: object
         properties:
           created_at:
+            description: Timestamp for when the partnership was created
             type:
               - "null"
               - integer
           email:
+            description: Email of the partner associated with the partnership
             type:
               - "null"
               - string
           first_name:
+            description: First name of the partner
             type:
               - "null"
               - string
           group:
+            description: Group or category the partnership belongs to
             type:
               - "null"
               - object
           joined_at:
+            description: Timestamp for when the partner joined the partnership
             type:
               - "null"
               - integer
           key:
+            description: Unique identifier for the partnership
             type:
               - "null"
               - string
           last_name:
+            description: Last name of the partner
             type:
               - "null"
               - string
           manager:
+            description: Name of the manager overseeing the partnership
             type:
               - "null"
               - object
           m_data:
+            description: Additional metadata related to the partnership
             type:
               - "null"
               - object
           partner_key:
+            description: Unique identifier for the partner
             type:
               - "null"
               - string
           stats:
+            description: Statistics or performance data related to the partnership
             type:
               - "null"
               - object
           tags:
+            description: Tags or labels associated with the partnership
             type:
               - "null"
               - array
           team:
+            description: Name of the team the partnership is associated with
             type:
               - "null"
               - object
           updated_at:
+            description: Timestamp for when the partnership was last updated
             type:
               - "null"
               - integer
@@ -398,54 +472,67 @@ definitions:
         type: object
         properties:
           action:
+            description: The type of action that triggered the reward.
             type:
               - "null"
               - object
           amount:
+            description: The amount of the reward.
             type:
               - "null"
               - integer
           created_at:
+            description: The timestamp when the reward was created.
             type:
               - "null"
               - integer
           customer:
+            description: The data related to the customer receiving the reward.
             type:
               - "null"
               - object
           description:
+            description: Additional information about the reward.
             type:
               - "null"
               - string
           invoice:
+            description: The invoice related to the reward.
             type:
               - "null"
               - object
           key:
+            description: Unique key identifying the reward.
             type:
               - "null"
               - string
           offer:
+            description: The details of the offer associated with the reward.
             type:
               - "null"
               - object
           partnership:
+            description: Information about the partnership linked to the reward.
             type:
               - "null"
               - object
           reward_status:
+            description: The status of the reward (e.g., pending, approved, declined).
             type:
               - "null"
               - string
           transaction:
+            description: Details of the transaction linked to the reward.
             type:
               - "null"
               - object
           trigger:
+            description: The action or event that triggered the reward.
             type:
               - "null"
               - object
           updated_at:
+            description: The timestamp when the reward was last updated.
             type:
               - "null"
               - integer
@@ -463,50 +550,62 @@ definitions:
         type: object
         properties:
           amount:
+            description: The amount of the transaction in the original currency
             type:
               - "null"
               - integer
           amount_usd:
+            description: The amount of the transaction converted to USD
             type:
               - "null"
               - integer
           approved:
+            description: Flag indicating if the transaction has been approved
             type:
               - "null"
               - boolean
           category_key:
+            description: The key identifying the category of the transaction
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the transaction was created
             type:
               - "null"
               - integer
           currency:
+            description: The currency in which the transaction amount is specified
             type:
               - "null"
               - string
           customer:
+            description: Details of the customer associated with the transaction
             type:
               - "null"
               - object
           customer_key:
+            description: The key identifying the customer of the transaction
             type:
               - "null"
               - string
           extension:
+            description: Additional extension data related to the transaction
             type:
               - "null"
               - object
           key:
+            description: The unique key identifying the transaction
             type:
               - "null"
               - string
           product_key:
+            description: The key identifying the product associated with the transaction
             type:
               - "null"
               - object
           updated_at:
+            description: The timestamp when the transaction was last updated
             type:
               - "null"
               - integer

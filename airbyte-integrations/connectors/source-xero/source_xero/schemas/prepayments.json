@@ -2,77 +2,98 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "The type of the prepayment.",
       "type": ["null", "string"]
     },
     "ID": {
+      "description": "The unique identifier of the prepayment.",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "Information about the contact associated with the prepayment.",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "The date of the prepayment.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the prepayment.",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "Type of line amount.",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "List of line items associated with the prepayment.",
       "items": {
         "$ref": "line_items.json"
       },
       "type": ["null", "array"]
     },
     "SubTotal": {
+      "description": "The subtotal amount of the prepayment.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount of the prepayment including taxes.",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time the prepayment was last updated in UTC format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used for the prepayment.",
       "type": ["null", "string"]
     },
     "PrepaymentID": {
+      "description": "The identifier for the prepayment.",
       "type": ["string"]
     },
     "CurrencyRate": {
+      "description": "The currency conversion rate.",
       "type": ["null", "number"]
     },
     "Reference": {
+      "description": "Any reference information related to the prepayment.",
       "type": ["null", "string"]
     },
     "RemainingCredit": {
+      "description": "The remaining credit amount from the prepayment.",
       "type": ["null", "number"]
     },
     "AppliedAmount": {
+      "description": "The amount applied to the prepayment.",
       "type": ["null", "number"]
     },
     "Allocations": {
+      "description": "List of allocations against the prepayment.",
       "type": ["null", "array"],
       "items": {
         "$ref": "allocations.json"
       }
     },
     "Payments": {
+      "description": "List of payments made for the prepayment.",
       "type": ["null", "array"],
       "items": {
         "$ref": "payments.json"
       }
     },
     "HasAttachments": {
+      "description": "Indicates if the prepayment has any attached files.",
       "type": ["null", "boolean"]
     },
     "TotalTax": {
+      "description": "The total tax amount included in the prepayment.",
       "type": ["null", "number"]
     },
     "DateString": {
+      "description": "The date of the prepayment as a string.",
       "format": "date-time",
       "type": ["null", "string"]
     }

@@ -10,6 +10,7 @@
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Holds internal metadata related to the iterable data being accessed.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {

@@ -3,42 +3,53 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the release",
       "type": ["null", "integer"]
     },
     "kind": {
+      "description": "The type of release",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the release was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the release was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "project_id": {
+      "description": "The identifier of the project the release belongs to",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the release",
       "type": ["null", "string"]
     },
     "current_state": {
+      "description": "The current state of the release",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL for accessing the release",
       "type": ["null", "string"]
     },
     "deadline": {
+      "description": "The deadline for the release",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "labels": {
+      "description": "The labels associated with the release",
       "type": "array",
       "items": {
         "$ref": "label.json"
       }
     },
     "accepted_at": {
+      "description": "The date and time when the release was accepted",
       "type": ["null", "string"],
       "format": "date-time"
     }

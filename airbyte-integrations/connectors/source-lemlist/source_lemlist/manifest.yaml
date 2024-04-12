@@ -50,123 +50,162 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the team
             type:
               - "null"
               - string
           name:
+            description: Name of the team
             type:
               - "null"
               - string
           userIds:
+            description: List of user IDs associated with the team
             type: array
             items:
               type: string
           createdBy:
+            description: User who created the team
             type:
               - "null"
               - string
           createdAt:
+            description: Date and time when the team was created
             format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
               - "null"
               - string
           beta:
+            description: Beta-related data for the team
             type: array
             items:
               type: string
           billing:
+            description: Billing information for the team
             type: object
             properties:
               products:
+                description: List of products associated with the team
                 type: array
                 items:
                   type: object
                   properties:
                     name:
+                      description: Name of the product
                       type: string
                     stripeSubscriptionId:
+                      description: Stripe subscription ID for the product
                       type: string
                     plan:
+                      description: Plan associated with the product
                       type: string
                     quantity:
+                      description: Quantity of the product
                       type: integer
                     okUpdatedAt:
+                      description:
+                        Date and time when the product's OK status was
+                        last updated
                       format: "%Y-%m-%dT%H:%M:%S.%fZ"
                       type:
                         - "null"
                         - string
                     ok:
+                      description: Indicates if the product is OK
                       type:
                         - "null"
                         - boolean
                     freetrialExpiresAt:
+                      description:
+                        Date and time when the freetrial expires for the
+                        product
                       format: "%Y-%m-%dT%H:%M:%S.%fZ"
                       type:
                         - "null"
                         - string
           revenueVisualization:
+            description: Revenue visualization data for the team
             type: object
             additionalProperties: true
             properties:
               enabled:
+                description: Indicates if revenue visualization is enabled
                 type: boolean
               averageContractValue:
+                description: Average contract value for the team
                 type: integer
               averageContractValueCurrency:
+                description: Currency of the average contract value
                 type: string
               conversionRate:
+                description: Conversion rate for the team
                 type: integer
           _updatedAt:
+            description: Date and time when the team data was last updated
             format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
               - "null"
               - string
           dataIntegrityChecksCron:
+            description: Data integrity checks cron information for the team
             type: object
             properties:
               errors:
+                description: List of errors from data integrity checks
                 type: array
                 items:
                   type: object
                   additionalProperties: true
                   properties:
                     text:
+                      description: Error text
                       type: string
               lastAt:
+                description:
+                  Date and time of the last data integrity checks cron
+                  execution
                 format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
                   - "null"
                   - string
           linkedinLastScannedAt:
+            description: Date and time when the team's LinkedIn was last scanned
             format: "%Y-%m-%dT%H:%M:%S.%fZ"
             type:
               - "null"
               - string
           ctdCheck:
+            description: Data related to CTD check for the team
             type: object
             properties:
               lastAt:
+                description: Date and time of the last CTD check
                 format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
                   - "null"
                   - string
           campaignCron:
+            description: Data related to campaign cron for the team
             type: object
             properties:
               lastAt:
+                description: Date and time of the last campaign cron execution
                 format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
                   - "null"
                   - string
           sequencesSafeCheckCron:
+            description: Data related to sequences safe check cron for the team
             type: object
             properties:
               lastAt:
+                description: Date and time of the last sequences safe check cron execution
                 format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 type:
                   - "null"
                   - string
           apiKey:
+            description: API key associated with the team
             type:
               - "null"
               - string
@@ -183,16 +222,20 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the campaign data.
             type: string
           name:
+            description: Name of the campaign.
             type:
               - "null"
               - string
           labels:
+            description: List of labels associated with the campaign.
             type:
               - "null"
               - array
             items:
+              description: Single label in the list.
               type: string
   activities_stream:
     $ref: "#/definitions/base_stream"
@@ -207,56 +250,74 @@ definitions:
         type: object
         properties:
           _id:
+            description: The unique identifier for the activity record.
             type: string
           type:
+            description: The type of activity (e.g., email, call, meeting).
             type:
               - "null"
               - string
           teamId:
+            description: The unique identifier of the team associated with the activity.
             type:
               - "null"
               - string
           createdAt:
+            description: The timestamp when the activity was created.
             type:
               - "null"
               - string
           leadId:
+            description: The unique identifier of the lead associated with the activity.
             type:
               - "null"
               - string
           leadEmail:
+            description: The email address of the lead associated with the activity.
             type:
               - "null"
               - string
           campaignId:
+            description:
+              The unique identifier of the campaign associated with the
+              activity.
             type:
               - "null"
               - string
           createdBy:
+            description: The user who created the activity.
             type:
               - "null"
               - string
           leadFirstName:
+            description: The first name of the lead associated with the activity.
             type:
               - "null"
               - string
           leadLastName:
+            description: The last name of the lead associated with the activity.
             type:
               - "null"
               - string
           sequenceId:
+            description:
+              The unique identifier of the sequence the activity belongs
+              to.
             type:
               - "null"
               - string
           isFirst:
+            description: Indicates if the activity is the first in a sequence.
             type:
               - "null"
               - boolean
           sequenceStep:
+            description: The step number in the sequence for the activity.
             type:
               - "null"
               - integer
           emailTemplateId:
+            description: The unique identifier of the email template used in the activity.
             type:
               - "null"
               - string
@@ -266,62 +327,79 @@ definitions:
               - object
             properties:
               userName:
+                description: The name of the user associated with the activity.
                 type:
                   - "null"
                   - string
               leadPhone:
+                description: The phone number of the lead associated with the activity.
                 type:
                   - "null"
                   - string
               sendUserId:
+                description:
+                  The user ID responsible for sending the email in the
+                  activity.
                 type:
                   - "null"
                   - string
               leadPicture:
+                description: The picture of the lead associated with the activity.
                 type:
                   - "null"
                   - string
               leadCompanyName:
+                description: The company name of the lead associated with the activity.
                 type:
                   - "null"
                   - string
           firstName:
+            description: The first name of the person associated with the activity.
             type:
               - "null"
               - string
           lastName:
+            description: The last name of the person associated with the activity.
             type:
               - "null"
               - string
           email:
+            description: The email address associated with the activity.
             type:
               - "null"
               - string
           companyName:
+            description: The name of the company associated with the activity.
             type:
               - "null"
               - string
           picture:
+            description: The picture of the person associated with the activity.
             type:
               - "null"
               - string
           phone:
+            description: The phone number of the person associated with the activity.
             type:
               - "null"
               - string
           linkedinUrl:
+            description: The LinkedIn URL of the person associated with the activity.
             type:
               - "null"
               - string
           icebreaker:
+            description: The icebreaker used in the activity.
             type:
               - "null"
               - string
           campaignName:
+            description: The name of the campaign associated with the activity.
             type:
               - "null"
               - string
           emailTemplateName:
+            description: The name of the email template used in the activity.
             type:
               - "null"
               - string
@@ -339,8 +417,10 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the unsubscribe record
             type: string
           email:
+            description: Email address of the user who unsubscribed
             type:
               - "null"
               - string

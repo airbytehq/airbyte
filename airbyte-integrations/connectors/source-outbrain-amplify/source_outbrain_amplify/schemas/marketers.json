@@ -4,80 +4,102 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the marketer entity.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "Name of the marketer.",
       "type": ["string", "null"]
     },
     "enabled": {
+      "description": "Status of the marketer account (enabled/disabled).",
       "type": ["boolean", "null"]
     },
     "currency": {
+      "description": "Currency used by the marketer for transactions.",
       "type": ["string", "null"]
     },
     "creationTime": {
+      "description": "Time when the marketer entity was created.",
       "type": ["string", "null"]
     },
     "lastModified": {
+      "description": "Time when the marketer entity was last modified.",
       "type": ["string", "null"]
     },
     "campaignDefaults": {
+      "description": "Default settings for campaigns created by the marketer.",
       "type": "object",
       "properties": {
         "language": {
+          "description": "Default language setting for campaigns.",
           "type": ["string", "null"]
         }
       }
     },
     "blockedSites": {
+      "description": "Data related to blocked sites by the marketer.",
       "type": "object",
       "properties": {
         "blockedPublishers": {
+          "description": "List of publishers that are blocked by the marketer.",
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
               "id": {
+                "description": "Unique identifier for the blocked publisher.",
                 "type": ["string", "null"]
               },
               "name": {
+                "description": "Name of the blocked publisher.",
                 "type": ["string", "null"]
               },
               "creationTime": {
+                "description": "Time of creation for the blocked publisher.",
                 "type": ["string", "null"]
               },
               "modifiedBy": {
+                "description": "The user who last modified the blocked publisher.",
                 "type": ["string", "null"]
               }
             }
           }
         },
         "blockedSections": {
+          "description": "List of site sections that are blocked by the marketer.",
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
               "id": {
+                "description": "Unique identifier for the blocked section.",
                 "type": ["string", "null"]
               },
               "name": {
+                "description": "Name of the blocked section.",
                 "type": ["string", "null"]
               },
               "publisher": {
+                "description": "Details of the publisher associated with the blocked section.",
                 "type": "object",
                 "properties": {
                   "id": {
+                    "description": "Unique identifier for the publisher.",
                     "type": ["string", "null"]
                   },
                   "name": {
+                    "description": "Name of the publisher.",
                     "type": ["string", "null"]
                   }
                 }
               },
               "creationTime": {
+                "description": "Time of creation for the blocked section.",
                 "type": ["string", "null"]
               },
               "modifiedBy": {
+                "description": "The user who last modified the blocked section.",
                 "type": ["string", "null"]
               }
             }
@@ -86,14 +108,18 @@
       }
     },
     "useFirstPartyCookie": {
+      "description": "Flag indicating whether the marketer uses first-party cookies for tracking.",
       "type": ["boolean", "null"]
     },
     "role": {
+      "description": "Role or position of the marketer within the organization.",
       "type": ["string", "null"]
     },
     "permissions": {
+      "description": "List of permissions assigned to the marketer.",
       "type": "array",
       "items": {
+        "description": "Permission granted to the marketer.",
         "type": ["string", "null"]
       }
     }

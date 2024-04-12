@@ -2,52 +2,66 @@
   "type": ["null", "object"],
   "properties": {
     "Date": {
+      "description": "The date and time when the payment was made.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CurrencyRate": {
+      "description": "The currency exchange rate at the time of the payment.",
       "type": ["null", "number"]
     },
     "Amount": {
+      "description": "The total amount of the payment.",
       "type": ["null", "number"]
     },
     "Reference": {
+      "description": "A reference number or description provided for the payment.",
       "type": ["null", "string"]
     },
     "IsReconciled": {
+      "description": "Indicates if the payment has been reconciled with the corresponding invoice.",
       "type": ["null", "boolean"]
     },
     "Status": {
+      "description": "The current status of the payment, e.g., pending, completed, failed.",
       "type": ["null", "string"]
     },
     "PaymentType": {
+      "description": "The type of payment, e.g., credit card, bank transfer, etc.",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the payment record was last updated in UTC timezone.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Account": {
+      "description": "The account associated with the payment.",
       "$ref": "accounts.json"
     },
     "Invoice": {
+      "description": "Details of the invoice to which the payment is linked.",
       "$ref": "nested_invoice.json"
     },
     "CreditNote": {
+      "description": "Details related to a credit note applied to the payment.",
       "type": ["null", "object"],
       "properties": {
         "CreditNoteNumber": {
+          "description": "The number of the credit note associated with the payment.",
           "type": ["string"]
         }
       },
       "additionalProperties": true
     },
     "Prepayments": {
+      "description": "Details of any prepayments applied to the payment.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "PrepaymentID": {
+            "description": "The ID of the prepayment associated with the payment.",
             "type": ["string"]
           }
         },
@@ -55,11 +69,13 @@
       }
     },
     "Overpayment": {
+      "description": "Details related to any overpayments for the payment.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "OverpaymentID": {
+            "description": "The ID of the overpayment associated with the payment.",
             "type": ["string"]
           }
         },
@@ -67,18 +83,23 @@
       }
     },
     "BankAmount": {
+      "description": "The amount received in the bank account after processing fees or currency conversions.",
       "type": ["null", "number"]
     },
     "HasValidationErrors": {
+      "description": "Indicates if there are validation errors present for the payment.",
       "type": ["null", "boolean"]
     },
     "PaymentID": {
+      "description": "The unique identifier for the payment.",
       "type": ["string"]
     },
     "HasAccount": {
+      "description": "Indicates if the payment has an associated account.",
       "type": ["null", "boolean"]
     },
     "BatchPaymentID": {
+      "description": "The identifier for batch payment if the payment is part of a batch.",
       "type": ["null", "string"]
     }
   },

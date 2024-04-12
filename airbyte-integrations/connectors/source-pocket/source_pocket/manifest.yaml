@@ -66,103 +66,125 @@ definitions:
         type: object
         properties:
           item_id:
+            description: Unique identifier for the item.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           resolved_id:
+            description: Resolved identifier for the item.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           given_url:
+            description: URL provided for the item.
             type:
               - "null"
               - string
           given_title:
+            description: Title provided for the item.
             type:
               - "null"
               - string
           favorite:
+            description: Indicates if the item is marked as a favorite.
             type:
               - "null"
               - string
             pattern: 0|1
           status:
+            description: Status of the item.
             type:
               - "null"
               - string
             pattern: 0|1|2
           time_added:
+            description: Time when the item was added.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           time_updated:
+            description: Time when the item was updated.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           time_read:
+            description: Time when the item was read.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           time_favorited:
+            description: Time when the item was favorited.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           sort_id:
+            description: Sorting identifier.
             type:
               - "null"
               - number
           resolved_title:
+            description: Resolved title for the item.
             type:
               - "null"
               - string
           resolved_url:
+            description: Resolved URL for the item.
             type:
               - "null"
               - string
           excerpt:
+            description: Short summary of the content.
             type:
               - "null"
               - string
           is_article:
+            description: Indicates if the item is an article.
             type:
               - "null"
               - string
             pattern: 0|1
           is_index:
+            description: Indicates if the item is an index.
             type:
               - "null"
               - string
             pattern: 0|1
           has_image:
+            description: Indicates if the item has an image.
             type:
               - "null"
               - string
             pattern: 0|1|2
           has_video:
+            description: Indicates if the item has a video.
             type:
               - "null"
               - string
             pattern: 0|1|2
           word_count:
+            description: Number of words in the content.
             type:
               - "null"
               - string
             pattern: "[0-9]+"
           lang:
+            description: Language of the content.
             type:
               - "null"
               - string
           time_to_read:
+            description: Estimated time to read the content.
             type:
               - "null"
               - number
           top_image_url:
+            description: Top image URL.
             type:
               - "null"
               - string
@@ -177,11 +199,15 @@ definitions:
                   - object
                 properties:
                   item_id:
+                    description:
+                      Unique identifier for the item associated with the
+                      tag.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   tag:
+                    description: Tag associated with the item.
                     type:
                       - "null"
                       - string
@@ -197,20 +223,26 @@ definitions:
                 additionalProperties: true
                 properties:
                   item_id:
+                    description:
+                      Unique identifier for the item associated with the
+                      author.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   author_id:
+                    description: Unique identifier for the author.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   name:
+                    description: Name of the author.
                     type:
                       - "null"
                       - string
                   url:
+                    description: URL of the author.
                     type:
                       - "null"
                       - string
@@ -220,20 +252,24 @@ definitions:
               - object
             properties:
               item_id:
+                description: Unique identifier for the item associated with the image.
                 type:
                   - "null"
                   - string
                 pattern: "[0-9]+"
               src:
+                description: URL of the image source.
                 type:
                   - "null"
                   - string
               width:
+                description: Width of the image.
                 type:
                   - "null"
                   - string
                 pattern: "[0-9]+"
               height:
+                description: Height of the image.
                 type:
                   - "null"
                   - string
@@ -250,34 +286,43 @@ definitions:
                 additionalProperties: true
                 properties:
                   item_id:
+                    description:
+                      Unique identifier for the item associated with the
+                      image.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   image_id:
+                    description: Unique identifier for the image.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   src:
+                    description: URL of the image source.
                     type:
                       - "null"
                       - string
                   width:
+                    description: Width of the image.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   height:
+                    description: Height of the image.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   credit:
+                    description: Credit for the image.
                     type:
                       - "null"
                       - string
                   caption:
+                    description: Caption for the image.
                     type:
                       - "null"
                       - string
@@ -293,34 +338,43 @@ definitions:
                 additionalProperties: true
                 properties:
                   item_id:
+                    description:
+                      Unique identifier for the item associated with the
+                      video.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   video_id:
+                    description: Unique identifier for the video.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   src:
+                    description: URL of the video source.
                     type:
                       - "null"
                       - string
                   width:
+                    description: Width of the video.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   height:
+                    description: Height of the video.
                     type:
                       - "null"
                       - string
                     pattern: "[0-9]+"
                   type:
+                    description: Type of the video.
                     type:
                       - "null"
                       - string
                   vid:
+                    description: Video ID.
                     type:
                       - "null"
                       - string
@@ -330,18 +384,22 @@ definitions:
               - object
             properties:
               name:
+                description: Name of the domain.
                 type:
                   - "null"
                   - string
               logo:
+                description: URL of the logo.
                 type:
                   - "null"
                   - string
               greyscale_logo:
+                description: URL of the greyscale logo.
                 type:
                   - "null"
                   - string
           listen_duration_estimate:
+            description: Estimated time to listen to the content.
             type:
               - "null"
               - number

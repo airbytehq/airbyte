@@ -51,6 +51,7 @@
       "type": ["null", "string"]
     },
     "metrics": {
+      "description": "Defines the metrics or quantitative measurements of the audience data such as number of views, engagement rate, share count, etc.",
       "type": ["null", "object"],
       "properties": {
         "campaign_name": {
@@ -188,6 +189,7 @@
       }
     },
     "dimensions": {
+      "description": "Specifies the dimensions or attributes of the audience data being reported such as age, gender, location, etc.",
       "type": ["null", "object"],
       "properties": {
         "stat_time_day": {

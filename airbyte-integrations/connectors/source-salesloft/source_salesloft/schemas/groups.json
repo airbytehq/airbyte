@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the group.",
       "type": "integer"
     },
     "name": {
+      "description": "The name of the group.",
       "type": ["null", "string"]
     },
     "parent_id": {
+      "description": "The identifier of the parent group, if applicable.",
       "type": ["null", "integer"]
     }
   }

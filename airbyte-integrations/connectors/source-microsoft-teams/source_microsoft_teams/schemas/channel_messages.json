@@ -4,51 +4,65 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the message.",
       "type": ["null", "string"]
     },
     "replyToId": {
+      "description": "ID of the message being replied to, if applicable.",
       "type": ["null", "string"]
     },
     "etag": {
+      "description": "ETag used for concurrency control.",
       "type": ["null", "string"]
     },
     "messageType": {
+      "description": "Type of message, e.g., regular, system.",
       "type": ["null", "string"]
     },
     "createdDateTime": {
+      "description": "Date and time when the message was created.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "lastModifiedDateTime": {
+      "description": "Date and time when the message was last modified.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "deletedDateTime": {
+      "description": "Date and time when the message was deleted, if applicable.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "subject": {
+      "description": "Subject or title of the message.",
       "type": ["null", "string"]
     },
     "summary": {
+      "description": "Brief summary or preview of the message content.",
       "type": ["null", "string"]
     },
     "chatId": {
+      "description": "ID of the chat from which the message originates.",
       "type": ["null", "string"]
     },
     "importance": {
+      "description": "Indication of the message's importance, e.g., high, normal, low.",
       "type": ["null", "string"]
     },
     "locale": {
+      "description": "Locale or language setting for the message.",
       "type": ["null", "string"]
     },
     "webUrl": {
+      "description": "URL to access the message in a web interface.",
       "type": ["null", "string"]
     },
     "policyViolation": {
+      "description": "Information about any policy violations related to the message.",
       "type": ["null", "string"]
     },
     "from": {
@@ -56,12 +70,15 @@
       "additionalProperties": true,
       "properties": {
         "application": {
+          "description": "Information about the application sending the message.",
           "type": ["null", "string"]
         },
         "device": {
+          "description": "Details about the device from which the message was sent.",
           "type": ["null", "string"]
         },
         "conversation": {
+          "description": "Details about the conversation context, if any.",
           "type": ["null", "string"]
         },
         "user": {
@@ -69,12 +86,15 @@
           "additionalProperties": true,
           "properties": {
             "id": {
+              "description": "ID of the user sending the message.",
               "type": ["null", "string"]
             },
             "displayName": {
+              "description": "Display name of the user sending the message.",
               "type": ["null", "string"]
             },
             "userIdentityType": {
+              "description": "Type of identity used for the user, e.g., azureADUser.",
               "type": ["null", "string"]
             }
           }
@@ -86,9 +106,11 @@
       "additionalProperties": true,
       "properties": {
         "contentType": {
+          "description": "Type of content in the message body, e.g., text, html.",
           "type": ["null", "string"]
         },
         "content": {
+          "description": "Text content of the message or chat.",
           "type": ["null", "string"]
         }
       }
@@ -98,14 +120,17 @@
       "additionalProperties": true,
       "properties": {
         "teamId": {
+          "description": "Identifier of the team to which the channel belongs.",
           "type": ["null", "string"]
         },
         "channelId": {
+          "description": "Identifier of the channel where the message was posted.",
           "type": ["null", "string"]
         }
       }
     },
     "attachments": {
+      "description": "Additional files or media attached to the message.",
       "anyOf": [
         {
           "type": "array",
@@ -140,6 +165,7 @@
       ]
     },
     "mentions": {
+      "description": "Users or entities mentioned in the message.",
       "anyOf": [
         {
           "type": "array",
@@ -192,6 +218,7 @@
       ]
     },
     "reactions": {
+      "description": "Reactions or emojis associated with the message.",
       "anyOf": [
         {
           "type": "array",

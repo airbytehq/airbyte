@@ -42,6 +42,7 @@
       "type": ["null", "string"]
     },
     "bank_account": {
+      "description": "Details of the bank account associated with the payout",
       "properties": {
         "metadata": {
           "description": "Additional data about the bank account.",

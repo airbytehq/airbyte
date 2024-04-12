@@ -46,6 +46,7 @@
       "type": ["null", "string"]
     },
     "AutomatedShippingSettings": {
+      "description": "Settings related to automated shipping processes.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -64,6 +65,7 @@
       "type": ["null", "string"]
     },
     "OrderTotal": {
+      "description": "Total amount of the order including taxes and shipping costs.",
       "type": ["null", "object"],
       "properties": {
         "CurrencyCode": {
@@ -89,6 +91,7 @@
       "type": ["null", "string"]
     },
     "PaymentMethodDetails": {
+      "description": "Details of the payment method used for the order.",
       "type": ["null", "array"],
       "items": {
         "description": "Details of the payment method used",
@@ -150,6 +153,7 @@
       "type": ["null", "boolean"]
     },
     "DefaultShipFromLocationAddress": {
+      "description": "The default address from which orders are shipped.",
       "type": ["null", "object"],
       "properties": {
         "AddressLine1": {
@@ -191,6 +195,7 @@
       "airbyte_type": "timestamp_with_timezone"
     },
     "ShippingAddress": {
+      "description": "The address to which the order will be shipped.",
       "type": ["null", "object"],
       "properties": {
         "City": {

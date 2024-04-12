@@ -192,6 +192,7 @@
       "type": ["string", "null"]
     },
     "meta_data": {
+      "description": "Additional metadata associated with the plan",
       "type": ["object", "null"],
       "properties": {
         "description": "Additional metadata associated with the plan"
@@ -206,6 +207,7 @@
       "type": ["boolean", "null"]
     },
     "tiers": {
+      "description": "Pricing tiers for this plan",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -238,6 +240,7 @@
       }
     },
     "applicable_addons": {
+      "description": "Available addons that can be applied to this plan",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -250,6 +253,7 @@
       }
     },
     "attached_addons": {
+      "description": "Addons currently attached to this plan",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -278,6 +282,7 @@
       }
     },
     "event_based_addons": {
+      "description": "Addons triggered based on specific events for this plan",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],

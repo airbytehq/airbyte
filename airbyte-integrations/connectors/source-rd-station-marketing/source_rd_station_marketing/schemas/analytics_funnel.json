@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "reference_day": {
+      "description": "The day or date for which the funnel data is being accessed.",
       "type": ["null", "string"]
     },
     "contacts_count": {
+      "description": "The total count of contacts in the funnel at a specific time.",
       "type": ["null", "integer"]
     },
     "qualified_contacts_count": {
+      "description": "The count of contacts that meet specific criteria to move to the next stage.",
       "type": ["null", "integer"]
     },
     "opportunities_count": {
+      "description": "The count of potential sales opportunities in the funnel.",
       "type": ["null", "integer"]
     },
     "sales_count": {
+      "description": "The count of successful sales made from the opportunities in the funnel.",
       "type": ["null", "integer"]
     },
     "visitors_count": {
+      "description": "The count of visitors who entered the funnel but have not converted yet.",
       "type": ["null", "integer"]
     }
   }

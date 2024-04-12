@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "recovered": {
+      "description": "The number of individuals who have recovered from COVID-19 in the specified state on the given date.",
       "type": ["integer", "null"]
     },
     "date": {
+      "description": "The date for which the recovery data is reported.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The full name of the state for which the recovery data is provided.",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation code of the specific state as per the ISO 3166-2 standard.",
       "type": ["string", "null"]
     }
   },

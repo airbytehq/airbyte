@@ -4,73 +4,94 @@
   "additionalProperties": false,
   "properties": {
     "_id": {
+      "description": "Unique identifier for the item",
       "type": "integer"
     },
     "_cursor": {
+      "description": "Date-time cursor for pagination",
       "type": "string",
       "format": "date-time"
     },
     "ReadOnly": {
+      "description": "Indicates if the item is read-only",
       "$ref": "customer/models/item_read_only.json"
     },
     "ItemId": {
+      "description": "Unique identifier for the item",
       "type": "integer"
     },
     "Sku": {
+      "description": "Stock Keeping Unit code for the item",
       "type": "string"
     },
     "Upc": {
+      "description": "Universal Product Code for the item",
       "type": "string"
     },
     "Description": {
+      "description": "Description of the item",
       "type": "string"
     },
     "Description2": {
+      "description": "Additional description of the item",
       "type": "string"
     },
     "InventoryCategory": {
+      "description": "Category under which the item is classified in inventory",
       "type": "string"
     },
     "ClassificationIdentifier": {
+      "description": "Identifier for classification of the item",
       "$ref": "generic/models/item_classification_identifier.json"
     },
     "Nmfc": {
+      "description": "National Motor Freight Classification code for the item",
       "type": "string"
     },
     "Cost": {
+      "description": "Cost of the item",
       "type": "number"
     },
     "Price": {
+      "description": "Price of the item",
       "type": "number"
     },
     "Temperature": {
+      "description": "Temperature requirements for storing the item",
       "type": "number"
     },
     "AccountRef": {
+      "description": "Reference to the account associated with the item",
       "type": "string"
     },
     "CountryOfManufacture": {
+      "description": "Country where the item is manufactured",
       "type": "string"
     },
     "HarmonizedCode": {
+      "description": "Harmonized System code for the item",
       "type": "string"
     },
     "Qualifiers": {
+      "description": "Qualifiers associated with the item",
       "type": "array",
       "items": {
         "$ref": "customer/models/item_qualifier.json"
       }
     },
     "QualifierRenamers": {
+      "description": "Renamed qualifiers for the item",
       "type": "array",
       "items": {
         "$ref": "customer/models/qualifier_renamer.json"
       }
     },
     "Kit": {
+      "description": "Indicates if the item is part of a kit",
       "$ref": "customer/models/kit.json"
     },
     "Options": {
+      "description": "Available options for the item",
       "$ref": "customer/models/item_options.json"
     }
   }

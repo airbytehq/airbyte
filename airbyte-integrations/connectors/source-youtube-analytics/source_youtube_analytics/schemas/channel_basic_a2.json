@@ -3,102 +3,135 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the video.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video is live or on demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether viewers were subscribed to the channel or not.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code associated with the data.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views on the channel.",
       "type": ["null", "integer"]
     },
     "comments": {
+      "description": "The total number of comments on the channel.",
       "type": ["null", "integer"]
     },
     "likes": {
+      "description": "The total number of likes on the channel.",
       "type": ["null", "integer"]
     },
     "dislikes": {
+      "description": "The total number of dislikes on the channel.",
       "type": ["null", "integer"]
     },
     "shares": {
+      "description": "The total number of shares of the channel's videos.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes on the channel.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration in seconds that viewers watched a video.",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "The average percentage of a video that viewers watched.",
       "type": ["null", "number"]
     },
     "annotation_impressions": {
+      "description": "The total number of times annotations were shown to viewers.",
       "type": ["null", "integer"]
     },
     "annotation_clickable_impressions": {
+      "description": "The number of times viewers had the opportunity to click on annotations.",
       "type": ["null", "integer"]
     },
     "annotation_clicks": {
+      "description": "The total number of times viewers clicked on annotations.",
       "type": ["null", "integer"]
     },
     "annotation_click_through_rate": {
+      "description": "The percentage of times viewers clicked on annotations divided by the number of times annotations were shown.",
       "type": ["null", "number"]
     },
     "annotation_closable_impressions": {
+      "description": "The number of times viewers had the opportunity to close annotations.",
       "type": ["null", "integer"]
     },
     "annotation_closes": {
+      "description": "The total number of times viewers closed annotations.",
       "type": ["null", "integer"]
     },
     "annotation_close_rate": {
+      "description": "The percentage of times viewers closed annotations divided by the number of times annotations were shown.",
       "type": ["null", "number"]
     },
     "card_teaser_impressions": {
+      "description": "The total number of times card teasers were shown to viewers.",
       "type": ["null", "integer"]
     },
     "card_teaser_clicks": {
+      "description": "The total number of times viewers clicked on card teasers.",
       "type": ["null", "integer"]
     },
     "card_teaser_click_rate": {
+      "description": "The percentage of times viewers clicked on card teasers divided by the number of times teasers were shown.",
       "type": ["null", "number"]
     },
     "card_impressions": {
+      "description": "The total number of times cards were shown to viewers.",
       "type": ["null", "integer"]
     },
     "card_clicks": {
+      "description": "The total number of times viewers clicked on cards.",
       "type": ["null", "integer"]
     },
     "card_click_rate": {
+      "description": "The percentage of times viewers clicked on cards divided by the number of times cards were shown.",
       "type": ["null", "number"]
     },
     "subscribers_gained": {
+      "description": "The number of subscribers gained during the specified period.",
       "type": ["null", "integer"]
     },
     "subscribers_lost": {
+      "description": "The number of subscribers lost during the specified period.",
       "type": ["null", "integer"]
     },
     "videos_added_to_playlists": {
+      "description": "The total number of times videos were added to playlists.",
       "type": ["null", "integer"]
     },
     "videos_removed_from_playlists": {
+      "description": "The total number of times videos were removed from playlists.",
       "type": ["null", "integer"]
     },
     "red_views": {
+      "description": "The number of views coming from YouTube Red subscribers.",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "The total amount of watch time in minutes from YouTube Red subscribers.",
       "type": ["null", "number"]
     }
   }

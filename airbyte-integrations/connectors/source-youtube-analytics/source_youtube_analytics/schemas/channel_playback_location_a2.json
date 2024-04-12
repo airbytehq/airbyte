@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for the data entry.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the video.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video on this playback location was streamed live or on-demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewer was subscribed to the channel when watching the video on this playback location.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code of the playback location.",
       "type": ["null", "string"]
     },
     "playback_location_type": {
+      "description": "The type of the playback location.",
       "type": ["null", "integer"]
     },
     "playback_location_detail": {
+      "description": "Additional details about the playback location.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views on this playback location.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes on this playback location.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average number of seconds watched by viewers before stopping or skipping a video on this playback location.",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "The average percentage of a video watched by viewers on this playback location.",
       "type": ["null", "number"]
     },
     "red_views": {
+      "description": "The number of views coming from YouTube Red subscribers on this playback location.",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "The total watch time in minutes from YouTube Red subscribers on this playback location.",
       "type": ["null", "number"]
     }
   }

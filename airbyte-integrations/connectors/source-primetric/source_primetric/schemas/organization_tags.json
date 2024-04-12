@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "A universally unique identifier for the organization tag.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The name or label associated with the organization tag.",
       "type": "string"
     }
   }

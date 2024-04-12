@@ -101,6 +101,7 @@ definitions:
               - PT
             properties:
               US:
+                description: Certification details for United States
                 $id: "#root/certifications/US"
                 title: Us
                 type: array
@@ -115,6 +116,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for United States
                       $id: "#root/certifications/US/items/certification"
                       title: Certification
                       type: string
@@ -123,6 +125,7 @@ definitions:
                         - G
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in United States
                       $id: "#root/certifications/US/items/meaning"
                       title: Meaning
                       type: string
@@ -133,6 +136,7 @@ definitions:
                           to 1968 that still exists today.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in United States
                       $id: "#root/certifications/US/items/order"
                       title: Order
                       type: integer
@@ -140,6 +144,7 @@ definitions:
                         - 1
                       default: 0
               CA:
+                description: Certification details for Canada
                 $id: "#root/certifications/CA"
                 title: Ca
                 type: array
@@ -154,6 +159,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Canada
                       $id: "#root/certifications/CA/items/certification"
                       title: Certification
                       type: string
@@ -162,6 +168,7 @@ definitions:
                         - 18A
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Canada
                       $id: "#root/certifications/CA/items/meaning"
                       title: Meaning
                       type: string
@@ -172,6 +179,7 @@ definitions:
                           are prohibited from viewing the film.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Canada
                       $id: "#root/certifications/CA/items/order"
                       title: Order
                       type: integer
@@ -179,6 +187,7 @@ definitions:
                         - 4
                       default: 0
               AU:
+                description: Certification details for Australia
                 $id: "#root/certifications/AU"
                 title: Au
                 type: array
@@ -193,6 +202,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Australia
                       $id: "#root/certifications/AU/items/certification"
                       title: Certification
                       type: string
@@ -201,6 +211,7 @@ definitions:
                         - E
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Australia
                       $id: "#root/certifications/AU/items/meaning"
                       title: Meaning
                       type: string
@@ -211,6 +222,7 @@ definitions:
                           would ordinarily be rated M or higher).
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Australia
                       $id: "#root/certifications/AU/items/order"
                       title: Order
                       type: integer
@@ -218,6 +230,7 @@ definitions:
                         - 1
                       default: 0
               DE:
+                description: Certification details for Germany
                 $id: "#root/certifications/DE"
                 title: De
                 type: array
@@ -232,6 +245,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Germany
                       $id: "#root/certifications/DE/items/certification"
                       title: Certification
                       type: string
@@ -240,6 +254,7 @@ definitions:
                         - "0"
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Germany
                       $id: "#root/certifications/DE/items/meaning"
                       title: Meaning
                       type: string
@@ -248,6 +263,7 @@ definitions:
                         - No age restriction.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Germany
                       $id: "#root/certifications/DE/items/order"
                       title: Order
                       type: integer
@@ -255,6 +271,7 @@ definitions:
                         - 1
                       default: 0
               FR:
+                description: Certification details for France
                 $id: "#root/certifications/FR"
                 title: Fr
                 type: array
@@ -269,6 +286,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for France
                       $id: "#root/certifications/FR/items/certification"
                       title: Certification
                       type: string
@@ -277,6 +295,7 @@ definitions:
                         - U
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in France
                       $id: "#root/certifications/FR/items/meaning"
                       title: Meaning
                       type: string
@@ -285,6 +304,7 @@ definitions:
                         - (Tous publics) valid for all audiences.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in France
                       $id: "#root/certifications/FR/items/order"
                       title: Order
                       type: integer
@@ -292,6 +312,7 @@ definitions:
                         - 1
                       default: 0
               NZ:
+                description: Certification details for New Zealand
                 $id: "#root/certifications/NZ"
                 title: Nz
                 type: array
@@ -306,6 +327,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for New Zealand
                       $id: "#root/certifications/NZ/items/certification"
                       title: Certification
                       type: string
@@ -314,6 +336,7 @@ definitions:
                         - M
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in New Zealand
                       $id: "#root/certifications/NZ/items/meaning"
                       title: Meaning
                       type: string
@@ -323,6 +346,7 @@ definitions:
                           and up.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in New Zealand
                       $id: "#root/certifications/NZ/items/order"
                       title: Order
                       type: integer
@@ -330,6 +354,7 @@ definitions:
                         - 3
                       default: 0
               IN:
+                description: Certification details for India
                 $id: "#root/certifications/IN"
                 title: In
                 type: array
@@ -344,6 +369,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for India
                       $id: "#root/certifications/IN/items/certification"
                       title: Certification
                       type: string
@@ -352,6 +378,7 @@ definitions:
                         - U
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in India
                       $id: "#root/certifications/IN/items/meaning"
                       title: Meaning
                       type: string
@@ -364,6 +391,7 @@ definitions:
                           contain fantasy violence and/or mild bad language.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in India
                       $id: "#root/certifications/IN/items/order"
                       title: Order
                       type: integer
@@ -371,6 +399,7 @@ definitions:
                         - 0
                       default: 0
               GB:
+                description: Certification details for United Kingdom
                 $id: "#root/certifications/GB"
                 title: Gb
                 type: array
@@ -385,6 +414,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for United Kingdom
                       $id: "#root/certifications/GB/items/certification"
                       title: Certification
                       type: string
@@ -393,6 +423,7 @@ definitions:
                         - "15"
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in United Kingdom
                       $id: "#root/certifications/GB/items/meaning"
                       title: Meaning
                       type: string
@@ -409,6 +440,7 @@ definitions:
                           and justified by context.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in United Kingdom
                       $id: "#root/certifications/GB/items/order"
                       title: Order
                       type: integer
@@ -416,6 +448,7 @@ definitions:
                         - 5
                       default: 0
               NL:
+                description: Certification details for Netherlands
                 $id: "#root/certifications/NL"
                 title: Nl
                 type: array
@@ -430,6 +463,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Netherlands
                       $id: "#root/certifications/NL/items/certification"
                       title: Certification
                       type: string
@@ -438,6 +472,7 @@ definitions:
                         - AL
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Netherlands
                       $id: "#root/certifications/NL/items/meaning"
                       title: Meaning
                       type: string
@@ -446,6 +481,7 @@ definitions:
                         - All ages.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Netherlands
                       $id: "#root/certifications/NL/items/order"
                       title: Order
                       type: integer
@@ -453,6 +489,7 @@ definitions:
                         - 1
                       default: 0
               BR:
+                description: Certification details for Brazil
                 $id: "#root/certifications/BR"
                 title: Br
                 type: array
@@ -467,6 +504,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Brazil
                       $id: "#root/certifications/BR/items/certification"
                       title: Certification
                       type: string
@@ -475,6 +513,7 @@ definitions:
                         - L
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Brazil
                       $id: "#root/certifications/BR/items/meaning"
                       title: Meaning
                       type: string
@@ -484,6 +523,7 @@ definitions:
                           content.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Brazil
                       $id: "#root/certifications/BR/items/order"
                       title: Order
                       type: integer
@@ -491,6 +531,7 @@ definitions:
                         - 1
                       default: 0
               FI:
+                description: Certification details for Finland
                 $id: "#root/certifications/FI"
                 title: Fi
                 type: array
@@ -505,6 +546,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Finland
                       $id: "#root/certifications/FI/items/certification"
                       title: Certification
                       type: string
@@ -513,6 +555,7 @@ definitions:
                         - S
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Finland
                       $id: "#root/certifications/FI/items/meaning"
                       title: Meaning
                       type: string
@@ -521,6 +564,7 @@ definitions:
                         - For all ages.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Finland
                       $id: "#root/certifications/FI/items/order"
                       title: Order
                       type: integer
@@ -528,6 +572,7 @@ definitions:
                         - 1
                       default: 0
               BG:
+                description: Certification details for Bulgaria
                 $id: "#root/certifications/BG"
                 title: Bg
                 type: array
@@ -542,6 +587,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Bulgaria
                       $id: "#root/certifications/BG/items/certification"
                       title: Certification
                       type: string
@@ -550,6 +596,7 @@ definitions:
                         - A
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Bulgaria
                       $id: "#root/certifications/BG/items/meaning"
                       title: Meaning
                       type: string
@@ -558,6 +605,7 @@ definitions:
                         - Recommended for children.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Bulgaria
                       $id: "#root/certifications/BG/items/order"
                       title: Order
                       type: integer
@@ -565,6 +613,7 @@ definitions:
                         - 1
                       default: 0
               ES:
+                description: Certification details for Spain
                 $id: "#root/certifications/ES"
                 title: Es
                 type: array
@@ -579,6 +628,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Spain
                       $id: "#root/certifications/ES/items/certification"
                       title: Certification
                       type: string
@@ -587,6 +637,7 @@ definitions:
                         - APTA
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Spain
                       $id: "#root/certifications/ES/items/meaning"
                       title: Meaning
                       type: string
@@ -595,6 +646,7 @@ definitions:
                         - General admission.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Spain
                       $id: "#root/certifications/ES/items/order"
                       title: Order
                       type: integer
@@ -602,6 +654,7 @@ definitions:
                         - 1
                       default: 0
               PH:
+                description: Certification details for Philippines
                 $id: "#root/certifications/PH"
                 title: Ph
                 type: array
@@ -616,6 +669,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Philippines
                       $id: "#root/certifications/PH/items/certification"
                       title: Certification
                       type: string
@@ -624,6 +678,7 @@ definitions:
                         - G
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Philippines
                       $id: "#root/certifications/PH/items/meaning"
                       title: Meaning
                       type: string
@@ -632,6 +687,7 @@ definitions:
                         - General Audiences. Viewers of all ages are admitted.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Philippines
                       $id: "#root/certifications/PH/items/order"
                       title: Order
                       type: integer
@@ -639,6 +695,7 @@ definitions:
                         - 1
                       default: 0
               PT:
+                description: Certification details for Portugal
                 $id: "#root/certifications/PT"
                 title: Pt
                 type: array
@@ -653,6 +710,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Portugal
                       $id: "#root/certifications/PT/items/certification"
                       title: Certification
                       type: string
@@ -661,6 +719,7 @@ definitions:
                         - Públicos
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification in Portugal
                       $id: "#root/certifications/PT/items/meaning"
                       title: Meaning
                       type: string
@@ -670,6 +729,7 @@ definitions:
                           3 years of age).
                       pattern: ^.*$
                     order:
+                      description: Order of the certification in Portugal
                       $id: "#root/certifications/PT/items/order"
                       title: Order
                       type: integer
@@ -694,6 +754,7 @@ definitions:
           - certifications
         properties:
           certifications:
+            description: Contains certification data for various countries
             $id: "#root/certifications"
             title: Certifications
             type: object
@@ -710,11 +771,13 @@ definitions:
               - BR
             properties:
               RU:
+                description: Certification data for Russia
                 $id: "#root/certifications/RU"
                 title: Ru
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/RU/items"
                   title: Items
                   type: object
@@ -724,6 +787,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Russia
                       $id: "#root/certifications/RU/items/certification"
                       title: Certification
                       type: string
@@ -732,6 +796,7 @@ definitions:
                         - 18+
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Russia
                       $id: "#root/certifications/RU/items/meaning"
                       title: Meaning
                       type: string
@@ -740,6 +805,7 @@ definitions:
                         - Restricted to People 18 or Older.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Russia
                       $id: "#root/certifications/RU/items/order"
                       title: Order
                       type: integer
@@ -747,11 +813,13 @@ definitions:
                         - 5
                       default: 0
               US:
+                description: Certification data for United States
                 $id: "#root/certifications/US"
                 title: Us
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/US/items"
                   title: Items
                   type: object
@@ -761,6 +829,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for United States
                       $id: "#root/certifications/US/items/certification"
                       title: Certification
                       type: string
@@ -769,6 +838,7 @@ definitions:
                         - NR
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for United States
                       $id: "#root/certifications/US/items/meaning"
                       title: Meaning
                       type: string
@@ -777,6 +847,7 @@ definitions:
                         - No rating information.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for United States
                       $id: "#root/certifications/US/items/order"
                       title: Order
                       type: integer
@@ -784,11 +855,13 @@ definitions:
                         - 0
                       default: 0
               CA:
+                description: Certification data for Canada
                 $id: "#root/certifications/CA"
                 title: Ca
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/CA/items"
                   title: Items
                   type: object
@@ -798,6 +871,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Canada
                       $id: "#root/certifications/CA/items/certification"
                       title: Certification
                       type: string
@@ -806,6 +880,7 @@ definitions:
                         - Exempt
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Canada
                       $id: "#root/certifications/CA/items/meaning"
                       title: Meaning
                       type: string
@@ -815,6 +890,7 @@ definitions:
                           programming) will not display an on-screen rating at all.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Canada
                       $id: "#root/certifications/CA/items/order"
                       title: Order
                       type: integer
@@ -822,11 +898,13 @@ definitions:
                         - 0
                       default: 0
               AU:
+                description: Certification data for Australia
                 $id: "#root/certifications/AU"
                 title: Au
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/AU/items"
                   title: Items
                   type: object
@@ -836,6 +914,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Australia
                       $id: "#root/certifications/AU/items/certification"
                       title: Certification
                       type: string
@@ -844,6 +923,7 @@ definitions:
                         - P
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Australia
                       $id: "#root/certifications/AU/items/meaning"
                       title: Meaning
                       type: string
@@ -855,6 +935,7 @@ definitions:
                           may be shown during P-rated programs.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Australia
                       $id: "#root/certifications/AU/items/order"
                       title: Order
                       type: integer
@@ -862,11 +943,13 @@ definitions:
                         - 1
                       default: 0
               FR:
+                description: Certification data for France
                 $id: "#root/certifications/FR"
                 title: Fr
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/FR/items"
                   title: Items
                   type: object
@@ -876,6 +959,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for France
                       $id: "#root/certifications/FR/items/certification"
                       title: Certification
                       type: string
@@ -884,6 +968,7 @@ definitions:
                         - NR
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for France
                       $id: "#root/certifications/FR/items/meaning"
                       title: Meaning
                       type: string
@@ -892,6 +977,7 @@ definitions:
                         - No rating information.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for France
                       $id: "#root/certifications/FR/items/order"
                       title: Order
                       type: integer
@@ -899,11 +985,13 @@ definitions:
                         - 0
                       default: 0
               DE:
+                description: Certification data for Germany
                 $id: "#root/certifications/DE"
                 title: De
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/DE/items"
                   title: Items
                   type: object
@@ -913,6 +1001,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Germany
                       $id: "#root/certifications/DE/items/certification"
                       title: Certification
                       type: string
@@ -921,6 +1010,7 @@ definitions:
                         - "0"
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Germany
                       $id: "#root/certifications/DE/items/meaning"
                       title: Meaning
                       type: string
@@ -929,6 +1019,7 @@ definitions:
                         - Can be aired at any time.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Germany
                       $id: "#root/certifications/DE/items/order"
                       title: Order
                       type: integer
@@ -936,11 +1027,13 @@ definitions:
                         - 0
                       default: 0
               TH:
+                description: Certification data for Thailand
                 $id: "#root/certifications/TH"
                 title: Th
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/TH/items"
                   title: Items
                   type: object
@@ -950,6 +1043,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Thailand
                       $id: "#root/certifications/TH/items/certification"
                       title: Certification
                       type: string
@@ -958,6 +1052,7 @@ definitions:
                         - ส
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Thailand
                       $id: "#root/certifications/TH/items/meaning"
                       title: Meaning
                       type: string
@@ -967,6 +1062,7 @@ definitions:
                           to see.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Thailand
                       $id: "#root/certifications/TH/items/order"
                       title: Order
                       type: integer
@@ -974,11 +1070,13 @@ definitions:
                         - 0
                       default: 0
               KR:
+                description: Certification data for South Korea
                 $id: "#root/certifications/KR"
                 title: Kr
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/KR/items"
                   title: Items
                   type: object
@@ -988,6 +1086,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for South Korea
                       $id: "#root/certifications/KR/items/certification"
                       title: Certification
                       type: string
@@ -996,6 +1095,7 @@ definitions:
                         - Exempt
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for South Korea
                       $id: "#root/certifications/KR/items/meaning"
                       title: Meaning
                       type: string
@@ -1008,6 +1108,7 @@ definitions:
                           Standards Commission recognizes.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for South Korea
                       $id: "#root/certifications/KR/items/order"
                       title: Order
                       type: integer
@@ -1015,11 +1116,13 @@ definitions:
                         - 0
                       default: 0
               GB:
+                description: Certification data for United Kingdom
                 $id: "#root/certifications/GB"
                 title: Gb
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/GB/items"
                   title: Items
                   type: object
@@ -1029,6 +1132,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for United Kingdom
                       $id: "#root/certifications/GB/items/certification"
                       title: Certification
                       type: string
@@ -1037,6 +1141,7 @@ definitions:
                         - U
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for United Kingdom
                       $id: "#root/certifications/GB/items/meaning"
                       title: Meaning
                       type: string
@@ -1046,6 +1151,7 @@ definitions:
                           for audiences aged four years and over.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for United Kingdom
                       $id: "#root/certifications/GB/items/order"
                       title: Order
                       type: integer
@@ -1053,11 +1159,13 @@ definitions:
                         - 0
                       default: 0
               BR:
+                description: Certification data for Brazil
                 $id: "#root/certifications/BR"
                 title: Br
                 type: array
                 default: []
                 items:
+                  description: Details about a specific certification
                   $id: "#root/certifications/BR/items"
                   title: Items
                   type: object
@@ -1067,6 +1175,7 @@ definitions:
                     - order
                   properties:
                     certification:
+                      description: Certification code for Brazil
                       $id: "#root/certifications/BR/items/certification"
                       title: Certification
                       type: string
@@ -1075,6 +1184,7 @@ definitions:
                         - L
                       pattern: ^.*$
                     meaning:
+                      description: Meaning of the certification for Brazil
                       $id: "#root/certifications/BR/items/meaning"
                       title: Meaning
                       type: string
@@ -1083,6 +1193,7 @@ definitions:
                         - Content is suitable for all audiences.
                       pattern: ^.*$
                     order:
+                      description: Order of the certification for Brazil
                       $id: "#root/certifications/BR/items/order"
                       title: Order
                       type: integer
@@ -1110,6 +1221,7 @@ definitions:
           - total_results
         properties:
           results:
+            description: An array of movie change items.
             $id: "#root/results"
             title: Results
             type: array
@@ -1123,6 +1235,7 @@ definitions:
                 - adult
               properties:
                 id:
+                  description: The unique identifier of the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
@@ -1130,6 +1243,7 @@ definitions:
                     - 412683
                   default: 0
                 adult:
+                  description: Indicates if the movie is adult or not.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type:
@@ -1139,6 +1253,7 @@ definitions:
                     - false
                   default: true
           page:
+            description: The current page number of the fetched movie changes data.
             $id: "#root/page"
             title: Page
             type: integer
@@ -1146,6 +1261,7 @@ definitions:
               - 1
             default: 0
           total_pages:
+            description: The total number of pages of movie changes data.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -1153,6 +1269,7 @@ definitions:
               - 10
             default: 0
           total_results:
+            description: The total count of movie changes that match the query.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -1180,6 +1297,7 @@ definitions:
           - total_results
         properties:
           results:
+            description: An array of TV show changes.
             $id: "#root/results"
             title: Results
             type: array
@@ -1193,6 +1311,7 @@ definitions:
                 - adult
               properties:
                 id:
+                  description: The unique identifier of the TV show.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
@@ -1200,6 +1319,7 @@ definitions:
                     - 67563
                   default: 0
                 adult:
+                  description: Indicates if the TV show is intended for adult audiences.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type:
@@ -1209,6 +1329,7 @@ definitions:
                     - false
                   default: true
           page:
+            description: The current page of TV show changes results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -1216,6 +1337,7 @@ definitions:
               - 1
             default: 0
           total_pages:
+            description: The total number of pages of TV show changes results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -1223,6 +1345,7 @@ definitions:
               - 2
             default: 0
           total_results:
+            description: The total number of TV show changes.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -1250,6 +1373,9 @@ definitions:
           - total_results
         properties:
           results:
+            description:
+              A list of items containing information about the changed
+              persons.
             $id: "#root/results"
             title: Results
             type: array
@@ -1263,6 +1389,7 @@ definitions:
                 - adult
               properties:
                 id:
+                  description: Unique identifier for the person.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
@@ -1270,6 +1397,9 @@ definitions:
                     - 1670120
                   default: 0
                 adult:
+                  description:
+                    Boolean value indicating if the person is classified
+                    as an adult.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type:
@@ -1279,6 +1409,7 @@ definitions:
                     - false
                   default: true
           page:
+            description: The page number of the results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -1286,6 +1417,7 @@ definitions:
               - 1
             default: 0
           total_pages:
+            description: The total number of pages available.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -1293,6 +1425,7 @@ definitions:
               - 7
             default: 0
           total_results:
+            description: The total number of results available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -1315,11 +1448,13 @@ definitions:
         type: object
         properties:
           adult:
+            description: Indicates if the movie is intended for adult audiences.
             $id: "#root/adult"
             title: Adult
             type: boolean
             default: true
           backdrop_path:
+            description: The path to the backdrop image of the movie.
             $id: "#root/backdrop_path"
             title: Backdrop_path
             type:
@@ -1328,6 +1463,9 @@ definitions:
             default: ""
             pattern: ^.*$
           belongs_to_collection:
+            description:
+              Information about the collection the movie belongs to if
+              any.
             $id: "#root/belongs_to_collection"
             title: Belongs_to_collection
             type:
@@ -1335,6 +1473,7 @@ definitions:
               - object
             default:
           budget:
+            description: The budget of the movie in USD.
             $id: "#root/budget"
             title: Budget
             type: integer
@@ -1352,17 +1491,20 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the genre.
                   $id: "#root/genres/items/id"
                   title: Id
                   type: integer
                   default: 0
                 name:
+                  description: The name of the genre.
                   $id: "#root/genres/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           homepage:
+            description: The official homepage of the movie.
             $id: "#root/homepage"
             title: Homepage
             type:
@@ -1371,29 +1513,34 @@ definitions:
             default: ""
             pattern: ^.*$
           id:
+            description: The unique identifier of the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           imdb_id:
+            description: The IMDb ID of the movie.
             $id: "#root/imdb_id"
             title: Imdb_id
             type: string
             default: ""
             pattern: ^.*$
           original_language:
+            description: The original language of the movie.
             $id: "#root/original_language"
             title: Original_language
             type: string
             default: ""
             pattern: ^.*$
           original_title:
+            description: The original title of the movie.
             $id: "#root/original_title"
             title: Original_title
             type: string
             default: ""
             pattern: ^.*$
           overview:
+            description: A brief overview/synopsis of the movie.
             $id: "#root/overview"
             title: Overview
             type:
@@ -1402,11 +1549,13 @@ definitions:
             default: ""
             pattern: ^.*$
           popularity:
+            description: The popularity score of the movie.
             $id: "#root/popularity"
             title: Popularity
             type: number
             default: 0.0
           poster_path:
+            description: The path to the poster image of the movie.
             $id: "#root/poster_path"
             title: Poster_path
             type:
@@ -1426,11 +1575,13 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the production company.
                   $id: "#root/production_companies/items/id"
                   title: Id
                   type: integer
                   default: 0
                 logo_path:
+                  description: The path to the logo of the production company.
                   $id: "#root/production_companies/items/logo_path"
                   title: Logo_path
                   type:
@@ -1439,12 +1590,14 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: The name of the production company.
                   $id: "#root/production_companies/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 origin_country:
+                  description: The country where the production company is based.
                   $id: "#root/production_companies/items/origin_country"
                   title: Origin_country
                   type: string
@@ -1463,29 +1616,34 @@ definitions:
               type: object
               properties:
                 iso_3166_1:
+                  description: The ISO 3166-1 code of the country.
                   $id: "#root/production_countries/items/iso_3166_1"
                   title: Iso_3166_1
                   type: string
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: The name of the production country.
                   $id: "#root/production_countries/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           release_date:
+            description: The release date of the movie.
             $id: "#root/release_date"
             title: Release_date
             type: string
             default: ""
             pattern: ^.*$
           revenue:
+            description: The revenue generated by the movie.
             $id: "#root/revenue"
             title: Revenue
             type: integer
             default: 0
           runtime:
+            description: The runtime duration of the movie in minutes.
             $id: "#root/runtime"
             title: Runtime
             type:
@@ -1505,24 +1663,28 @@ definitions:
               type: object
               properties:
                 iso_639_1:
+                  description: The ISO 639-1 code of the language.
                   $id: "#root/spoken_languages/items/iso_639_1"
                   title: Iso_639_1
                   type: string
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: The name of the spoken language.
                   $id: "#root/spoken_languages/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           status:
+            description: The production status of the movie.
             $id: "#root/status"
             title: Status
             type: string
             default: ""
             pattern: ^.*$
           tagline:
+            description: The tagline of the movie.
             $id: "#root/tagline"
             title: Tagline
             type:
@@ -1531,22 +1693,26 @@ definitions:
             default: ""
             pattern: ^.*$
           title:
+            description: The title of the movie.
             $id: "#root/title"
             title: Title
             type: string
             default: ""
             pattern: ^.*$
           video:
+            description: Indicates if the movie has a video.
             $id: "#root/video"
             title: Video
             type: boolean
             default: true
           vote_average:
+            description: The average rating of the movie.
             $id: "#root/vote_average"
             title: Vote_average
             type: number
             default: 0.0
           vote_count:
+            description: The count of votes/ratings for the movie.
             $id: "#root/vote_count"
             title: Vote_count
             type: integer
@@ -1567,11 +1733,13 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           titles:
+            description: An array of alternative titles for the movie.
             $id: "#root/titles"
             title: Titles
             type:
@@ -1588,18 +1756,25 @@ definitions:
                 - object
               properties:
                 iso_3166_1:
+                  description:
+                    The ISO 3166-1 code representing the country for which
+                    the alternative title is specified.
                   $id: "#root/titles/items/iso_3166_1"
                   title: Iso_3166_1
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: The alternative title of the movie.
                   $id: "#root/titles/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 type:
+                  description:
+                    The type of the alternative title (e.g., original title,
+                    working title, etc.).
                   $id: "#root/titles/items/type"
                   title: Type
                   type: string
@@ -1621,11 +1796,13 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           cast:
+            description: Contains information about the cast members in the movie.
             $id: "#root/cast"
             title: Cast
             type: array
@@ -1636,44 +1813,54 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the cast member is an adult.
                   $id: "#root/cast/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 gender:
+                  description: Gender of the cast member.
                   $id: "#root/cast/items/gender"
                   title: Gender
                   type: integer
                   default: 0
                 id:
+                  description: Unique identifier for the cast member.
                   $id: "#root/cast/items/id"
                   title: Id
                   type: integer
                   default: 0
                 known_for_department:
+                  description:
+                    The department where the cast member is known for their
+                    work.
                   $id: "#root/cast/items/known_for_department"
                   title: Known_for_department
                   type: string
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: Name of the cast member.
                   $id: "#root/cast/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_name:
+                  description: The original name of the cast member.
                   $id: "#root/cast/items/original_name"
                   title: Original_name
                   type: string
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: Popularity score of the cast member.
                   $id: "#root/cast/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 profile_path:
+                  description: Path to the profile image of the cast member.
                   $id: "#root/cast/items/profile_path"
                   title: Profile_path
                   type:
@@ -1682,28 +1869,37 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 cast_id:
+                  description: Unique identifier for the cast member in the movie.
                   $id: "#root/cast/items/cast_id"
                   title: Cast_id
                   type: integer
                   default: 0
                 character:
+                  description: The role or character played by the cast member.
                   $id: "#root/cast/items/character"
                   title: Character
                   type: string
                   default: ""
                   pattern: ^.*$
                 credit_id:
+                  description: Unique identifier for the credit of the cast member.
                   $id: "#root/cast/items/credit_id"
                   title: Credit_id
                   type: string
                   default: ""
                   pattern: ^.*$
                 order:
+                  description:
+                    Order of appearance of the cast member in the movie
+                    credits.
                   $id: "#root/cast/items/order"
                   title: Order
                   type: integer
                   default: 0
           crew:
+            description:
+              Contains information about the crew members associated with
+              the movie.
             $id: "#root/crew"
             title: Crew
             type: array
@@ -1714,44 +1910,54 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the crew member is an adult.
                   $id: "#root/crew/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 gender:
+                  description: Gender of the crew member.
                   $id: "#root/crew/items/gender"
                   title: Gender
                   type: integer
                   default: 0
                 id:
+                  description: Unique identifier for the crew member.
                   $id: "#root/crew/items/id"
                   title: Id
                   type: integer
                   default: 0
                 known_for_department:
+                  description:
+                    The department where the crew member is known for their
+                    work.
                   $id: "#root/crew/items/known_for_department"
                   title: Known_for_department
                   type: string
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: Name of the crew member.
                   $id: "#root/crew/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_name:
+                  description: The original name of the crew member.
                   $id: "#root/crew/items/original_name"
                   title: Original_name
                   type: string
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: Popularity score of the crew member.
                   $id: "#root/crew/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 profile_path:
+                  description: Path to the profile image of the crew member.
                   $id: "#root/crew/items/profile_path"
                   title: Profile_path
                   type:
@@ -1760,18 +1966,21 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 credit_id:
+                  description: Unique identifier for the credit of the crew member.
                   $id: "#root/crew/items/credit_id"
                   title: Credit_id
                   type: string
                   default: ""
                   pattern: ^.*$
                 department:
+                  description: The department in which the crew member works.
                   $id: "#root/crew/items/department"
                   title: Department
                   type: string
                   default: ""
                   pattern: ^.*$
                 job:
+                  description: The specific job or role of the crew member.
                   $id: "#root/crew/items/job"
                   title: Job
                   type: string
@@ -1793,18 +2002,21 @@ definitions:
         type: object
         properties:
           imdb_id:
+            description: The unique identifier for the movie on IMDb.
             $id: "#root/imdb_id"
             title: Imdb_id
             type: string
             default: ""
             pattern: ^.*$
           facebook_id:
+            description: The unique identifier for the movie on Facebook.
             $id: "#root/facebook_id"
             title: Facebook_id
             type: string
             default: ""
             pattern: ^.*$
           instagram_id:
+            description: The unique identifier for the movie on Instagram.
             $id: "#root/instagram_id"
             title: Instagram_id
             type:
@@ -1813,6 +2025,7 @@ definitions:
             default: ""
             pattern: ^.*$
           twitter_id:
+            description: The unique identifier for the movie on Twitter.
             $id: "#root/twitter_id"
             title: Twitter_id
             type:
@@ -1821,6 +2034,7 @@ definitions:
             default: ""
             pattern: ^.*$
           id:
+            description: The unique identifier for the movie on TMDB.
             $id: "#root/id"
             title: Id
             type: integer
@@ -1841,11 +2055,15 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           backdrops:
+            description:
+              An array of backdrop images related to the movie. Backdrops
+              are typically used as backgrounds on movie detail pages.
             $id: "#root/backdrops"
             title: Backdrops
             type: array
@@ -1856,22 +2074,26 @@ definitions:
               type: object
               properties:
                 aspect_ratio:
+                  description: The aspect ratio of the image.
                   $id: "#root/backdrops/items/aspect_ratio"
                   title: Aspect_ratio
                   type: number
                   default: 0.0
                 file_path:
+                  description: The file path of the image.
                   $id: "#root/backdrops/items/file_path"
                   title: File_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 height:
+                  description: The height of the image.
                   $id: "#root/backdrops/items/height"
                   title: Height
                   type: integer
                   default: 0
                 iso_639_1:
+                  description: The ISO 639-1 language code of the image.
                   $id: "#root/backdrops/items/iso_639_1"
                   title: Iso_639_1
                   type:
@@ -1879,6 +2101,7 @@ definitions:
                     - "null"
                   default:
                 vote_average:
+                  description: The average rating of the image.
                   $id: "#root/backdrops/items/vote_average"
                   title: Vote_average
                   type:
@@ -1887,16 +2110,21 @@ definitions:
                     - string
                   default: 0
                 vote_count:
+                  description: The number of votes the image has received.
                   $id: "#root/backdrops/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 width:
+                  description: The width of the image.
                   $id: "#root/backdrops/items/width"
                   title: Width
                   type: integer
                   default: 0
           posters:
+            description:
+              An array of poster images related to the movie. Posters are
+              typically used as thumbnails or promotional images.
             $id: "#root/posters"
             title: Posters
             type: array
@@ -1907,22 +2135,26 @@ definitions:
               type: object
               properties:
                 aspect_ratio:
+                  description: The aspect ratio of the image.
                   $id: "#root/posters/items/aspect_ratio"
                   title: Aspect_ratio
                   type: number
                   default: 0.0
                 file_path:
+                  description: The file path of the image.
                   $id: "#root/posters/items/file_path"
                   title: File_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 height:
+                  description: The height of the image.
                   $id: "#root/posters/items/height"
                   title: Height
                   type: integer
                   default: 0
                 iso_639_1:
+                  description: The ISO 639-1 language code of the image.
                   $id: "#root/posters/items/iso_639_1"
                   title: Iso_639_1
                   type:
@@ -1931,6 +2163,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 vote_average:
+                  description: The average rating of the image.
                   $id: "#root/posters/items/vote_average"
                   title: Vote_average
                   type:
@@ -1939,11 +2172,13 @@ definitions:
                     - string
                   default: 0
                 vote_count:
+                  description: The number of votes the image has received.
                   $id: "#root/posters/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 width:
+                  description: The width of the image.
                   $id: "#root/posters/items/width"
                   title: Width
                   type: integer
@@ -1964,11 +2199,13 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           keywords:
+            description: Keywords associated with the movie.
             $id: "#root/keywords"
             title: Keywords
             type: array
@@ -1979,11 +2216,13 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the keyword.
                   $id: "#root/keywords/items/id"
                   title: Id
                   type: integer
                   default: 0
                 name:
+                  description: Name of the keyword.
                   $id: "#root/keywords/items/name"
                   title: Name
                   type: string
@@ -2179,6 +2418,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of movie recommendations being displayed.
             $id: "#root/page"
             title: Page
             type: integer
@@ -2194,11 +2434,13 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the movie is suitable for adults only.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 backdrop_path:
+                  description: The backdrop image path for the movie.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -2211,40 +2453,47 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre ids associated with the movie.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier for the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_language:
+                  description: The original language in which the movie was made.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_title:
+                  description: The original title of the movie.
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 overview:
+                  description: A brief summary of the movie plot.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The release date of the movie.
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
                   default: ""
                   pattern: ^.*$
                 poster_path:
+                  description: The poster image path for the movie.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type:
@@ -2252,22 +2501,26 @@ definitions:
                     - "null"
                   default:
                 popularity:
+                  description: The popularity score of the movie.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 title:
+                  description: The title of the movie.
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 video:
+                  description: Indicates if the movie has video content.
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type:
@@ -2276,16 +2529,19 @@ definitions:
                     - string
                   default: 0
                 vote_count:
+                  description: The total number of votes/ratings for the movie.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
           total_pages:
+            description: The total number of pages of movie recommendations.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of movie recommendations available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -2306,11 +2562,13 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the movie
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           results:
+            description: List of movie releases
             $id: "#root/results"
             title: Results
             type: array
@@ -2321,12 +2579,14 @@ definitions:
               type: object
               properties:
                 iso_3166_1:
+                  description: The country code following ISO 3166-1 standards
                   $id: "#root/results/items/iso_3166_1"
                   title: Iso_3166_1
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_dates:
+                  description: List of release dates for the movie in different countries
                   $id: "#root/results/items/release_dates"
                   title: Release_dates
                   type: array
@@ -2337,24 +2597,36 @@ definitions:
                     type: object
                     properties:
                       certification:
+                        description:
+                          The certification rating given to the movie in
+                          a specific country
                         $id: "#root/results/items/release_dates/items/certification"
                         title: Certification
                         type: string
                         default: ""
                         pattern: ^.*$
                       iso_639_1:
+                        description:
+                          The language code following ISO 639-1 standards
+                          for the release
                         $id: "#root/results/items/release_dates/items/iso_639_1"
                         title: Iso_639_1
                         type: string
                         default: ""
                         pattern: ^.*$
                       release_date:
+                        description:
+                          The date when the movie was released in a specific
+                          country
                         $id: "#root/results/items/release_dates/items/release_date"
                         title: Release_date
                         type: string
                         default: ""
                         pattern: ^.*$
                       type:
+                        description:
+                          The type of release (e.g., theatrical, digital)
+                          for the movie
                         $id: "#root/results/items/release_dates/items/type"
                         title: Type
                         type: integer
@@ -2375,11 +2647,13 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the movie review.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           page:
+            description: The page number of the results returned.
             $id: "#root/page"
             title: Page
             type: integer
@@ -2395,6 +2669,7 @@ definitions:
               type: object
               properties:
                 author:
+                  description: The name of the author of the movie review.
                   $id: "#root/results/items/author"
                   title: Author
                   type: string
@@ -2406,18 +2681,21 @@ definitions:
                   type: object
                   properties:
                     name:
+                      description: The full name of the author.
                       $id: "#root/results/items/author_details/name"
                       title: Name
                       type: string
                       default: ""
                       pattern: ^.*$
                     username:
+                      description: The username of the author on the platform.
                       $id: "#root/results/items/author_details/username"
                       title: Username
                       type: string
                       default: ""
                       pattern: ^.*$
                     avatar_path:
+                      description: The URL path to the avatar of the author.
                       $id: "#root/results/items/author_details/avatar_path"
                       title: Avatar_path
                       type:
@@ -2427,6 +2705,7 @@ definitions:
                       default: ""
                       pattern: ^.*$
                     rating:
+                      description: The rating given by the author to the movie.
                       $id: "#root/results/items/author_details/rating"
                       title: Rating
                       type:
@@ -2435,41 +2714,48 @@ definitions:
                         - integer
                       default:
                 content:
+                  description: The text content of the movie review.
                   $id: "#root/results/items/content"
                   title: Content
                   type: string
                   default: ""
                   pattern: ^.*
                 created_at:
+                  description: The date and time when the review was created.
                   $id: "#root/results/items/created_at"
                   title: Created_at
                   type: string
                   default: ""
                   pattern: ^.*$
                 id:
+                  description: The unique identifier of the movie review item.
                   $id: "#root/results/items/id"
                   title: Id
                   type: string
                   default: ""
                   pattern: ^.*$
                 updated_at:
+                  description: The date and time when the review was last updated.
                   $id: "#root/results/items/updated_at"
                   title: Updated_at
                   type: string
                   default: ""
                   pattern: ^.*$
                 url:
+                  description: The URL of the movie review article.
                   $id: "#root/results/items/url"
                   title: Url
                   type: string
                   default: ""
                   pattern: ^.*$
           total_pages:
+            description: The total number of pages available for the results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of movie review results.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -2490,6 +2776,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of the result set
             $id: "#root/page"
             title: Page
             type: integer
@@ -2505,11 +2792,13 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the movie is suitable for adults
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 backdrop_path:
+                  description: The path to the backdrop image for the movie
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -2522,40 +2811,47 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre IDs associated with the movie
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier of the movie
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_language:
+                  description: The original language of the movie
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_title:
+                  description: The original title of the movie
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 overview:
+                  description: A brief overview or summary of the movie
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The date when the movie was released
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
                   default: ""
                   pattern: ^.*$
                 poster_path:
+                  description: The path to the poster image for the movie
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type:
@@ -2563,22 +2859,26 @@ definitions:
                     - "null"
                   default:
                 popularity:
+                  description: Popularity score of the movie
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 title:
+                  description: The title of the movie
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 video:
+                  description: Indicates if the movie has a video trailer
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type:
@@ -2587,16 +2887,19 @@ definitions:
                     - string
                   default: 0
                 vote_count:
+                  description: The number of votes/ratings the movie has received
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
           total_pages:
+            description: The total number of pages available
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of results in the set
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -3207,6 +3510,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of results
             $id: "#root/page"
             title: Page
             type: integer
@@ -3222,11 +3526,13 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the movie is for adults
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 backdrop_path:
+                  description: URL of the backdrop image for the movie
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type: "null"
@@ -3237,76 +3543,90 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: List of genre ids associated with the movie
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: Unique identifier for the movie
                   $id: "#root/results/items/id"
                   title: Id
                   type: string
                   default: 0
                 original_language:
+                  description: Original language of the movie
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_title:
+                  description: Original title of the movie
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 overview:
+                  description: Synopsis or summary of the movie
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: Release date of the movie
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
                   default: ""
                   pattern: ^.*$
                 poster_path:
+                  description: URL of the poster image for the movie
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: "null"
                   default:
                 popularity:
+                  description: Popularity score of the movie
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 title:
+                  description: Title of the movie
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 video:
+                  description: Indicates if the movie has a video available
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: Average rating of the movie
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: integer
                   default: 0
                 vote_count:
+                  description: Number of votes/ratings for the movie
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
           total_pages:
+            description: Total number of pages of results
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: Total number of movies in the result set
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -3327,27 +3647,34 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the movie.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           results:
+            description:
+              Details of movie watch providers by country code (ISO 3166-1
+              alpha-2).
             $id: "#root/results"
             title: Results
             type: object
             properties:
               AR:
+                description: Watch providers in Argentina.
                 $id: "#root/results/AR"
                 title: Ar
                 type: object
                 properties:
                   link:
+                    description: Link to watch the movie.
                     $id: "#root/results/AR/link"
                     title: Link
                     type: string
                     default: ""
                     pattern: ^.*$
                   flatrate:
+                    description: Subscription-based options available for the movie.
                     $id: "#root/results/AR/flatrate"
                     title: Flatrate
                     type: array
@@ -3358,28 +3685,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AR/flatrate/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AR/flatrate/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AR/flatrate/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AR/flatrate/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   rent:
+                    description: Rental options available for the movie.
                     $id: "#root/results/AR/rent"
                     title: Rent
                     type: array
@@ -3390,28 +3722,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AR/rent/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AR/rent/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AR/rent/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AR/rent/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   buy:
+                    description: Buy options available for the movie.
                     $id: "#root/results/AR/buy"
                     title: Buy
                     type: array
@@ -3422,39 +3759,46 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AR/buy/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AR/buy/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AR/buy/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AR/buy/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
               AT:
+                description: Watch providers in Austria.
                 $id: "#root/results/AT"
                 title: At
                 type: object
                 properties:
                   link:
+                    description: Link to watch the movie.
                     $id: "#root/results/AT/link"
                     title: Link
                     type: string
                     default: ""
                     pattern: ^.*$
                   rent:
+                    description: Rental options available for the movie.
                     $id: "#root/results/AT/rent"
                     title: Rent
                     type: array
@@ -3465,28 +3809,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AT/rent/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AT/rent/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AT/rent/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AT/rent/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   buy:
+                    description: Buy options available for the movie.
                     $id: "#root/results/AT/buy"
                     title: Buy
                     type: array
@@ -3497,39 +3846,46 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AT/buy/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AT/buy/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AT/buy/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AT/buy/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
               AU:
+                description: Watch providers in Australia.
                 $id: "#root/results/AU"
                 title: Au
                 type: object
                 properties:
                   link:
+                    description: Link to watch the movie.
                     $id: "#root/results/AU/link"
                     title: Link
                     type: string
                     default: ""
                     pattern: ^.*$
                   rent:
+                    description: Rental options available for the movie.
                     $id: "#root/results/AU/rent"
                     title: Rent
                     type: array
@@ -3540,28 +3896,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AU/rent/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AU/rent/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AU/rent/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AU/rent/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   buy:
+                    description: Buy options available for the movie.
                     $id: "#root/results/AU/buy"
                     title: Buy
                     type: array
@@ -3572,28 +3933,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AU/buy/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AU/buy/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AU/buy/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AU/buy/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   flatrate:
+                    description: Subscription-based options available for the movie.
                     $id: "#root/results/AU/flatrate"
                     title: Flatrate
                     type: array
@@ -3604,39 +3970,46 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/AU/flatrate/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/AU/flatrate/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/AU/flatrate/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/AU/flatrate/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
               BE:
+                description: Watch providers in Belgium.
                 $id: "#root/results/BE"
                 title: Be
                 type: object
                 properties:
                   link:
+                    description: Link to watch the movie.
                     $id: "#root/results/BE/link"
                     title: Link
                     type: string
                     default: ""
                     pattern: ^.*$
                   buy:
+                    description: Buy options available for the movie.
                     $id: "#root/results/BE/buy"
                     title: Buy
                     type: array
@@ -3647,28 +4020,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/BE/buy/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/BE/buy/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/BE/buy/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/BE/buy/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   flatrate:
+                    description: Subscription-based options available for the movie.
                     $id: "#root/results/BE/flatrate"
                     title: Flatrate
                     type: array
@@ -3679,28 +4057,33 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/BE/flatrate/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/BE/flatrate/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/BE/flatrate/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/BE/flatrate/items/provider_name"
                           title: Provider_name
                           type: string
                           default: ""
                           pattern: ^.*$
                   rent:
+                    description: Rental options available for the movie.
                     $id: "#root/results/BE/rent"
                     title: Rent
                     type: array
@@ -3711,22 +4094,26 @@ definitions:
                       type: object
                       properties:
                         display_priority:
+                          description: Priority of display for the provider.
                           $id: "#root/results/BE/rent/items/display_priority"
                           title: Display_priority
                           type: integer
                           default: 0
                         logo_path:
+                          description: Path to the provider's logo image.
                           $id: "#root/results/BE/rent/items/logo_path"
                           title: Logo_path
                           type: string
                           default: ""
                           pattern: ^.*$
                         provider_id:
+                          description: Unique identifier for the provider.
                           $id: "#root/results/BE/rent/items/provider_id"
                           title: Provider_id
                           type: integer
                           default: 0
                         provider_name:
+                          description: Name of the provider.
                           $id: "#root/results/BE/rent/items/provider_name"
                           title: Provider_name
                           type: string
@@ -8082,11 +8469,15 @@ definitions:
         type: object
         properties:
           adult:
+            description:
+              Indicates if the movie is categorized as an adult film or
+              not.
             $id: "#root/adult"
             title: Adult
             type: boolean
             default: true
           backdrop_path:
+            description: Path to the backdrop image used for the movie on TMDb platform.
             $id: "#root/backdrop_path"
             title: Backdrop_path
             type:
@@ -8094,6 +8485,9 @@ definitions:
               - "null"
             default:
           belongs_to_collection:
+            description:
+              Information about the collected works that the movie belongs
+              to.
             $id: "#root/belongs_to_collection"
             title: Belongs_to_collection
             type:
@@ -8101,6 +8495,7 @@ definitions:
               - "null"
             default:
           budget:
+            description: The budget allocated for the production of the movie.
             $id: "#root/budget"
             title: Budget
             type: integer
@@ -8116,28 +8511,33 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for a particular genre.
                   $id: "#root/genres/items/id"
                   title: Id
                   type: integer
                   default: 0
                 name:
+                  description: Name of the genre.
                   $id: "#root/genres/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           homepage:
+            description: URL to the official website of the movie.
             $id: "#root/homepage"
             title: Homepage
             type: string
             default: ""
             pattern: ^.*$
           id:
+            description: Unique identifier for the movie entry on TMDb.
             $id: "#root/id"
             title: Id
             type: integer
             default: 0
           imdb_id:
+            description: IMDb identifier for the movie.
             $id: "#root/imdb_id"
             title: Imdb_id
             type:
@@ -8146,29 +8546,34 @@ definitions:
             default: ""
             pattern: ^.*$
           original_language:
+            description: Original language in which the movie was produced.
             $id: "#root/original_language"
             title: Original_language
             type: string
             default: ""
             pattern: ^.*$
           original_title:
+            description: Original title of the movie.
             $id: "#root/original_title"
             title: Original_title
             type: string
             default: ""
             pattern: ^.*$
           overview:
+            description: Synopsis or general overview of the movie plot.
             $id: "#root/overview"
             title: Overview
             type: string
             default: ""
             pattern: ^.*$
           popularity:
+            description: Popularity score of the movie on TMDb.
             $id: "#root/popularity"
             title: Popularity
             type: integer
             default: 0
           poster_path:
+            description: Path to the poster image used for the movie on TMDb platform.
             $id: "#root/poster_path"
             title: Poster_path
             type:
@@ -8177,65 +8582,79 @@ definitions:
             default: ""
             pattern: ^.*$
           production_companies:
+            description:
+              Details of the production companies involved in creating
+              the movie.
             $id: "#root/production_companies"
             title: Production_companies
             type: array
             default: []
           production_countries:
+            description: Countries where the movie was produced or shot.
             $id: "#root/production_countries"
             title: Production_countries
             type: array
             default: []
           release_date:
+            description: Date when the movie was released.
             $id: "#root/release_date"
             title: Release_date
             type: string
             default: ""
             pattern: ^.*$
           revenue:
+            description: Total revenue generated by the movie.
             $id: "#root/revenue"
             title: Revenue
             type: integer
             default: 0
           runtime:
+            description: Duration of the movie in minutes.
             $id: "#root/runtime"
             title: Runtime
             type: integer
             default: 0
           spoken_languages:
+            description: Languages spoken in the movie.
             $id: "#root/spoken_languages"
             title: Spoken_languages
             type: array
             default: []
           status:
+            description: Current status of the movie (e.g., released, in production).
             $id: "#root/status"
             title: Status
             type: string
             default: ""
             pattern: ^.*$
           tagline:
+            description: Memorable tagline associated with the movie.
             $id: "#root/tagline"
             title: Tagline
             type: string
             default: ""
             pattern: ^.*$
           title:
+            description: Title of the movie.
             $id: "#root/title"
             title: Title
             type: string
             default: ""
             pattern: ^.*$
           video:
+            description: Indicates if there is a video associated with the movie.
             $id: "#root/video"
             title: Video
             type: boolean
             default: true
           vote_average:
+            description: Average rating given to the movie by users.
             $id: "#root/vote_average"
             title: Vote_average
             type: integer
             default: 0
           vote_count:
+            description: Total number of votes received by the movie.
             $id: "#root/vote_count"
             title: Vote_count
             type: integer
@@ -8256,11 +8675,13 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of results being displayed
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           results:
+            description: Array of movies currently playing
             $id: "#root/results"
             title: Results
             type: array
@@ -8271,110 +8692,130 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: URL path to the poster image of the movie
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 adult:
+                  description: Indicates if the movie content is suitable for adults
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 overview:
+                  description: Brief overview or summary of the movie
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: Release date of the movie
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
                   default: ""
                   pattern: ^.*$
                 genre_ids:
+                  description: Array of genre ids associated with the movie
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
                   default: []
                   items:
+                    description: Genre id
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: Unique identifier for the movie
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_title:
+                  description: Original title of the movie
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_language:
+                  description: Original language of the movie
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: Title of the movie
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 backdrop_path:
+                  description: URL path to the backdrop image of the movie
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: Popularity score of the movie
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 vote_count:
+                  description: Number of votes the movie has received
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 video:
+                  description: Indicates if the movie has video content
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: Average rating of the movie
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
                   default: 0.0
           dates:
+            description: The range of dates for which the movies are now playing
             $id: "#root/dates"
             title: Dates
             type: object
             properties:
               maximum:
+                description: The maximum date in the date range
                 $id: "#root/dates/maximum"
                 title: Maximum
                 type: string
                 default: ""
                 pattern: ^.*$
               minimum:
+                description: The minimum date in the date range
                 $id: "#root/dates/minimum"
                 title: Minimum
                 type: string
                 default: ""
                 pattern: ^.*$
           total_pages:
+            description: Total number of pages of results
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: Total number of movies currently playing
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -8395,6 +8836,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of the fetched popular movies data.
             $id: "#root/page"
             title: Page
             type: integer
@@ -8410,23 +8852,27 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: The path to the poster image of the movie.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 adult:
+                  description: Indicates if the movie is only suitable for adults.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 overview:
+                  description: A brief overview or synopsis of the movie.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The release date of the movie.
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
@@ -8438,65 +8884,77 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre IDs associated with the movie.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier of the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_title:
+                  description: The original title of the movie.
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_language:
+                  description: The original language in which the movie was made.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: The title of the movie.
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 backdrop_path:
+                  description: The path to the backdrop image of the movie.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: The popularity score of the movie.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 vote_count:
+                  description: The number of votes/ratings the movie has received.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 video:
+                  description: Indicates if there is a video associated with the movie.
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
                   default: 0.0
           total_results:
+            description: The total number of popular movies results.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           total_pages:
+            description: The total number of pages of popular movies data available.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -8950,6 +9408,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of the upcoming movies dataset.
             $id: "#root/page"
             title: Page
             type: integer
@@ -8965,23 +9424,27 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: The poster image path for the movie.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 adult:
+                  description: Indicates if the movie is suitable for adult viewers.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 overview:
+                  description: A brief overview or synopsis of the movie.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The release date of the movie.
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
@@ -8993,34 +9456,40 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre ids associated with the movie.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier for the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_title:
+                  description: The original title of the movie.
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_language:
+                  description: The original language of the movie.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: The title of the movie.
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 backdrop_path:
+                  description: The backdrop image path for the movie.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -9029,21 +9498,25 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: The popularity score of the movie.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 vote_count:
+                  description: The total count of votes/ratings for the movie.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 video:
+                  description: Indicates if the movie has a video available.
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
@@ -9054,23 +9527,27 @@ definitions:
             type: object
             properties:
               maximum:
+                description: The maximum date for upcoming movies in the dataset.
                 $id: "#root/dates/maximum"
                 title: Maximum
                 type: string
                 default: ""
                 pattern: ^.*$
               minimum:
+                description: The minimum date for upcoming movies in the dataset.
                 $id: "#root/dates/minimum"
                 title: Minimum
                 type: string
                 default: ""
                 pattern: ^.*$
           total_pages:
+            description: The total number of pages in the upcoming movies dataset.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of upcoming movies in the dataset.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -9091,6 +9568,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9106,11 +9584,13 @@ definitions:
               type: object
               properties:
                 adult:
+                  description: Indicates if the movie is suitable for adult audiences.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 backdrop_path:
+                  description: The backdrop image path for the movie.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type: string
@@ -9122,77 +9602,91 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre IDs associated with the movie.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier of the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_language:
+                  description: The original language of the movie.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_title:
+                  description: The original title of the movie.
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 overview:
+                  description: A brief overview or synopsis of the movie.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*
                 poster_path:
+                  description: The poster image path for the movie.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The release date of the movie.
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: The title of the movie.
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 video:
+                  description: Indicates if the movie has a video available.
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
                   default: 0.0
                 vote_count:
+                  description: The total count of votes received by the movie.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 popularity:
+                  description: The popularity score of the movie.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
           total_pages:
+            description: The total number of pages of results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of results available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -9213,6 +9707,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The page of the results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9228,11 +9723,13 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the company.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 logo_path:
+                  description: The path to the logo of the company.
                   $id: "#root/results/items/logo_path"
                   title: Logo_path
                   type:
@@ -9241,17 +9738,20 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: The name of the company.
                   $id: "#root/results/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           total_pages:
+            description: The total number of pages available.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of results retrieved.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -9272,11 +9772,13 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of the search results.
             $id: "#root/page"
             title: Page
             type: integer
             default: 0
           results:
+            description: An array of search result items.
             $id: "#root/results"
             title: Results
             type: array
@@ -9287,34 +9789,40 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the collection item.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 backdrop_path:
+                  description: URL to the backdrop image for the collection item.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type: string
                   default: ""
                   pattern: ^.*$
                 name:
+                  description: The name or title of the collection item.
                   $id: "#root/results/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 poster_path:
+                  description: URL to the poster image for the collection item.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type: string
                   default: ""
                   pattern: ^.*$
           total_pages:
+            description: The total number of pages of search results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total count of search results for the collection.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -9335,6 +9843,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of search results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9350,22 +9859,26 @@ definitions:
               type: object
               properties:
                 id:
+                  description: The unique identifier of the keyword.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 name:
+                  description: The name of the keyword.
                   $id: "#root/results/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
           total_pages:
+            description: The total number of pages of search results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
             default: 0
           total_results:
+            description: The total number of keywords found in the search.
             $id: "#root/total_results"
             title: Total_results
             type: integer
@@ -9386,6 +9899,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of the search results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9401,6 +9915,7 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: The path to the poster image of the movie.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type:
@@ -9409,17 +9924,20 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 adult:
+                  description: Indicates if the movie is for adults only.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 overview:
+                  description: A brief overview or description of the movie.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*$
                 release_date:
+                  description: The release date of the movie.
                   $id: "#root/results/items/release_date"
                   title: Release_date
                   type: string
@@ -9431,34 +9949,40 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre IDs associated with the movie.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 id:
+                  description: The unique identifier of the movie.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 original_title:
+                  description: The original title of the movie.
                   $id: "#root/results/items/original_title"
                   title: Original_title
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_language:
+                  description: The original language of the movie.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 title:
+                  description: The title of the movie.
                   $id: "#root/results/items/title"
                   title: Title
                   type: string
                   default: ""
                   pattern: ^.*$
                 backdrop_path:
+                  description: The path to the backdrop image of the movie.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -9467,31 +9991,37 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: The popularity score of the movie.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 vote_count:
+                  description: The total number of votes/ratings for the movie.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 video:
+                  description: Indicates if the movie has video content.
                   $id: "#root/results/items/video"
                   title: Video
                   type: boolean
                   default: true
                 vote_average:
+                  description: The average rating of the movie.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
                   default: 0.0
           total_results:
+            description: The total number of movies found in the search results.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           total_pages:
+            description: The total number of pages in the search results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -9512,6 +10042,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9527,6 +10058,7 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: The path to the poster image.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type:
@@ -9534,6 +10066,7 @@ definitions:
                     - "null"
                   default:
                 popularity:
+                  description: The popularity score of the movie or TV show.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type:
@@ -9541,17 +10074,20 @@ definitions:
                     - integer
                   default: 0
                 id:
+                  description: The unique identifier of the movie or TV show.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 overview:
+                  description: A brief overview or summary of the movie or TV show.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type: string
                   default: ""
                   pattern: ^.*
                 backdrop_path:
+                  description: The path to the backdrop image.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -9559,6 +10095,7 @@ definitions:
                     - "null"
                   default:
                 vote_average:
+                  description: The average vote score.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type:
@@ -9566,12 +10103,14 @@ definitions:
                     - integer
                   default: 0
                 media_type:
+                  description: The type of media (movie or TV show).
                   $id: "#root/results/items/media_type"
                   title: Media_type
                   type: string
                   default: ""
                   pattern: ^.*$
                 first_air_date:
+                  description: The first air date of the movie or TV show.
                   $id: "#root/results/items/first_air_date"
                   title: First_air_date
                   type: string
@@ -9583,45 +10122,53 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: The origin country of the movie or TV show.
                     $id: "#root/results/items/origin_country/items"
                     title: Items
                     type: string
                     default: ""
                     pattern: ^.*$
                 genre_ids:
+                  description: An array of genre IDs.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
                   default: []
                 original_language:
+                  description: The original language of the movie or TV show.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type: string
                   default: ""
                   pattern: ^.*$
                 vote_count:
+                  description: The total number of votes.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 name:
+                  description: The name of the movie or TV show.
                   $id: "#root/results/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 original_name:
+                  description: The original name of the movie or TV show.
                   $id: "#root/results/items/original_name"
                   title: Original_name
                   type: string
                   default: ""
                   pattern: ^.*$
           total_results:
+            description: The total number of results.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           total_pages:
+            description: The total number of pages of results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -9642,6 +10189,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page of the result set.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9657,6 +10205,7 @@ definitions:
               type: object
               properties:
                 profile_path:
+                  description: The profile path of the person.
                   $id: "#root/results/items/profile_path"
                   title: Profile_path
                   type:
@@ -9665,11 +10214,13 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 adult:
+                  description: Indicates if the person is listed as an adult content.
                   $id: "#root/results/items/adult"
                   title: Adult
                   type: boolean
                   default: true
                 id:
+                  description: The unique identifier of the person.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
@@ -9685,29 +10236,34 @@ definitions:
                     type: object
                     properties:
                       poster_path:
+                        description: The poster path of the known media.
                         $id: "#root/results/items/known_for/items/poster_path"
                         title: Poster_path
                         type: string
                         default: ""
                         pattern: ^.*$
                       adult:
+                        description: Indicates if the known media is an adult content.
                         $id: "#root/results/items/known_for/items/adult"
                         title: Adult
                         type: boolean
                         default: true
                       overview:
+                        description: A brief overview of the known media.
                         $id: "#root/results/items/known_for/items/overview"
                         title: Overview
                         type: string
                         default: ""
                         pattern: ^.*
                       release_date:
+                        description: The release date of the known media.
                         $id: "#root/results/items/known_for/items/release_date"
                         title: Release_date
                         type: string
                         default: ""
                         pattern: ^.*$
                       original_title:
+                        description: The original title of the known media.
                         $id: "#root/results/items/known_for/items/original_title"
                         title: Original_title
                         type: string
@@ -9719,34 +10275,42 @@ definitions:
                         type: array
                         default: []
                         items:
+                          description: The genre Ids of the known media.
                           $id: "#root/results/items/known_for/items/genre_ids/items"
                           title: Items
                           type: integer
                           default: 0
                       id:
+                        description: The unique identifier of the known media.
                         $id: "#root/results/items/known_for/items/id"
                         title: Id
                         type: integer
                         default: 0
                       media_type:
+                        description:
+                          The type of media (e.g., movie, TV show) the
+                          person is known for.
                         $id: "#root/results/items/known_for/items/media_type"
                         title: Media_type
                         type: string
                         default: ""
                         pattern: ^.*$
                       original_language:
+                        description: The original language of the known media.
                         $id: "#root/results/items/known_for/items/original_language"
                         title: Original_language
                         type: string
                         default: ""
                         pattern: ^.*$
                       title:
+                        description: The title of the known media.
                         $id: "#root/results/items/known_for/items/title"
                         title: Title
                         type: string
                         default: ""
                         pattern: ^.*$
                       backdrop_path:
+                        description: The backdrop path of the known media.
                         $id: "#root/results/items/known_for/items/backdrop_path"
                         title: Backdrop_path
                         type:
@@ -9755,42 +10319,50 @@ definitions:
                         default: ""
                         pattern: ^.*$
                       popularity:
+                        description: The popularity score of the known media.
                         $id: "#root/results/items/known_for/items/popularity"
                         title: Popularity
                         type: number
                         default: 0.0
                       vote_count:
+                        description: The total count of votes for the known media.
                         $id: "#root/results/items/known_for/items/vote_count"
                         title: Vote_count
                         type: integer
                         default: 0
                       video:
+                        description: Indicates if the known media contains a video.
                         $id: "#root/results/items/known_for/items/video"
                         title: Video
                         type: boolean
                         default: true
                       vote_average:
+                        description: The average vote score of the known media.
                         $id: "#root/results/items/known_for/items/vote_average"
                         title: Vote_average
                         type: number
                         default: 0.0
                 name:
+                  description: The name of the person.
                   $id: "#root/results/items/name"
                   title: Name
                   type: string
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: The popularity score of the person.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
           total_results:
+            description: The total number of results available.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           total_pages:
+            description: The total number of pages available.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer
@@ -9811,6 +10383,7 @@ definitions:
         type: object
         properties:
           page:
+            description: The current page number of results.
             $id: "#root/page"
             title: Page
             type: integer
@@ -9826,6 +10399,7 @@ definitions:
               type: object
               properties:
                 poster_path:
+                  description: The path to the poster image of the TV show.
                   $id: "#root/results/items/poster_path"
                   title: Poster_path
                   type:
@@ -9834,16 +10408,19 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 popularity:
+                  description: The popularity score of the TV show.
                   $id: "#root/results/items/popularity"
                   title: Popularity
                   type: number
                   default: 0.0
                 id:
+                  description: The unique identifier of the TV show.
                   $id: "#root/results/items/id"
                   title: Id
                   type: integer
                   default: 0
                 backdrop_path:
+                  description: The path to the backdrop image of the TV show.
                   $id: "#root/results/items/backdrop_path"
                   title: Backdrop_path
                   type:
@@ -9852,11 +10429,13 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 vote_average:
+                  description: The average rating of the TV show.
                   $id: "#root/results/items/vote_average"
                   title: Vote_average
                   type: number
                   default: 0.0
                 overview:
+                  description: A brief overview or summary of the TV show.
                   $id: "#root/results/items/overview"
                   title: Overview
                   type:
@@ -9865,6 +10444,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 first_air_date:
+                  description: The date when the TV show first aired.
                   $id: "#root/results/items/first_air_date"
                   title: First_air_date
                   type:
@@ -9878,6 +10458,7 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of countries where the TV show originated.
                     $id: "#root/results/items/origin_country/items"
                     title: Items
                     type:
@@ -9891,11 +10472,13 @@ definitions:
                   type: array
                   default: []
                   items:
+                    description: An array of genre IDs associated with the TV show.
                     $id: "#root/results/items/genre_ids/items"
                     title: Items
                     type: integer
                     default: 0
                 original_language:
+                  description: The original language of the TV show.
                   $id: "#root/results/items/original_language"
                   title: Original_language
                   type:
@@ -9904,11 +10487,13 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 vote_count:
+                  description: The total count of votes received by the TV show.
                   $id: "#root/results/items/vote_count"
                   title: Vote_count
                   type: integer
                   default: 0
                 name:
+                  description: The name of the TV show.
                   $id: "#root/results/items/name"
                   title: Name
                   type:
@@ -9917,6 +10502,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 original_name:
+                  description: The original name of the TV show.
                   $id: "#root/results/items/original_name"
                   title: Original_name
                   type:
@@ -9925,11 +10511,13 @@ definitions:
                   default: ""
                   pattern: ^.*$
           total_results:
+            description: The total number of TV shows matching the query.
             $id: "#root/total_results"
             title: Total_results
             type: integer
             default: 0
           total_pages:
+            description: The total number of pages of results.
             $id: "#root/total_pages"
             title: Total_pages
             type: integer

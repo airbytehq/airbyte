@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the campaign.",
       "type": ["integer"]
     },
     "name": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "cost": {
+      "description": "The cost associated with the campaign.",
       "type": ["null", "integer"]
     }
   }

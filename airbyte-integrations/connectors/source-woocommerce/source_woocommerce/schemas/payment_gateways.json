@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the payment gateway.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title or name of the payment gateway.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief explanation of the payment gateway.",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "Order in which the payment gateway is displayed or processed.",
       "type": ["null", "string", "integer"]
     },
     "enabled": {
+      "description": "Indicates if the payment gateway is currently enabled or disabled.",
       "type": ["null", "boolean"]
     },
     "method_title": {
+      "description": "Title or name of the payment method.",
       "type": ["null", "string"]
     },
     "method_description": {
+      "description": "Detailed information about the payment method.",
       "type": ["null", "string"]
     },
     "method_supports": {
+      "description": "List of features or functionalities supported by the payment method.",
       "type": ["null", "array"]
     },
     "settings": {
+      "description": "Configuration settings specific to the payment gateway.",
       "$ref": "payment_gateway_settings.json"
     }
   }

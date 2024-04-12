@@ -49,44 +49,65 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the table.
             type: string
           type:
+            description: Type of data stored in the table.
             type: string
           published:
+            description: Flag indicating if the table is published.
             type: boolean
           pii:
+            description:
+              Indicates if the table contains Personally Identifiable Information
+              (PII).
             type: boolean
           created_at:
+            description: Timestamp of when the table was created.
             type: string
           updated_at:
+            description: Timestamp of when the table was last updated.
             type: string
           tags:
+            description: List of tags associated with the table.
             type: array
           name:
+            description: Name of the table.
             type: string
           schema:
+            description: Schema definition of the table.
             type: string
           cluster:
+            description: The cluster where the table data is stored.
             type: string
           database:
+            description: Database where the table is located.
             type: string
           owners:
+            description: List of owners of the table.
             type: array
           description:
+            description: Detailed description of the table.
             type:
               - "null"
               - string
           columns:
+            description: List of columns in the table.
             type: array
           parent_id:
+            description: Parent table identifier if this table is a child.
             type: string
           integration:
+            description: Integration source of the table.
             type: string
           entity_type:
+            description: Type of entity the table represents.
             type: string
           pristine:
+            description: Flag indicating if the table is in its original state.
             type: boolean
           verified:
+            description: Flag indicating if the table data has been verified.
             type: boolean
   terms_stream:
     $ref: "#/definitions/base_stream"
@@ -101,26 +122,37 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the term.
             type: string
           created_at:
+            description: The timestamp indicating when the term was created.
             type: string
           updated_at:
+            description: The timestamp indicating when the term was last updated.
             type: string
           title:
+            description: The title or name of the term.
             type: string
           description:
+            description: The detailed explanation or definition of the term.
             type: string
           collections:
+            description: The collections to which the term belongs.
             type: array
           owners:
+            description: The users who own or manage the term.
             type: array
           published:
+            description: A flag indicating if the term is published or draft.
             type: boolean
           pristine:
+            description: A flag indicating if the term has been modified.
             type: boolean
           viewers_delta:
+            description: The change in viewership of the term.
             type: object
           entity_type:
+            description: The type of entity the term represents.
             type: string
   collections_stream:
     $ref: "#/definitions/base_stream"
@@ -136,28 +168,46 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the collection.
             type: string
           created_at:
+            description: Timestamp indicating when the collection was created.
             type: string
           updated_at:
+            description: Timestamp indicating when the collection was last updated.
             type: string
           entity_type:
+            description:
+              Type of entities included in the collection (e.g., person,
+              organization).
             type: string
           title:
+            description: Title or name of the collection.
             type: string
           description:
+            description: Brief description or summary of the collection.
             type: string
           definition:
+            description: Definition or purpose of the collection.
             type: string
           workspace_id:
+            description: Identifier of the workspace to which the collection belongs.
             type: string
           published:
+            description: Flag indicating if the collection is published or not.
             type: boolean
           archived:
+            description: Flag indicating if the collection is archived or not.
             type: boolean
           pii:
+            description:
+              Flag indicating if the collection contains Personally Identifiable
+              Information (PII).
             type: boolean
           verified:
+            description:
+              Flag indicating if the collection data has been verified
+              for accuracy.
             type: boolean
 streams:
   - "#/definitions/tables_stream"

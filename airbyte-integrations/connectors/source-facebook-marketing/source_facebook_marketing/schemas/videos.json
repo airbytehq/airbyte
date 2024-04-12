@@ -60,6 +60,7 @@
       "type": ["null", "boolean"]
     },
     "format": {
+      "description": "Specifies the format of the video data being fetched.",
       "type": ["null", "array"],
       "items": {
         "description": "Different formats available for the video.",

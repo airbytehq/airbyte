@@ -42,6 +42,7 @@
       "type": ["null", "string"]
     },
     "options": {
+      "description": "Represents different customizable options available for the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
@@ -54,6 +55,7 @@
             "type": ["null", "integer"]
           },
           "values": {
+            "description": "Possible values that can be selected for each option.",
             "type": ["null", "array"],
             "items": {
               "description": "List of values associated with the product option.",
@@ -73,6 +75,7 @@
       }
     },
     "image": {
+      "description": "Represents the main product image linked to one or more variants.",
       "properties": {
         "updated_at": {
           "description": "The date and time when the image was last updated.",
@@ -85,6 +88,7 @@
           "format": "date-time"
         },
         "variant_ids": {
+          "description": "Array of variant IDs associated with this image.",
           "type": ["null", "array"],
           "items": {
             "description": "List of variant IDs associated with the image.",
@@ -131,6 +135,7 @@
       "type": ["null", "string"]
     },
     "images": {
+      "description": "Represents a collection of additional images related to the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
@@ -145,6 +150,7 @@
             "format": "date-time"
           },
           "variant_ids": {
+            "description": "Array of variant IDs associated with each image.",
             "type": ["null", "array"],
             "items": {
               "description": "List of variant IDs associated with the image.",
@@ -196,6 +202,7 @@
       "type": ["null", "string"]
     },
     "variants": {
+      "description": "Represents different versions or variations of the product.",
       "type": ["null", "array"],
       "items": {
         "properties": {
@@ -290,11 +297,13 @@
             "type": ["null", "integer"]
           },
           "presentment_prices": {
+            "description": "Prices displayed to customers in different currencies or formats.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "price": {
+                  "description": "The price of the product variant.",
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {

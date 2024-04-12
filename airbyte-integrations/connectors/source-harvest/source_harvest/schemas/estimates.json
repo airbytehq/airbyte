@@ -91,6 +91,7 @@
       "type": ["null", "string"]
     },
     "client": {
+      "description": "Details about the client associated with the estimates",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -104,6 +105,7 @@
       }
     },
     "creator": {
+      "description": "Information about the creator of the estimates",
       "type": ["null", "object"],
       "properties": {
         "id": {

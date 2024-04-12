@@ -23,6 +23,7 @@
       "type": ["null", "string"]
     },
     "attachments": {
+      "description": "List of attachments included in the canned response",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

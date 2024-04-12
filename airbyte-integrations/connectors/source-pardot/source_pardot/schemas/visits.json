@@ -3,62 +3,104 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique ID of the visit.",
       "type": ["integer"]
     },
     "visitor_id": {
+      "description": "The ID of the visitor.",
       "type": ["null", "integer"]
     },
     "prospect_id": {
+      "description": "The ID of the prospect associated with the visit.",
       "type": ["null", "integer"]
     },
     "visitor_page_view_count": {
+      "description": "The count of page views by the visitor.",
       "type": ["null", "integer"]
     },
     "visitor_page_views": {
+      "description": "Details of the page views by the visitor.",
       "type": ["null", "object"]
     },
     "first_visitor_page_view_at": {
+      "description": "The date and time of the first page view by the visitor.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_visitor_page_view_at": {
+      "description": "The date and time of the last page view by the visitor.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "duration_in_seconds": {
+      "description": "The duration of the visit in seconds.",
       "type": ["null", "integer"]
     },
     "campaign_parameter": {
+      "description": "The campaign parameter for tracking purposes.",
       "type": ["null", "string"]
     },
     "medium_parameter": {
+      "description": "The medium parameter for tracking purposes.",
       "type": ["null", "string"]
     },
     "source_parameter": {
+      "description": "The source parameter for tracking purposes.",
       "type": ["null", "string"]
     },
     "content_parameter": {
+      "description": "The content parameter for tracking purposes.",
       "type": ["null", "string"]
     },
     "term_parameter": {
+      "description": "The term parameter for tracking purposes.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the visit was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the visit was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "type": { "type": ["null", "integer"] },
-    "type_name": { "type": ["null", "string"] },
-    "details": { "type": ["null", "string"] },
-    "visit_id": { "type": ["null", "integer"] },
-    "campaign": { "type": ["null", "object"] },
-    "email_id": { "type": ["null", "integer"] },
-    "email": { "type": ["null", "object"] },
-    "list_email_id": { "type": ["null", "integer"] },
-    "email_template_id": { "type": ["null", "integer"] }
+    "type": {
+      "description": "The type of visit.",
+      "type": ["null", "integer"]
+    },
+    "type_name": {
+      "description": "The name of the visit type.",
+      "type": ["null", "string"]
+    },
+    "details": {
+      "description": "Additional details or notes related to the visit.",
+      "type": ["null", "string"]
+    },
+    "visit_id": {
+      "description": "The ID of the visit.",
+      "type": ["null", "integer"]
+    },
+    "campaign": {
+      "description": "The campaign associated with the visit.",
+      "type": ["null", "object"]
+    },
+    "email_id": {
+      "description": "The ID of the email associated with the visit.",
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "description": "The email associated with the visit.",
+      "type": ["null", "object"]
+    },
+    "list_email_id": {
+      "description": "The ID of the list email associated with the visit.",
+      "type": ["null", "integer"]
+    },
+    "email_template_id": {
+      "description": "The ID of the email template used for the visit.",
+      "type": ["null", "integer"]
+    }
   }
 }

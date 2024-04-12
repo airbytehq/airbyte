@@ -1,41 +1,52 @@
 {
   "properties": {
     "_links": {
+      "description": "Links related to the group resource.",
       "type": ["object", "null"]
     },
     "created": {
+      "description": "Date and time when the group was created.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "Unique identifier for the group.",
       "type": ["string", "null"]
     },
     "lastMembershipUpdated": {
+      "description": "Date and time when the group membership was last updated.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "lastUpdated": {
+      "description": "Date and time when the group information was last updated.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "objectClass": {
+      "description": "Class of the group object.",
       "items": {
+        "description": "Item representing the class of the group.",
         "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
     "profile": {
+      "description": "Profile information of the group.",
       "properties": {
         "description": {
+          "description": "Description of the group.",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "Name of the group.",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "type": {
+      "description": "Type of the group.",
       "type": ["string", "null"]
     }
   },

@@ -331,6 +331,7 @@ definitions:
         type: object
         properties:
           Global Quote:
+            description: The global quote data for a specific stock symbol.
             01. symbol:
               description:
                 The symbol/ticker representing the equity on the stock

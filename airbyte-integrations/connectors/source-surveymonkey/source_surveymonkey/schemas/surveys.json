@@ -53,6 +53,7 @@
       "type": ["string", "null"]
     },
     "buttons_text": {
+      "description": "Text displayed on buttons associated with the survey.",
       "type": ["object", "null"],
       "properties": {
         "next_button": {

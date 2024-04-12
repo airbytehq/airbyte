@@ -61,38 +61,47 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the team
             type:
               - "null"
               - string
           name:
+            description: Name of the team
             type:
               - "null"
               - string
           type:
+            description: Type or category of the team
             type:
               - "null"
               - integer
           createdAt:
+            description: Creation timestamp of the team
             type:
               - "null"
               - string
           createdBy:
+            description: User who created the team
             type:
               - "null"
               - object
           _updatedAt:
+            description: Last updated timestamp of the team data
             type:
               - "null"
               - string
           roomId:
+            description: Identifier of the chat room associated with the team
             type:
               - "null"
               - string
           rooms:
+            description: List of rooms within the team
             type:
               - "null"
               - integer
           numberOfUsers:
+            description: Total number of users in the team
             type:
               - "null"
               - integer
@@ -111,78 +120,97 @@ definitions:
         type: object
         properties:
           _id:
+            description: The unique identifier of the room.
             type:
               - "null"
               - string
           fname:
+            description: The full name of the room.
             type:
               - "null"
               - string
           customFields:
+            description: Custom fields associated with the room.
             type:
               - "null"
               - object
           description:
+            description: The description or topic of the room.
             type:
               - "null"
               - string
           broadcast:
+            description: Indicates if the room is a broadcast-only room.
             type:
               - "null"
               - boolean
           encrypted:
+            description: Indicates if the room is encrypted.
             type:
               - "null"
               - boolean
           federated:
+            description: Indicates if the room is federated.
             type:
               - "null"
               - boolean
           name:
+            description: The name of the room.
             type:
               - "null"
               - string
           t:
+            description: Type of the room (e.g., public, private).
             type:
               - "null"
               - string
           msgs:
+            description: Total number of messages in the room.
             type:
               - "null"
               - integer
           usersCount:
+            description: Total number of users in the room.
             type:
               - "null"
               - integer
           u:
+            description: User details associated with the room.
             type:
               - "null"
               - object
           ts:
+            description: Timestamp when the room was created.
             type:
               - "null"
               - string
           ro:
+            description: Indicates if the room is read-only.
             type:
               - "null"
               - boolean
           default:
+            description: Indicates if the room is a default room.
             type:
               - "null"
               - boolean
           sysMes:
+            description: Indicates if system messages are enabled in the room.
             type:
               - "null"
               - boolean
           _updatedAt:
+            description: The timestamp when the room was last updated.
             type:
               - "null"
               - string
           lastMessage:
+            description: Details of the last message sent in the room.
             type:
               - "null"
               - object
           lm:
+            description: Timestamp of the last message sent in the room.
             type:
               - "null"
               - string
@@ -199,70 +227,89 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the channel.
             type:
               - "null"
               - string
           fname:
+            description: Full name of the channel.
             type:
               - "null"
               - string
           description:
+            description: Description of the channel.
             type:
               - "null"
               - string
           broadcast:
+            description: Flag indicating if the channel is a broadcast channel.
             type:
               - "null"
               - boolean
           encrypted:
+            description: Flag indicating if the messages in the channel are encrypted.
             type:
               - "null"
               - boolean
           teamMain:
+            description:
+              Flag indicating if the channel is the main channel of the
+              team.
             type:
               - "null"
               - boolean
           name:
+            description: Name of the channel.
             type:
               - "null"
               - string
           t:
+            description: Type of the channel (e.g., public, private).
             type:
               - "null"
               - string
           msgs:
+            description: Number of messages in the channel.
             type:
               - "null"
               - integer
           usersCount:
+            description: Total number of users in the channel.
             type:
               - "null"
               - integer
           u:
+            description: User who created the channel.
             type:
               - "null"
               - object
           ts:
+            description: Timestamp indicating when the channel was created.
             type:
               - "null"
               - string
           ro:
+            description: Read-only flag indicating if the channel is read-only.
             type:
               - "null"
               - boolean
           teamId:
+            description: Team identifier to which the channel belongs.
             type:
               - "null"
               - string
           default:
+            description: Flag indicating if the channel is the default channel.
             type:
               - "null"
               - boolean
           sysMes:
+            description: Flag indicating if system messages are enabled in the channel.
             type:
               - "null"
               - boolean
           _updatedAt:
+            description: Timestamp indicating when the channel was last updated.
             type:
               - "null"
               - string
@@ -286,26 +333,36 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the role.
             type:
               - "null"
               - string
           scope:
+            description: Scope of the role, defining its range of permissions.
             type:
               - "null"
               - string
           description:
+            description: Description of the role and its permissions.
             type:
               - "null"
               - string
           mandatory2fa:
+            description:
+              Indicates if two-factor authentication is mandatory for this
+              role.
             type:
               - "null"
               - boolean
           name:
+            description: Name of the role.
             type:
               - "null"
               - string
           protected:
+            description:
+              Indicates if this role is protected and cannot be modified
+              or deleted.
             type:
               - "null"
               - boolean
@@ -324,62 +381,77 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier for the subscription
             type:
               - "null"
               - string
           open:
+            description: Indicates if the subscription is open or closed
             type:
               - "null"
               - boolean
           alert:
+            description: Whether there are any alerts for the subscription
             type:
               - "null"
               - boolean
           unread:
+            description: Number of unread messages for the subscription
             type:
               - "null"
               - integer
           userMentions:
+            description: Number of user mentions for the subscription
             type:
               - "null"
               - integer
           groupMentions:
+            description: Number of group mentions for the subscription
             type:
               - "null"
               - integer
           ts:
+            description: Timestamp associated with the subscription
             type:
               - "null"
               - string
           name:
+            description: Name of the subscription
             type:
               - "null"
               - string
           t:
+            description: Type of subscription
             type:
               - "null"
               - string
           fname:
+            description: First name associated with the subscription
             type:
               - "null"
               - string
           ls:
+            description: Last seen timestamp for the subscription
             type:
               - "null"
               - string
           u:
+            description: User details associated with the subscription
             type:
               - "null"
               - object
           rid:
+            description: Room ID associated with the subscription
             type:
               - "null"
               - string
           _updatedAt:
+            description: Timestamp of the last update to the subscription
             type:
               - "null"
               - string
           roles:
+            description: Roles assigned to the subscription
             type:
               - "null"
               - array
@@ -397,46 +469,56 @@ definitions:
         type: object
         properties:
           _id:
+            description: Unique identifier of the user
             type:
               - "null"
               - string
           type:
+            description: Type of the user account
             type:
               - "null"
               - string
           active:
+            description: Indicator showing if the user is active or not
             type:
               - "null"
               - boolean
           name:
+            description: Full name of the user
             type:
               - "null"
               - string
           username:
+            description: Unique username associated with the user
             type:
               - "null"
               - string
           emails:
+            description: Array of email addresses associated with the user
             type:
               - "null"
               - array
             items:
               type: object
           roles:
+            description: Array of roles assigned to the user
             type:
               - "null"
               - array
             items:
               type: string
           lastLogin:
+            description: Timestamp indicating the user's last login time
             type:
               - "null"
               - string
           status:
+            description: Status of the user within the system
             type:
               - "null"
               - string
           nameInsensitive:
+            description: Case-insensitive version of the user's name
             type:
               - "null"
               - string

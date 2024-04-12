@@ -745,6 +745,7 @@ definitions:
               - "null"
               - string
           columns:
+            description: List of columns in the board
             type:
               - "null"
               - array
@@ -800,6 +801,7 @@ definitions:
               - "null"
               - string
           groups:
+            description: List of groups related to the board
             type:
               - "null"
               - array
@@ -840,6 +842,7 @@ definitions:
                     - "null"
                     - string
           owners:
+            description: List of owners of the board
             type:
               - "null"
               - array
@@ -855,6 +858,7 @@ definitions:
                     - "null"
                     - string
           creator:
+            description: Creator of the board
             type:
               - "null"
               - object
@@ -875,6 +879,7 @@ definitions:
               - "null"
               - string
           subscribers:
+            description: List of subscribers to the board
             type:
               - "null"
               - array
@@ -890,6 +895,7 @@ definitions:
                     - "null"
                     - string
           tags:
+            description: List of tags associated with the board
             type:
               - "null"
               - array
@@ -907,6 +913,7 @@ definitions:
                     - "null"
                     - string
           top_group:
+            description: Top-level group associated with the board
             type:
               - "null"
               - object
@@ -928,6 +935,7 @@ definitions:
               - "null"
               - integer
           updates:
+            description: List of updates made to the board
             type:
               - "null"
               - array
@@ -943,6 +951,7 @@ definitions:
                     - "null"
                     - string
           views:
+            description: List of views created for the board
             type:
               - "null"
               - array
@@ -980,6 +989,7 @@ definitions:
                     - "null"
                     - string
           workspace:
+            description: Workspace to which the board belongs
             type:
               - "null"
               - object

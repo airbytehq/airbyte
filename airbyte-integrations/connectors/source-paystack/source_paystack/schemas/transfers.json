@@ -2,98 +2,125 @@
   "type": ["null", "object"],
   "properties": {
     "integration": {
+      "description": "Integration details related to the transfer.",
       "type": ["null", "integer"]
     },
     "domain": {
+      "description": "The domain associated with the transfer.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the transfer in the specified currency.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency in which the transfer amount is specified.",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "The source of the transfer.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason or purpose of the transfer.",
       "type": ["null", "string"]
     },
     "recipient": {
       "type": ["null", "object"],
       "properties": {
         "domain": {
+          "description": "The domain associated with the recipient.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type of recipient.",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency associated with the recipient.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the recipient.",
           "type": ["null", "string"]
         },
         "details": {
           "type": ["null", "object"],
           "properties": {
             "account_number": {
+              "description": "The account number of the recipient's bank account.",
               "type": ["null", "string"]
             },
             "account_name": {
+              "description": "The name associated with the recipient's bank account.",
               "type": ["null", "string"]
             },
             "bank_code": {
+              "description": "The code identifying the recipient's bank.",
               "type": ["null", "string"]
             },
             "bank_name": {
+              "description": "The name of the recipient's bank.",
               "type": ["null", "string"]
             }
           }
         },
         "description": {
+          "description": "Additional details describing the recipient.",
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Additional metadata related to the recipient.",
           "type": ["null", "object"],
           "properties": {}
         },
         "recipient_code": {
+          "description": "The unique code assigned to the recipient.",
           "type": ["null", "string"]
         },
         "active": {
+          "description": "Represents whether the recipient is active or inactive.",
           "type": ["null", "boolean"]
         },
         "id": {
+          "description": "The unique identifier for the recipient.",
           "type": ["null", "integer"]
         },
         "integration": {
+          "description": "Integration details related to the recipient.",
           "type": ["null", "integer"]
         },
         "createdAt": {
+          "description": "The date and time when the recipient was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updatedAt": {
+          "description": "The date and time when the recipient was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "status": {
+      "description": "The status of the transfer.",
       "type": ["null", "string"]
     },
     "transfer_code": {
+      "description": "The code identifying the transfer.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the transfer.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The date and time when the transfer was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the transfer was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

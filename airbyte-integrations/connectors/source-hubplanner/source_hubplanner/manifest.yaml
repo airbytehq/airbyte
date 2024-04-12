@@ -50,30 +50,39 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the billing rate entry.
             type:
               - "null"
               - string
           rate:
+            description: The value of the billing rate.
             type:
               - "null"
               - number
           metadata:
+            description:
+              Additional metadata or information related to the billing
+              rate.
             type:
               - "null"
               - string
           createdDate:
+            description: Date and time when the billing rate entry was created.
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: Date and time when the billing rate entry was last updated.
             type:
               - "null"
               - string
             format: date-time
           label:
+            description: A label or name given to the billing rate.
             type: string
           currency:
+            description: Currency used for the billing rate.
             type: string
   bookings_stream:
     $ref: "#/definitions/base_stream"
@@ -89,69 +98,87 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the booking
             type:
               - "null"
               - string
           title:
+            description: Title or name of the booking
             type:
               - "null"
               - string
           type:
+            description: Type of the booking
             type:
               - "null"
               - string
           state:
+            description: State of the booking
             type:
               - "null"
               - string
           allDay:
+            description: Indicates if the booking is for the whole day
             type:
               - "null"
               - boolean
           scale:
+            description: Scale or size of the booking
             type:
               - "null"
               - string
           start:
+            description: Start date and time of the booking
             type: string
           end:
+            description: End date and time of the booking
             type: string
           categoryTemplateId:
+            description: Template ID of the category
             type:
               - "null"
               - string
           categoryName:
+            description: Name of the category to which the booking belongs
             type:
               - "null"
               - string
           stateValue:
+            description: Value representing the state of the booking
             type:
               - "null"
               - integer
           resource:
+            description: Resource (person or equipment) booked for the task
             type: string
           project:
+            description: Project associated with the booking
             type: string
           note:
+            description: Any additional notes or comments for the booking
             type:
               - "null"
               - string
           details:
             properties:
               offDaysCount:
+                description: Count of off days during the booking period
                 type:
                   - "null"
                   - integer
               workDaysCount:
+                description: Count of work days during the booking period
                 type:
                   - "null"
                   - integer
               holidayCount:
+                description: Count of holidays during the booking period
                 type:
                   - "null"
                   - integer
               workWeekDetails:
                 items:
+                  description: Details of work week for the booking
                   type:
                     - "null"
                     - integer
@@ -159,10 +186,12 @@ definitions:
                   - "null"
                   - array
               bookedMinutes:
+                description: Total minutes booked for the booking
                 type:
                   - "null"
                   - integer
               budgetBookedAmount:
+                description: Budget amount booked for the booking
                 type:
                   - "null"
                   - integer
@@ -170,16 +199,19 @@ definitions:
               - "null"
               - object
           createdDate:
+            description: Date and time when the booking was created
             format: date-time
             type:
               - "null"
               - string
           updatedDate:
+            description: Date and time when the booking was last updated
             format: date-time
             type:
               - "null"
               - string
           metadata:
+            description: Additional metadata related to the booking
             type:
               - "null"
               - string
@@ -187,16 +219,21 @@ definitions:
             items:
               properties:
                 _id:
+                  description: Unique identifier for the custom field
                   type: string
                 templateId:
+                  description: Template ID of the custom field
                   type: string
                 templateType:
+                  description: Type of the custom field template
                   type: string
                 templateLabel:
+                  description: Label of the custom field template
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value stored in the custom field
                   type:
                     - "null"
                     - string
@@ -204,10 +241,13 @@ definitions:
                   items:
                     properties:
                       _id:
+                        description: Unique identifier for the choice
                         type: string
                       choiceId:
+                        description: Identifier for the choice
                         type: string
                       value:
+                        description: Value of the choice
                         type:
                           - "null"
                           - string
@@ -228,6 +268,7 @@ definitions:
               external:
                 properties:
                   defaultRateId:
+                    description: Default rate ID for external billing
                     type:
                       - "null"
                       - integer
@@ -237,6 +278,7 @@ definitions:
               internal:
                 properties:
                   defaultRateId:
+                    description: Default rate ID for internal billing
                     type:
                       - "null"
                       - integer
@@ -247,22 +289,27 @@ definitions:
               - "null"
               - object
           bookingCreatorId:
+            description: Identifier of the user who created the booking
             type:
               - "null"
               - string
           lastUpdatedById:
+            description: Identifier of the user who last updated the booking
             type:
               - "null"
               - string
           deletedById:
+            description: Identifier of the user who deleted the booking
             type:
               - "null"
               - string
           billable:
+            description: Indicates if the booking is billable
             type:
               - "null"
               - boolean
           backgroundColor:
+            description: Color code used as the background color for the booking
             type:
               - "null"
               - string
@@ -280,30 +327,37 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier of the client
             type:
               - "null"
               - string
           name:
+            description: Name of the client
             type: string
           company:
+            description: The company associated with the client
             type:
               - "null"
               - string
           __v:
+            description: Version number of the document
             type:
               - "null"
               - integer
           createdDate:
+            description: Date and time when the client was created
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: Date and time when the client was last updated
             type:
               - "null"
               - string
             format: date-time
           deleted:
+            description: Indicates if the client is deleted or active
             type:
               - "null"
               - boolean
@@ -321,28 +375,35 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the event.
             type:
               - "null"
               - string
           name:
+            description: Name or title of the event.
             type: string
           createdDate:
+            description: Date and time when the event was created.
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: Date and time when the event was last updated.
             type:
               - "null"
               - string
             format: date-time
           backgroundColor:
+            description: Color code used to represent the event visually.
             type:
               - "null"
               - string
           label:
+            description: Short description or category of the event.
             type: string
           metadata:
+            description: Additional information or data associated with the event.
             type:
               - "null"
               - string
@@ -360,26 +421,32 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: The unique identifier for the holiday data entry.
             type:
               - "null"
               - string
           name:
+            description: The name or description of the holiday.
             type: string
           date:
+            description: The date of the holiday.
             type:
               - "null"
               - string
             format: date-time
           metadata:
+            description: Additional metadata or information related to the holiday.
             type:
               - "null"
               - string
           createdDate:
+            description: The date and time when the holiday data was created.
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: The date and time when the holiday data was last updated.
             type:
               - "null"
               - string
@@ -398,54 +465,68 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the project
             type:
               - "null"
               - string
           name:
+            description: Name of the project
             type: string
           links:
+            description: Links associated with the project
             properties: {}
             type:
               - "null"
               - object
           notes:
+            description: Additional notes related to the project
             type:
               - "null"
               - string
           createdDate:
+            description: Date and time when the project was created
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: Date and time of the last update to the project
             type:
               - "null"
               - string
             format: date-time
           timeEntryEnabled:
+            description: Indicates if time entry is enabled for the project
             type:
               - "null"
               - boolean
           timeEntryLocked:
+            description: Indicates if time entry is locked for the project
             type:
               - "null"
               - boolean
           timeEntryApproval:
+            description: Indicates if time entries require approval
             type:
               - "null"
               - boolean
           resourceRates:
+            description: Rates associated with project resources
             items:
+              description: Individual resource rate items
               properties:
                 resource:
+                  description: Resource associated with the rate
                   type:
                     - "null"
                     - string
                 companyBillingRateId:
+                  description: Identifier for the company's billing rate
                   type:
                     - "null"
                     - string
                 companyBillingRate:
+                  description: Company's billing rate for the resource
                   type:
                     - "null"
                     - number
@@ -456,15 +537,19 @@ definitions:
               - "null"
               - array
           includeBookedTimeReports:
+            description: Indicates if booked time is included in the time reports
             type:
               - "null"
               - boolean
           includeBookedTimeGrid:
+            description: Indicates if booked time is included in the time grid
             type:
               - "null"
               - boolean
           projectManagers:
+            description: Project managers associated with the project
             items:
+              description: Individual project manager items
               type:
                 - "null"
                 - string
@@ -472,7 +557,9 @@ definitions:
               - "null"
               - array
           resources:
+            description: Resources assigned to the project
             items:
+              description: Individual resource items
               type:
                 - "null"
                 - string
@@ -480,7 +567,9 @@ definitions:
               - "null"
               - array
           workDays:
+            description: Work days associated with the project
             items:
+              description: Individual work day items
               type:
                 - "null"
                 - boolean
@@ -488,22 +577,28 @@ definitions:
               - "null"
               - array
           useProjectDays:
+            description: Indicates if project days are used for scheduling
             type:
               - "null"
               - boolean
           budget:
+            description: Details related to the budget of the project
             properties:
               hasBudget:
+                description: Indicates if a budget is defined for the project
                 type:
                   - "null"
                   - boolean
               projectHours:
+                description: Details of the budgeted project hours
                 properties:
                   active:
+                    description: Indicates if project hours budgeting is active
                     type:
                       - "null"
                       - boolean
                   hours:
+                    description: Total hours budgeted for the project
                     type:
                       - "null"
                       - number
@@ -511,30 +606,38 @@ definitions:
                   - "null"
                   - object
               cashAmount:
+                description: Details of the cash amount budget
                 properties:
                   active:
+                    description: Indicates if the cash budget is active
                     type:
                       - "null"
                       - boolean
                   amount:
+                    description: Total cash amount budgeted
                     type:
                       - "null"
                       - number
                   currency:
+                    description: Currency in which the budget is specified
                     type:
                       - "null"
                       - string
                   billingRate:
+                    description: Details of the billing rate for cash transactions
                     properties:
                       useDefault:
+                        description: Indicates if the default billing rate is used
                         type:
                           - "null"
                           - boolean
                       rate:
+                        description: Billing rate value
                         type:
                           - "null"
                           - number
                       id:
+                        description: Identifier for the billing rate
                         type:
                           - "null"
                           - string
@@ -548,118 +651,152 @@ definitions:
               - "null"
               - object
           companyBillingRateId:
+            description: Identifier for the company's billing rate
             type:
               - "null"
               - string
           budgetHours:
+            description: Total hours budgeted for the project
             type:
               - "null"
               - number
           budgetCashAmount:
+            description: Total cash amount budgeted for the project
             type:
               - "null"
               - number
           budgetCurrency:
+            description: Currency used for budget calculations
             type:
               - "null"
               - string
           useStatusColor:
+            description: Indicates if status color is used to represent project status
             type:
               - "null"
               - boolean
           status:
+            description: Status of the project
             type:
               - "null"
               - string
           useProjectDuration:
+            description: Indicates if project duration is used for scheduling
             type:
               - "null"
               - boolean
           start:
+            description: Start date of the project
             type:
               - "null"
               - string
           end:
+            description: End date of the project
             type:
               - "null"
               - string
           backgroundColor:
+            description: Background color associated with the project
             type:
               - "null"
               - string
           projectCode:
+            description: Code assigned to the project
             type:
               - "null"
               - string
           metadata:
+            description: Additional metadata related to the project
             type:
               - "null"
               - string
           defaultCategory:
+            description: Default category assigned to the project
             type:
               - "null"
               - string
           categoryGroups:
+            description: Groups categorizing different project categories
             type:
               - "null"
               - array
             items:
+              description: Individual category group items
               type:
                 - "null"
                 - string
           customers:
+            description: Customers associated with the project
             type:
               - "null"
               - array
             items:
+              description: Individual customer items
               type:
                 - "null"
                 - string
           budgetCategories:
+            description: Categories associated with the budget
             type:
               - "null"
               - array
             items:
+              description: Individual budget category items
               type:
                 - "null"
                 - object
           private:
+            description: Indicates if the project is private
             type:
               - "null"
               - boolean
           billable:
+            description: Indicates if the project is billable
             type:
               - "null"
               - boolean
           fixedCosts:
+            description: Fixed costs associated with the project
             type:
               - "null"
               - array
           customFields:
+            description: Custom fields associated with the project
             items:
+              description: Individual custom field items
               properties:
                 _id:
+                  description: Identifier for the custom field
                   type: string
                 templateId:
+                  description: Template identifier for the custom field
                   type: string
                 templateType:
+                  description: Type of the custom field template
                   type: string
                 templateLabel:
+                  description: Label associated with the custom field template
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value of the custom field
                   type:
                     - "null"
                     - string
                 choices:
+                  description: Options available for the custom field
                   items:
+                    description: Individual choice options for the custom field
                     properties:
                       _id:
+                        description: Identifier for the choice option
                         type: string
                       choiceId:
+                        description: ID of the choice option
                         type: string
                       value:
+                        description: Value associated with the choice option
                         type:
                           - "null"
                           - string
@@ -676,29 +813,38 @@ definitions:
               - "null"
               - array
           timeEntryNoteRequired:
+            description: Indicates if a note is required for time entries
             type:
               - "null"
               - boolean
           projectRate:
+            description: Details of project rates
             properties:
               external:
+                description: External project rates
                 properties:
                   defaultRateId:
+                    description: Default rate ID for external resources
                     type:
                       - "null"
                       - string
                   customRates:
+                    description: Custom rates associated with external resources
                     items:
+                      description: Individual custom rate items for external resources
                       properties:
                         _id:
+                          description: Identifier for the custom rate
                           type:
                             - "null"
                             - string
                         id:
+                          description: ID of the custom rate
                           type:
                             - "null"
                             - string
                         resourceId:
+                          description: ID of the associated resource
                           type:
                             - "null"
                             - string
@@ -712,19 +858,25 @@ definitions:
                   - "null"
                   - object
               internal:
+                description: Internal project rates
                 properties:
                   customRates:
+                    description: Custom rates associated with internal resources
                     items:
+                      description: Individual custom rate items for internal resources
                       properties:
                         _id:
+                          description: Identifier for the custom rate
                           type:
                             - "null"
                             - string
                         id:
+                          description: ID of the custom rate
                           type:
                             - "null"
                             - string
                         resourceId:
+                          description: ID of the associated resource
                           type:
                             - "null"
                             - string
@@ -735,6 +887,7 @@ definitions:
                       - "null"
                       - array
                   defaultRateId:
+                    description: Default rate ID for internal resources
                     type:
                       - "null"
                       - string
@@ -745,11 +898,14 @@ definitions:
               - "null"
               - object
           note:
+            description: Note associated with the project
             type:
               - "null"
               - string
           tags:
+            description: Tags associated with the project
             items:
+              description: Individual tag items
               type:
                 - "null"
                 - object
@@ -770,51 +926,63 @@ definitions:
         additionalProperties: true
         properties:
           _id:
+            description: Unique identifier for the resource
             type:
               - "null"
               - string
           email:
+            description: Email address of the resource
             type:
               - "null"
               - string
           metadata:
+            description: Metadata related to the resource
             type:
               - "null"
               - string
           createdDate:
+            description: Date and time when the resource was created
             type:
               - "null"
               - string
             format: date-time
           updatedDate:
+            description: Date and time when the resource was last updated
             type:
               - "null"
               - string
             format: date-time
           note:
+            description: Note or additional information about the resource
             type:
               - "null"
               - string
           firstName:
+            description: First name of the resource
             type: string
           lastName:
+            description: Last name of the resource
             type:
               - "null"
               - string
           status:
+            description: Status of the resource
             type:
               - "null"
               - string
           role:
+            description: Role of the resource
             type:
               - "null"
               - string
           links:
-            properties: {}
+            properties:
+              description: Links associated with the resource
             type:
               - "null"
               - object
           billable:
+            description: Flag indicating if the resource is billable
             type:
               - "null"
               - boolean
@@ -823,20 +991,26 @@ definitions:
               - "null"
               - array
             items:
+              description: List of calendar identifiers associated with the resource
               type:
                 - "null"
                 - string
           isApprover:
+            description: Flag indicating if the resource is an approver
             type:
               - "null"
               - boolean
           billing:
             properties:
               useDefault:
+                description:
+                  Flag indicating if the default billing rate should be
+                  used
                 type:
                   - "null"
                   - boolean
               rate:
+                description: Billing rate for the resource
                 type:
                   - "null"
                   - number
@@ -844,34 +1018,45 @@ definitions:
               - "null"
               - object
           useCustomAvailability:
+            description: Flag indicating if custom availability is used for the resource
             type:
               - "null"
               - boolean
           customFields:
             items:
+              description: Custom fields associated with the resource
               properties:
                 _id:
+                  description: Unique identifier for the custom field
                   type: string
                 templateId:
+                  description: Template identifier for the custom field
                   type: string
                 templateType:
+                  description: Type of the template for the custom field
                   type: string
                 templateLabel:
+                  description: Label of the template for the custom field
                   type:
                     - "null"
                     - string
                 value:
+                  description: Value of the custom field
                   type:
                     - "null"
                     - string
                 choices:
+                  description: List of choices for the custom field
                   items:
                     properties:
                       _id:
+                        description: Unique identifier for the choice
                         type: string
                       choiceId:
+                        description: ID of the choice
                         type: string
                       value:
+                        description: Value of the choice
                         type:
                           - "null"
                           - string
@@ -888,9 +1073,11 @@ definitions:
               - "null"
               - array
           resourceRates:
+            description: Billing rates associated with the resource
             properties:
               external:
                 items:
+                  description: External resource rates
                   properties: {}
                   type:
                     - "null"
@@ -900,6 +1087,7 @@ definitions:
                   - array
               internal:
                 items:
+                  description: Internal resource rates
                   properties: {}
                   type:
                     - "null"
@@ -911,11 +1099,13 @@ definitions:
               - "null"
               - object
           isProjectManager:
+            description: Flag indicating if the resource is a project manager
             type:
               - "null"
               - boolean
           tags:
             items:
+              description: List of tags associated with the resource
               type:
                 - "null"
                 - object

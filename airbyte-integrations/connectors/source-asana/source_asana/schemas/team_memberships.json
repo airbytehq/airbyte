@@ -2,24 +2,30 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Unique identifier for the team membership",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of the resource, such as team_membership",
       "type": ["null", "string"]
     },
     "is_guest": {
+      "description": "Indicates if the user is a guest member of the team",
       "type": ["null", "boolean"]
     },
     "team": {
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Unique identifier for the team",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of the resource, such as team",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the team",
           "type": ["null", "string"]
         }
       }
@@ -28,12 +34,15 @@
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Unique identifier for the user",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of the resource, such as user",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the user",
           "type": ["null", "string"]
         }
       }

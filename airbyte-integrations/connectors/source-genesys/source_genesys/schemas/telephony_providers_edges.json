@@ -3,133 +3,174 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the telephony provider edge",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or label for the telephony provider edge",
       "type": ["null", "string"]
     },
     "division": {
       "type": "object",
       "properties": {
         "id": {
+          "description": "The ID of the division associated with the telephony provider edge",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division associated with the telephony provider edge",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "URI to the division details for the telephony provider edge",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional descriptions or notes related to the telephony provider edge",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version information of the telephony provider edge",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "Date and time when the telephony provider edge was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "Date and time when the telephony provider edge was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "User who last modified the telephony provider edge",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "User who created the telephony provider edge",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "Current state or status of the telephony provider edge",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "Application that was used to last modify the telephony provider edge",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "Application that was used to create the telephony provider edge",
       "type": ["null", "string"]
     },
     "webRtcForceTurn": {
+      "description": "Indicates if WebRTC is forcibly using a TURN server for the telephony provider edge",
       "type": ["null", "string"]
     },
     "make": {
+      "description": "Make or manufacturer of the telephony provider edge",
       "type": ["null", "string"]
     },
     "model": {
+      "description": "Model of the telephony provider edge",
       "type": ["null", "string"]
     },
     "apiVersion": {
+      "description": "The version of the API used for the telephony provider edge",
       "type": ["null", "string"]
     },
     "softwareVersion": {
+      "description": "Software version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "softwareVersionTimestamp": {
+      "description": "Timestamp associated with the software version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "softwareVersionPlatform": {
+      "description": "Platform information for the software version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "softwareVersionConfiguration": {
+      "description": "Configuration related to the software version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "fullSoftwareVersion": {
+      "description": "The full software version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "pairingId": {
+      "description": "Pairing ID for the telephony provider edge",
       "type": ["null", "string"]
     },
     "fingerprint": {
+      "description": "Fingerprint information for the telephony provider edge",
       "type": ["null", "string"]
     },
     "fingerprintHint": {
+      "description": "Hint for the fingerprint of the telephony provider edge",
       "type": ["null", "string"]
     },
     "currentVersion": {
+      "description": "The current version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "stagedVersion": {
+      "description": "The staged version of the telephony provider edge",
       "type": ["null", "string"]
     },
     "patch": {
+      "description": "Patch information for the telephony provider edge",
       "type": ["null", "string"]
     },
     "statusCode": {
+      "description": "Status code related to the telephony provider edge",
       "type": ["null", "string"]
     },
     "onlineStatus": {
+      "description": "Current status of online connectivity for the telephony provider edge",
       "type": ["null", "string"]
     },
     "serialNumber": {
+      "description": "Serial number of the telephony provider edge",
       "type": ["null", "string"]
     },
     "physicalEdge": {
+      "description": "Indicates if the telephony provider edge is a physical device",
       "type": ["null", "boolean"]
     },
     "managed": {
+      "description": "Indicates if the telephony provider edge is managed",
       "type": ["null", "boolean"]
     },
     "edgeDeploymentType": {
+      "description": "Type of deployment for the telephony provider edge",
       "type": ["null", "string"]
     },
     "conversationCount": {
+      "description": "The number of conversations associated with the telephony provider edge",
       "type": ["null", "number"]
     },
     "callDrainingState": {
+      "description": "Current state of call draining for the telephony provider edge",
       "type": ["null", "string"]
     },
     "proxy": {
+      "description": "Proxy configuration details for the telephony provider edge",
       "type": ["null", "string"]
     },
     "offlineConfigCalled": {
+      "description": "Indicates if the offline configuration is called for the telephony provider edge",
       "type": ["null", "boolean"]
     },
     "osName": {
+      "description": "Operating system of the telephony provider edge",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "URI providing self-reference for the telephony provider edge",
       "type": ["null", "string"]
     }
   }

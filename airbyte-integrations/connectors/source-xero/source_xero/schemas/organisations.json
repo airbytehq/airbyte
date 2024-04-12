@@ -2,107 +2,138 @@
   "type": ["null", "object"],
   "properties": {
     "APIKey": {
+      "description": "Unique identifier used for authentication purposes",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "Name of the organisation",
       "type": ["null", "string"]
     },
     "LegalName": {
+      "description": "Legal name of the organisation",
       "type": ["null", "string"]
     },
     "PaysTax": {
+      "description": "Indicator if the organisation is required to pay taxes",
       "type": ["null", "boolean"]
     },
     "Version": {
+      "description": "Version information related to the organisation data",
       "type": ["null", "string"]
     },
     "OrganisationType": {
+      "description": "Type of the organisation",
       "type": ["null", "string"]
     },
     "BaseCurrency": {
+      "description": "The default currency used by the organisation",
       "type": ["null", "string"]
     },
     "CountryCode": {
+      "description": "Country code of the organisation",
       "type": ["null", "string"]
     },
     "IsDemoCompany": {
+      "description": "Indicator if the organisation is a demo company",
       "type": ["null", "boolean"]
     },
     "OrganisationStatus": {
+      "description": "Status of the organisation",
       "type": ["null", "string"]
     },
     "RegistrationNumber": {
+      "description": "Official registration number of the organisation",
       "type": ["null", "string"]
     },
     "TaxNumber": {
+      "description": "Tax identification number of the organisation",
       "type": ["null", "string"]
     },
     "FinancialYearEndDay": {
+      "description": "Day of the financial year end",
       "type": ["null", "integer"]
     },
     "FinancialYearEndMonth": {
+      "description": "Month of the financial year end",
       "type": ["null", "integer"]
     },
     "SalesTaxBasis": {
+      "description": "Basis on which sales tax is calculated",
       "type": ["null", "string"]
     },
     "SalesTaxPeriod": {
+      "description": "Period for which sales tax is applicable",
       "type": ["null", "string"]
     },
     "DefaultSalesTax": {
+      "description": "Default tax applied to sales",
       "type": ["null", "string"]
     },
     "DefaultPurchasesTax": {
+      "description": "Default tax applied to purchases",
       "type": ["null", "string"]
     },
     "PeriodLockDate": {
+      "description": "Date and time marking the period lock",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "EndOfYearLockDate": {
+      "description": "Date and time marking the end-of-year lock",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CreatedDateUTC": {
+      "description": "Date and time when the organisation was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Timezone": {
+      "description": "Timezone of the organisation location",
       "type": ["null", "string"]
     },
     "OrganisationEntityType": {
+      "description": "Type or category of the organisation entity",
       "type": ["null", "string"]
     },
     "ShortCode": {
+      "description": "Short code or abbreviation of the organisation name",
       "type": ["null", "string"]
     },
     "OrganisationID": {
+      "description": "Unique identifier for the organisation",
       "type": ["string"]
     },
     "LineOfBusiness": {
+      "description": "Field describing the primary business of the organisation",
       "type": ["null", "string"]
     },
     "Addresses": {
+      "description": "List of addresses associated with the organisation",
       "type": ["null", "array"],
       "items": {
         "$ref": "addresses.json"
       }
     },
     "Phones": {
+      "description": "List of phone numbers associated with the organisation",
       "type": ["null", "array"],
       "items": {
         "$ref": "phones.json"
       }
     },
     "ExternalLinks": {
+      "description": "List of external links associated with the organisation",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "LinkType": {
+            "description": "Type or category of the external link",
             "type": ["null", "string"]
           },
           "Url": {
+            "description": "URL of the external link",
             "type": ["null", "string"]
           }
         },
@@ -110,6 +141,7 @@
       }
     },
     "PaymentTerms": {
+      "description": "Terms and conditions for payment",
       "$ref": "payment_terms.json"
     }
   },

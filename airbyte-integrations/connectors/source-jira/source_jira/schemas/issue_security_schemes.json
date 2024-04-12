@@ -28,6 +28,7 @@
       "readOnly": true
     },
     "levels": {
+      "description": "The issue security levels associated with the security scheme.",
       "type": "array",
       "items": {
         "type": "object",
@@ -38,17 +39,17 @@
             "readOnly": true
           },
           "id": {
-            "description": "The ID of the issue level security item.",
+            "description": "The unique identifier of the issue security level.",
             "type": "string",
             "readOnly": true
           },
           "description": {
-            "description": "The description of the issue level security item.",
+            "description": "A brief description of the issue security level.",
             "type": "string",
             "readOnly": true
           },
           "name": {
-            "description": "The name of the issue level security item.",
+            "description": "The unique name of the issue security level.",
             "type": "string",
             "readOnly": true
           }

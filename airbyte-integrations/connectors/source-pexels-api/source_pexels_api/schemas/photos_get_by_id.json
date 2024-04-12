@@ -6,24 +6,28 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the photo.",
       "$id": "#root/id",
       "title": "Id",
       "type": "integer",
       "default": 0
     },
     "width": {
+      "description": "Width of the photo in pixels.",
       "$id": "#root/width",
       "title": "Width",
       "type": "integer",
       "default": 0
     },
     "height": {
+      "description": "Height of the photo in pixels.",
       "$id": "#root/height",
       "title": "Height",
       "type": "integer",
       "default": 0
     },
     "url": {
+      "description": "URL of the photo page on Pexels.",
       "$id": "#root/url",
       "title": "Url",
       "type": "string",
@@ -31,6 +35,7 @@
       "pattern": "^.*$"
     },
     "photographer": {
+      "description": "Name of the photographer who captured the photo.",
       "$id": "#root/photographer",
       "title": "Photographer",
       "type": "string",
@@ -38,6 +43,7 @@
       "pattern": "^.*$"
     },
     "photographer_url": {
+      "description": "URL linking to the photographer's profile on Pexels.",
       "$id": "#root/photographer_url",
       "title": "Photographer_url",
       "type": "string",
@@ -45,12 +51,14 @@
       "pattern": "^.*$"
     },
     "photographer_id": {
+      "description": "Unique identifier for the photographer.",
       "$id": "#root/photographer_id",
       "title": "Photographer_id",
       "type": "integer",
       "default": 0
     },
     "avg_color": {
+      "description": "Average color of the photo represented as a hex color code.",
       "$id": "#root/avg_color",
       "title": "Avg_color",
       "type": "string",
@@ -58,11 +66,13 @@
       "pattern": "^.*$"
     },
     "src": {
+      "description": "Different sizes and formats of the photo source URLs.",
       "$id": "#root/src",
       "title": "Src",
       "type": "object",
       "properties": {
         "original": {
+          "description": "URL for the original size of the photo (highest resolution).",
           "$id": "#root/src/original",
           "title": "Original",
           "type": "string",
@@ -70,6 +80,7 @@
           "pattern": "^.*$"
         },
         "large2x": {
+          "description": "URL for the 2x large-sized version of the photo (high resolution).",
           "$id": "#root/src/large2x",
           "title": "Large2x",
           "type": "string",
@@ -77,6 +88,7 @@
           "pattern": "^.*$"
         },
         "large": {
+          "description": "URL for the large-sized version of the photo.",
           "$id": "#root/src/large",
           "title": "Large",
           "type": "string",
@@ -84,6 +96,7 @@
           "pattern": "^.*$"
         },
         "medium": {
+          "description": "URL for the medium-sized version of the photo.",
           "$id": "#root/src/medium",
           "title": "Medium",
           "type": "string",
@@ -91,6 +104,7 @@
           "pattern": "^.*$"
         },
         "small": {
+          "description": "URL for the small-sized version of the photo.",
           "$id": "#root/src/small",
           "title": "Small",
           "type": "string",
@@ -98,6 +112,7 @@
           "pattern": "^.*$"
         },
         "portrait": {
+          "description": "URL for the portrait-oriented version of the photo.",
           "$id": "#root/src/portrait",
           "title": "Portrait",
           "type": "string",
@@ -105,6 +120,7 @@
           "pattern": "^.*$"
         },
         "landscape": {
+          "description": "URL for the landscape-oriented version of the photo.",
           "$id": "#root/src/landscape",
           "title": "Landscape",
           "type": "string",
@@ -112,6 +128,7 @@
           "pattern": "^.*$"
         },
         "tiny": {
+          "description": "URL for the tiny-sized version of the photo (thumbnail).",
           "$id": "#root/src/tiny",
           "title": "Tiny",
           "type": "string",
@@ -121,12 +138,14 @@
       }
     },
     "liked": {
+      "description": "The number of users who have liked this photo.",
       "$id": "#root/liked",
       "title": "Liked",
       "type": "boolean",
       "default": true
     },
     "alt": {
+      "description": "Alternative text describing the content of the photo.",
       "$id": "#root/alt",
       "title": "Alt",
       "type": "string",

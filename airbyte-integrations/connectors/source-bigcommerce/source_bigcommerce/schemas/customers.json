@@ -4,53 +4,68 @@
   "additionalProperties": true,
   "properties": {
     "email": {
+      "description": "Email address of the customer.",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "First name of the customer.",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the customer.",
       "type": ["null", "string"]
     },
     "company": {
+      "description": "Company name associated with the customer.",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number of the customer.",
       "type": ["null", "string"]
     },
     "registration_ip_address": {
+      "description": "IP address used by the customer during registration.",
       "type": ["null", "string"]
     },
     "notes": {
+      "description": "Additional notes or comments associated with the customer.",
       "type": ["null", "string"]
     },
     "tax_exempt_category": {
+      "description": "Category under which the customer is tax exempt.",
       "type": ["null", "string"]
     },
     "customer_group_id": {
+      "description": "Unique identifier of the customer group.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "Unique identifier of the customer.",
       "type": ["null", "integer"]
     },
     "date_modified": {
+      "description": "Date and time when the customer record was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created": {
+      "description": "Date and time when the customer record was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "address_count": {
+      "description": "Total number of addresses associated with the customer.",
       "type": ["null", "integer"]
     },
     "attribute_count": {
+      "description": "Total number of attributes associated with the customer.",
       "type": ["null", "integer"]
     },
     "authentication": {
       "type": ["null", "object"],
       "properties": {
         "force_password_reset": {
+          "description": "Indicates whether the customer is required to reset their password on next login.",
           "type": ["null", "boolean"]
         }
       }
@@ -62,48 +77,63 @@
         "additionalProperties": true,
         "properties": {
           "first_name": {
+            "description": "First name of the customer.",
             "type": ["null", "string"]
           },
           "last_name": {
+            "description": "Last name of the customer.",
             "type": ["null", "string"]
           },
           "company": {
+            "description": "Company name associated with the address.",
             "type": ["null", "string"]
           },
           "address1": {
+            "description": "First line of the customer's address.",
             "type": ["null", "string"]
           },
           "address2": {
+            "description": "Second line of the customer's address.",
             "type": ["null", "string"]
           },
           "city": {
+            "description": "City of the customer's address.",
             "type": ["null", "string"]
           },
           "state_or_province": {
+            "description": "State or province of the customer's address.",
             "type": ["null", "string"]
           },
           "postal_code": {
+            "description": "Postal code of the customer's address.",
             "type": ["null", "string"]
           },
           "country_code": {
+            "description": "ISO country code of the customer's address.",
             "type": ["null", "string"]
           },
           "phone": {
+            "description": "Phone number associated with the address.",
             "type": ["null", "string"]
           },
           "address_type": {
+            "description": "Type of address (e.g., residential, business).",
             "type": ["null", "string"]
           },
           "customer_id": {
+            "description": "Unique identifier of the customer.",
             "type": ["null", "integer"]
           },
           "id": {
+            "description": "Unique identifier of the address.",
             "type": ["null", "integer"]
           },
           "country": {
+            "description": "Country of the customer's address.",
             "type": ["null", "string"]
           },
           "form_fields": {
+            "description": "Additional form fields associated with the address.",
             "type": ["null", "array"],
             "oneOf": [
               {
@@ -114,9 +144,15 @@
                   },
                   "value": {
                     "oneOf": [
-                      { "type": ["null", "string"] },
-                      { "type": ["null", "integer"] },
-                      { "type": ["null", "array"] }
+                      {
+                        "type": ["null", "string"]
+                      },
+                      {
+                        "type": ["null", "integer"]
+                      },
+                      {
+                        "type": ["null", "array"]
+                      }
                     ]
                   },
                   "customer_id": {
@@ -132,9 +168,15 @@
                   },
                   "value": {
                     "oneOf": [
-                      { "type": ["null", "string"] },
-                      { "type": ["null", "integer"] },
-                      { "type": ["null", "array"] }
+                      {
+                        "type": ["null", "string"]
+                      },
+                      {
+                        "type": ["null", "integer"]
+                      },
+                      {
+                        "type": ["null", "array"]
+                      }
                     ]
                   },
                   "address_id": {
@@ -150,18 +192,22 @@
               "type": ["null", "object"],
               "properties": {
                 "amount": {
+                  "description": "Amount of store credit associated with the address.",
                   "type": ["null", "integer"]
                 }
               }
             }
           },
           "accepts_product_review_abandoned_cart_emails": {
+            "description": "Indicates whether the customer is opted in to receive product review and abandoned cart emails.",
             "type": ["null", "boolean"]
           },
           "channel_ids": {
+            "description": "Identifiers of the channels associated with the address.",
             "type": ["null", "array"]
           },
           "origin_channel_id": {
+            "description": "Identifier of the channel where the address was originally created.",
             "type": ["null", "integer"]
           }
         }

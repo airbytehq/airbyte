@@ -75,6 +75,7 @@
       "type": ["null", "boolean"]
     },
     "dependent_fields": {
+      "description": "Contains the list of ticket fields dependent on the primary ticket field.",
       "properties": {
         "id": {
           "description": "The unique identifier of this dependent field.",

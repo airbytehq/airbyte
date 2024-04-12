@@ -54,111 +54,146 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the account.
             type:
               - "null"
               - string
           createdAt:
+            description: The date and time when the account was created.
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The date and time when the account information was last updated.
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: An external identifier for the account.
             type:
               - "null"
               - string
           name:
+            description: The name of the account.
             type:
               - "null"
               - string
           traits:
+            description: Additional traits or characteristics of the account.
             type:
               - "null"
               - object
           organizationId:
+            description: The ID of the organization to which the account belongs.
             type:
               - "null"
               - string
           accountOwnerId:
+            description: The ID of the account owner.
             type:
               - "null"
               - string
           churnedAt:
+            description: The date and time when the account was churned.
             type:
               - "null"
               - string
             format: date-time
           firstSeenTimestamp:
+            description: The date and time when the account was first seen.
             type:
               - "null"
               - string
             format: date-time
           lastSeenTimestamp:
+            description: The date and time when the account was last seen.
             type:
               - "null"
               - string
             format: date-time
           lastInboundMessageTimestamp:
+            description:
+              The date and time of the last inbound message received from
+              the account.
             type:
               - "null"
               - string
             format: date-time
           lastOutboundMessageTimestamp:
+            description:
+              The date and time of the last outbound message sent to the
+              account.
             type:
               - "null"
               - string
             format: date-time
           mrr:
+            description: The monthly recurring revenue associated with the account.
             type:
               - "null"
               - number
           nextRenewalDate:
+            description: The date when the account's subscription is up for renewal.
             type:
               - "null"
               - string
             format: date-time
           trialEndDate:
+            description: The date when the trial period for the account ends.
             type:
               - "null"
               - string
             format: date-time
           usersCount:
+            description: The count of users associated with the account.
             type:
               - "null"
               - integer
           npsDetractorCount:
+            description:
+              The count of detractor responses in Net Promoter Score (NPS)
+              survey.
             type:
               - "null"
               - integer
           npsPassiveCount:
+            description:
+              The count of passive responses in Net Promoter Score (NPS)
+              survey.
             type:
               - "null"
               - integer
           npsPromoterCount:
+            description:
+              The count of promoter responses in Net Promoter Score (NPS)
+              survey.
             type:
               - "null"
               - integer
           npsScore:
+            description: The Net Promoter Score of the account.
             type:
               - "null"
               - number
           healthScore:
+            description: The health score of the account.
             type:
               - "null"
               - number
           csmId:
+            description: The ID of the customer success manager assigned to the account.
             type:
               - "null"
               - string
           accountExecutiveId:
+            description: The ID of the account executive associated with the account.
             type:
               - "null"
               - string
           segments:
+            description: Segments associated with the account.
             type:
               - "null"
               - array
@@ -175,18 +210,22 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the admin user.
             type:
               - "null"
               - string
           name:
+            description: The name of the admin user.
             type:
               - "null"
               - string
           email:
+            description: The email address of the admin user.
             type:
               - "null"
               - string
           licenseStatus:
+            description: The status of the admin user's license.
             type:
               - "null"
               - string
@@ -203,24 +242,29 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the conversation.
             type:
               - "null"
               - string
           createdAt:
+            description: The timestamp when the conversation was initially created.
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The timestamp when the conversation was last updated.
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: The external identifier of the conversation, if available.
             type:
               - "null"
               - string
           subject:
+            description: The subject or topic of the conversation.
             type:
               - "null"
               - string
@@ -237,69 +281,85 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the note data
             type:
               - "null"
               - string
           externalId:
+            description: External identifier for the note
             type:
               - "null"
               - string
           organizationId:
+            description: The unique identifier for the organization
             type:
               - "null"
               - string
           categoryId:
+            description: The unique identifier for the category
             type:
               - "null"
               - string
           createdAt:
+            description: The date and time when the note was created
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The date and time when the note was last updated
             type:
               - "null"
               - string
             format: date-time
           noteDate:
+            description: The date associated with the note
             type:
               - "null"
               - string
             format: date-time
           note:
+            description: The content of the note
             type:
               - "null"
               - string
           account:
+            description: The account related to the note data
             type:
               - "null"
               - object
           organization:
+            description: The organization related to the note data
             type:
               - "null"
               - string
           author:
+            description: The author of the note
             type:
               - "null"
               - string
           category:
+            description: The category of the note
             type:
               - "null"
               - string
           tag:
+            description: Tags associated with the note
             type:
               - "null"
               - array
           accountId:
+            description: The unique identifier for the account
             type:
               - "null"
               - string
           authorId:
+            description: The unique identifier for the author
             type:
               - "null"
               - string
           traits:
+            description: Additional traits or attributes of the note
             type:
               - "null"
               - object
@@ -316,46 +376,56 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the NPS response
             type:
               - "null"
               - string
           createdAt:
+            description: The timestamp for when the NPS response was created
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The timestamp for when the NPS response was last updated
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: The external identifier associated with the NPS response
             type:
               - "null"
               - string
           userId:
+            description: The user ID associated with the NPS response
             type:
               - "null"
               - string
           user:
+            description: The user who provided the NPS response
             type:
               - "null"
               - object
           dismissedAt:
+            description: The timestamp for when the NPS response was dismissed
             type:
               - "null"
               - string
             format: date-time
           respondedAt:
+            description: The timestamp for when the NPS response was submitted
             type:
               - "null"
               - string
             format: date-time
           score:
+            description: The Net Promoter Score given in the response
             type:
               - "null"
               - number
           feedback:
+            description: The feedback provided in the NPS response
             type:
               - "null"
               - string
@@ -372,67 +442,86 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the organization.
             type:
               - "null"
               - string
           createdAt:
+            description: The date and time when the organization was created.
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The date and time when the organization was last updated.
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: The external identifier for the organization.
             type:
               - "null"
               - string
           name:
+            description: The name of the organization.
             type:
               - "null"
               - string
           traits:
+            description: Additional traits or characteristics of the organization.
             type:
               - "null"
               - object
           accountOwnerId:
+            description: The unique identifier for the account owner of the organization.
             type:
               - "null"
               - string
           churnedAt:
+            description: The date and time when the organization churned.
             type:
               - "null"
               - string
             format: date-time
           mrr:
+            description: The monthly recurring revenue for the organization.
             type:
               - "null"
               - number
           nextRenewalDate:
+            description: The next renewal date for the organization.
             type:
               - "null"
               - string
             format: date-time
           trialEndDate:
+            description: The trial end date for the organization.
             type:
               - "null"
               - string
             format: date-time
           usersCount:
+            description: The total number of users associated with the organization.
             type:
               - "null"
               - integer
           csmId:
+            description:
+              The unique identifier for the customer success manager associated
+              with the organization.
             type:
               - "null"
               - string
           keyRoles:
+            description: Key roles within the organization.
             type:
               - "null"
               - array
           accountExecutiveId:
+            description:
+              The unique identifier for the account executive associated
+              with the organization.
             type:
               - "null"
               - string
@@ -449,90 +538,115 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the task
             type:
               - "null"
               - string
           createdAt:
+            description: The date and time when the task was created
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: The date and time when the task was last updated
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: The external identifier of the task
             type:
               - "null"
               - string
           organizationId:
+            description:
+              The unique identifier of the organization associated with
+              the task
             type:
               - "null"
               - string
           name:
+            description: The name of the task
             type:
               - "null"
               - string
           description:
+            description: A description of the task
             type:
               - "null"
               - string
           completedAt:
+            description: The date and time when the task was completed
             type:
               - "null"
               - string
             format: date-time
           dueDate:
+            description: The due date for the task
             type:
               - "null"
               - string
             format: date
           account:
+            description: The account name associated with the task
             type:
               - "null"
               - object
           organization:
+            description: The name of the organization associated with the task
             type:
               - "null"
               - string
           tag:
+            description: A tag associated with the task
             type:
               - "null"
               - array
           accountId:
+            description:
+              The unique identifier of the account associated with the
+              task
             type:
               - "null"
               - string
           categoryId:
+            description: The unique identifier of the category of the task
             type:
               - "null"
               - string
           assignedToId:
+            description: The unique identifier of the person assigned to the task
             type:
               - "null"
               - string
           completedById:
+            description: The unique identifier of the person who completed the task
             type:
               - "null"
               - string
           assignedTo:
+            description: The name of the person assigned to the task
             type:
               - "null"
               - object
           completedBy:
+            description: The name of the person who completed the task
             type:
               - "null"
               - string
           category:
+            description: The category of the task
             type:
               - "null"
               - string
           projects:
+            description: List of projects the task is associated with
             type:
               - "null"
               - array
           traits:
+            description: Additional traits or characteristics of the task
             type:
               - "null"
               - object
@@ -550,94 +664,119 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the user
             type:
               - "null"
               - string
           createdAt:
+            description: Timestamp indicating when the user record was created
             type:
               - "null"
               - string
             format: date-time
           updatedAt:
+            description: Timestamp of the last update made to the user's record
             type:
               - "null"
               - string
             format: date-time
           externalId:
+            description: External identifier for the user
             type:
               - "null"
               - string
           accounts:
+            description: List of accounts associated with the user
             type:
               - "null"
               - array
           organizations:
+            description: List of organizations associated with the user
             type:
               - "null"
               - array
           name:
+            description: Name of the user
             type:
               - "null"
               - string
           email:
+            description: Email address of the user
             type:
               - "null"
               - string
           avatar:
+            description: URL of the user's avatar image
             type:
               - "null"
               - string
           traits:
+            description: Additional traits or characteristics of the user
             type:
               - "null"
               - object
           firstKnown:
+            description:
+              Timestamp indicating when the user was first known to the
+              system
             type:
               - "null"
               - string
             format: date-time
           lastSeenTimestamp:
+            description: Timestamp of the user's last activity or presence
             type:
               - "null"
               - string
             format: date-time
           lastInboundMessageTimestamp:
+            description: Timestamp of the last inbound message received from the user
             type:
               - "null"
               - string
             format: date-time
           lastOutboundMessageTimestamp:
+            description: Timestamp of the last outbound message sent to the user
             type:
               - "null"
               - string
             format: date-time
           npsLastScore:
+            description: Last NPS score given by the user
             type:
               - "null"
               - number
           npsLastFeedback:
+            description:
+              Last feedback provided by the user for Net Promoter Score
+              (NPS)
             type:
               - "null"
               - string
           npsLastRespondedAt:
+            description: Timestamp of the user's last response in NPS survey
             type:
               - "null"
               - string
             format: date-time
           unsubscribedFromConversations:
+            description: Flag indicating whether the user has unsubscribed from conversations
             type:
               - "null"
               - boolean
           deactivatedAt:
+            description: Timestamp indicating when the user was deactivated
             type:
               - "null"
               - string
             format: date-time
           segments:
+            description: List of segments the user belongs to
             type:
               - "null"
               - array
           joinDate:
+            description: Timestamp indicating when the user joined the service
             type:
               - "null"
               - string

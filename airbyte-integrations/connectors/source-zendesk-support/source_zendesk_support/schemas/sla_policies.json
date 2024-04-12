@@ -21,10 +21,13 @@
       "type": ["null", "integer"]
     },
     "filter": {
+      "description": "Contains filtering criteria for retrieving SLA policies data.",
       "properties": {
         "all": {
+          "description": "All conditions within this array must be met for a policy to be returned.",
           "type": ["null", "array"],
           "items": {
+            "description": "Defines specific conditions for filtering SLA policies.",
             "properties": {
               "field": {
                 "description": "The field to filter on.",
@@ -43,8 +46,10 @@
           }
         },
         "any": {
+          "description": "At least one condition within this array must be met for a policy to be returned.",
           "type": ["null", "array"],
           "items": {
+            "description": "Defines specific conditions for filtering SLA policies.",
             "properties": {
               "field": {
                 "description": "The field to filter on.",
@@ -66,8 +71,10 @@
       "type": ["null", "object"]
     },
     "policy_metrics": {
+      "description": "Contains metrics associated with SLA policies.",
       "type": ["null", "array"],
       "items": {
+        "description": "Specifies individual metrics related to SLA policies.",
         "properties": {
           "priority": {
             "description": "The priority level of the SLA policy.",

@@ -36,6 +36,7 @@
       "type": ["integer", "null"]
     },
     "gifter": {
+      "description": "Information about the person who gave the gift",
       "type": ["object", "null"],
       "properties": {
         "customer_id": {
@@ -61,6 +62,7 @@
       }
     },
     "gift_receiver": {
+      "description": "Information about the receiver of the gift",
       "type": ["object", "null"],
       "properties": {
         "customer_id": {
@@ -90,8 +92,10 @@
       }
     },
     "gift_timelines": {
+      "description": "Timeline information related to the gift",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of each event in the gift timeline",
         "type": ["object", "null"],
         "properties": {
           "status": {

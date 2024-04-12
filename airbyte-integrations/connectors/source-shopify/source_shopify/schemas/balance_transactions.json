@@ -23,6 +23,7 @@
       "type": ["null", "string"]
     },
     "payoucurrencyt_status": {
+      "description": "Indicates the status of the payout for the currency in which the transaction occurred.",
       "type": ["null", "string"]
     },
     "amount": {

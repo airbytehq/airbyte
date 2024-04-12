@@ -3,53 +3,69 @@
   "type": "object",
   "properties": {
     "campaign_id": {
+      "description": "The unique identifier for the campaign associated with the email data.",
       "type": ["null", "integer"]
     },
     "behavior_score_info": {
+      "description": "Information related to behavior scoring of email recipients.",
       "type": ["null", "object"],
       "properties": {
         "engaged": {
+          "description": "Number of engaged email recipients.",
           "type": ["null", "boolean"]
         },
         "disengaged": {
+          "description": "Number of disengaged email recipients.",
           "type": ["null", "boolean"]
         },
         "indeterminate": {
+          "description": "Number of email recipients with indeterminate behavior.",
           "type": ["null", "boolean"]
         }
       }
     },
     "send_at": {
+      "description": "The timestamp indicating when the email is scheduled to be sent.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the email campaign (e.g., draft, scheduled, sent).",
       "type": ["null", "string"]
     },
     "sending_is_imminent": {
+      "description": "Flag indicating if the email sending is imminent.",
       "type": ["null", "boolean"]
     },
     "is_predictive_sending": {
+      "description": "Flag indicating if predictive sending is enabled for the email.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "The unique identifier for the email data.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the email campaign.",
       "type": ["null", "string"]
     },
     "component_template_id": {
+      "description": "The unique identifier for the component template used in the email.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp indicating when the email data was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp indicating when the email data was last updated.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of email campaign (e.g., promotional, informational).",
       "type": ["null", "string"]
     },
     "leads_count": {
+      "description": "The total count of leads targeted by the email campaign.",
       "type": ["null", "integer"]
     }
   }

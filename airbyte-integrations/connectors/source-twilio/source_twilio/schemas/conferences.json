@@ -47,6 +47,7 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains URLs for accessing subresources related to conferences",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

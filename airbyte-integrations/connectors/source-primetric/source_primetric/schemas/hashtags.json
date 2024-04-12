@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "A unique identifier for the hashtag in UUID format.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The actual text content associated with the hashtag.",
       "type": "string"
     }
   }

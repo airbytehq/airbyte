@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "send_at": {
+      "description": "Timestamp when the email was sent.",
       "type": ["null", "string"]
     },
     "campaign_id": {
+      "description": "Unique identifier for the campaign.",
       "type": ["null", "integer"]
     },
     "campaign_name": {
+      "description": "Name of the campaign.",
       "type": ["null", "string"]
     },
     "email_dropped_count": {
+      "description": "Number of emails that were dropped before sending.",
       "type": ["null", "integer"]
     },
     "email_delivered_count": {
+      "description": "Number of emails successfully delivered.",
       "type": ["null", "integer"]
     },
     "email_bounced_count": {
+      "description": "Number of emails that were not delivered due to bouncing.",
       "type": ["null", "integer"]
     },
     "email_opened_count": {
+      "description": "Number of times the email was opened.",
       "type": ["null", "integer"]
     },
     "email_clicked_count": {
+      "description": "Number of times links in the email were clicked.",
       "type": ["null", "integer"]
     },
     "email_unsubscribed_count": {
+      "description": "Number of recipients who unsubscribed from the emails.",
       "type": ["null", "integer"]
     },
     "email_spam_reported_count": {
+      "description": "Number of emails reported as spam by recipients.",
       "type": ["null", "integer"]
     },
     "email_delivered_rate": {
+      "description": "Percentage of emails successfully delivered.",
       "type": ["null", "number"]
     },
     "email_opened_rate": {
+      "description": "Percentage of delivered emails that were opened.",
       "type": ["null", "number"]
     },
     "email_clicked_rate": {
+      "description": "Percentage of delivered emails in which links were clicked.",
       "type": ["null", "number"]
     },
     "email_spam_reported_rate": {
+      "description": "Percentage of delivered emails reported as spam.",
       "type": ["null", "number"]
     },
     "contacts_count": {
+      "description": "Total number of contacts targeted in the campaign.",
       "type": ["null", "integer"]
     }
   }

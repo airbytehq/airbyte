@@ -4,30 +4,39 @@
   "additionalProperties": false,
   "properties": {
     "_item_identifier_id": {
+      "description": "Internal identifier used to link the item data with other related information.",
       "type": "integer"
     },
     "ItemIdentifier": {
+      "description": "The unique identifier assigned to each item in the stock.",
       "$ref": "generic/models/item_identifier.json"
     },
     "Qualifier": {
+      "description": "Additional information or criteria related to the stock summary data.",
       "type": "string"
     },
     "TotalReceived": {
+      "description": "The total quantity of items received in the stock since inception or a specific period.",
       "type": "number"
     },
     "Allocated": {
+      "description": "The quantity of items that have been assigned or promised to a specific purpose or order.",
       "type": "number"
     },
     "Available": {
+      "description": "The quantity of items that are currently in stock and can be sold or used.",
       "type": "number"
     },
     "OnHold": {
+      "description": "The quantity of items that are currently reserved for a specific purpose or order but not yet allocated.",
       "type": "number"
     },
     "OnHand": {
+      "description": "The total quantity of items physically present in the stock.",
       "type": "number"
     },
     "FacilityId": {
+      "description": "The unique identifier of the facility where the items are stored.",
       "type": "integer"
     }
   }

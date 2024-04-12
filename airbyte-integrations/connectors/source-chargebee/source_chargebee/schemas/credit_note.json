@@ -312,8 +312,10 @@
       }
     },
     "taxes": {
+      "description": "List of taxes applied to the credit note",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of each individual tax applied",
         "type": ["object", "null"],
         "properties": {
           "name": {

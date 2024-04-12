@@ -2,26 +2,33 @@
   "type": ["null", "object"],
   "properties": {
     "Name": {
+      "description": "The name of the tax rate.",
       "type": ["null", "string"]
     },
     "TaxType": {
+      "description": "The type of tax.",
       "type": ["string"]
     },
     "TaxComponents": {
+      "description": "Components of the tax rate.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "Name": {
+            "description": "The name of the tax component.",
             "type": ["null", "string"]
           },
           "IsCompound": {
+            "description": "Specifies whether the tax component is compound.",
             "type": ["null", "boolean"]
           },
           "IsNonRecoverable": {
+            "description": "Specifies whether the tax component is non-recoverable.",
             "type": ["null", "boolean"]
           },
           "Rate": {
+            "description": "The rate of the tax component.",
             "type": ["null", "number"]
           }
         },
@@ -29,30 +36,39 @@
       }
     },
     "Status": {
+      "description": "The status of the tax rate.",
       "type": ["null", "string"]
     },
     "ReportTaxType": {
+      "description": "The type of tax reported.",
       "type": ["null", "string"]
     },
     "CanApplyToAssets": {
+      "description": "Specifies whether the tax rate can be applied to assets.",
       "type": ["null", "boolean"]
     },
     "CanApplyToEquity": {
+      "description": "Specifies whether the tax rate can be applied to equity.",
       "type": ["null", "boolean"]
     },
     "CanApplyToExpenses": {
+      "description": "Specifies whether the tax rate can be applied to expenses.",
       "type": ["null", "boolean"]
     },
     "CanApplyToLiabilities": {
+      "description": "Specifies whether the tax rate can be applied to liabilities.",
       "type": ["null", "boolean"]
     },
     "CanApplyToRevenue": {
+      "description": "Specifies whether the tax rate can be applied to revenue.",
       "type": ["null", "boolean"]
     },
     "DisplayTaxRate": {
+      "description": "The tax rate displayed for reporting purposes.",
       "type": ["null", "number"]
     },
     "EffectiveRate": {
+      "description": "The effective tax rate applied.",
       "type": ["null", "number"]
     }
   },

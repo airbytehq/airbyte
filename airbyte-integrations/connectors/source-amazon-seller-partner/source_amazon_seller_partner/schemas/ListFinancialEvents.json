@@ -280,25 +280,32 @@
         "type": ["null", "object"],
         "properties": {
           "RetrochargeEventType": {
+            "description": "Type of retrocharge event",
             "type": ["null", "string"]
           },
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the retrocharge event occurred",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "BaseTax": {
+            "description": "Base tax amount",
             "type": ["null", "object"]
           },
           "ShippingTax": {
+            "description": "Shipping tax amount",
             "type": ["null", "object"]
           },
           "MarketplaceName": {
+            "description": "Name of the marketplace",
             "type": ["null", "string"]
           },
           "RetrochargeTaxWithheldList": {
+            "description": "List of retrocharge tax withheld",
             "type": ["null", "array"]
           }
         }
@@ -355,22 +362,28 @@
         "type": ["null", "object"],
         "properties": {
           "postedDate": {
+            "description": "Date and time when the product ad payment was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "transactionType": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "invoiceId": {
+            "description": "Identifier of the invoice",
             "type": ["null", "string"]
           },
           "baseValue": {
+            "description": "Base value of the product ad payment",
             "type": ["null", "object"]
           },
           "taxValue": {
+            "description": "Tax value on the product ad payment",
             "type": ["null", "object"]
           },
           "transactionValue": {
+            "description": "Value of the transaction",
             "type": ["null", "object"]
           }
         }
@@ -382,24 +395,31 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "FeeReason": {
+            "description": "Reason for the fee",
             "type": ["null", "string"]
           },
           "FeeList": {
+            "description": "List of fees",
             "type": ["null", "array"]
           },
           "SellerSKU": {
+            "description": "Seller Stock Keeping Unit",
             "type": ["null", "string"]
           },
           "FnSKU": {
+            "description": "Fulfillment Network Stock Keeping Unit",
             "type": ["null", "string"]
           },
           "FeeDescription": {
+            "description": "Description of the fee",
             "type": ["null", "string"]
           },
           "ASIN": {
+            "description": "Amazon Standard Identification Number",
             "type": ["null", "string"]
           }
         }
@@ -411,28 +431,36 @@
         "type": ["null", "object"],
         "properties": {
           "postedDate": {
+            "description": "Date and time of the seller deal payment event",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "dealId": {
+            "description": "Identifier of the deal",
             "type": ["null", "string"]
           },
           "dealDescription": {
+            "description": "Description of the deal",
             "type": ["null", "string"]
           },
           "eventType": {
+            "description": "Type of event",
             "type": ["null", "string"]
           },
           "feeType": {
+            "description": "Type of fee",
             "type": ["null", "string"]
           },
           "feeAmount": {
+            "description": "Amount of fee",
             "type": ["null", "object"]
           },
           "taxAmount": {
+            "description": "Tax amount",
             "type": ["null", "object"]
           },
           "totalAmount": {
+            "description": "Total amount of the deal payment",
             "type": ["null", "object"]
           }
         }
@@ -484,16 +512,20 @@
         "type": ["null", "object"],
         "properties": {
           "AdjustmentType": {
+            "description": "Type of adjustment made",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the adjustment was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "AdjustmentAmount": {
+            "description": "The amount of adjustment applied",
             "type": ["null", "object"]
           },
           "AdjustmentItemList": {
+            "description": "List of items included in the adjustment",
             "type": ["null", "array"]
           }
         }
@@ -505,19 +537,24 @@
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time of SAFET reimbursement event",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "SAFETClaimId": {
+            "description": "Identifier of the SAFET claim",
             "type": ["null", "string"]
           },
           "ReimbursedAmount": {
+            "description": "Amount reimbursed",
             "type": ["null", "object"]
           },
           "ReasonCode": {
+            "description": "Reason code for reimbursement",
             "type": ["null", "string"]
           },
           "SAFETReimbursementItemList": {
+            "description": "List of SAFET reimbursement items",
             "type": ["null", "array"]
           }
         }
@@ -529,22 +566,28 @@
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time when the seller review enrollment payment was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "EnrollmentId": {
+            "description": "Identifier of the enrollment",
             "type": ["null", "string"]
           },
           "ParentASIN": {
+            "description": "Parent ASIN",
             "type": ["null", "string"]
           },
           "FeeComponent": {
+            "description": "Fee component associated with the seller review enrollment payment",
             "type": ["null", "object"]
           },
           "ChargeComponent": {
+            "description": "Charge component associated with the seller review enrollment payment",
             "type": ["null", "object"]
           },
           "TotalAmount": {
+            "description": "Total amount of the seller review enrollment payment",
             "type": ["null", "object"]
           }
         }
@@ -582,29 +625,37 @@
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time when the coupon payment was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "CouponId": {
+            "description": "Identifier of the coupon",
             "type": ["null", "string"]
           },
           "SellerCouponDescription": {
+            "description": "Description of the seller coupon",
             "type": ["null", "string"]
           },
           "ClipOrRedemptionCount": {
+            "description": "Number of clips or redemptions made",
             "type": "integer",
             "format": "int64"
           },
           "PaymentEventId": {
+            "description": "Identifier of the payment event",
             "type": ["null", "string"]
           },
           "FeeComponent": {
+            "description": "Fee component associated with the coupon payment",
             "type": ["null", "object"]
           },
           "ChargeComponent": {
+            "description": "Charge component associated with the coupon payment",
             "type": ["null", "object"]
           },
           "TotalAmount": {
+            "description": "Total amount of the coupon payment",
             "type": ["null", "object"]
           }
         }
@@ -642,28 +693,36 @@
         "type": ["null", "object"],
         "properties": {
           "TransactionType": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time of the network commingling transaction",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "NetCoTransactionID": {
+            "description": "ID of the net co-transaction",
             "type": ["null", "string"]
           },
           "SwapReason": {
+            "description": "Reason for swap",
             "type": ["null", "string"]
           },
           "ASIN": {
+            "description": "Amazon Standard Identification Number",
             "type": ["null", "string"]
           },
           "MarketplaceId": {
+            "description": "Identifier of the marketplace",
             "type": ["null", "string"]
           },
           "TaxExclusiveAmount": {
+            "description": "Tax exclusive amount",
             "type": ["null", "object"]
           },
           "TaxAmount": {
+            "description": "Amount of tax",
             "type": ["null", "object"]
           }
         }
@@ -675,31 +734,40 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the expense was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "MarketplaceId": {
+            "description": "Identifier of the marketplace",
             "type": ["null", "string"]
           },
           "TransactionType": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "BaseExpense": {
+            "description": "Base expense amount",
             "type": ["null", "object"]
           },
           "TaxTypeCGST": {
+            "description": "Amount of CGST tax",
             "type": ["null", "object"]
           },
           "TaxTypeSGST": {
+            "description": "Amount of SGST tax",
             "type": ["null", "object"]
           },
           "TaxTypeIGST": {
+            "description": "Amount of IGST tax",
             "type": ["null", "object"]
           },
           "TotalExpense": {
+            "description": "Total expense incurred",
             "type": ["null", "object"]
           }
         }
@@ -711,31 +779,40 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the expense reversal was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "MarketplaceId": {
+            "description": "Identifier of the marketplace",
             "type": ["null", "string"]
           },
           "TransactionType": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "BaseExpense": {
+            "description": "Base expense amount",
             "type": ["null", "object"]
           },
           "TaxTypeCGST": {
+            "description": "Amount of CGST tax",
             "type": ["null", "object"]
           },
           "TaxTypeSGST": {
+            "description": "Amount of SGST tax",
             "type": ["null", "object"]
           },
           "TaxTypeIGST": {
+            "description": "Amount of IGST tax",
             "type": ["null", "object"]
           },
           "TotalExpense": {
+            "description": "Total expense reversed",
             "type": ["null", "object"]
           }
         }
@@ -747,19 +824,24 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "FinancialEventGroupId": {
+            "description": "Identifier of the financial event group",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time of the trial shipment event",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "SKU": {
+            "description": "Stock Keeping Unit",
             "type": ["null", "string"]
           },
           "FeeList": {
+            "description": "List of fees incurred during trial shipment",
             "type": ["null", "array"]
           }
         }
@@ -771,19 +853,24 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "Unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "FinancialEventGroupId": {
+            "description": "Identifier of the financial event group",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time of the TDS reimbursement event",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "SKU": {
+            "description": "Stock Keeping Unit",
             "type": ["null", "string"]
           },
           "FeeList": {
+            "description": "List of fees",
             "type": ["null", "array"]
           }
         }
@@ -886,24 +973,31 @@
         "type": ["null", "object"],
         "properties": {
           "FundsTransfersType": {
+            "description": "Type of funds transfer",
             "type": ["null", "string"]
           },
           "TransferId": {
+            "description": "Identifier of the transfer",
             "type": ["null", "string"]
           },
           "DisbursementId": {
+            "description": "Identifier of the disbursement",
             "type": ["null", "string"]
           },
           "PaymentDisbursementType": {
+            "description": "Type of payment disbursement",
             "type": ["null", "string"]
           },
           "Status": {
+            "description": "Status of the disbursement",
             "type": ["null", "string"]
           },
           "TransferAmount": {
+            "description": "Amount transferred",
             "type": ["null", "object"]
           },
           "PostedDate": {
+            "description": "Date and time when the failed adhoc disbursement event occurred",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -1003,22 +1097,28 @@
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time of the removal shipment adjustment",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "AdjustmentEventId": {
+            "description": "Identifier of the removal shipment adjustment event",
             "type": ["null", "string"]
           },
           "MerchantOrderId": {
+            "description": "Merchant's order ID",
             "type": ["null", "string"]
           },
           "OrderId": {
+            "description": "Order ID",
             "type": ["null", "string"]
           },
           "TransactionType": {
+            "description": "Type of transaction",
             "type": ["null", "string"]
           },
           "RemovalShipmentItemAdjustmentList": {
+            "description": "List of item adjustments for removal shipment",
             "type": ["null", "array"]
           }
         }

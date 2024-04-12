@@ -38,30 +38,39 @@ definitions:
         type: object
         properties:
           doneDate:
+            description: The date and time when the SMS was successfully sent.
             type:
               - "null"
               - string
           errorCode:
+            description: Error code, if any, related to sending the SMS.
             type:
               - "null"
               - string
           errorReason:
+            description: Reason for any error that occurred during SMS transmission.
             type:
               - "null"
               - string
           from:
+            description: Sender of the SMS.
             type:
               - "null"
               - string
           href:
+            description: Hyperlink reference to the SMS data.
             type:
               - "null"
               - string
           mccmnc:
+            description:
+              Mobile Country Code (MCC) and Mobile Network Code (MNC) identifying
+              the recipient's mobile network.
             type:
               - "null"
               - string
           parts:
+            description: Array containing details of each part of the SMS message.
             type:
               - "null"
               - array
@@ -71,81 +80,100 @@ definitions:
                 - object
               properties:
                 currency:
+                  description: Currency used for pricing.
                   type:
                     - "null"
                     - string
                 deliveryState:
+                  description: Delivery state of the SMS part.
                   type:
                     - "null"
                     - string
                 doneDate:
+                  description: Date and time when the SMS part was successfully delivered.
                   type:
                     - "null"
                     - string
                 errorCode:
+                  description: Error code, if any, for the SMS part.
                   type:
                     - "null"
                     - string
                 partId:
+                  description: Identifier for the SMS part.
                   type:
                     - "null"
                     - string
                 price:
+                  description: Price for sending the SMS part.
                   type:
                     - "null"
                     - string
                 priceEffective:
+                  description: Effective date and time for pricing.
                   type:
                     - "null"
                     - string
                   format: date-time
                 sendDate:
+                  description: Date and time when the SMS part was sent.
                   type:
                     - "null"
                     - string
                 statusText:
+                  description: Textual description of the status of the SMS part.
                   type:
                     - "null"
                     - string
           overallPrice:
+            description: Total price for sending the SMS.
             type:
               - "null"
               - string
           priceEffective:
+            description: Effective date and time for overall pricing.
             type:
               - "null"
               - string
             format: date-time
           reference:
+            description: Reference identifier for the SMS.
             type:
               - "null"
               - string
           requestId:
+            description: Unique identifier associated with the SMS request.
             type:
               - "null"
               - string
           sentDate:
+            description: Date and time when the SMS was sent to the recipient.
             type:
               - "null"
               - string
           size:
+            description: Size of the SMS message.
             type:
               - "null"
               - integer
           status:
+            description: Overall status of the SMS transmission.
             type:
               - "null"
               - string
           submitDate:
+            description: Date and time when the SMS request was submitted.
             type:
               - "null"
               - string
             format: date-time
           to:
+            description: Recipient of the SMS.
             type:
               - "null"
               - string
           ttid:
+            description: Transaction ID associated with the SMS.
             type:
               - "null"
               - string
@@ -178,26 +206,34 @@ definitions:
         type: object
         properties:
           doneDate:
+            description: Date when the message transmission was completed
             type:
               - "null"
               - string
           errorCode:
+            description: Error code related to the message transmission, if any
             type:
               - "null"
               - string
           errorReason:
+            description: Reason for the error occurred during message transmission
             type:
               - "null"
               - string
           from:
+            description: Sender phone number or alphanumeric sender ID
             type:
               - "null"
               - string
           href:
+            description: URL link related to the message
             type:
               - "null"
               - string
           mccmnc:
+            description:
+              Mobile Country Code (MCC) and Mobile Network Code (MNC) of
+              the recipient
             type:
               - "null"
               - string
@@ -211,81 +247,106 @@ definitions:
                 - object
               properties:
                 currency:
+                  description: Currency used for pricing
                   type:
                     - "null"
                     - string
                 deliveryState:
+                  description: Delivery state of the specific message part
                   type:
                     - "null"
                     - string
                 doneDate:
+                  description: Date when the specific message part was delivered
                   type:
                     - "null"
                     - string
                 errorCode:
+                  description:
+                    Error code related to the specific message part, if
+                    any
                   type:
                     - "null"
                     - string
                 partId:
+                  description: Unique identifier for the message part
                   type:
                     - "null"
                     - string
                 price:
+                  description: Price incurred for the specific message part
                   type:
                     - "null"
                     - string
                 priceEffective:
+                  description:
+                    Effective date and time for the pricing of the specific
+                    message part
                   type:
                     - "null"
                     - string
                   format: date-time
                 sendDate:
+                  description: Date when the specific message part was sent
                   type:
                     - "null"
                     - string
                 statusText:
+                  description:
+                    Textual status description of the specific message
+                    part
                   type:
                     - "null"
                     - string
           overallPrice:
+            description: Total price incurred for the message transmission
             type:
               - "null"
               - string
           priceEffective:
+            description: Effective date and time for the pricing of the message transmission
             type:
               - "null"
               - string
             format: date-time
           reference:
+            description: Reference identifier for the message
             type:
               - "null"
               - string
           requestId:
+            description: Unique identifier for the request
             type:
               - "null"
               - string
           sentDate:
+            description: Date when the message was sent
             type:
               - "null"
               - string
           size:
+            description: Size of the message content
             type:
               - "null"
               - integer
           status:
+            description: Status of the message transmission
             type:
               - "null"
               - string
           submitDate:
+            description: Date and time when the message was submitted for transmission
             type:
               - "null"
               - string
             format: date-time
           to:
+            description: Recipient phone number
             type:
               - "null"
               - string
           ttid:
+            description: Transaction Tracking ID for the message
             type:
               - "null"
               - string
@@ -302,6 +363,7 @@ definitions:
         type: object
         properties:
           contacts:
+            description: An array containing contact information.
             type:
               - "null"
               - array
@@ -311,34 +373,42 @@ definitions:
                 - object
               properties:
                 companyAddress:
+                  description: The address of the company associated with the contact.
                   type:
                     - "null"
                     - string
                 companyName:
+                  description: The name of the company associated with the contact.
                   type:
                     - "null"
                     - string
                 contactEmail:
+                  description: The email address of the contact.
                   type:
                     - "null"
                     - string
                 contactName:
+                  description: The name of the contact.
                   type:
                     - "null"
                     - string
                 contactPhone:
+                  description: The phone number of the contact.
                   type:
                     - "null"
                     - string
                 contactTitle:
+                  description: The title or position of the contact within the company.
                   type:
                     - "null"
                     - string
                 friendlyName:
+                  description: A user-friendly name for the contact.
                   type:
                     - "null"
                     - string
           size:
+            description: The total number of contacts in the response.
             type:
               - "null"
               - integer
@@ -355,6 +425,7 @@ definitions:
         type: object
         properties:
           provisioningRequests:
+            description: Array of phone provisioning requests
             type:
               - "null"
               - array
@@ -364,26 +435,36 @@ definitions:
                 - object
               properties:
                 accountId:
+                  description:
+                    Unique identifier of the account associated with the
+                    request
                   type:
                     - "null"
                     - string
                 contactId:
+                  description:
+                    Unique identifier of the contact for whom the request
+                    is made
                   type:
                     - "null"
                     - string
                 friendlyName:
+                  description: User-friendly name provided for the request
                   type:
                     - "null"
                     - string
                 requestId:
+                  description: Unique identifier of the provisioning request
                   type:
                     - "null"
                     - string
                 status:
+                  description: Current status of the provisioning request
                   type:
                     - "null"
                     - string
           size:
+            description: Total number of provisioning requests in the response
             type:
               - "null"
               - integer
@@ -400,6 +481,7 @@ definitions:
         type: object
         properties:
           provisioningRequests:
+            description: List of provisioning requests made by users
             type:
               - "null"
               - array
@@ -409,26 +491,32 @@ definitions:
                 - object
               properties:
                 accountId:
+                  description: Account ID of the user
                   type:
                     - "null"
                     - string
                 contactId:
+                  description: Contact ID of the user
                   type:
                     - "null"
                     - string
                 friendlyName:
+                  description: Friendly name associated with the request
                   type:
                     - "null"
                     - string
                 requestId:
+                  description: Unique ID for the request
                   type:
                     - "null"
                     - string
                 status:
+                  description: Status of the provisioning request
                   type:
                     - "null"
                     - string
           size:
+            description: Total number of provisioning requests
             type:
               - "null"
               - integer

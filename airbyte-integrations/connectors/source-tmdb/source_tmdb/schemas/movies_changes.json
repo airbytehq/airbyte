@@ -6,6 +6,7 @@
   "type": "object",
   "properties": {
     "key": {
+      "description": "A key associated with the movies_changes data.",
       "$id": "#root/changes/items/key",
       "title": "Key",
       "type": ["null", "string"],
@@ -13,16 +14,19 @@
       "pattern": "^.*$"
     },
     "items": {
+      "description": "Contains information about the movie changes.",
       "$id": "#root/changes/items/items",
       "title": "Items",
       "type": "array",
       "default": [],
       "items": {
+        "description": "Details of each individual movie change.",
         "$id": "#root/changes/items/items/items",
         "title": "Items",
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier of the movie.",
             "$id": "#root/changes/items/items/items/id",
             "title": "Id",
             "type": ["null", "string"],
@@ -30,6 +34,7 @@
             "pattern": "^.*$"
           },
           "action": {
+            "description": "The type of action performed on the movie.",
             "$id": "#root/changes/items/items/items/action",
             "title": "Action",
             "type": ["null", "string"],
@@ -37,6 +42,7 @@
             "pattern": "^.*$"
           },
           "time": {
+            "description": "The timestamp when the change occurred.",
             "$id": "#root/changes/items/items/items/time",
             "title": "Time",
             "type": ["null", "string"],
@@ -44,6 +50,7 @@
             "pattern": "^.*$"
           },
           "iso_639_1": {
+            "description": "The language code for which this change is applicable.",
             "$id": "#root/changes/items/items/items/iso_639_1",
             "title": "Iso_639_1",
             "type": ["null", "string"],
@@ -51,6 +58,7 @@
             "pattern": "^.*$"
           },
           "iso_3166_1": {
+            "description": "The country code for which this change is applicable.",
             "$id": "#root/changes/items/items/items/iso_3166_1",
             "title": "Iso_3166_1",
             "type": ["null", "string"],
@@ -58,16 +66,19 @@
             "pattern": "^.*$"
           },
           "value": {
+            "description": "The details of the change.",
             "$id": "#root/changes/items/items/items/value",
             "title": "Value",
             "type": "object",
             "properties": {
               "poster": {
+                "description": "Contains information about the movie poster.",
                 "$id": "#root/changes/items/items/items/value/poster",
                 "title": "Poster",
                 "type": "object",
                 "properties": {
                   "file_path": {
+                    "description": "The file path of the movie poster.",
                     "$id": "#root/changes/items/items/items/value/poster/file_path",
                     "title": "File_path",
                     "type": ["null", "string"],

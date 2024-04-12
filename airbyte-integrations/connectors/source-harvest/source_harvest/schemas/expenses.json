@@ -54,6 +54,7 @@
       "type": ["null", "boolean"]
     },
     "receipt": {
+      "description": "Details of the receipt attached to the expense",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -75,6 +76,7 @@
       }
     },
     "user": {
+      "description": "Information about the user who incurred the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -88,6 +90,7 @@
       }
     },
     "user_assignment": {
+      "description": "Details of the assignment or task associated with the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -127,6 +130,7 @@
       }
     },
     "project": {
+      "description": "Information about the project for which the expense was made",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -144,6 +148,7 @@
       }
     },
     "expense_category": {
+      "description": "Information about the category of the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -165,6 +170,7 @@
       }
     },
     "client": {
+      "description": "Details of the client associated with the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -182,6 +188,7 @@
       }
     },
     "invoice": {
+      "description": "Details of the invoice related to the expense",
       "type": ["null", "object"],
       "properties": {
         "id": {

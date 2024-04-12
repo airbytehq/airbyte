@@ -47,44 +47,54 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the operation
             type:
               - "null"
               - string
           type:
+            description: Type or category of the operation
             type:
               - "null"
               - string
           details:
+            description: Additional details or parameters for the operation
             type:
               - "null"
               - object
           results:
+            description: Results or output of the operation
             type:
               - "null"
               - object
           state:
+            description: Current state/status of the operation
             type:
               - "null"
               - string
           errorDetails:
+            description: Details of any errors encountered during the operation
             type:
               - "null"
               - string
           createdAt:
+            description: Timestamp when the operation was created
             type:
               - "null"
               - string
             format: date-time
           finishedAt:
+            description: Timestamp when the operation was completed
             type:
               - "null"
               - string
             format: date-time
           estimatePctComplete:
+            description: Estimated percentage of completion for the operation
             type:
               - "null"
               - integer
           step:
+            description: Current step or stage of the operation
             type:
               - "null"
               - string
@@ -104,21 +114,25 @@ definitions:
         type: object
         properties:
           userId:
+            description: Identifier for the user associated with the session
             type:
               - "null"
               - integer
               - string
           sessionId:
+            description: Unique identifier for the session
             type:
               - "null"
               - integer
               - string
           createdTime:
+            description: The timestamp when the session was created
             type:
               - "null"
               - integer
               - string
           fsUrl:
+            description: The FullStory URL associated with the session
             type:
               - "null"
               - string
@@ -138,22 +152,27 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier of the segment.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the segment.
             type:
               - "null"
               - string
           creator:
+            description: The user or system who created the segment.
             type:
               - "null"
               - string
           created:
+            description: The date and time when the segment was created.
             type:
               - "null"
               - string
           url:
+            description: The URL associated with the segment.
             type:
               - "null"
               - string
@@ -173,18 +192,27 @@ definitions:
         type: object
         properties:
           blockedIps:
+            description:
+              An array of blocked IP addresses that are not allowed to
+              access the service.
             type:
               - "null"
               - array
             items:
               type: string
           blockedUas:
+            description:
+              An array of blocked User Agents (UA) representing browsers
+              or clients that are restricted.
             type:
               - "null"
               - array
             items:
               type: string
           blockedAppIds:
+            description:
+              An array of blocked application IDs indicating which applications
+              are restricted.
             type:
               - "null"
               - array
@@ -206,10 +234,14 @@ definitions:
         type: object
         properties:
           onlyRecordKnownDomains:
+            description: Flag indicating if only known domains should be recorded
             type:
               - "null"
               - boolean
           domains:
+            description:
+              List of domain settings containing information about each
+              domain
             type:
               - "null"
               - array
@@ -219,10 +251,12 @@ definitions:
                 - object
               properties:
                 disabled:
+                  description: Flag indicating if recording is disabled for this domain
                   type:
                     - "null"
                     - boolean
                 domain:
+                  description: The domain name for which these settings apply
                   type:
                     - "null"
                     - string
@@ -242,14 +276,23 @@ definitions:
         type: object
         properties:
           record_geo_mode:
+            description:
+              Defines the mode in which geolocation data is recorded for
+              user sessions.
             type:
               - "null"
               - string
           record_geo_zones:
+            description:
+              List of geographical zones where geolocation data is recorded
+              for user sessions.
             type:
               - "null"
               - array
             items:
+              description:
+                Details of a specific geographical zone for recording geolocation
+                data.
               type: string
   recordingfeatures_stream:
     type: DeclarativeStream
@@ -267,22 +310,33 @@ definitions:
         type: object
         properties:
           enabled:
+            description:
+              Indicates whether the recording feature is enabled for this
+              session.
             type:
               - "null"
               - boolean
           consoleWatcher:
+            description: Captures console logs and errors generated during the session.
             type:
               - "null"
               - boolean
           ajaxWatcher:
+            description: Records AJAX requests made during the session.
             type:
               - "null"
               - boolean
           resourceUploading:
+            description:
+              Monitors the uploading of external resources (like images
+              or scripts) during the session.
             type:
               - "null"
               - boolean
           recordingShutoff:
+            description:
+              Tracks whether the recording has been manually stopped or
+              paused.
             type:
               - "null"
               - boolean
@@ -310,48 +364,59 @@ definitions:
         type: object
         properties:
           endpoints:
+            description: List of webhook endpoints containing configuration details
             type:
               - "null"
               - array
             items:
+              description: Details of a specific webhook endpoint
               type:
                 - "null"
                 - object
               properties:
                 id:
+                  description: Unique identifier for the webhook endpoint
                   type:
                     - "null"
                     - string
                 created:
+                  description: Timestamp for when the endpoint was created
                   type:
                     - "null"
                     - string
                 modified:
+                  description: Timestamp for when the endpoint was last modified
                   type:
                     - "null"
                     - string
                 enabled:
+                  description: Flag indicating if the endpoint is currently enabled
                   type:
                     - "null"
                     - boolean
                 url:
+                  description: URL where the webhook payload will be delivered
                   type:
                     - "null"
                     - string
                 event_types:
+                  description: List of event types that trigger the webhook
                   type:
                     - "null"
                     - array
                   items:
+                    description: Details of a specific event type
                     type:
                       - "null"
                       - object
                     properties:
                       event_name:
+                        description: Name of the event that triggers the webhook
                         type:
                           - "null"
                           - string
                       subcategory:
+                        description: Subcategory of the event for further classification
                         type:
                           - "null"
                           - string
@@ -371,14 +436,17 @@ definitions:
         additionalProperties: true
         properties:
           eventName:
+            description: The name of the event that occurred.
             type:
               - "null"
               - string
           displayName:
+            description: The display name of the event definition.
             type:
               - "null"
               - string
           hasSubcategories:
+            description: Indicates whether the event has subcategories.
             type:
               - "null"
               - boolean

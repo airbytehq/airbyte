@@ -4,55 +4,75 @@
   "additionalProperties": true,
   "properties": {
     "canSyncTasks": {
+      "description": "Indicates whether tasks can be synchronized with this project",
       "type": ["null", "boolean"]
     },
     "users": {
+      "description": "List of users associated with the project",
       "type": ["null", "array"],
-      "items": { "type": "integer" }
+      "items": {
+        "description": "User details",
+        "type": "integer"
+      }
     },
     "id": {
+      "description": "Unique identifier of the project",
       "type": ["null", "string"]
     },
     "platform": {
+      "description": "Platform on which the project is created",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the project",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the project was created",
       "type": ["null", "string"]
     },
     "workspaceId": {
+      "description": "Identifier of the workspace to which the project belongs",
       "type": ["null", "string"]
     },
     "workspaceName": {
+      "description": "Name of the workspace to which the project belongs",
       "type": ["null", "string"]
     },
     "foreign": {
+      "description": "Indicates if the project is a foreign project",
       "type": ["null", "boolean"]
     },
     "favorite": {
+      "description": "Flag indicating if the project is marked as favorite",
       "type": ["null", "boolean"]
     },
     "hasWebhook": {
+      "description": "Flag indicating if the project has a webhook configured",
       "type": ["null", "boolean"]
     },
     "status": {
+      "description": "Status of the project",
       "type": ["null", "string"]
     },
     "estimatesType": {
+      "description": "Type of estimates used for project's time tracking",
       "type": ["null", "string"]
     },
     "isTemplate": {
+      "description": "Indicates if the project is a template project",
       "type": ["null", "boolean"]
     },
     "privacy": {
+      "description": "Privacy settings for the project",
       "type": ["null", "string"]
     },
     "connectionStatus": {
+      "description": "Status of the project's connection",
       "type": ["null", "string"]
     },
     "unarchiveDisabledBy": {
+      "description": "Reason why the project unarchiving is disabled",
       "type": ["null", "string"]
     }
   }

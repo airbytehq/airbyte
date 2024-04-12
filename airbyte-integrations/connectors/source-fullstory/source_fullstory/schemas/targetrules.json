@@ -5,62 +5,77 @@
   "type": "object",
   "properties": {
     "session_targeting_rules": {
+      "description": "Rules defining the criteria for targeting users during session recordings",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the parent rule",
             "type": ["null", "string"]
           },
           "notes": {
+            "description": "Any additional notes or comments related to the rule",
             "type": ["null", "string"]
           },
           "scope": {
+            "description": "Scope or context in which the rule is applied",
             "type": ["null", "string"]
           },
           "conditions": {
+            "description": "Specific conditions that must be met for the rule to apply",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "attr": {
+                  "description": "Attribute or property being evaluated",
                   "type": ["null", "string"]
                 },
                 "op": {
+                  "description": "Comparison operator used to evaluate the attribute",
                   "type": ["null", "string"]
                 },
                 "values": {
+                  "description": "Possible values that will be evaluated for the condition",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "object"],
                     "properties": {
                       "str_val": {
+                        "description": "String value used in the comparison",
                         "type": ["null", "string"]
                       },
                       "int_val": {
+                        "description": "Integer value used in the comparison",
                         "type": ["null", "integer"]
                       },
                       "version_val": {
+                        "description": "Version value used in the comparison",
                         "type": ["null", "object"]
                       }
                     }
                   }
                 },
                 "join_previous": {
+                  "description": "Boolean indicator determining how this condition is related to the previous condition",
                   "type": ["null", "string"]
                 }
               }
             }
           },
           "children": {
+            "description": "Nested rules or conditions to be evaluated in conjunction with the parent rule",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "id": {
+                  "description": "Unique identifier for the child rule",
                   "type": ["null", "string"]
                 },
                 "join_previous": {
+                  "description": "Boolean indicator determining how this child rule is related to the previous rule",
                   "type": ["null", "string"]
                 }
               }

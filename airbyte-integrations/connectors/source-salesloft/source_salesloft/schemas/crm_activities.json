@@ -3,54 +3,69 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the activity",
       "type": "integer"
     },
     "created_at": {
+      "description": "The date and time when the activity was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the activity was last updated",
       "type": "string",
       "format": "date-time"
     },
     "subject": {
+      "description": "Subject or title of the activity",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the activity",
       "type": ["null", "string"]
     },
     "crm_id": {
+      "description": "The ID of the CRM entry associated with the activity",
       "type": ["null", "string"]
     },
     "activity_type": {
+      "description": "The type of activity (e.g., call, email, meeting)",
       "type": ["null", "string"]
     },
     "error": {
+      "description": "Any errors or issues related to the activity",
       "type": ["null", "string"]
     },
     "custom_crm_fields": {
+      "description": "Custom fields specific to CRM activities",
       "type": ["null", "object"]
     },
     "person": {
+      "description": "Information about the person associated with the activity",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the person",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the person's details",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "Information about the user who created the activity",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the user",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user's details",
           "type": ["null", "string"]
         }
       }

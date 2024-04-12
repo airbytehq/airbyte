@@ -57,43 +57,53 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the survey.
             type:
               - "null"
               - integer
           site_id:
+            description: The ID of the site associated with the survey.
             type:
               - "null"
               - integer
           uuid:
+            description: The Universally Unique Identifier assigned to the survey.
             type:
               - "null"
               - string
           name:
+            description: The name or title of the survey.
             type:
               - "null"
               - string
           active:
+            description: Indicates if the survey is currently active or not.
             type:
               - "null"
               - boolean
           kind:
+            description: The category or type of survey.
             type:
               - "null"
               - string
           canonical_name:
+            description: The unique canonical name associated with the survey.
             type:
               - "null"
               - string
           created_at:
+            description: The timestamp when the survey was created.
             type:
               - "null"
               - string
             format: date-time
           survey_url:
+            description: The URL where the survey can be accessed.
             type:
               - "null"
               - string
           type:
+            description: The type of survey (e.g., NPS, CSAT, CES).
             type:
               - "null"
               - string
@@ -122,92 +132,113 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the response data
             type:
               - "null"
               - integer
           time:
+            description: Timestamp of the response data
             type:
               - "null"
               - string
             format: date-time
           emitted_at:
+            description: Timestamp when the response data was emitted
             type:
               - "null"
               - string
             format: date-time
           identity:
+            description: Identity information of the visitor
             type:
               - "null"
               - string
           location:
+            description: Geographical location of the visitor
             type:
               - "null"
               - string
           page:
+            description: Page information where the response was collected
             type:
               - "null"
               - string
           referrer:
+            description: Referring URL from where the visitor came
             type:
               - "null"
               - string
           user_agent:
+            description: User-agent information of the visitor's browser/device
             type:
               - "null"
               - string
           nudge_id:
+            description: Identifier for the nudge that triggered the response
             type:
               - "null"
               - integer
           nudge_name:
+            description: Name of the nudge that triggered the response
             type:
               - "null"
               - string
           anon_visitor_id:
+            description: Unique identifier for an anonymous visitor
             type:
               - "null"
               - string
           ip_address:
+            description: IP address of the visitor
             type:
               - "null"
               - string
           answered_questions:
+            description: List of questions that the visitor has answered
             type: array
             items:
               type:
                 - "null"
                 - object
           properties:
+            description: Additional properties related to the response
             type:
               - "null"
               - object
           nps:
+            description: Net Promoter Score related information
             type:
               - "null"
               - object
             properties:
               score:
+                description: Numeric NPS score provided by the respondent
                 type:
                   - "null"
                   - integer
               reason:
+                description: Reason provided by the respondent for the NPS score
                 type:
                   - "null"
                   - string
               respondent_id:
+                description: Unique identifier for the respondent
                 type:
                   - "null"
                   - integer
               time:
+                description: Timestamp for the NPS response
                 type:
                   - "null"
                   - string
                 format: date-time
               category:
+                description: Category for NPS response
                 type:
                   - "null"
                   - string
               response_uri:
+                description: URI of the NPS response
                 type:
                   - "null"
                   - string

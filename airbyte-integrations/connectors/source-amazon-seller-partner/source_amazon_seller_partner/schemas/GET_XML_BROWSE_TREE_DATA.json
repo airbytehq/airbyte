@@ -8,9 +8,11 @@
       "type": ["string"]
     },
     "browseNodeAttributes": {
+      "description": "Attributes associated with the browse node",
       "type": ["null", "object"],
       "properties": {
         "attribute": {
+          "description": "List of attributes",
           "type": ["array"],
           "items": {
             "type": ["null", "object"]
@@ -53,6 +55,7 @@
       "type": ["string"]
     },
     "childNodes": {
+      "description": "Child nodes under the current node",
       "type": ["null", "object"],
       "properties": {
         "count": {
@@ -73,6 +76,7 @@
       "type": ["null", "string"]
     },
     "refinementsInformation": {
+      "description": "Information on refinements available",
       "type": ["null", "object"],
       "properties": {
         "count": {
@@ -80,9 +84,11 @@
           "type": ["null", "string"]
         },
         "refinementName": {
+          "description": "Name of the refinement",
           "type": ["null", "object"],
           "properties": {
             "refinementField": {
+              "description": "Field related to the refinement",
               "type": ["null", "object"],
               "properties": {
                 "acceptedValues": {

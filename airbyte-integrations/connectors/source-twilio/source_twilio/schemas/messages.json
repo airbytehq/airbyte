@@ -72,6 +72,7 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains links to the subresources related to the message.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

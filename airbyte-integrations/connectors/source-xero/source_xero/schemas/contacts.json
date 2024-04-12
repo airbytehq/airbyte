@@ -2,84 +2,108 @@
   "type": ["null", "object"],
   "properties": {
     "ContactID": {
+      "description": "The unique identifier for the contact",
       "type": ["string"]
     },
     "ContactNumber": {
+      "description": "The contact's number or code",
       "type": ["null", "string"]
     },
     "AccountNumber": {
+      "description": "The unique identifier for the contact's account number",
       "type": ["null", "string"]
     },
     "ContactStatus": {
+      "description": "Status of the contact",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "Full name of the contact",
       "type": ["null", "string"]
     },
     "FirstName": {
+      "description": "First name of the contact",
       "type": ["null", "string"]
     },
     "LastName": {
+      "description": "Last name of the contact",
       "type": ["null", "string"]
     },
     "EmailAddress": {
+      "description": "Primary email address of the contact",
       "type": ["null", "string"]
     },
     "SkypeUserName": {
+      "description": "Skype username of the contact",
       "type": ["null", "string"]
     },
     "BankAccountDetails": {
+      "description": "Details of bank account linked to the contact",
       "type": ["null", "string"]
     },
     "TaxNumber": {
+      "description": "Tax number associated with the contact",
       "type": ["null", "string"]
     },
     "AccountsReceivableTaxType": {
+      "description": "The tax type for accounts receivable transactions",
       "type": ["null", "string"]
     },
     "AccountsPayableTaxType": {
+      "description": "The tax type for accounts payable transactions",
       "type": ["null", "string"]
     },
     "Addresses": {
+      "description": "List of addresses associated with the contact",
       "items": {
         "$ref": "addresses.json"
       },
       "type": ["null", "array"]
     },
     "Phones": {
+      "description": "List of phone numbers for the contact",
       "items": {
         "$ref": "phones.json"
       },
       "type": ["null", "array"]
     },
     "IsSupplier": {
+      "description": "Flag indicating if the contact is a supplier",
       "type": ["null", "boolean"]
     },
     "IsCustomer": {
+      "description": "Flag indicating if the contact is a customer",
       "type": ["null", "boolean"]
     },
     "DefaultCurrency": {
+      "description": "Default currency used for transactions with the contact",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time when the contact was last updated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "ContactPersons": {
+      "description": "List of persons associated with the contact",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "FirstName": {
+            "description": "First name of the contact person",
             "type": ["null", "string"]
           },
           "LastName": {
+            "description": "Last name of the contact person",
             "type": ["null", "string"]
           },
           "EmailAddress": {
+            "description": "Email address of the contact person",
             "type": ["null", "string"]
           },
           "IncludeInEmails": {
+            "description": "Flag indicating whether to include the contact person in emails",
             "type": ["null", "boolean"]
           }
         },
@@ -87,93 +111,118 @@
       }
     },
     "XeroNetworkKey": {
+      "description": "Unique identifier for the network key in Xero",
       "type": ["null", "string"]
     },
     "SalesDefaultAccountCode": {
+      "description": "Default account code for sales related to the contact",
       "type": ["null", "string"]
     },
     "PurchasesDefaultAccountCode": {
+      "description": "Default account code for purchases related to the contact",
       "type": ["null", "string"]
     },
     "SalesTrackingCategories": {
+      "description": "Tracking categories associated with sales for the contact",
       "type": ["null", "array"],
       "items": {
         "$ref": "tracking_categories.json"
       }
     },
     "PurchasesTrackingCategories": {
+      "description": "Tracking categories associated with purchases for the contact",
       "type": ["null", "array"],
       "items": {
         "$ref": "tracking_categories.json"
       }
     },
     "TrackingCategoryName": {
+      "description": "Name of the tracking category",
       "type": ["null", "string"]
     },
     "TrackingCategoryOption": {
+      "description": "Option selected for the tracking category",
       "type": ["null", "string"]
     },
     "PaymentTerms": {
+      "description": "Payment terms applicable to the contact",
       "$ref": "payment_terms.json"
     },
     "ContactGroups": {
+      "description": "Groups to which the contact belongs",
       "items": {
         "$ref": "contact_groups.json"
       },
       "type": ["null", "array"]
     },
     "Website": {
+      "description": "Website associated with the contact",
       "type": ["null", "string"]
     },
     "BrandingTheme": {
+      "description": "The branding theme associated with the contact",
       "$ref": "branding_themes.json"
     },
     "BatchPayments": {
+      "description": "Information about batch payments for the contact",
       "type": ["null", "object"],
       "properties": {
         "Details": {
+          "description": "Additional details related to the batch payment",
           "type": ["null", "string"]
         },
         "Reference": {
+          "description": "Reference information for the batch payment",
           "type": ["null", "string"]
         },
         "Code": {
+          "description": "Code associated with the batch payment",
           "type": ["null", "string"]
         },
         "BankAccountNumber": {
+          "description": "Account number of bank account for batch payments",
           "type": ["null", "string"]
         },
         "BankAccountName": {
+          "description": "Name of bank account for batch payments",
           "type": ["null", "string"]
         }
       },
       "additionalProperties": true
     },
     "Discount": {
+      "description": "Discount information related to the contact",
       "type": ["null", "number"]
     },
     "Balances": {
+      "description": "Balances related to the contact",
       "type": ["null", "object"],
       "properties": {
         "AccountsReceivable": {
+          "description": "Receivable balance details",
           "type": ["null", "object"],
           "properties": {
             "Outstanding": {
+              "description": "Outstanding accounts receivable balance",
               "type": ["null", "number"]
             },
             "Overdue": {
+              "description": "Overdue accounts receivable balance",
               "type": ["null", "number"]
             }
           },
           "additionalProperties": true
         },
         "AccountsPayable": {
+          "description": "Payable balance details",
           "type": ["null", "object"],
           "properties": {
             "Outstanding": {
+              "description": "Outstanding accounts payable balance",
               "type": ["null", "number"]
             },
             "Overdue": {
+              "description": "Overdue accounts payable balance",
               "type": ["null", "number"]
             }
           },
@@ -183,15 +232,19 @@
       "additionalProperties": true
     },
     "HasAttachments": {
+      "description": "Flag indicating if the contact has any attachments",
       "type": ["null", "boolean"]
     },
     "Attachments": {
+      "description": "Any attachments related to the contact",
       "$ref": "attachments.json"
     },
     "HasValidationErrors": {
+      "description": "Flag indicating if there are validation errors for the contact",
       "type": ["null", "boolean"]
     },
     "ValidationErrors": {
+      "description": "Validation errors, if any, related to the contact",
       "$ref": "validation_errors.json"
     }
   },

@@ -55,18 +55,22 @@ streams:
           - rates
         properties:
           success:
+            description: Indicates if the API request was successful.
             type:
               - "null"
               - boolean
           timestamp:
+            description: The timestamp when the exchange rates data was last updated.
             type:
               - "null"
               - integer
           base:
+            description: The base currency for the exchange rates.
             type:
               - "null"
               - string
           date:
+            description: The date for which the exchange rates are provided.
             type:
               - "null"
               - string

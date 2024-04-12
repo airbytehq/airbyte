@@ -43,38 +43,47 @@ definitions:
         type: object
         properties:
           v:
+            description: Volume of stocks traded at a specific time
             type:
               - "null"
               - number
           vw:
+            description: Volume-weighted average price of the stock
             type:
               - "null"
               - number
           otc:
+            description: Time when the stock transaction occurred
             type:
               - "null"
               - boolean
           o:
+            description: Opening price of the stock at a particular time
             type:
               - "null"
               - number
           c:
+            description: Closing price of the stock at a specific time
             type:
               - "null"
               - number
           h:
+            description: Highest price the stock reached during a given period
             type:
               - "null"
               - number
           l:
+            description: Lowest price the stock dropped to within a certain timeframe
             type:
               - "null"
               - number
           t:
+            description: Type of stock (common stock, preferred stock, etc.)
             type:
               - "null"
               - integer
           n:
+            description: Name of the stock or company
             type:
               - "null"
               - number

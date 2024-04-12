@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the product tag.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the product tag.",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "The URL-friendly version of the tag name.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the product tag.",
       "type": ["null", "string"]
     },
     "count": {
+      "description": "The number of products assigned to this tag.",
       "type": ["null", "integer"]
     }
   }

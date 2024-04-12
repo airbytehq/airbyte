@@ -83,76 +83,94 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the review
             type:
               - "null"
               - number
           title:
+            description: Title of the review
             type:
               - "null"
               - string
           incentive_type:
+            description: Type of incentive given for the review
             type:
               - "null"
               - string
           content:
+            description: The text content of the review
             type:
               - "null"
               - string
           score:
+            description: The numerical score given by the reviewer
             type:
               - "null"
               - number
           votes_up:
+            description: Number of upvotes for the review
             type:
               - "null"
               - number
           votes_down:
+            description: Number of downvotes for the review
             type:
               - "null"
               - number
           created_at:
+            description: The date and time when the review was created
             type:
               - "null"
               - string
             format: date-time
           updated_at:
+            description: The date and time when the review was last updated
             type:
               - "null"
               - string
             format: date-time
           sentiment:
+            description: Sentiment of the review (positive, negative, neutral)
             type:
               - "null"
               - number
           sku:
+            description: Stock Keeping Unit of the product being reviewed
             type:
               - "null"
               - string
           name:
+            description: Name of the reviewer
             type:
               - "null"
               - string
           email:
+            description: Email of the reviewer
             type:
               - "null"
               - string
           reviewer_type:
+            description: Type of the reviewer (e.g., verified buyer)
             type:
               - "null"
               - string
           deleted:
+            description: Indicates if the review has been deleted
             type:
               - "null"
               - boolean
           archived:
+            description: Indicates if the review has been archived
             type:
               - "null"
               - boolean
           escalated:
+            description: Indicates if the review has been escalated for further action
             type:
               - "null"
               - boolean
           is_incentivized:
+            description: Indicates if the review is incentivized
             type:
               - "null"
               - boolean
@@ -173,19 +191,23 @@ definitions:
         type: object
         properties:
           since:
+            description: The start date for the email analytics data.
             type:
               - "null"
               - string
           until:
+            description: The end date for the email analytics data.
             type:
               - "null"
               - string
           values:
+            description: An object containing the values related to email analytics.
             type:
               - "null"
               - object
             properties:
               done:
+                description: Represents the status of email analytics data calculation.
                 type:
                   - "null"
                   - boolean
@@ -206,86 +228,109 @@ definitions:
         type: object
         properties:
           email_address:
+            description: Recipient's email address
             type:
               - "null"
               - string
           order_id:
+            description: Unique identifier for the order related to the email
             type:
               - "null"
               - string
           order_timestamp:
+            description: Timestamp when the order was placed
             type:
               - "null"
               - string
           product_id:
+            description: Identifier for the product being reviewed or mentioned
             type:
               - "null"
               - string
           sku:
+            description: Stock Keeping Unit (SKU) associated with the product
             type:
               - "null"
               - number
           email_type:
+            description: Type or category of the email (e.g., promotional, transactional)
             type:
               - "null"
               - string
           reminder_num:
+            description: Number indicating the reminder email sequence
             type:
               - "null"
               - number
           trr_bundle_id:
+            description: Unique identifier for the bundle in a 'Try&Review' campaign
             type:
               - "null"
               - string
           trr_bundle_subject:
+            description: Subject or title of the 'Try&Review' bundle
             type:
               - "null"
               - string
           review_type:
+            description: Type of review (e.g., product review, service review)
             type:
               - "null"
               - string
           coupon_code:
+            description: The coupon code associated with the email campaign
             type:
               - "null"
               - number
           email_sent_timestamp:
+            description: Timestamp when the email was sent to the recipient
             type:
               - "null"
               - string
           opened_timestamp:
+            description: Timestamp when the email was opened by the recipient
             type:
               - "null"
               - string
           clicked_through_timestamp:
+            description: Timestamp when the recipient clicked through the email content
             type:
               - "null"
               - string
           content_creation_timestamp:
+            description: Timestamp when the content for review creation was generated
             type:
               - "null"
               - string
           platform:
+            description: The platform or channel from which the action originated
             type:
               - "null"
               - string
           invalid_address_timestamp:
+            description: Timestamp when the email address was marked as invalid
             type:
               - "null"
               - string
           failed_timestamp:
+            description: Timestamp when the email delivery failed
             type:
               - "null"
               - string
           unsubscribed_timestamp:
+            description: Timestamp when the recipient unsubscribed from future emails
             type:
               - "null"
               - string
           marked_spam_timestamp:
+            description: Timestamp when the email was marked as spam by the recipient
             type:
               - "null"
               - string
           arrived_early_timestamp:
+            description:
+              Timestamp when the email arrived early to the recipient's
+              inbox
             type:
               - "null"
               - string
@@ -307,18 +352,26 @@ definitions:
         type: object
         properties:
           id:
+            description: The unique identifier for the unsubscribed record.
             type:
               - "null"
               - number
           user_email:
+            description:
+              The email address of the user who unsubscribed from the specified
+              email type.
             type:
               - "null"
               - string
           email_type_id:
+            description:
+              The identifier for the type of email where the unsubscribe
+              action occurred.
             type:
               - "null"
               - number
           unsubscribed_by_name:
+            description: The name of the user who initiated the unsubscribe action.
             type:
               - "null"
               - string
@@ -340,10 +393,12 @@ definitions:
         type: object
         properties:
           name:
+            description: Name of the webhook event.
             type:
               - "null"
               - string
           description:
+            description: Description of the webhook event data.
             type:
               - "null"
               - string
@@ -367,22 +422,27 @@ definitions:
           - object
         properties:
           id:
+            description: The unique identifier for the webhook data.
             type:
               - "null"
               - number
           webhook_event_id:
+            description: The identifier for the specific webhook event.
             type:
               - "null"
               - number
           webhook_event_name:
+            description: The name of the webhook event triggered.
             type:
               - "null"
               - string
           url:
+            description: The endpoint URL where the webhook data is sent.
             type:
               - "null"
               - string
           version:
+            description: The version of the webhook data structure.
             type:
               - "null"
               - number

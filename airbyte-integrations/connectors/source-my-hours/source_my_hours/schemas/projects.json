@@ -3,78 +3,103 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the project",
       "type": ["number"]
     },
     "name": {
+      "description": "Name of the project",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Flag indicating if the project is archived",
       "type": ["null", "boolean"]
     },
     "dateArchived": {
+      "description": "Date when the project was archived",
       "type": ["null", "string"]
     },
     "dateCreated": {
+      "description": "Date when the project was created",
       "type": ["null", "string"]
     },
     "clientName": {
+      "description": "Name of the client associated with the project",
       "type": ["null", "string"]
     },
     "clientId": {
+      "description": "ID of the client associated with the project",
       "type": ["null", "integer"]
     },
     "customId": {
+      "description": "Custom identifier for the project",
       "type": ["null", "string"]
     },
     "budgetAlertPercent": {
+      "description": "Percentage at which a budget alert will be triggered",
       "type": ["null", "number"]
     },
     "budgetType": {
+      "description": "Type of budget (e.g., fixed, hourly)",
       "type": ["null", "number"]
     },
     "laborCost": {
+      "description": "Total labor cost incurred for the project",
       "type": ["null", "number"]
     },
     "totalTimeLogged": {
+      "description": "Total time logged for the project",
       "type": ["null", "number"]
     },
     "budgetValue": {
+      "description": "Value of the budget",
       "type": ["null", "number"]
     },
     "totalAmount": {
+      "description": "Total amount invoiced for the project",
       "type": ["null", "number"]
     },
     "totalExpense": {
+      "description": "Total expenses incurred for the project",
       "type": ["null", "number"]
     },
     "totalCost": {
+      "description": "Total cost of the project including labor and expenses",
       "type": ["null", "number"]
     },
     "billableTimeLogged": {
+      "description": "Total time logged that is billable",
       "type": ["null", "number"]
     },
     "totalBillableAmount": {
+      "description": "Total amount billed for billable time",
       "type": ["null", "number"]
     },
     "billable": {
+      "description": "Flag indicating if the project is billable",
       "type": ["null", "boolean"]
     },
     "roundType": {
+      "description": "Type of rounding (e.g., up, down)",
       "type": ["null", "number"]
     },
     "roundInterval": {
+      "description": "Interval for rounding time entries",
       "type": ["null", "number"]
     },
     "budgetSpentPercentage": {
+      "description": "Percentage of budget spent",
       "type": ["null", "number"]
     },
     "budgetTarget": {
+      "description": "Target budget amount",
       "type": ["null", "number"]
     },
     "budgetPeriodType": {
+      "description": "Type of budget period (e.g., monthly, quarterly)",
       "type": ["null", "number"]
     },
     "budgetSpent": {
+      "description": "Amount spent from the budget",
       "type": ["null", "number"]
     }
   }

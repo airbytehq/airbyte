@@ -1,51 +1,67 @@
 {
   "properties": {
     "actor": {
+      "description": "Information related to the user performing the action",
       "properties": {
         "alternateId": {
+          "description": "Alternate identifier of the user",
           "type": ["string", "null"]
         },
         "detailEntry": {
+          "description": "Details about the user",
           "type": ["object", "null"]
         },
         "displayName": {
+          "description": "Display name of the user",
           "type": ["string", "null"]
         },
         "id": {
+          "description": "ID of the user",
           "type": ["string", "null"]
         },
         "type": {
+          "description": "Type of the user",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "authenticationContext": {
+      "description": "Context of the authentication process",
       "properties": {
         "authenticationProvider": {
+          "description": "Authentication provider used",
           "type": ["string", "null"]
         },
         "authenticationStep": {
+          "description": "Step in the authentication process",
           "type": ["integer"]
         },
         "credentialProvider": {
+          "description": "Provider of the credentials",
           "type": ["string", "null"]
         },
         "credentialType": {
+          "description": "Type of credentials",
           "type": ["string", "null"]
         },
         "externalSessionId": {
+          "description": "ID of the external session",
           "type": ["string", "null"]
         },
         "interface": {
+          "description": "Interface used for authentication",
           "type": ["string", "null"]
         },
         "issuer": {
+          "description": "Information about the issuer",
           "properties": {
             "id": {
+              "description": "ID of the issuer",
               "type": ["string", "null"]
             },
             "type": {
+              "description": "Type of the issuer",
               "type": ["string", "null"]
             }
           },
@@ -55,139 +71,179 @@
       "type": ["object", "null"]
     },
     "client": {
+      "description": "Information about the client device",
       "properties": {
         "device": {
+          "description": "Type of device",
           "type": ["string", "null"]
         },
         "geographicalContext": {
+          "description": "Geographical context of the client",
           "properties": {
             "city": {
+              "description": "City of the client",
               "type": ["string", "null"]
             },
             "country": {
+              "description": "Country of the client",
               "type": ["string", "null"]
             },
             "geolocation": {
+              "description": "Geographical coordinates of the client",
               "properties": {
                 "lat": {
+                  "description": "Latitude",
                   "type": ["number", "null"]
                 },
                 "lon": {
+                  "description": "Longitude",
                   "type": ["number", "null"]
                 }
               },
               "type": ["object", "null"]
             },
             "postalCode": {
+              "description": "Postal code of the client",
               "type": ["string", "null"]
             },
             "state": {
+              "description": "State of the client",
               "type": ["string", "null"]
             }
           },
           "type": ["object", "null"]
         },
         "id": {
+          "description": "ID of the client",
           "type": ["string", "null"]
         },
         "ipAddress": {
+          "description": "IP address of the client",
           "type": ["string", "null"]
         },
         "userAgent": {
+          "description": "User agent information",
           "properties": {
             "browser": {
+              "description": "Browser used by the client",
               "type": ["string", "null"]
             },
             "os": {
+              "description": "Operating system of the client",
               "type": ["string", "null"]
             },
             "rawUserAgent": {
+              "description": "Raw user agent string",
               "type": ["string", "null"]
             }
           },
           "type": ["object", "null"]
         },
         "zone": {
+          "description": "Zone of the client",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "debugContext": {
+      "description": "Debugging context information",
       "properties": {
         "debugData": {
+          "description": "Debugging data",
           "type": ["object", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "device": {
+      "description": "Type of device",
       "type": ["string", "null"]
     },
     "displayMessage": {
+      "description": "Message displayed to the user",
       "type": ["string", "null"]
     },
     "eventType": {
+      "description": "Type of event",
       "type": ["string", "null"]
     },
     "legacyEventType": {
+      "description": "Legacy type of event",
       "type": ["string", "null"]
     },
     "outcome": {
+      "description": "Outcome of the authentication process",
       "properties": {
         "reason": {
+          "description": "Reason for the outcome",
           "type": ["string", "null"]
         },
         "result": {
+          "description": "Result of the outcome",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "published": {
+      "description": "Timestamp of when the event was published",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "request": {
+      "description": "Details of the request",
       "properties": {
         "ipChain": {
+          "description": "Chain of IP addresses involved in the request",
           "items": {
             "properties": {
               "geographicalContext": {
+                "description": "Geographical context of the IP address",
                 "properties": {
                   "city": {
+                    "description": "City of the IP address",
                     "type": ["string", "null"]
                   },
                   "country": {
+                    "description": "Country of the IP address",
                     "type": ["string", "null"]
                   },
                   "geolocation": {
+                    "description": "Geographical coordinates of the IP address",
                     "properties": {
                       "lat": {
+                        "description": "Latitude",
                         "type": ["number", "null"]
                       },
                       "lon": {
+                        "description": "Longitude",
                         "type": ["number", "null"]
                       }
                     },
                     "type": ["object", "null"]
                   },
                   "postalCode": {
+                    "description": "Postal code of the IP address",
                     "type": ["string", "null"]
                   },
                   "state": {
+                    "description": "State of the IP address",
                     "type": ["string", "null"]
                   }
                 },
                 "type": ["object", "null"]
               },
               "ip": {
+                "description": "IP address",
                 "type": ["string", "null"]
               },
               "source": {
+                "description": "Source of the IP address",
                 "type": ["string", "null"]
               },
               "version": {
+                "description": "Version of the IP address",
                 "type": ["string", "null"]
               }
             },
@@ -199,44 +255,57 @@
       "type": ["object", "null"]
     },
     "securityContext": {
+      "description": "Security context information",
       "properties": {
         "asNumber": {
+          "description": "Autonomous system number",
           "type": ["integer", "null"]
         },
         "asOrg": {
+          "description": "Organization associated with the autonomous system",
           "type": ["string", "null"]
         },
         "domain": {
+          "description": "Domain of the security context",
           "type": ["string", "null"]
         },
         "isProxy": {
+          "description": "Indicates if the request came through a proxy",
           "type": ["boolean", "null"]
         },
         "isp": {
+          "description": "Internet service provider",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "severity": {
+      "description": "Severity level of the event",
       "type": ["string", "null"]
     },
     "target": {
+      "description": "Target of the action",
       "items": {
         "properties": {
           "alternateId": {
+            "description": "Alternate identifier of the target",
             "type": ["string", "null"]
           },
           "detailEntry": {
+            "description": "Details about the target",
             "type": ["object", "null"]
           },
           "displayName": {
+            "description": "Display name of the target",
             "type": ["string", "null"]
           },
           "id": {
+            "description": "ID of the target",
             "type": ["string", "null"]
           },
           "type": {
+            "description": "Type of the target",
             "type": ["string", "null"]
           }
         },
@@ -245,23 +314,29 @@
       "type": ["array", "null"]
     },
     "transaction": {
+      "description": "Information related to the transaction",
       "properties": {
         "detail": {
+          "description": "Details of the transaction",
           "type": ["object", "null"]
         },
         "id": {
+          "description": "ID of the transaction",
           "type": ["string", "null"]
         },
         "type": {
+          "description": "Type of the transaction",
           "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "uuid": {
+      "description": "Universally unique identifier",
       "type": ["string", "null"]
     },
     "version": {
+      "description": "Version of the log data",
       "type": ["string", "null"]
     }
   },

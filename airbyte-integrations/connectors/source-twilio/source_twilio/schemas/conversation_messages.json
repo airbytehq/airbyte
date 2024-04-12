@@ -20,6 +20,7 @@
       "type": ["null", "string"]
     },
     "media": {
+      "description": "List of media items attached to the message",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -69,6 +70,7 @@
       "type": ["null", "integer"]
     },
     "delivery": {
+      "description": "Information related to message delivery",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -107,6 +109,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Links related to the conversation",
       "type": ["null", "object"],
       "properties": {
         "delivery_receipts": {

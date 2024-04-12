@@ -2,12 +2,15 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the section",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of the resource, which is 'section' in this case",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the section",
       "type": ["null", "string"]
     }
   }

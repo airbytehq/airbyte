@@ -3,66 +3,84 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the story",
       "type": ["null", "integer"]
     },
     "kind": {
+      "description": "Type of data, e.g., 'story'",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the story details",
       "type": ["null", "string"]
     },
     "deadline": {
+      "description": "Deadline set for the story",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "Date and time when the story was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the story was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "project_id": {
+      "description": "ID of the project the story belongs to",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name or title of the story",
       "type": ["null", "string"]
     },
     "story_type": {
+      "description": "Type/category of the story",
       "type": ["null", "string"]
     },
     "estimate": {
+      "description": "Estimate of effort or points for the story",
       "type": ["null", "integer"]
     },
     "story_priority": {
+      "description": "Priority level of the story",
       "type": ["null", "string"]
     },
     "current_state": {
+      "description": "Current state/status of the story",
       "type": ["null", "string"]
     },
     "requested_by_id": {
+      "description": "ID of the user who requested the story",
       "type": ["null", "integer"]
     },
     "owned_by_id": {
+      "description": "ID of the user who owns the story",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "URL link to access the story details",
       "type": ["null", "string"]
     },
     "owner_ids": {
+      "description": "List of user IDs who are owners of the story",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "labels": {
+      "description": "List of labels attached to the story",
       "type": "array",
       "items": {
         "$ref": "label.json"
       }
     },
     "accepted_at": {
+      "description": "Date and time when the story was accepted",
       "type": ["null", "string"],
       "format": "date-time"
     }

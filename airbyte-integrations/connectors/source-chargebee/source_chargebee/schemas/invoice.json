@@ -205,112 +205,146 @@
       "type": ["string", "null"]
     },
     "line_items": {
+      "description": "Details of individual line items in the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "ID of the line item",
             "type": ["string", "null"]
           },
           "subscription_id": {
+            "description": "ID of the subscription associated with the line item",
             "type": ["string", "null"]
           },
           "date_from": {
+            "description": "Start date for the line item service",
             "type": ["integer", "null"]
           },
           "date_to": {
+            "description": "End date for the line item service",
             "type": ["integer", "null"]
           },
           "unit_amount": {
+            "description": "Unit amount of the line item",
             "type": ["integer", "null"]
           },
           "quantity": {
+            "description": "Quantity of the line item",
             "type": ["integer", "null"]
           },
           "amount": {
+            "description": "Total amount for the line item",
             "type": ["integer", "null"]
           },
           "pricing_model": {
+            "description": "Pricing model applied to the line item",
             "type": ["string", "null"]
           },
           "is_taxed": {
+            "description": "Flag indicating if tax is applied",
             "type": ["boolean", "null"]
           },
           "tax_amount": {
+            "description": "Total tax amount applied",
             "type": ["integer", "null"]
           },
           "tax_rate": {
+            "description": "Rate of tax applied",
             "type": ["number", "null"]
           },
           "unit_amount_in_decimal": {
+            "description": "Unit amount of the line item in decimal form",
             "type": ["string", "null"]
           },
           "quantity_in_decimal": {
+            "description": "Quantity of the line item in decimal form",
             "type": ["string", "null"]
           },
           "amount_in_decimal": {
+            "description": "Total amount in decimal form",
             "type": ["string", "null"]
           },
           "discount_amount": {
+            "description": "Amount of discount applied",
             "type": ["integer", "null"]
           },
           "item_level_discount_amount": {
+            "description": "Amount of discount applied at item level",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "Description of the line item",
             "type": ["string", "null"]
           },
           "entity_description": {
+            "description": "Description of the associated entity",
             "type": ["string", "null"]
           },
           "entity_type": {
+            "description": "Type of associated entity",
             "type": ["string", "null"]
           },
           "tax_exempt_reason": {
+            "description": "Reason for tax exemption",
             "type": ["string", "null"]
           },
           "entity_id": {
+            "description": "ID of the associated entity",
             "type": ["string", "null"]
           },
           "customer_id": {
+            "description": "ID of the customer associated with the line item",
             "type": ["string", "null"]
           },
           "metered": {
+            "description": "Indicates if the line item is metered",
             "type": ["boolean", "null"]
           },
           "object": {
+            "description": "Type of object representing the line item",
             "type": ["string", "null"]
           }
         }
       }
     },
     "discounts": {
+      "description": "Discount details applied to the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "amount": {
+            "description": "Amount of the discount",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "Description of the discount",
             "type": ["string", "null"]
           },
           "entity_type": {
+            "description": "Type of entity to which the discount is applied",
             "type": ["string", "null"]
           },
           "entity_id": {
+            "description": "ID of the entity to which the discount is applied",
             "type": ["string", "null"]
           },
           "coupon_set_code": {
+            "description": "Code of the coupon set if applicable",
             "type": ["string", "null"]
           },
           "discount_type": {
+            "description": "Type of discount",
             "type": ["string", "null"]
           },
           "discount_percentage": {
+            "description": "Percentage of the discount",
             "type": ["number", "null"]
           },
           "object": {
+            "description": "Type of object representing the discount",
             "type": ["string", "null"]
           }
         }
@@ -371,91 +405,118 @@
       }
     },
     "line_item_taxes": {
+      "description": "Tax details applied to each line item in the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
+            "description": "ID of the line item to which the tax is applied",
             "type": ["string", "null"]
           },
           "tax_name": {
+            "description": "Name of the tax",
             "type": ["string", "null"]
           },
           "tax_rate": {
+            "description": "Rate of tax applied",
             "type": ["number", "null"]
           },
           "date_to": {
+            "description": "End date for the tax calculation",
             "type": ["integer", "null"]
           },
           "date_from": {
+            "description": "Start date for the tax calculation",
             "type": ["integer", "null"]
           },
           "prorated_taxable_amount": {
+            "description": "Prorated taxable amount for tax calculation",
             "type": ["number", "null"]
           },
           "is_partial_tax_applied": {
+            "description": "Flag indicating partial tax calculation",
             "type": ["boolean", "null"]
           },
           "is_non_compliance_tax": {
+            "description": "Flag indicating non-compliance tax",
             "type": ["boolean", "null"]
           },
           "taxable_amount": {
+            "description": "Total taxable amount for tax calculation",
             "type": ["integer", "null"]
           },
           "tax_amount": {
+            "description": "Amount of tax applied",
             "type": ["integer", "null"]
           },
           "tax_juris_type": {
+            "description": "Type of tax jurisdiction",
             "type": ["string", "null"]
           },
           "tax_juris_name": {
+            "description": "Tax jurisdiction name",
             "type": ["string", "null"]
           },
           "tax_juris_code": {
+            "description": "Tax jurisdiction code",
             "type": ["string", "null"]
           },
           "tax_amount_in_local_currency": {
+            "description": "Tax amount in local currency",
             "type": ["integer", "null"]
           },
           "local_currency_code": {
+            "description": "Local currency code for the tax calculation",
             "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_tiers": {
+      "description": "Tiers information for each line item in the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
+            "description": "ID of the line item to which the tier applies",
             "type": ["string", "null"]
           },
           "starting_unit": {
+            "description": "Starting unit of tier pricing",
             "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "Ending unit of tier pricing",
             "type": ["integer", "null"]
           },
           "quantity_used": {
+            "description": "Quantity used within the tier",
             "type": ["integer", "null"]
           },
           "unit_amount": {
+            "description": "Unit amount for the tier",
             "type": ["integer", "null"]
           },
           "starting_unit_in_decimal": {
+            "description": "Starting unit in decimal form",
             "type": ["string", "null"]
           },
           "ending_unit_in_decimal": {
+            "description": "Ending unit in decimal form",
             "type": ["string", "null"]
           },
           "quantity_used_in_decimal": {
+            "description": "Quantity used in decimal form",
             "type": ["string", "null"]
           },
           "unit_amount_in_decimal": {
+            "description": "Unit amount in decimal form",
             "type": ["string", "null"]
           },
           "object": {
+            "description": "Type of object representing the line item tier",
             "type": ["string", "null"]
           }
         }
@@ -631,32 +692,41 @@
       }
     },
     "linked_orders": {
+      "description": "Details of linked orders to the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "ID of the order",
             "type": ["string", "null"]
           },
           "document_number": {
+            "description": "Document number of the order",
             "type": ["string", "null"]
           },
           "status": {
+            "description": "Current status of the order",
             "type": ["string", "null"]
           },
           "order_type": {
+            "description": "Type of the order",
             "type": ["string", "null"]
           },
           "reference_id": {
+            "description": "ID of the reference linked to the order",
             "type": ["string", "null"]
           },
           "fulfillment_status": {
+            "description": "Status of order fulfillment",
             "type": ["string", "null"]
           },
           "batch_id": {
+            "description": "ID of the order batch",
             "type": ["string", "null"]
           },
           "created_at": {
+            "description": "Creation date of the order",
             "type": ["integer", "null"]
           }
         }
@@ -684,51 +754,67 @@
       }
     },
     "shipping_address": {
+      "description": "Details of the shipping address associated with the invoice",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "First name in the shipping address",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "Last name in the shipping address",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "Email address associated with the shipping address",
           "type": ["string", "null"]
         },
         "company": {
+          "description": "Company name in the shipping address",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "Phone number associated with the shipping address",
           "type": ["string", "null"]
         },
         "line1": {
+          "description": "First line of the shipping address",
           "type": ["string", "null"]
         },
         "line2": {
+          "description": "Second line of the shipping address",
           "type": ["string", "null"]
         },
         "line3": {
+          "description": "Third line of the shipping address",
           "type": ["string", "null"]
         },
         "city": {
+          "description": "City of the shipping address",
           "type": ["string", "null"]
         },
         "state_code": {
+          "description": "State code of the shipping address",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "State of the shipping address",
           "type": ["string", "null"]
         },
         "country": {
+          "description": "Country of the shipping address",
           "type": ["string", "null"]
         },
         "zip": {
+          "description": "ZIP code of the shipping address",
           "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "Status of address validation",
           "type": ["string", "null"]
         },
         "object": {
+          "description": "Type of object representing the shipping address",
           "type": ["string", "null"]
         }
       }
@@ -752,51 +838,67 @@
       }
     },
     "billing_address": {
+      "description": "Details of the billing address associated with the invoice",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "First name in the billing address",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "Last name in the billing address",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "Email address associated with the billing address",
           "type": ["string", "null"]
         },
         "company": {
+          "description": "Company name in the billing address",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "Phone number associated with the billing address",
           "type": ["string", "null"]
         },
         "line1": {
+          "description": "First line of the billing address",
           "type": ["string", "null"]
         },
         "line2": {
+          "description": "Second line of the billing address",
           "type": ["string", "null"]
         },
         "line3": {
+          "description": "Third line of the billing address",
           "type": ["string", "null"]
         },
         "city": {
+          "description": "City of the billing address",
           "type": ["string", "null"]
         },
         "state_code": {
+          "description": "State code of the billing address",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "State of the billing address",
           "type": ["string", "null"]
         },
         "country": {
+          "description": "Country of the billing address",
           "type": ["string", "null"]
         },
         "zip": {
+          "description": "ZIP code of the billing address",
           "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "Status of address validation",
           "type": ["string", "null"]
         },
         "object": {
+          "description": "Type of object representing the billing address",
           "type": ["string", "null"]
         }
       }
@@ -824,23 +926,29 @@
       }
     },
     "linked_taxes_withheld": {
+      "description": "Details of linked taxes withheld on the invoice",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "ID of the tax withholding",
             "type": ["string", "null"]
           },
           "amount": {
+            "description": "Amount of tax withheld",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "Description of the tax withholding",
             "type": ["string", "null"]
           },
           "date": {
+            "description": "Date of tax withholding",
             "type": ["integer", "null"]
           },
           "reference_number": {
+            "description": "Reference number of the tax withholding",
             "type": ["string", "null"]
           }
         }
