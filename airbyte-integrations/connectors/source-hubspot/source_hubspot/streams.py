@@ -18,7 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, StateMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -1232,7 +1232,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode, stream_state)
-        return [None]
+        return [{}]  # I changed this from [None] since this is a more accurate depiction of what is actually being done. Sync one slice
 
     def set_sync(self, sync_mode: SyncMode, stream_state):
         self._sync_mode = sync_mode
@@ -1408,11 +1408,68 @@ class ContactsListMemberships(ContactsAllBase, ABC):
     filter_value = True
 
 
-class ContactsFormSubmissions(ContactsAllBase, ABC):
+class ContactsFormSubmissions(ContactsAllBase, StateMixin, ABC):
 
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
+    _state = {}
+    limit_field = "count"
+    limit = 100
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a specialized read_records for resumable full refresh that only attempts to read a single page of records
+        at a time and updates the state w/ a synthetic cursor based on the Hubspot cursor pagination value `vidOffset`
+        """
+
+        next_page_token = stream_slice
+        logger.info(f"Read in self.state and setting next_page_token to: f{next_page_token}")
+        try:
+            properties = self._property_wrapper
+            if properties and properties.too_many_properties:
+                records, response = self._read_stream_records(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+            else:
+                response = self.handle_request(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                    properties=properties,
+                )
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
+            yield from self.record_unnester.unnest(records)
+
+            self.state = self.next_page_token(response)
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+        except requests.exceptions.HTTPError as e:
+            response = e.response
+            if response.status_code == HTTPStatus.UNAUTHORIZED:
+                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
+            else:
+                raise e
 
 
 class Deals(CRMSearchStream):

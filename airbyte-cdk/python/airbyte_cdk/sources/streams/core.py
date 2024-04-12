@@ -13,6 +13,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.streams.checkpoint import (
+    CheckpointMode,
+    CheckpointReader,
+    FullRefreshCheckpointReader,
+    IncrementalCheckpointReader,
+    ResumableFullRefreshCheckpointReader,
+)
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
@@ -45,10 +52,10 @@ def package_name_from_class(cls: object) -> str:
         raise ValueError(f"Could not find package name for class {cls}")
 
 
-class IncrementalMixin(ABC):
-    """Mixin to make stream incremental.
+class StateMixin(ABC):  # Rename to CheckpointMixin?
+    """Mixin for a stream that implements reading and writing the internal state used to checkpoint sync progress to the platform
 
-    class IncrementalStream(Stream, IncrementalMixin):
+    class CheckpointedStream(Stream, StateMixin):
         @property
         def state(self):
             return self._state
@@ -79,103 +86,19 @@ class IncrementalMixin(ABC):
         """State setter, accept state serialized by state getter."""
 
 
-class ResumableFullRefreshMixin(ABC):
-    @property
-    def supports_resumable_full_refresh(self) -> bool:
-        return True
+@deprecated(version="0.x.x", reason="Deprecated in favor of the StateMixin which offers similar functionality")
+class IncrementalMixin(StateMixin, ABC):
+    """Mixin to make stream incremental.
 
-    @property
-    @abstractmethod
-    def state(self) -> MutableMapping[str, Any]:
-        """
-        State getter, should return the synthetic cursor value that can then serialized into a string and emitted
-        as a STATE AirbyteMessage.
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
 
-        This cursor value is used to continue where astream left off on subsequent sync attempts. Synthetic cursors are applicable
-        when an API endpoint lacks a more accurate field like a timestamp to query for a subset of the data set. Examples of
-        synthetic cursors for resumable full refresh syncs are:
-            - page number
-            - limit offset
-            - next record cursor bookmark
-        """
-
-    @state.setter
-    @abstractmethod
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        """State setter, assigns the stream's current state to incoming mapping."""
-
-
-class CheckpointReader(ABC):
-    @abstractmethod
-    def next(self) -> MutableMapping[str, Any]:
-        """
-        Should return either the next slice or the current value of the self.state()
-        """
-
-    @abstractmethod
-    def has_next(self) -> bool:
-        """
-        Returns true if there are more slices to process or self.state() is a truthy
-        value
-        """
-
-    @abstractmethod
-    def observe(self, new_state: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Updates the internal state of the checkpoint reader based on the incoming stream state from a connector.
-
-        WARNING: This is used to retain backwards compatibility with streams using the legacy get_stream_state() method.
-        In order to uptake Resumable Full Refresh, connectors must migrate streams to use the state setter/getter methods.
-        """
-
-    @abstractmethod
-    def read_state(self) -> MutableMapping[str, Any]:
-        """
-        This is interesting. With this move, we've turned checkpoint reader to resemble even more of a cursor because we are acting
-        even more like an intermediary since we are more regularly assigning Stream.state to CheckpointReader._state via observe
-        """
-
-
-class IncrementalCheckpointReader(CheckpointReader):
-    def __init__(self, stream_slices: Iterable[Optional[Mapping[str, Any]]]):
-        self._state = None
-        self._stream_slices = stream_slices
-
-    def next(self) -> MutableMapping[str, Any]:
-        yield self._stream_slices
-
-    def has_next(self) -> bool:
-        # This is a little hacky. Generators can't tell if there are more records left. However, this can always return true because
-        # on the next iteration, if there are no more records, the generator will raise  a StopIteration exception which will safely
-        # exit the loop
-        return True
-
-    def observe(self, new_state: Mapping[str, Any]):
-        # This is really only needed for backward compatibility with the legacy state management implementations.
-        # We only update the underlying _state value for legacy, otherwise managing state is done by the connector implementation
-        self._state = new_state
-
-    def read_state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-
-class ResumableFullRefreshCheckpointReader(CheckpointReader):
-    def __init__(self):
-        self._state = None
-
-    def next(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    def has_next(self) -> bool:
-        return self._state != {}
-
-    def observe(self, new_state: Mapping[str, Any]):
-        # observe() was originally just for backwards compatibility, but we can potentially fold it more into the the read_records()
-        # flow as I've coded out so far.
-        self._state = new_state
-
-    def read_state(self) -> MutableMapping[str, Any]:
-        return self._state
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
+    """
 
 
 class Stream(ABC):
@@ -222,36 +145,36 @@ class Stream(ABC):
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
-        if self.supports_resumable_full_refresh:
-            checkpoint_reader = ResumableFullRefreshCheckpointReader()
-            # This is an interesting trick. We can observe at the start of the read. For "modern" sources, self.state is assigned in
-            # abstract_source.py so we can observe the incoming state value from the sync. And "legacy" sources don't support RFR
-            # anyway so there is nothing to observe yet anyway
-            self._observe_state_wrapper(checkpoint_reader=checkpoint_reader)
-        else:
+        checkpoint_mode = self._checkpoint_mode
+        if checkpoint_mode == CheckpointMode.INCREMENTAL:
             slices = self.stream_slices(
                 cursor_field=cursor_field,
                 sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
                 stream_state=stream_state,
             )
+            # yikes more backwards compatibility cruft. Because of poor foresight, we wrote the default stream_slices() method to return
+            # [None], which is not only confusing, but we 've now normalized this behavior for connector developers. Now we have connectors
+            # that also return [None]. This is objectively misleading and the ideal interface is return [{}] to indicate we still want
+            # to iterate a first slice, but w/ no specific slice values. None is bad, and now I feel bad that I have to write this hack
+            if slices == [None]:
+                slices = [{}]
             logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
             checkpoint_reader = IncrementalCheckpointReader(stream_slices=slices)
+        elif checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+            checkpoint_reader = ResumableFullRefreshCheckpointReader(stream_state=stream_state)
+        else:
+            checkpoint_reader = FullRefreshCheckpointReader()
 
         has_slices = False
+        next_slice = checkpoint_reader.next()
         record_counter = 0
-        is_complete = False
-        while not is_complete:
-            try:
-                _slice = checkpoint_reader.next()
-            except StopIteration:
-                break
-
+        while next_slice is not None:
             has_slices = True
             if slice_logger.should_log_slice_message(logger):
-                yield slice_logger.create_slice_log_message(_slice)
+                yield slice_logger.create_slice_log_message(next_slice)
             records = self.read_records(
                 sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
-                stream_slice=_slice,
+                stream_slice=next_slice,
                 stream_state=stream_state,
                 cursor_field=cursor_field or None,
             )
@@ -264,8 +187,12 @@ class Stream(ABC):
 
                     # BL: Thanks I hate it. RFR fundamentally doesn't fit with the concept of the legacy Stream.get_updated_state()
                     # method because RFR streams rely on pagination as a cursor and get_updated_state() was designed to have
-                    # the CDK manage state using specifically the last seen record
-                    if self.cursor_field and not self.supports_resumable_full_refresh:
+                    # the CDK manage state using specifically the last seen record.
+
+                    # todo QUESTION: Altho this only affects the incremental legacy case, and we still have cursor protection,
+                    #  if we split observe into observe_slice vs observe_record then we could get rid of this condition entirely assuming
+                    #  the bug below is fixed
+                    if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
                         self._observe_state_wrapper(checkpoint_reader, self.get_updated_state(stream_state, record_data))
@@ -275,7 +202,9 @@ class Stream(ABC):
                         # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
                         checkpoint_interval = self.state_checkpoint_interval
                         if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                            airbyte_state_message = self._new_checkpoint_state(
+                                checkpoint_reader=checkpoint_reader, state_manager=state_manager
+                            )
                             yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
@@ -285,17 +214,10 @@ class Stream(ABC):
             # airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
 
-            is_complete = checkpoint_reader.has_next()
+            next_slice = checkpoint_reader.next()
 
-        if not has_slices or sync_mode == SyncMode.full_refresh:
-            if sync_mode == SyncMode.full_refresh:
-                # todo: BL figure out when to emit final state for normal full refresh maybe as simple as full refresh + not RFR compatible
-                # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
-                # Incremental streams running full_refresh mode emit a meaningful state
-                stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
-
-            # We should always emit a final state message for full refresh sync or streams that do not have any slices
-            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+        if not has_slices:
+            airbyte_state_message = self._new_checkpoint_state(checkpoint_reader=checkpoint_reader, state_manager=state_manager)
             yield airbyte_state_message
 
     @abstractmethod
@@ -413,7 +335,7 @@ class Stream(ABC):
         :param stream_state:
         :return:
         """
-        return [None]
+        return [{}]  # I really hate that this used to be None, which was just cruft to get the first loop in
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -447,8 +369,22 @@ class Stream(ABC):
         return {}
 
     @property
-    def supports_resumable_full_refresh(self) -> bool:
-        return False
+    def _supports_state(self) -> bool:
+        if hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
+            # Modern case where a stream manages state using getter/setter
+            return True
+        else:
+            # Legacy case where the CDK manages state via the get_updated_state method
+            return type(self).get_updated_state != Stream.get_updated_state
+
+    @property
+    def _checkpoint_mode(self) -> CheckpointMode:
+        if self._supports_state and len(self._wrapped_cursor_field()) > 0:
+            return CheckpointMode.INCREMENTAL
+        elif self._supports_state:
+            return CheckpointMode.RESUMABLE_FULL_REFRESH
+        else:
+            return CheckpointMode.FULL_REFRESH
 
     def log_stream_sync_configuration(self) -> None:
         """
@@ -502,6 +438,8 @@ class Stream(ABC):
             state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
 
+    # Below is the one part of the interface that i'm a little iffy about because checkpoint_reader and the connector state manager
+    # feel like they do very similar things. If they were combined it would be cool, but not something that is show stopping
 
     def _observe_state_wrapper(
         self,
@@ -518,9 +456,7 @@ class Stream(ABC):
             new_state = self.state  # type: ignore # we know the field might not exist...
         except AttributeError:
             new_state = stream_state
-        if new_state:
-            checkpoint_reader.observe(new_state)
-
+        checkpoint_reader.observe(new_state)
 
     def _new_checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,

@@ -3,6 +3,6 @@
 #
 
 # Initialize Streams Package
-from .core import FULL_REFRESH_SENTINEL_STATE_KEY, IncrementalMixin, Stream
+from .core import FULL_REFRESH_SENTINEL_STATE_KEY, IncrementalMixin, StateMixin, Stream
 
-__all__ = ["FULL_REFRESH_SENTINEL_STATE_KEY", "IncrementalMixin", "Stream"]
+__all__ = ["FULL_REFRESH_SENTINEL_STATE_KEY", "IncrementalMixin", "StateMixin", "Stream"]
