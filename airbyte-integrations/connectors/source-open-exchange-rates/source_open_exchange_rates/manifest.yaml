@@ -89,6 +89,7 @@ definitions:
               - "null"
               - integer
           rates:
+            description: Contains exchange rates data
             type:
               - "null"
               - object

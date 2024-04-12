@@ -4,9 +4,11 @@
   "type": "object",
   "properties": {
     "business_profile": {
+      "description": "Business profile information for the account",
       "type": ["null", "object"],
       "properties": {
         "annual_revenue": {
+          "description": "Annual revenue of the business",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -67,6 +69,7 @@
       "type": ["null", "string"]
     },
     "capabilities": {
+      "description": "Capabilities of the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -161,6 +164,7 @@
       "type": ["null", "boolean"]
     },
     "company": {
+      "description": "Company information associated with the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

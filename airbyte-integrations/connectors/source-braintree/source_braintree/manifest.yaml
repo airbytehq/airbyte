@@ -394,6 +394,7 @@ streams:
                     - string
                   format: date-time
           android_pay_cards:
+            description: Array of Android Pay cards associated with the customer
             type:
               - "null"
               - array
@@ -874,6 +875,7 @@ streams:
               - string
             format: date-time
           credit_cards:
+            description: Array of credit cards associated with the customer
             type:
               - "null"
               - array
@@ -3345,6 +3347,7 @@ streams:
               - string
             format: date-time
           us_bank_accounts:
+            description: Array of US bank accounts associated with the customer
             type:
               - "null"
               - array

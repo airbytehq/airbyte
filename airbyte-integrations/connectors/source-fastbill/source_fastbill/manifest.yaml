@@ -693,62 +693,77 @@ definitions:
         type: object
         properties:
           INVOICE_ID:
+            description: Unique ID of the invoice
             type:
               - string
           TYPE:
+            description: Type of the invoice (e.g., sales, service)
             type:
               - "null"
               - string
           CUSTOMER_ID:
+            description: Unique ID of the customer
             type:
               - "null"
               - string
           CUSTOMER_NUMBER:
+            description: Customer's identification number
             type:
               - "null"
               - string
           CUSTOMER_COSTCENTER_ID:
+            description: ID of the cost center associated with the customer
             type:
               - "null"
               - string
           CONTACT_ID:
+            description: ID of the contact associated with the invoice
             type:
               - "null"
               - string
           PROJECT_ID:
+            description: ID of the project associated with the invoice
             type:
               - "null"
               - string
           CURRENCY_CODE:
+            description: Currency code used for the invoice
             type:
               - "null"
               - string
           DELIVERY_DATE:
+            description: Date when the invoice delivery is scheduled
             type:
               - "null"
               - string
           INVOICE_TITLE:
+            description: Title or subject of the invoice
             type:
               - "null"
               - string
             empty: true
           CASH_DISCOUNT_PERCENT:
+            description: Percentage of cash discount available on the invoice
             type:
               - "null"
               - string
           CASH_DISCOUNT_DAYS:
+            description: Number of days within which cash discount can be availed
             type:
               - "null"
               - string
           SUB_TOTAL:
+            description: Subtotal amount before applying taxes or discounts
             type:
               - "null"
               - integer
           VAT_TOTAL:
+            description: Total VAT amount for the invoice
             type:
               - "null"
               - number
           VAT_CASE:
+            description: VAT case type (e.g., domestic, intra-community)
             type:
               - "null"
               - string
@@ -760,14 +775,17 @@ definitions:
               type: object
               properties:
                 VAT_PERCENT:
+                  description: VAT percentage for the VAT item
                   type:
                     - "null"
                     - integer
                 COMPLETE_NET:
+                  description: Total net amount for the VAT item
                   type:
                     - "null"
                     - integer
                 VAT_VALUE:
+                  description: VAT value for the VAT item
                   type:
                     - "null"
                     - number
@@ -779,189 +797,230 @@ definitions:
               type: object
               properties:
                 INVOICE_ITEM_ID:
+                  description: Unique ID of the invoice item
                   type:
                     - "null"
                     - integer
                 ARTICLE_NUMBER:
+                  description: Unique number assigned to the item
                   type:
                     - "null"
                     - string
                 DESCRIPTION:
+                  description: Description of the item
                   type:
                     - "null"
                     - string
                 QUANTITY:
+                  description: Quantity of the item
                   type:
                     - "null"
                     - integer
                 UNIT_PRICE:
+                  description: Price per unit of the item
                   type:
                     - "null"
                     - integer
                 VAT_PERCENT:
+                  description: VAT percentage applicable to the item
                   type:
                     - "null"
                     - integer
                 VAT_VALUE:
+                  description: VAT amount for the item
                   type:
                     - "null"
                     - number
                 COMPLETE_NET:
+                  description: Total net amount for the item
                   type:
                     - "null"
                     - integer
                 COMPLETE_GROSS:
+                  description: Total gross amount for the item
                   type:
                     - "null"
                     - number
                 CATEGORY:
+                  description: Category to which the item belongs
                   type:
                     - "null"
                     - array
                     - string
                   empty: true
                 CATEGORY_ID:
+                  description: ID of the category to which the item belongs
                   type:
                     - "null"
                     - array
                     - integer
                 SORT_ORDER:
+                  description: Order in which the item appears in the invoice
                   type:
                     - "null"
                     - integer
           TOTAL:
+            description: Total amount including all taxes and discounts
             type:
               - number
               - "null"
           ORGANIZATION:
+            description: Name of the customer's organization
             type:
               - "null"
               - string
             empty: true
           NOTE:
+            description: Additional notes or comments related to the invoice
             type:
               - "null"
               - string
             empty: true
           SALUTATION:
+            description: Salutation used for addressing the customer (Mr., Ms.)
             type:
               - "null"
               - string
             empty: true
           FIRST_NAME:
+            description: Customer's first name
             type:
               - "null"
               - string
             empty: true
           LAST_NAME:
+            description: Customer's last name
             type:
               - "null"
               - string
             empty: true
           ADDRESS:
+            description: Customer's street address
             type:
               - "null"
               - string
             empty: true
           ADDRESS_2:
+            description: Additional address information (e.g., apartment number)
             type:
               - "null"
               - string
             empty: true
           ZIPCODE:
+            description: Zip code of the customer's location
             type:
               - "null"
               - string
             empty: true
           CITY:
+            description: City where the customer is located
             type:
               - "null"
               - string
             empty: true
           SERVICE_PERIOD_START:
+            description: Start date of the service period covered by the invoice
             type:
               - "null"
               - string
             empty: true
           SERVICE_PERIOD_END:
+            description: End date of the service period covered by the invoice
             type:
               - "null"
               - string
             empty: true
           PAYMENT_TYPE:
+            description: Type of payment (e.g., partial, full)
             type:
               - "null"
               - string
             empty: true
           BANK_NAME:
+            description: Name of the customer's bank
             type:
               - "null"
               - string
             empty: true
           BANK_ACCOUNT_NUMBER:
+            description: Customer's bank account number
             type:
               - "null"
               - string
             empty: true
           BANK_CODE:
+            description: Bank code for the customer's bank
             type:
               - "null"
               - string
             empty: true
           BANK_ACCOUNT_OWNER:
+            description: The name of the bank account owner
             type:
               - "null"
               - string
             empty: true
           BANK_IBAN:
+            description: International Bank Account Number (IBAN)
             type:
               - "null"
               - string
             empty: true
           BANK_BIC:
+            description: Bank Identifier Code for the customer's bank
             type:
               - "null"
               - string
             empty: true
           COUNTRY_CODE:
+            description: Country code of the customer's location
             type:
               - "null"
               - string
           VAT_ID:
+            description: VAT identification number
             type:
               - "null"
               - string
           TEMPLATE_ID:
+            description: ID of the template used for generating the invoice
             type:
               - "null"
               - string
             empty: true
           INVOICE_NUMBER:
+            description: Unique number assigned to the invoice
             type:
               - "null"
               - string
           INTROTEXT:
+            description: Introduction text for the invoice
             type:
               - "null"
               - string
             empty: true
           PAID_DATE:
+            description: Date when the invoice was paid
             type:
               - "null"
               - string
           IS_CANCELED:
+            description: Indicates if the invoice is canceled
             type:
               - "null"
               - string
           INVOICE_DATE:
+            description: Date when the invoice was issued
             type:
               - "null"
               - string
           DUE_DATE:
+            description: Due date for payment of the invoice
             type:
               - "null"
               - string
           PAYMENT_INFO:
+            description: Information related to the payment
             type:
               - "null"
               - string
@@ -971,35 +1030,43 @@ definitions:
               - array
             items:
               PAYMENT_ID:
+                description: Unique ID of the payment
                 type:
                   - string
                   - "null"
               DATE:
+                description: Date when the payment was made
                 type:
                   - string
                   - "null"
               AMOUNT:
+                description: Amount of the payment
                 type:
                   - string
                   - "null"
               CURRENCY_CODE:
+                description: Currency code of the payment
                 type:
                   - string
                   - "null"
               NOTE:
+                description: Any additional notes related to the payment
                 type:
                   - string
                   - "null"
                 empty: true
               TYPE:
+                description: Type of payment (e.g., credit card, bank transfer)
                 type:
                   - string
                   - "null"
           LASTUPDATE:
+            description: Date of the last update made to the invoice
             type:
               - "null"
               - string
           DOCUMENT_URL:
+            description: URL link to access the invoice document
             type:
               - "null"
               - string

@@ -24,6 +24,7 @@
       "type": ["null", "integer"]
     },
     "task": {
+      "description": "Represents a task with associated time data",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -71,6 +72,7 @@
           }
         },
         "time": {
+          "description": "Contains information about the time tracked for the task",
           "type": ["null", "object"],
           "properties": {
             "total": {

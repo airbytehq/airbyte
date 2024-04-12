@@ -5,6 +5,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "ShipmentEventList": {
+      "description": "List of events related to shipments of products.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -66,6 +67,7 @@
       }
     },
     "RefundEventList": {
+      "description": "List of events related to refunds issued to customers.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -127,6 +129,7 @@
       }
     },
     "GuaranteeClaimEventList": {
+      "description": "List of events related to guarantee claims made by customers.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -188,6 +191,7 @@
       }
     },
     "ChargebackEventList": {
+      "description": "List of events related to chargebacks initiated by customers.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -249,6 +253,7 @@
       }
     },
     "PayWithAmazonEventList": {
+      "description": "List of events related to payments made using Amazon's payment service.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -298,6 +303,7 @@
       }
     },
     "ServiceProviderCreditEventList": {
+      "description": "List of events related to credits issued to service providers.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -385,6 +391,7 @@
       }
     },
     "RentalTransactionEventList": {
+      "description": "List of events related to rental transactions.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -553,6 +560,7 @@
       }
     },
     "DebtRecoveryEventList": {
+      "description": "List of events related to debt recovery processes.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -1003,6 +1011,7 @@
       }
     },
     "ShipmentSettleEventList": {
+      "description": "List of events related to settling shipments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

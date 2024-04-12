@@ -1516,6 +1516,7 @@ definitions:
               - string
             format: date-time
           associations:
+            description: Contains associations related to the customer.
             type: object
             properties:
               groups:

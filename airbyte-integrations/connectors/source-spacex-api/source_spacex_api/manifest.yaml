@@ -38,7 +38,9 @@ streams:
                 - string
             type: array
           cores:
+            description: Information about the rocket cores involved in the launch.
             items:
+              description: Details about a specific rocket core used in the launch.
               properties:
                 description: Information about the booster cores used in the launch.
                 core:

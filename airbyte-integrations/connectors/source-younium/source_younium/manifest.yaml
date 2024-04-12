@@ -1821,6 +1821,7 @@ definitions:
               - "null"
               - string
           invoiceAddress:
+            description: Address for invoicing
             type: object
             properties:
               id:
@@ -1874,6 +1875,7 @@ definitions:
                   - "null"
                   - string
           deliveryAddress:
+            description: Address for product deliveries
             type: object
             properties:
               id:
@@ -1927,6 +1929,7 @@ definitions:
                   - "null"
                   - string
           invoiceBatchGroup:
+            description: Grouping for batch invoice processing
             type: object
             properties:
               id:
@@ -1955,6 +1958,7 @@ definitions:
               - "null"
               - boolean
           account:
+            description: Information about the account associated with the subscription
             type: object
             properties:
               name:
@@ -1983,6 +1987,7 @@ definitions:
                   - "null"
                   - string
           invoiceAccount:
+            description: Account information for invoicing
             type: object
             properties:
               name:
@@ -2011,8 +2016,10 @@ definitions:
                   - "null"
                   - string
           products:
+            description: List of products included in the subscription
             type: array
             items:
+              description: Details of each product
               type: object
               properties:
                 id:
@@ -2051,8 +2058,10 @@ definitions:
                     - "null"
                     - string
                 charges:
+                  description: List of charges associated with the product
                   type: array
                   items:
+                    description: Details of each charge
                     type: object
                     properties:
                       id:
@@ -2238,8 +2247,10 @@ definitions:
                           - "null"
                           - object
                       priceDetails:
+                        description: Details of the pricing for the charge
                         type: array
                         items:
+                          description: Specific pricing details
                           type: object
                           properties:
                             tier:
@@ -2298,8 +2309,10 @@ definitions:
                           - "null"
                           - number
                       features:
+                        description: List of features included in the charge
                         type: array
                         items:
+                          description: Details of each feature
                           type: object
                           properties:
                             code:
@@ -2313,8 +2326,10 @@ definitions:
                                 - "null"
                                 - string
                       orderDiscounts:
+                        description: Discount information applied to the charge
                         type: array
                         items:
+                          description: Details of each discount
                           type: object
                           properties:
                             orderDiscountId:
@@ -2338,6 +2353,7 @@ definitions:
                           - "null"
                           - string
                       cmrr:
+                        description: Committed Monthly Recurring Revenue of the charge
                         type: object
                         properties:
                           amount:
@@ -2366,6 +2382,7 @@ definitions:
                               - "null"
                               - string
                       acv:
+                        description: Annual Contract Value of the charge
                         type: object
                         properties:
                           amount:
@@ -2394,6 +2411,7 @@ definitions:
                               - "null"
                               - string
                       tcv:
+                        description: Total Contract Value of the charge
                         type: object
                         properties:
                           amount:
@@ -2422,6 +2440,7 @@ definitions:
                               - "null"
                               - string
                       emrr:
+                        description: Estimated Monthly Recurring Revenue of the charge
                         type: object
                         properties:
                           amount:
@@ -2450,6 +2469,7 @@ definitions:
                               - "null"
                               - string
                       oneTimeFees:
+                        description: One-time fees associated with the charge
                         type: object
                         properties:
                           amount:
@@ -2503,6 +2523,7 @@ definitions:
                     - "null"
                     - string
                 cmrr:
+                  description: Committed Monthly Recurring Revenue of the product
                   type: object
                   properties:
                     amount:
@@ -2531,6 +2552,7 @@ definitions:
                         - "null"
                         - string
                 acv:
+                  description: Annual Contract Value of the product
                   type: object
                   properties:
                     amount:
@@ -2559,6 +2581,7 @@ definitions:
                         - "null"
                         - string
                 emrr:
+                  description: Estimated Monthly Recurring Revenue of the product
                   type: object
                   properties:
                     amount:
@@ -2587,6 +2610,7 @@ definitions:
                         - "null"
                         - string
                 oneTimeFees:
+                  description: One-time fees associated with the product
                   type: object
                   properties:
                     amount:
@@ -2615,6 +2639,7 @@ definitions:
                         - "null"
                         - string
                 tcv:
+                  description: Total Contract Value of the product
                   type: object
                   properties:
                     amount:
@@ -2643,8 +2668,10 @@ definitions:
                         - "null"
                         - string
           milestones:
+            description: List of milestones associated with the subscription
             type: array
             items:
+              description: Details of each milestone
               type: object
               properties:
                 id:
@@ -2678,6 +2705,7 @@ definitions:
                     - "null"
                     - string
           orderDiscounts:
+            description: Discount information applied to the order
             type: array
             items:
               type: object
@@ -2723,8 +2751,10 @@ definitions:
                     - "null"
                     - string
                 orderProductCharges:
+                  description: List of charges for products in the order
                   type: array
                   items:
+                    description: Details of each product charge
                     type: object
                     properties:
                       orderDiscountId:
@@ -2770,6 +2800,7 @@ definitions:
               - "null"
               - object
           cmrr:
+            description: Committed Monthly Recurring Revenue
             type: object
             properties:
               amount:
@@ -2798,6 +2829,7 @@ definitions:
                   - "null"
                   - string
           acv:
+            description: Annual Contract Value
             type: object
             properties:
               amount:
@@ -2826,6 +2858,7 @@ definitions:
                   - "null"
                   - string
           emrr:
+            description: Estimated Monthly Recurring Revenue
             type: object
             properties:
               amount:
@@ -2854,6 +2887,7 @@ definitions:
                   - "null"
                   - string
           oneTimeFees:
+            description: One-time fees charged
             type: object
             properties:
               amount:
@@ -2882,6 +2916,7 @@ definitions:
                   - "null"
                   - string
           tcv:
+            description: Total Contract Value of the subscription
             type: object
             properties:
               amount:

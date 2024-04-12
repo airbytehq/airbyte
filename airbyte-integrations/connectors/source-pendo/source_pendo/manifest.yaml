@@ -2831,6 +2831,7 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           agent:
+            description: Information about the agent accessing the visitor metadata
             properties:
               age:
                 description: The age of the visitor
@@ -3144,6 +3145,7 @@ streams:
                 type: object
             type: object
           auto:
+            description: Automatically generated metadata
             properties:
               accountid:
                 description: The account ID associated with the visitor
@@ -3381,6 +3383,7 @@ streams:
                 type: object
             type: object
           custom:
+            description: Custom metadata provided by the user
             properties:
               practicumtest:
                 description: Flag for practicum test status
@@ -3462,6 +3465,7 @@ streams:
                 type: object
             type: object
           pendo:
+            description: Specific Pendo related metadata
             properties:
               blacklistguides:
                 description: Flag to blacklist certain guides for the visitor

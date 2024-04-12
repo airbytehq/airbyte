@@ -75,6 +75,7 @@ streams:
               - "null"
               - string
           rates:
+            description: Contains exchange rates for various currencies
             type:
               - "null"
               - object

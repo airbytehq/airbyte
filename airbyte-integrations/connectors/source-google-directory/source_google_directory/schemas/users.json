@@ -3,290 +3,370 @@
   "type": "object",
   "properties": {
     "kind": {
+      "description": "The kind of user",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "User ID",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "User's username",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "User's name",
       "type": ["null", "object"],
       "properties": {
         "givenName": {
+          "description": "Given name",
           "type": ["null", "string"]
         },
         "familyName": {
+          "description": "Family name",
           "type": ["null", "string"]
         },
         "fullName": {
+          "description": "Full name",
           "type": ["null", "string"]
         }
       }
     },
     "isAdmin": {
+      "description": "Is the user an admin",
       "type": ["null", "boolean"]
     },
     "isDelegatedAdmin": {
+      "description": "Is the user a delegated admin",
       "type": ["null", "boolean"]
     },
     "lastLoginTime": {
+      "description": "User's last login time",
       "type": ["null", "string"]
     },
     "creationTime": {
+      "description": "User's creation time",
       "type": ["null", "string"]
     },
     "agreedToTerms": {
+      "description": "Whether the user has agreed to terms",
       "type": ["null", "boolean"]
     },
     "hashFunction": {
+      "description": "Hash function used",
       "type": ["null", "string"]
     },
     "suspended": {
+      "description": "Is the user suspended",
       "type": ["null", "boolean"]
     },
     "changePasswordAtNextLogin": {
+      "description": "Whether the user needs to change password at next login",
       "type": ["null", "boolean"]
     },
     "ipWhitelisted": {
+      "description": "Is the user IP whitelisted",
       "type": ["null", "boolean"]
     },
     "emails": {
+      "description": "User's email addresses",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "address": {
+            "description": "Email address",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of email",
             "type": ["null", "string"]
           },
           "customType": {
+            "description": "Custom type of email",
             "type": ["null", "string"]
           },
           "primary": {
+            "description": "Is this the primary email",
             "type": ["null", "boolean"]
           }
         }
       }
     },
     "externalIds": {
+      "description": "External IDs for the user",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "value": {
+            "description": "External ID value",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of external ID",
             "type": ["null", "string"]
           },
           "customType": {
+            "description": "Custom type of external ID",
             "type": ["null", "string"]
           }
         }
       }
     },
     "relations": {
+      "description": "User's relations",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "value": {
+            "description": "Relation value",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of relation",
             "type": ["null", "string"]
           },
           "customType": {
+            "description": "Custom type of relation",
             "type": ["null", "string"]
           }
         }
       }
     },
     "organizations": {
+      "description": "User's organizations",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "name": {
+            "description": "Organization name",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Organization title",
             "type": ["null", "string"]
           },
           "primary": {
+            "description": "Is this the primary organization",
             "type": ["null", "boolean"]
           },
           "customType": {
+            "description": "Custom type of organization",
             "type": ["null", "string"]
           },
           "description": {
+            "description": "Organization description",
             "type": ["null", "string"]
           }
         }
       }
     },
     "phones": {
+      "description": "User's phone numbers",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "value": {
+            "description": "Phone number value",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of phone number",
             "type": ["null", "string"]
           }
         }
       }
     },
     "aliases": {
+      "description": "User's aliases",
       "type": ["null", "array"],
       "items": {
+        "description": "User's alias email address",
         "type": ["null", "string"]
       }
     },
     "nonEditableAliases": {
+      "description": "Non-editable aliases for the user",
       "type": ["null", "array"],
       "items": {
+        "description": "Non-editable alias email address",
         "type": ["null", "string"]
       }
     },
     "customerId": {
+      "description": "Customer ID",
       "type": ["null", "string"]
     },
     "orgUnitPath": {
+      "description": "Organization unit path",
       "type": ["null", "string"]
     },
     "isMailboxSetup": {
+      "description": "Is the user's mailbox setup",
       "type": ["null", "boolean"]
     },
     "includeInGlobalAddressList": {
+      "description": "Is the user included in global address list",
       "type": ["null", "boolean"]
     },
     "etag": {
+      "description": "Entity tag",
       "type": ["null", "string"]
     },
     "languages": {
+      "description": "User's preferred languages",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "languageCode": {
+            "description": "Language code",
             "type": ["null", "string"]
           },
           "preference": {
+            "description": "Language preference",
             "type": ["null", "string"]
           }
         }
       }
     },
     "isEnforcedIn2Sv": {
+      "description": "Is 2-step verification enforced",
       "type": ["null", "boolean"]
     },
     "isEnrolledIn2Sv": {
+      "description": "Is the user enrolled in 2-step verification",
       "type": ["null", "boolean"]
     },
     "archived": {
+      "description": "Is the user archived",
       "type": ["null", "boolean"]
     },
     "primaryEmail": {
+      "description": "Primary email address",
       "type": ["null", "string"]
     },
     "suspensionReason": {
+      "description": "Reason for user suspension",
       "type": ["null", "string"]
     },
     "locations": {
+      "description": "User's locations",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "area": {
+            "description": "Area",
             "type": ["null", "string"]
           },
           "buildingId": {
+            "description": "Building ID",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Location type",
             "type": ["null", "string"]
           }
         }
       }
     },
     "thumbnailPhotoEtag": {
+      "description": "Etag for the user's thumbnail photo",
       "type": ["null", "string"]
     },
     "thumbnailPhotoUrl": {
+      "description": "URL for the user's thumbnail photo",
       "type": ["null", "string"]
     },
     "addresses": {
+      "description": "User's addresses",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "formatted": {
+            "description": "Formatted address",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of address",
             "type": ["null", "string"]
           }
         }
       }
     },
     "recoveryPhone": {
+      "description": "Recovery phone number",
       "type": ["null", "string"]
     },
     "recoveryEmail": {
+      "description": "Recovery email address",
       "type": ["null", "string"]
     },
     "gender": {
+      "description": "User's gender",
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "Type of gender",
           "type": ["null", "string"]
         }
       }
     },
     "sshPublicKeys": {
+      "description": "SSH public keys for the user",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "expirationTimeUsec": {
+            "description": "Expiration time in microseconds",
             "type": ["null", "string"]
           },
           "fingerprint": {
+            "description": "Public key fingerprint",
             "type": ["null", "string"]
           },
           "key": {
+            "description": "Public key value",
             "type": ["null", "string"]
           }
         }
       }
     },
     "posixAccounts": {
+      "description": "POSIX account details",
       "gid": {
+        "description": "Group ID",
         "type": ["null", "string"]
       },
       "homeDirectory": {
+        "description": "Home directory",
         "type": ["null", "string"]
       },
       "operatingSystemType": {
+        "description": "Operating system type",
         "type": ["null", "string"]
       },
       "primary": {
+        "description": "Is this the primary POSIX account",
         "type": ["null", "boolean"]
       },
       "systemId": {
+        "description": "System ID",
         "type": ["null", "string"]
       },
       "uid": {
+        "description": "User ID",
         "type": ["null", "string"]
       },
       "username": {
+        "description": "Username",
         "type": ["null", "string"]
       }
     }
