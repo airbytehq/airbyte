@@ -1,27 +1,29 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import base64
+from dataclasses import InitVar, dataclass
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+
 import dpath.util
 import requests
-from typing import Any, Iterable, List, Mapping, Optional, Union, Tuple, MutableMapping
-from dataclasses import InitVar, dataclass
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 
-from .streams.engage import EngageSchema
 from .source import SourceMixpanel
+from .streams.engage import EngageSchema
 
 
 class MixpanelHttpRequester(HttpRequester):
-
     def get_url_base(self) -> str:
         """
         REGION: url
@@ -37,8 +39,8 @@ class MixpanelHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        project_id = self.config.get('credentials', {}).get('project_id')
-        return {'project_id': project_id} if project_id else {}
+        project_id = self.config.get("credentials", {}).get("project_id")
+        return {"project_id": project_id} if project_id else {}
 
     def _request_params(
         self,
@@ -52,19 +54,18 @@ class MixpanelHttpRequester(HttpRequester):
         """
         next_page_token = None  # reset it, pagination data is in extra_params
         if extra_params:
-            page = extra_params.pop('page', {})
+            page = extra_params.pop("page", {})
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):
-
     def get_url_base(self) -> str:
         """
         REGION: url
         app/projects/{{ project_id }}/annotations
         """
-        project_id = self.config.get('credentials', {}).get('project_id', "")
+        project_id = self.config.get("credentials", {}).get("project_id", "")
         project_part = f"{project_id}/" if project_id else ""
         return f"{super().get_url_base()}{project_part}"
 
@@ -79,7 +80,6 @@ class AnnotationsHttpRequester(MixpanelHttpRequester):
 
 
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
-
     def get_request_body_json(
         self,
         stream_state: Optional[StreamState] = None,
@@ -88,7 +88,7 @@ class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
     ) -> Mapping[str, Any]:
         # https://developer.mixpanel.com/reference/engage-query
         cohort_id = stream_slice["id"]
-        return {"filter_by_cohort": f"{{\"id\":{cohort_id}}}"}
+        return {"filter_by_cohort": f'{{"id":{cohort_id}}}'}
 
 
 class EngageTransformation(RecordTransformation):
@@ -184,7 +184,6 @@ class FunnelsDpathExtractor(DpathExtractor):
 
 
 class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
-
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Add 'funnel_name' to the slice
@@ -222,10 +221,10 @@ class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
                             yield StreamSlice(
                                 partition={
                                     partition_field: partition_value,
-                                    "funnel_name":  parent_record.get('name'),
-                                    "parent_slice": parent_partition
+                                    "funnel_name": parent_record.get("name"),
+                                    "parent_slice": parent_partition,
                                 },
-                                cursor_slice={}
+                                cursor_slice={},
                             )
                     # If the parent slice contains no records,
                     if empty_parent_slice:
@@ -239,6 +238,7 @@ class EngagePaginationStrategy(PageIncrement):
     session_id - returned after first request
     page - incremental page number
     """
+
     def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Determines page and subpage numbers for the `items` stream
@@ -254,10 +254,7 @@ class EngagePaginationStrategy(PageIncrement):
             self._total = total
 
         if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
-            return {
-                'session_id': decoded_response.get("session_id"),
-                "page": page_number + 1
-            }
+            return {"session_id": decoded_response.get("session_id"), "page": page_number + 1}
         else:
             self._total = None
             return None
@@ -295,15 +292,12 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
             "string": {"type": ["null", "string"]},
         }
 
-        params = {
-            "authenticator": SourceMixpanel.get_authenticator(self.config),
-            "region": self.config.get('region')
-        }
-        project_id = self.config.get('credentials', {}).get('project_id')
+        params = {"authenticator": SourceMixpanel.get_authenticator(self.config), "region": self.config.get("region")}
+        project_id = self.config.get("credentials", {}).get("project_id")
         if project_id:
             params["project_id"] = project_id
 
-        schema["additionalProperties"] = self.config.get('select_properties_by_default', True)
+        schema["additionalProperties"] = self.config.get("select_properties_by_default", True)
 
         # read existing Engage schema from API
         schema_properties = EngageSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
