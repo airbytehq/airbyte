@@ -13,6 +13,7 @@
       "type": ["string", "null"]
     },
     "portfolio": {
+      "description": "The portfolio information associated with the membership.",
       "type": ["object", "null"],
       "properties": {
         "gid": {
@@ -30,6 +31,7 @@
       }
     },
     "user": {
+      "description": "The user information linked to the membership.",
       "type": ["object", "null"],
       "properties": {
         "gid": {

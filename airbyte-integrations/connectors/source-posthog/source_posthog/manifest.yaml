@@ -388,6 +388,7 @@ definitions:
               - string
               - "null"
           filters:
+            description: Filter criteria used to generate the insight data.
             type:
               - object
               - "null"
@@ -438,6 +439,7 @@ definitions:
               - boolean
               - "null"
           result:
+            description: Data representing the actual insight results.
             type:
               - array
               - "null"
@@ -499,6 +501,7 @@ definitions:
               - string
               - "null"
           created_by:
+            description: Contains information about the user who created the insight.
             type:
               - object
               - "null"
@@ -554,6 +557,9 @@ definitions:
               - string
               - "null"
           last_modified_by:
+            description:
+              Contains information about the user who last modified the
+              insight.
             type:
               - object
               - "null"
@@ -604,6 +610,7 @@ definitions:
               - string
               - "null"
           tags:
+            description: Additional labels or categories assigned to the insight.
             type:
               - array
               - "null"

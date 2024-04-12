@@ -85,8 +85,10 @@ definitions:
               - "null"
               - string
           department_hierarchy:
+            description: Nested array representing the hierarchical structure of departments
             type: array
             items:
+              description: Individual department object within the hierarchy
               type: object
               properties:
                 id:
@@ -112,6 +114,7 @@ definitions:
               - "null"
               - string
           location:
+            description: Information about the job location
             type: object
             properties:
               location_str:

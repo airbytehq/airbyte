@@ -78,6 +78,7 @@ streams:
               - object
             additionalProperties: true
           timestamps:
+            description: Timestamps related to the event
             type:
               - "null"
               - array
@@ -109,6 +110,7 @@ streams:
             format: date-time
             airbyte_type: timestamp_with_timezone
           estimated_cost:
+            description: The estimated cost of the event
             type:
               - "null"
               - object
@@ -140,6 +142,7 @@ streams:
               - "null"
               - integer
           label_ids:
+            description: IDs related to event labels
             type:
               - "null"
               - array
@@ -154,6 +157,7 @@ streams:
               - "null"
               - string
           user_ids:
+            description: IDs related to users associated with the event
             type:
               - "null"
               - array
@@ -179,6 +183,7 @@ streams:
               - "null"
               - integer
           cost:
+            description: The cost associated with the event
             type:
               - "null"
               - object
@@ -217,12 +222,14 @@ streams:
               - "null"
               - integer
           project:
+            description: Information related to the project for the event
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               required_label_ids:
+                description: IDs of labels required for the project
                 type:
                   - "null"
                   - array
@@ -232,6 +239,7 @@ streams:
                     - "null"
                     - string
               labels:
+                description: Labels associated with the project
                 type:
                   - "null"
                   - array
@@ -281,6 +289,7 @@ streams:
                   - "null"
                   - boolean
               label_ids:
+                description: IDs related to project labels
                 type:
                   - "null"
                   - array
@@ -305,6 +314,7 @@ streams:
                   - "null"
                   - boolean
               client:
+                description: Information about the client associated with the project
                 type:
                   - "null"
                   - object
@@ -398,6 +408,7 @@ streams:
                   - "null"
                   - integer
           user:
+            description: Information about the user associated with the event
             type:
               - "null"
               - object
@@ -421,6 +432,7 @@ streams:
                 format: date-time
                 airbyte_type: timestamp_with_timezone
               avatar:
+                description: User's avatar information
                 type:
                   - "null"
                   - object
@@ -467,6 +479,7 @@ streams:
               - "null"
               - string
           estimated_duration:
+            description: The estimated duration of the event
             type:
               - "null"
               - object
@@ -540,6 +553,7 @@ streams:
               - "null"
               - integer
           duration:
+            description: The duration of the event
             type:
               - "null"
               - object
@@ -596,6 +610,7 @@ streams:
               - "null"
               - string
           entry_ids:
+            description: IDs related to the event entries
             type:
               - "null"
               - array

@@ -210,6 +210,7 @@ definitions:
               - "null"
               - string
           links:
+            description: Links related to the teams data.
             type:
               - "null"
               - object
@@ -263,6 +264,7 @@ definitions:
               - "null"
               - boolean
           tags:
+            description: Represents tags associated with the service.
             type:
               - "null"
               - array
@@ -270,6 +272,7 @@ definitions:
               description: Array of tags associated with the service.
               type: string
           links:
+            description: Represents related links for the service.
             type:
               - "null"
               - object

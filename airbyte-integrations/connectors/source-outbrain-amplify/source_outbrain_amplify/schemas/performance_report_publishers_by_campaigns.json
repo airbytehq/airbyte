@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Contains metadata information related to the report.",
       "type": "object",
       "properties": {
         "id": {
@@ -21,6 +22,7 @@
       }
     },
     "metrics": {
+      "description": "Contains actual performance metrics data for publishers by campaigns.",
       "type": "object",
       "properties": {
         "impressions": {

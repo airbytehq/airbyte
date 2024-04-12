@@ -100,6 +100,7 @@ definitions:
               - "null"
               - string
           icon:
+            description: Icon representing the document
             type:
               - "null"
               - object
@@ -135,6 +136,7 @@ definitions:
               - "null"
               - string
           docSize:
+            description: Size of the document in bytes
             type:
               - "null"
               - object
@@ -160,6 +162,7 @@ definitions:
                   - "null"
                   - boolean
           sourceDoc:
+            description: Source document from which this document originated
             type:
               - "null"
               - object
@@ -195,6 +198,7 @@ definitions:
               - "null"
               - string
           published:
+            description: Publication status of the document
             type:
               - "null"
               - object
@@ -241,6 +245,7 @@ definitions:
                     - "null"
                     - string
           folder:
+            description: Folder where the document is stored
             type:
               - "null"
               - object
@@ -266,6 +271,7 @@ definitions:
                   - "null"
                   - string
           workspace:
+            description: Workspace to which the document belongs
             type:
               - "null"
               - object
@@ -700,6 +706,7 @@ definitions:
               - "null"
               - string
           parent:
+            description: Represents the parent table containing related data
             type:
               - "null"
               - object
@@ -847,6 +854,7 @@ definitions:
               - "null"
               - string
           parent:
+            description: The parent control which contains other controls or data.
             type:
               - "null"
               - object

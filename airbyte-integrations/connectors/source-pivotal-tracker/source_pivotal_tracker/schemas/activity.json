@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "project": {
+      "description": "Details of the project in which the activity occurred",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -18,6 +19,7 @@
       }
     },
     "secondary_resources": {
+      "description": "List of secondary resources involved in the activity",
       "type": ["null", "array"],
       "items": {
         "description": "Additional resources related to the activity",
@@ -50,6 +52,7 @@
       "type": ["null", "integer"]
     },
     "changes": {
+      "description": "List of changes made in the activity",
       "type": "array",
       "items": {
         "type": "object",
@@ -78,6 +81,7 @@
       }
     },
     "primary_resources": {
+      "description": "List of primary resources involved in the activity",
       "type": ["null", "array"],
       "items": {
         "type": "object",

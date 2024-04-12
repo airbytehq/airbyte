@@ -516,6 +516,7 @@ definitions:
               - boolean
               - "null"
           CUSTOMFIELDS:
+            description: Custom fields associated with the contact
             type: array
             items:
               type: object
@@ -529,6 +530,7 @@ definitions:
                   description: The value of the custom field for this contact
                   type: object
           TAGS:
+            description: Tags or categories associated with the contact
             type: array
             items:
               type: object
@@ -539,6 +541,7 @@ definitions:
                     - string
                     - "null"
           DATES:
+            description: Important dates related to the contact
             type: array
             items:
               type: object
@@ -569,6 +572,7 @@ definitions:
                     - boolean
                     - "null"
           LINKS:
+            description: Links or references related to the contact
             type: array
             items:
               type: object
@@ -2540,6 +2544,7 @@ definitions:
               - integer
               - "null"
           CUSTOMFIELDS:
+            description: Custom fields associated with the prospect
             type: array
             items:
               type: object
@@ -2553,6 +2558,7 @@ definitions:
                   description: The value of the custom field.
                   type: object
           TAGS:
+            description: Tags associated with the prospect
             type: array
             items:
               type: object

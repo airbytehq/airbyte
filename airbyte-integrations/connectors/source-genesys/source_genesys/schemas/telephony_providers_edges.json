@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Details related to a division within the telephony provider.",
       "type": "object",
       "properties": {
         "id": {

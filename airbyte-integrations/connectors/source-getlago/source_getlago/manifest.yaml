@@ -196,7 +196,9 @@ definitions:
               - "null"
               - integer
           charges:
+            description: Array of plan charges data
             items:
+              description: Details of each charge within the plan
               additionalProperties: true
               properties:
                 billable_metric_code:
@@ -245,6 +247,7 @@ definitions:
                     - "null"
                     - boolean
                 properties:
+                  description: Additional properties associated with the charge
                   additionalProperties: true
                   properties:
                     amount:
@@ -592,6 +595,7 @@ definitions:
               - "null"
               - string
           customer:
+            description: Details of the customer associated with the invoice
             additionalProperties: true
             properties:
               address_line1:
@@ -610,6 +614,7 @@ definitions:
                   - "null"
                   - string
               billing_configuration:
+                description: Configuration details related to billing for the customer
                 additionalProperties: true
                 properties:
                   document_locale:
@@ -637,6 +642,9 @@ definitions:
                       - "null"
                       - integer
                   provider_payment_methods:
+                    description:
+                      The payment methods accepted by the provider for
+                      this customer
                     items:
                       description: The list of payment methods available to the customer.
                       type:

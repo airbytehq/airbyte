@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "division": {
+      "description": "User's organizational division details.",
       "type": "object",
       "properties": {
         "id": {
@@ -28,6 +29,7 @@
       }
     },
     "chat": {
+      "description": "User's chat details or messaging information.",
       "type": "object",
       "properties": {
         "jabberId": {
@@ -45,6 +47,7 @@
       "type": ["null", "string"]
     },
     "primaryContactInfo": {
+      "description": "User's primary contact information like email, phone number, etc.",
       "type": "array",
       "properties": {
         "address": {
@@ -78,6 +81,7 @@
       }
     },
     "addresses": {
+      "description": "User's addresses information such as home, work, etc.",
       "type": "array",
       "properties": {
         "address": {

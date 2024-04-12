@@ -35,6 +35,7 @@
       "type": ["null", "string"]
     },
     "custom_url": {
+      "description": "The custom URL for the brand, which can be used to access the brand's specific page.",
       "type": ["null", "object"],
       "properties": {
         "url": {

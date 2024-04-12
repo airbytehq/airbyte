@@ -36,6 +36,7 @@
       "type": ["null", "string"]
     },
     "categories": {
+      "description": "Categories associated with the conversation post.",
       "type": ["null", "array"],
       "items": {
         "description": "Categories associated with the post",
@@ -53,6 +54,7 @@
       "type": ["null", "boolean"]
     },
     "body": {
+      "description": "The main content of the conversation post.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -67,10 +69,12 @@
       }
     },
     "from": {
+      "description": "The sender of the conversation post.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "emailAddress": {
+          "description": "Email address of the sender.",
           "type": ["null", "object"],
           "properties": {
             "name": {
@@ -86,10 +90,12 @@
       }
     },
     "sender": {
+      "description": "The sender of the conversation post.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "emailAddress": {
+          "description": "Email address of the sender.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {

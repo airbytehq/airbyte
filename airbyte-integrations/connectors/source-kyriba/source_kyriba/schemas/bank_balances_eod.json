@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "account": {
+      "description": "Details of the account associated with the bank balance",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -19,6 +20,7 @@
       }
     },
     "bankBalance": {
+      "description": "The end-of-day bank balance for the account",
       "type": ["object", "null"],
       "properties": {
         "amount": {

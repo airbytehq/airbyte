@@ -66,6 +66,7 @@
       "type": ["null", "string"]
     },
     "ramp_intervals": {
+      "description": "Specifies ramp intervals for the plan.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -75,6 +76,7 @@
             "type": ["null", "integer"]
           },
           "currencies": {
+            "description": "Contains currencies information within the ramp intervals.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -94,6 +96,7 @@
       }
     },
     "custom_fields": {
+      "description": "Includes any custom fields associated with the plan.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -147,6 +150,7 @@
       "type": ["null", "boolean"]
     },
     "currencies": {
+      "description": "Contains information about the currencies supported by the plan.",
       "type": "array",
       "title": "Pricing",
       "items": {
@@ -178,6 +182,7 @@
       }
     },
     "hosted_pages": {
+      "description": "Provides details about hosted pages related to the plan.",
       "type": "object",
       "properties": {
         "success_url": {

@@ -318,6 +318,9 @@ definitions:
               - "null"
               - string
           description:
+            description:
+              Contains general information about the fetched page components
+              data.
             type:
               - "null"
               - string
@@ -332,6 +335,7 @@ definitions:
               - "null"
               - integer
           group:
+            description: Details related to the group of components.
             type:
               - "null"
               - object
@@ -414,6 +418,7 @@ definitions:
                   - string
                 format: date-time
               translations:
+                description: Translations for the group information.
                 type:
                   - "null"
                   - object
@@ -429,6 +434,7 @@ definitions:
                       - "null"
                       - string
           incidents:
+            description: List of incidents related to the page components.
             type:
               - "null"
               - array
@@ -459,6 +465,7 @@ definitions:
                     - "null"
                     - string
                 components:
+                  description: List of components related to the incident.
                   items:
                     type:
                       - "null"
@@ -485,6 +492,7 @@ definitions:
                           - "null"
                           - boolean
           updates:
+            description: Any updates or changes made to the page components.
             type:
               - "null"
               - object
@@ -572,6 +580,7 @@ definitions:
               - "null"
               - array
           updates:
+            description: List of updates related to incidents
             type:
               - "null"
               - array
@@ -631,6 +640,7 @@ definitions:
                     - string
                   format: date-time
           components:
+            description: List of components related to incidents
             type:
               - "null"
               - array
@@ -662,6 +672,7 @@ definitions:
                     - "null"
                     - boolean
                 site:
+                  description: The site where the incident occurred
                   type:
                     - "null"
                     - object
@@ -756,6 +767,9 @@ definitions:
               - string
             format: date-time
           incident:
+            description:
+              Represents an incident containing related information and
+              updates
             type: object
             properties:
               id:
@@ -780,6 +794,7 @@ definitions:
                   - "null"
                   - string
               components:
+                description: The components affected by the incident
                 type:
                   - "null"
                   - array
@@ -809,6 +824,7 @@ definitions:
                         - "null"
                         - boolean
                     site:
+                      description: Information about the site related to the incident
                       type:
                         - "null"
                         - object
@@ -834,6 +850,7 @@ definitions:
                             - "null"
                             - array
                         subscribers:
+                          description: A list of subscribers related to the site
                           type:
                             - "null"
                             - array
@@ -848,6 +865,7 @@ definitions:
                                   - "null"
                                   - string
                     subscribers:
+                      description: A list of subscribers related to the incident component
                       type:
                         - "null"
                         - array
@@ -942,6 +960,7 @@ definitions:
               - "null"
               - boolean
           updates:
+            description: List of maintenance updates.
             type:
               - "null"
               - array
@@ -999,6 +1018,7 @@ definitions:
                     - string
                   format: date-time
           components:
+            description: List of components related to the maintenance updates.
             type:
               - "null"
               - array
@@ -1028,6 +1048,7 @@ definitions:
                     - "null"
                     - boolean
                 site:
+                  description: Details of the site where the maintenance is scheduled.
                   type:
                     - "null"
                     - object
@@ -1124,6 +1145,7 @@ definitions:
               - "null"
               - string
           maintenance:
+            description: Contains information about ongoing maintenance updates.
             type:
               - "null"
               - object
@@ -1150,10 +1172,12 @@ definitions:
                   - "null"
                   - string
               components:
+                description: Contains a list of components under maintenance.
                 type:
                   - "null"
                   - array
                 items:
+                  description: Details about a specific component being maintained.
                   type:
                     - "null"
                     - object
@@ -1181,6 +1205,9 @@ definitions:
                         - "null"
                         - boolean
                     site:
+                      description:
+                        Details about the site where the component is being
+                        maintained.
                       type:
                         - "null"
                         - object
@@ -1593,15 +1620,18 @@ definitions:
               - "null"
               - string
           data:
+            description: The main data object that contains the metrics information.
             type:
               - "null"
               - array
             items:
+              description: An array of items containing individual metric data sets.
               type:
                 - "null"
                 - object
               properties:
                 properties:
+                  description: The properties of each individual metric data set.
                   timestamp:
                     description: The timestamp of the metric data point.
                     type:

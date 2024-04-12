@@ -160,6 +160,7 @@ definitions:
               - "null"
               - string
           details:
+            description: Additional details of the booking
             properties:
               offDaysCount:
                 description: Count of off days during the booking period
@@ -177,6 +178,7 @@ definitions:
                   - "null"
                   - integer
               workWeekDetails:
+                description: Specific details related to work week
                 items:
                   description: Details of work week for the booking
                   type:
@@ -216,6 +218,7 @@ definitions:
               - "null"
               - string
           customFields:
+            description: Custom fields associated with the booking
             items:
               properties:
                 _id:
@@ -238,6 +241,7 @@ definitions:
                     - "null"
                     - string
                 choices:
+                  description: Choices available for the custom field
                   items:
                     properties:
                       _id:
@@ -264,8 +268,10 @@ definitions:
               - "null"
               - array
           bookingRate:
+            description: Rates for the booking, both internal and external
             properties:
               external:
+                description: External booking rate details
                 properties:
                   defaultRateId:
                     description: Default rate ID for external billing
@@ -276,6 +282,7 @@ definitions:
                   - "null"
                   - object
               internal:
+                description: Internal booking rate details
                 properties:
                   defaultRateId:
                     description: Default rate ID for internal billing
@@ -976,6 +983,7 @@ definitions:
               - "null"
               - string
           links:
+            description: Links related to the resources.
             properties:
               description: Links associated with the resource
             type:
@@ -987,6 +995,7 @@ definitions:
               - "null"
               - boolean
           calendarIds:
+            description: Calendar IDs associated with the resources.
             type:
               - "null"
               - array
@@ -1001,6 +1010,7 @@ definitions:
               - "null"
               - boolean
           billing:
+            description: Billing information for the resources.
             properties:
               useDefault:
                 description:
@@ -1023,6 +1033,7 @@ definitions:
               - "null"
               - boolean
           customFields:
+            description: Custom fields assigned to the resources.
             items:
               description: Custom fields associated with the resource
               properties:
@@ -1104,6 +1115,7 @@ definitions:
               - "null"
               - boolean
           tags:
+            description: Tags assigned to the resources.
             items:
               description: List of tags associated with the resource
               type:

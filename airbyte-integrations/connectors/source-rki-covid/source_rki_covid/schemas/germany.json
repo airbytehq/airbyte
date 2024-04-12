@@ -27,6 +27,7 @@
       "type": "integer"
     },
     "delta": {
+      "description": "Represents the changes or differences in the data compared to the previous period.",
       "type": "object",
       "properties": {
         "cases": {
@@ -45,6 +46,7 @@
       "required": ["cases", "deaths", "recovered"]
     },
     "r": {
+      "description": "Represents the reproduction number (R value) of COVID-19 transmission.",
       "type": "object",
       "properties": {
         "value": {
@@ -52,6 +54,7 @@
           "type": "number"
         },
         "rValue4Days": {
+          "description": "The R value calculated over a 4-day period.",
           "type": "object",
           "properties": {
             "value": {
@@ -66,6 +69,7 @@
           "required": ["date", "value"]
         },
         "rValue7Days": {
+          "description": "The R value calculated over a 7-day period.",
           "type": "object",
           "properties": {
             "value": {
@@ -87,6 +91,7 @@
       "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]
     },
     "hospitalization": {
+      "description": "Contains information related to hospitalization data such as current occupancy and availability.",
       "type": "object",
       "properties": {
         "cases7Days": {
@@ -109,6 +114,7 @@
       "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]
     },
     "meta": {
+      "description": "Additional metadata related to the overall data and its source.",
       "type": "object",
       "properties": {
         "source": {

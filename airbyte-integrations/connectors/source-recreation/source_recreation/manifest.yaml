@@ -274,11 +274,14 @@ definitions:
             description: Information about ADA access at the facility
             type: string
           GEOJSON:
+            description: Geospatial data in GeoJSON format for mapping coordinates.
             type: object
             properties:
               TYPE:
+                description: Type of the GeoJSON data (e.g., Point, Polygon).
                 type: string
               COORDINATES:
+                description: Geographical coordinates of the facility.
                 type:
                   - array
                   - "null"
@@ -309,6 +312,7 @@ definitions:
             description: Date when the facility information was last updated
             type: string
           CAMPSITE:
+            description: Details about campsites within the recreation area.
             type: array
             items:
               type: object
@@ -323,6 +327,7 @@ definitions:
                   description: Link to additional resources related to the campsite
                   type: string
           PERMITENTRANCE:
+            description: Entrance permit requirements and information.
             type: array
             items:
               type: object
@@ -339,6 +344,7 @@ definitions:
                     entrance
                   type: string
           TOUR:
+            description: Guided tours available at the facility.
             type: array
             items:
               type: object
@@ -353,6 +359,7 @@ definitions:
                   description: Link to additional resources related to the tour
                   type: string
           ORGANIZATION:
+            description: Details about the organization managing the facility.
             type: array
             items:
               type: object
@@ -388,6 +395,7 @@ definitions:
                   description: Date when the organization information was last updated
                   type: string
           RECAREA:
+            description: General information about the recreational area.
             type: array
             items:
               type: object
@@ -404,6 +412,7 @@ definitions:
                     area
                   type: string
           FACILITYADDRESS:
+            description: Address information for the facility location.
             type: array
             items:
               type: object
@@ -442,6 +451,9 @@ definitions:
                   description: Date when the address information was last updated
                   type: string
           ACTIVITY:
+            description:
+              Information about recreational activities available at the
+              facility.
             type: array
             items:
               type: object
@@ -462,6 +474,7 @@ definitions:
                   description: Description of any fees associated with the activity
                   type: string
           EVENT:
+            description: Events and activities taking place at the facility.
             type: array
             items:
               type: object
@@ -476,6 +489,7 @@ definitions:
                   description: Link to additional resources related to the event
                   type: string
           LINK:
+            description: Links to related resources or external websites.
             type: array
             items:
               type: object
@@ -502,6 +516,7 @@ definitions:
                   description: URL of the link
                   type: string
           MEDIA:
+            description: Multimedia content associated with the facility.
             type: array
             items:
               type: object
@@ -1256,6 +1271,9 @@ definitions:
             description: Date when the tour data was last updated.
             type: string
           ATTRIBUTES:
+            description:
+              Contains attributes related to tours such as location, duration,
+              and price.
             type: array
             items:
               type: object
@@ -1270,6 +1288,9 @@ definitions:
                   description: Value of the attribute.
                   type: string
           ENTITYMEDIA:
+            description:
+              Contains media files associated with tours, like images and
+              videos.
             type: array
             items:
               type: object
@@ -1320,6 +1341,9 @@ definitions:
                   description: Credits for the media entity.
                   type: string
           MEMBERTOURS:
+            description:
+              Contains information about specific tours offered by different
+              members or companies.
             type:
               - "null"
               - array

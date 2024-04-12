@@ -434,6 +434,7 @@ definitions:
               - "null"
               - string
           answers:
+            description: Contains the answered questions in the scorecards
             type:
               - "null"
               - array

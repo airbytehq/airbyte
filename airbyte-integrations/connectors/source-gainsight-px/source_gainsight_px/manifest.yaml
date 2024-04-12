@@ -480,6 +480,7 @@ definitions:
           - object
         properties:
           createdBy:
+            description: The user who created the kcbot data
             type:
               - "null"
               - object
@@ -506,6 +507,7 @@ definitions:
               - "null"
               - string
           environments:
+            description: The environmental details related to the kcbot data
             type:
               - "null"
               - array
@@ -520,6 +522,7 @@ definitions:
               - "null"
               - string
           modifiedBy:
+            description: The user who modified the kcbot data
             additionalProperties: true
             type:
               - "null"
@@ -658,14 +661,17 @@ definitions:
           - object
         properties:
           aptrinsicId:
+            description: Unique identifier for the user in the Aptrinsic system.
             type:
               - "null"
               - string
           identifyId:
+            description: Identification ID of the user.
             type:
               - "null"
               - string
           type:
+            description: Type categorization of the user.
             type:
               - "null"
               - string
@@ -675,6 +681,7 @@ definitions:
               - VISITOR
               - EMPTY_USER_TYPE
           gender:
+            description: Gender of the user.
             type:
               - "null"
               - string
@@ -684,63 +691,77 @@ definitions:
               - OTHER
               - EMPTY_GENDER
           email:
+            description: Email address of the user.
             type:
               - "null"
               - string
           firstName:
+            description: First name of the user.
             type:
               - "null"
               - string
           lastName:
+            description: Last name of the user.
             type:
               - "null"
               - string
           lastSeenDate:
+            description: Timestamp representing when the user was last seen.
             type:
               - "null"
               - integer
             format: int64
           signUpDate:
+            description: Timestamp representing when the user signed up.
             type:
               - "null"
               - integer
             format: int64
           firstVisitDate:
+            description: Timestamp representing the user's first visit.
             type:
               - "null"
               - integer
             format: int64
           title:
+            description: Title or designation of the user.
             type:
               - "null"
               - string
           phone:
+            description: Phone number of the user.
             type:
               - "null"
               - string
           score:
+            description: Score associated with the user.
             type:
               - "null"
               - integer
             format: int64
           role:
+            description: Role or position of the user.
             type:
               - "null"
               - string
           subscriptionId:
+            description: ID related to user's subscription.
             type:
               - "null"
               - string
           accountId:
+            description: Unique identifier for the user's account.
             type:
               - "null"
               - string
           numberOfVisits:
+            description: Number of visits made by the user.
             type:
               - "null"
               - integer
             format: int32
           location:
+            description: Location information related to the user.
             type:
               - "null"
               - string
@@ -756,59 +777,72 @@ definitions:
             examples:
               - - AP-XXXXXXXXXX-2
           createDate:
+            description: Timestamp representing when the user was created.
             type:
               - "null"
               - integer
             format: int64
           lastModifiedDate:
+            description: Timestamp representing when the user was last modified.
             type:
               - "null"
               - integer
             format: int64
           globalUnsubscribe:
+            description: Boolean indicating if the user has globally unsubscribed.
             type:
               - "null"
               - boolean
           sfdcContactId:
+            description: Salesforce contact ID linked to the user.
             type:
               - "null"
               - string
           lastVisitedUserAgentData:
+            description: Data related to the user's last visited user agent.
             type:
               - "null"
               - array
             items:
               propertyKey:
+                description: Key or property related to the user agent data.
                 type:
                   - "null"
                   - string
               userAgent:
+                description: Details about the user agent.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   rawUserAgent:
+                    description: Raw user agent string.
                     type:
                       - "null"
                       - string
                   device:
+                    description: Type of device used.
                     type:
                       - "null"
                       - string
                   platformType:
+                    description: Type of platform used.
                     type:
                       - "null"
                       - string
                   platformVersion:
+                    description: Version of the platform used.
                     type:
                       - "null"
                       - string
                   browserType:
+                    description: Type of browser used.
                     type:
                       - "null"
                       - string
                   browserVersion:
+                    description: Version of the browser used.
                     type:
                       - "null"
                       - string
@@ -818,62 +852,76 @@ definitions:
               - string
             description: Synonym for identifyId, output only, not filterable
           lastInferredLocation:
+            description: Details of the user's last inferred location.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               countryName:
+                description: Country name of the last inferred location.
                 type:
                   - "null"
                   - string
               countryCode:
+                description: Country code of the last inferred location.
                 type:
                   - "null"
                   - string
               stateName:
+                description: State name of the last inferred location.
                 type:
                   - "null"
                   - string
               stateCode:
+                description: State code of the last inferred location.
                 type:
                   - "null"
                   - string
               city:
+                description: City of the last inferred location.
                 type:
                   - "null"
                   - string
               street:
+                description: Street address of the last inferred location.
                 type:
                   - "null"
                   - string
               postalCode:
+                description: Postal code of the last inferred location.
                 type:
                   - "null"
                   - string
               continent:
+                description: Continent of the last inferred location.
                 type:
                   - "null"
                   - string
               regionName:
+                description: Region name of the last inferred location.
                 type:
                   - "null"
                   - string
               timeZone:
+                description: Time zone of the last inferred location.
                 type:
                   - "null"
                   - string
               coordinates:
+                description: Coordinates of the last inferred location.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   latitude:
+                    description: Latitude of the location.
                     type:
                       - "null"
                       - number
                   longitude:
+                    description: Longitude of the location.
                     type:
                       - "null"
                       - number

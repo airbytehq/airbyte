@@ -271,6 +271,7 @@ definitions:
               - "null"
               - string
           reviews_stat:
+            description: Contains statistical data related to reviews.
             type:
               - "null"
               - object

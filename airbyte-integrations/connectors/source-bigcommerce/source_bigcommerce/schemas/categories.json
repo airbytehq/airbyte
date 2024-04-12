@@ -64,6 +64,7 @@
       "type": ["null", "string"]
     },
     "custom_url": {
+      "description": "Contains information about custom URLs associated with this category.",
       "type": ["null", "object"],
       "properties": {
         "path": {

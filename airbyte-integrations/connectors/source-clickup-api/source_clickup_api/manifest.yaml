@@ -45,6 +45,7 @@ streams:
         type: object
         properties:
           user:
+            description: Represents information about a user
             type: object
             properties:
               id:
@@ -466,6 +467,7 @@ streams:
                 - "null"
                 - object
           space:
+            description: Information about the space where the folder belongs
             type:
               - "null"
               - object

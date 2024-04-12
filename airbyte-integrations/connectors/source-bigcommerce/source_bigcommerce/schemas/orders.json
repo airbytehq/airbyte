@@ -97,6 +97,7 @@
       "type": ["null", "string"]
     },
     "products": {
+      "description": "The products included in the order",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -110,6 +111,7 @@
       }
     },
     "shipping_addresses": {
+      "description": "The shipping addresses associated with the order",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -123,6 +125,7 @@
       }
     },
     "coupons": {
+      "description": "The coupons applied to the order",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -159,6 +162,7 @@
       ]
     },
     "billing_address": {
+      "description": "The billing address information for the order",
       "type": ["null", "object"],
       "properties": {
         "first_name": {
@@ -210,8 +214,10 @@
           "type": ["null", "string"]
         },
         "form_fields": {
+          "description": "Fields related to the billing address form",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual form field details",
             "type": ["null", "object"],
             "properties": {
               "name": {

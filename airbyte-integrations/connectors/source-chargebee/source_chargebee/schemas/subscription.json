@@ -244,240 +244,313 @@
       }
     },
     "shipping_address": {
+      "description": "Stores the shipping address related to the subscription",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
+          "description": "The first name in the shipping address.",
           "type": ["string", "null"]
         },
         "last_name": {
+          "description": "The last name in the shipping address.",
           "type": ["string", "null"]
         },
         "email": {
+          "description": "The email address in the shipping address.",
           "type": ["string", "null"]
         },
         "company": {
+          "description": "The company name in the shipping address.",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "The phone number in the shipping address.",
           "type": ["string", "null"]
         },
         "line1": {
+          "description": "The first line of the shipping address.",
           "type": ["string", "null"]
         },
         "line2": {
+          "description": "The second line of the shipping address.",
           "type": ["string", "null"]
         },
         "line3": {
+          "description": "The third line of the shipping address.",
           "type": ["string", "null"]
         },
         "city": {
+          "description": "The city in the shipping address.",
           "type": ["string", "null"]
         },
         "state_code": {
+          "description": "The state code in the shipping address.",
           "type": ["string", "null"]
         },
         "state": {
+          "description": "The state in the shipping address.",
           "type": ["string", "null"]
         },
         "country": {
+          "description": "The country in the shipping address.",
           "type": ["string", "null"]
         },
         "zip": {
+          "description": "The ZIP or postal code in the shipping address.",
           "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "The validation status of the shipping address.",
           "type": ["string", "null"]
         }
       }
     },
     "referral_info": {
+      "description": "Contains details related to any referral information associated with the subscription",
       "type": ["object", "null"],
       "properties": {
         "referral_code": {
+          "description": "The code associated with the referral.",
           "type": ["string", "null"]
         },
         "coupon_code": {
+          "description": "The coupon code used for the referral.",
           "type": ["string", "null"]
         },
         "referral_id": {
+          "description": "The unique identifier of the referral.",
           "type": ["string", "null"]
         },
         "external_reference_id": {
+          "description": "The external reference identifier of the referral.",
           "type": ["string", "null"]
         },
         "reward_status": {
+          "description": "The status of the reward for the referral.",
           "type": ["string", "null"]
         },
         "referral_system": {
+          "description": "The system handling the referrals.",
           "type": ["string", "null"]
         },
         "account_id": {
+          "description": "The account identifier of the referral.",
           "type": ["string", "null"]
         },
         "campaign_id": {
+          "description": "The campaign identifier of the referral.",
           "type": ["string", "null"]
         },
         "external_campaign_id": {
+          "description": "The external campaign identifier of the referral.",
           "type": ["string", "null"]
         },
         "friend_offer_type": {
+          "description": "The type of offer for a friend in the referral program.",
           "type": ["string", "null"]
         },
         "referrer_reward_type": {
+          "description": "The type of reward for the referrer in the referral program.",
           "type": ["string", "null"]
         },
         "notify_referral_system": {
+          "description": "Whether to notify the referral system.",
           "type": ["string", "null"]
         },
         "destination_url": {
+          "description": "The URL to which the referral leads.",
           "type": ["string", "null"]
         },
         "post_purchase_widget_enabled": {
+          "description": "Whether the post-purchase widget is enabled for the referral.",
           "type": ["boolean", "null"]
         }
       }
     },
     "contract_term": {
+      "description": "Contains details about the contract term of the subscription",
       "type": ["object", "null"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the contract term.",
           "type": ["string", "null"]
         },
         "status": {
+          "description": "The status of the contract term.",
           "type": ["string", "null"]
         },
         "contract_start": {
+          "description": "The start date of the contract.",
           "type": ["integer", "null"]
         },
         "contract_end": {
+          "description": "The end date of the contract.",
           "type": ["integer", "null"]
         },
         "billing_cycle": {
+          "description": "The billing cycle duration of the contract.",
           "type": ["integer", "null"]
         },
         "action_at_term_end": {
+          "description": "The action to be taken at the end of the contract term.",
           "type": ["string", "null"]
         },
         "total_contract_value": {
+          "description": "The total value of the contract.",
           "type": ["integer", "null"]
         },
         "cancellation_cutoff_period": {
+          "description": "The period within which cancellation is allowed before the next term.",
           "type": ["integer", "null"]
         },
         "created_at": {
+          "description": "The timestamp when the contract term was created.",
           "type": ["integer", "null"]
         },
         "subscription_id": {
+          "description": "The identifier of the subscription associated with the contract term.",
           "type": ["string", "null"]
         },
         "remaining_billing_cycles": {
+          "description": "The remaining billing cycles for the contract term.",
           "type": ["integer", "null"]
         }
       }
     },
     "subscription_items": {
+      "description": "Lists individual items included in the subscription",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "item_price_id": {
+            "description": "The unique identifier of the item price associated with the subscription item.",
             "type": ["string", "null"]
           },
           "item_type": {
+            "description": "The type of the subscription item.",
             "type": ["string", "null"]
           },
           "quantity": {
+            "description": "The quantity of the subscription item.",
             "type": ["integer", "null"]
           },
           "quantity_in_decimal": {
+            "description": "The quantity in decimal format for the subscription item.",
             "type": ["string", "null"]
           },
           "unit_price": {
+            "description": "The unit price of the subscription item.",
             "type": ["integer", "null"]
           },
           "unit_price_in_decimal": {
+            "description": "The unit price in decimal format for the subscription item.",
             "type": ["string", "null"]
           },
           "amount": {
+            "description": "The amount charged for the subscription item.",
             "type": ["integer", "null"]
           },
           "amount_in_decimal": {
+            "description": "The amount in decimal format for the subscription item.",
             "type": ["string", "null"]
           },
           "free_quantity": {
+            "description": "The free quantity included with the subscription item.",
             "type": ["integer", "null"]
           },
           "free_quantity_in_decimal": {
+            "description": "The free quantity in decimal format for the subscription item.",
             "type": ["string", "null"]
           },
           "trial_end": {
+            "description": "The end date of the trial period for the subscription item.",
             "type": ["integer", "null"]
           },
           "billing_cycles": {
+            "description": "The number of billing cycles for the subscription item.",
             "type": ["integer", "null"]
           },
           "service_period_days": {
+            "description": "The number of days in the service period.",
             "type": ["integer", "null"]
           },
           "charge_on_event": {
+            "description": "The event triggering the charge for the subscription item.",
             "type": ["string", "null"]
           },
           "charge_once": {
+            "description": "Whether the subscription item is charged only once.",
             "type": ["boolean", "null"]
           },
           "charge_on_option": {
+            "description": "The charge option for the subscription item.",
             "type": ["string", "null"]
           },
           "object": {
+            "description": "The type of the subscription item.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "item_tiers": {
+      "description": "Provides information about tiers or levels for specific subscription items",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "item_price_id": {
+            "description": "The identifier of the item price associated with the tier.",
             "type": ["string", "null"]
           },
           "starting_unit": {
+            "description": "The starting unit of the tier.",
             "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "The ending unit of the tier.",
             "type": ["integer", "null"]
           },
           "price": {
+            "description": "The price of the tier.",
             "type": ["integer", "null"]
           },
           "starting_unit_in_decimal": {
+            "description": "The starting unit in decimal format for the tier.",
             "type": ["string", "null"]
           },
           "ending_unit_in_decimal": {
+            "description": "The ending unit in decimal format for the tier.",
             "type": ["string", "null"]
           },
           "price_in_decimal": {
+            "description": "The price in decimal format for the tier.",
             "type": ["string", "null"]
           },
           "object": {
+            "description": "The type of the item tier.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "charged_items": {
+      "description": "Lists the items that have been charged as part of the subscription",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "item_price_id": {
+            "description": "The identifier of the item price charged.",
             "type": ["string", "null"]
           },
           "last_charged_at": {
+            "description": "The timestamp of the last charge for the item.",
             "type": ["integer", "null"]
           },
           "object": {
+            "description": "The type of the charged item.",
             "type": ["string", "null"]
           }
         }
@@ -539,64 +612,82 @@
       }
     },
     "addons": {
+      "description": "Represents any additional features or services added to the subscription",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The unique identifier of the addon.",
             "type": ["string", "null"]
           },
           "quantity": {
+            "description": "The quantity of the addon.",
             "type": ["integer", "null"]
           },
           "unit_price": {
+            "description": "The unit price of the addon.",
             "type": ["integer", "null"]
           },
           "amount": {
+            "description": "The amount charged for the addon.",
             "type": ["integer", "null"]
           },
           "trial_end": {
+            "description": "The end date of the trial period for the addon.",
             "type": ["integer", "null"]
           },
           "remaining_billing_cycles": {
+            "description": "The remaining billing cycles for the addon.",
             "type": ["integer", "null"]
           },
           "quantity_in_decimal": {
+            "description": "The quantity in decimal format for the addon.",
             "type": ["string", "null"]
           },
           "unit_price_in_decimal": {
+            "description": "The unit price in decimal format for the addon.",
             "type": ["string", "null"]
           },
           "amount_in_decimal": {
+            "description": "The amount in decimal format for the addon.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "event_based_addons": {
+      "description": "Specifies any event-based addons associated with the subscription",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The unique identifier of the event-based addon.",
             "type": ["string", "null"]
           },
           "quantity": {
+            "description": "The quantity of the addon.",
             "type": ["integer", "null"]
           },
           "unit_price": {
+            "description": "The unit price of the addon.",
             "type": ["integer", "null"]
           },
           "on_event": {
+            "description": "The event triggering the addon charge.",
             "type": ["string", "null"]
           },
           "charge_once": {
+            "description": "Whether the addon is charged only once.",
             "type": ["boolean", "null"]
           },
           "quantity_in_decimal": {
+            "description": "The quantity in decimal format for the addon.",
             "type": ["string", "null"]
           },
           "unit_price_in_decimal": {
+            "description": "The unit price in decimal format for the addon.",
             "type": ["string", "null"]
           }
         }
@@ -620,59 +711,77 @@
       }
     },
     "discounts": {
+      "description": "Includes any discounts applied to the subscription",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The unique identifier of the discount.",
             "type": ["string", "null"]
           },
           "invoice_name": {
+            "description": "The name of the discount on the invoice.",
             "type": ["string", "null"]
           },
           "type": {
+            "description": "The type of the discount.",
             "type": ["string", "null"]
           },
           "percentage": {
+            "description": "The percentage value of the discount.",
             "type": ["number", "null"]
           },
           "amount": {
+            "description": "The amount of discount applied.",
             "type": ["integer", "null"]
           },
           "currency_code": {
+            "description": "The currency code of the discount.",
             "type": ["string", "null"]
           },
           "duration_type": {
+            "description": "The duration type of the discount (e.g., forever, once).",
             "type": ["string", "null"]
           },
           "period": {
+            "description": "The period for which the discount is applicable.",
             "type": ["integer", "null"]
           },
           "period_unit": {
+            "description": "The unit of the period (e.g., days, months).",
             "type": ["string", "null"]
           },
           "included_in_mrr": {
+            "description": "Whether the discount is included in Monthly Recurring Revenue (MRR) calculation.",
             "type": ["boolean", "null"]
           },
           "apply_on": {
+            "description": "The item to which the discount is applied.",
             "type": ["string", "null"]
           },
           "item_price_id": {
+            "description": "The identifier of the item price associated with the discount.",
             "type": ["string", "null"]
           },
           "created_at": {
+            "description": "The timestamp when the discount was created.",
             "type": ["integer", "null"]
           },
           "apply_till": {
+            "description": "The expiry date until which the discount is applicable.",
             "type": ["integer", "null"]
           },
           "applied_count": {
+            "description": "The number of times the discount has been applied.",
             "type": ["integer", "null"]
           },
           "coupon_id": {
+            "description": "The identifier of the coupon used for the discount.",
             "type": ["string", "null"]
           },
           "index": {
+            "description": "The index of the discount.",
             "type": ["integer", "null"]
           }
         }

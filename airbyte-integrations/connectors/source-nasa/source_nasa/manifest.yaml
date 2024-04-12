@@ -64,6 +64,9 @@ definitions:
         additionalProperties: true
         properties:
           resource:
+            description:
+              Contains information about NASA's Astronomy Picture of the
+              Day (APOD) data.
             type:
               - "null"
               - object

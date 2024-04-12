@@ -915,6 +915,7 @@ definitions:
               - "null"
               - boolean
           value:
+            description: Represents the lead value data
             type:
               - "null"
               - object
@@ -1536,6 +1537,7 @@ definitions:
               - "null"
               - string
           attendees:
+            description: List of attendees associated with the activity
             type:
               - "null"
               - array
@@ -1575,6 +1577,7 @@ definitions:
                     - "null"
                     - integer
           participants:
+            description: List of participants involved in the activity
             type:
               - "null"
               - array
@@ -1634,6 +1637,7 @@ definitions:
               - "null"
               - string
           file:
+            description: Details of any file attached to the activity
             type:
               - "null"
               - object
@@ -2885,6 +2889,7 @@ definitions:
               - "null"
               - boolean
           phone:
+            description: Phone numbers associated with the person
             type:
               - "null"
               - array
@@ -2909,6 +2914,7 @@ definitions:
                     - "null"
                     - boolean
           email:
+            description: Email addresses associated with the person
             type:
               - "null"
               - array
@@ -2955,6 +2961,7 @@ definitions:
               - "null"
               - string
           picture_id:
+            description: ID of the picture associated with the person
             type:
               - "null"
               - object
@@ -2990,6 +2997,9 @@ definitions:
                   - "null"
                   - integer
               pictures:
+                description:
+                  Additional details about the pictures associated with
+                  the person
                 type:
                   - "null"
                   - object
@@ -3386,8 +3396,10 @@ definitions:
             format: date-time
             airbyte_type: timestamp_without_timezone
           prices:
+            description: Represents the pricing details of the products
             type: array
             items:
+              description: Individual pricing information for a product
               type: object
               properties:
                 id:

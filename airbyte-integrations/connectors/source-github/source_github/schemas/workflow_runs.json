@@ -67,8 +67,10 @@
       "type": ["null", "string"]
     },
     "pull_requests": {
+      "description": "List of all pull requests associated with the workflow run.",
       "type": "array",
       "items": {
+        "description": "Details of an individual pull request.",
         "type": ["null", "object"],
         "properties": {
           "description": "Additional details about the pull requests associated with the workflow run."
@@ -149,6 +151,7 @@
       "type": ["null", "string"]
     },
     "head_commit": {
+      "description": "Details about the commit associated with the workflow run.",
       "type": "object",
       "properties": {
         "id": {
@@ -194,6 +197,7 @@
       }
     },
     "repository": {
+      "description": "Details about the repository where the workflow run is executed.",
       "type": "object",
       "properties": {
         "id": {
@@ -383,6 +387,7 @@
       }
     },
     "head_repository": {
+      "description": "Information about the repository where the workflow was triggered.",
       "type": ["null", "object"],
       "properties": {
         "id": {

@@ -3,6 +3,7 @@
   "type": "object",
   "properties": {
     "request": {
+      "description": "Contains information about the user's request parameters.",
       "type": ["null", "object"],
       "properties": {
         "query": {
@@ -16,6 +17,7 @@
       }
     },
     "results": {
+      "description": "Contains the location search results based on the user's query.",
       "type": ["null", "array"],
       "properties": {
         "name": {

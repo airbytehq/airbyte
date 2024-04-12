@@ -44,9 +44,11 @@
       "type": ["string", "null"]
     },
     "_links": {
+      "description": "Contains hypermedia links related to user role assignments.",
       "type": ["object", "null"],
       "properties": {
         "assignee": {
+          "description": "Represents the entity to which the role is assigned.",
           "type": ["object", "null"],
           "properties": {
             "assignee": {

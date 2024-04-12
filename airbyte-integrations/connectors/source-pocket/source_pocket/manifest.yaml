@@ -189,6 +189,7 @@ definitions:
               - "null"
               - string
           tags:
+            description: Tags associated with the content
             type:
               - "null"
               - object
@@ -212,6 +213,7 @@ definitions:
                       - "null"
                       - string
           authors:
+            description: Authors of the content
             type:
               - "null"
               - object
@@ -247,6 +249,7 @@ definitions:
                       - "null"
                       - string
           image:
+            description: Main image associated with the content
             type:
               - "null"
               - object
@@ -275,6 +278,7 @@ definitions:
                   - string
                 pattern: "[0-9]+"
           images:
+            description: Collection of images related to the content
             type:
               - "null"
               - object
@@ -327,6 +331,7 @@ definitions:
                       - "null"
                       - string
           videos:
+            description: Videos related to the content
             type:
               - "null"
               - object
@@ -379,6 +384,7 @@ definitions:
                       - "null"
                       - string
           domain_metadata:
+            description: Metadata related to the domain of the content
             type:
               - "null"
               - object

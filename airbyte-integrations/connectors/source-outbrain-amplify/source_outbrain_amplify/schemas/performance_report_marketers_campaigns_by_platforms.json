@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Contains metadata information related to the performance report data.",
       "type": "object",
       "properties": {
         "platform": {
@@ -17,6 +18,7 @@
       }
     },
     "metrics": {
+      "description": "Contains various metrics data related to the performance report of marketers campaigns by platforms.",
       "type": "object",
       "properties": {
         "impressions": {

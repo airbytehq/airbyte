@@ -152,6 +152,7 @@ definitions:
             description: Expected date for purging the message stream data.
             type: "null"
           SubscriptionManagementConfiguration:
+            description: Configuration settings related to managing subscriptions.
             type: object
             properties:
               UnsubscribeHandlingType:

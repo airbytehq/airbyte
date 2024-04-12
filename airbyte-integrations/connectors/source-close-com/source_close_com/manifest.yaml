@@ -1267,6 +1267,9 @@ definitions:
               - "null"
               - string
           provider_calendar_ids:
+            description:
+              Identifiers from the provider's calendar system corresponding
+              to the meeting activity.
             type:
               - "null"
               - array
@@ -1276,6 +1279,7 @@ definitions:
                 - "null"
                 - string
           integrations:
+            description: Information about integrations used for this meeting activity.
             type:
               - "null"
               - array
@@ -1285,6 +1289,9 @@ definitions:
                 - "null"
                 - string
           calendar_event_uids:
+            description:
+              Unique identifiers of calendar events associated with the
+              meeting activity.
             type:
               - "null"
               - array
@@ -1294,6 +1301,9 @@ definitions:
                 - "null"
                 - string
           conference_links:
+            description:
+              Links for joining conference calls related to the meeting
+              activity.
             type:
               - "null"
               - array
@@ -3766,12 +3776,14 @@ definitions:
               - "null"
               - string
           total_emails_count_in_thread:
-            description: Total count of emails in the same thread
+            description:
+              The total count of emails in the thread including the current
+              email
             type:
               - "null"
               - integer
           updated_by_name:
-            description: Name of the user who last updated the task
+            description: The name of the user who updated the task
             type:
               - "null"
               - string
@@ -5526,10 +5538,12 @@ definitions:
               - "null"
               - array
           fields:
+            description: A list of custom activities for the user.
             type:
               - "null"
               - array
             items:
+              description: Details of each custom activity entry.
               type:
                 - "null"
                 - object

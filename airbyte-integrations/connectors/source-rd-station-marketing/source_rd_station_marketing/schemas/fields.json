@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "label": {
+      "description": "The human-readable label for this field.",
       "type": ["null", "object"],
       "properties": {
         "en-UD": {
@@ -32,6 +33,7 @@
       }
     },
     "name": {
+      "description": "The internal name used to identify this field in the system.",
       "type": ["null", "object"],
       "properties": {
         "en-UD": {

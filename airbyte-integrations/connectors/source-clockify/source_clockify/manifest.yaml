@@ -688,6 +688,7 @@ definitions:
               - "null"
               - string
           timeInterval:
+            description: Represents the time interval for the time entry
             properties:
               duration:
                 description: Duration of the time entry

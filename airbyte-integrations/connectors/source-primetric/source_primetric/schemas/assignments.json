@@ -106,6 +106,7 @@
       "type": ["null", "boolean"]
     },
     "daily_data": {
+      "description": "Data related to assignments on a daily basis.",
       "type": ["null", "object"],
       "properties": {
         "start": {

@@ -28,6 +28,7 @@
       "type": ["null", "string"]
     },
     "teamsApp": {
+      "description": "Information related to the Microsoft Teams app associated with the channel tab",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -46,6 +47,7 @@
       }
     },
     "configuration": {
+      "description": "Details about the configuration settings for the channel tab",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

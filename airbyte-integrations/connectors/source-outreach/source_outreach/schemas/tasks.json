@@ -17,6 +17,7 @@
       "format": "date-time"
     },
     "compiledSequenceTemplateHtml": {
+      "description": "HTML content representing the compiled template for a sequence of tasks.",
       "type": ["null", "string"]
     },
     "completed": {

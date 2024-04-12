@@ -21,6 +21,7 @@
       "maxLength": 256
     },
     "account": {
+      "description": "Details about the account associated with the credit payment.",
       "type": "object",
       "title": "Account mini details",
       "properties": {
@@ -38,6 +39,7 @@
       }
     },
     "applied_to_invoice": {
+      "description": "Details about the invoice to which the credit payment is applied.",
       "type": ["null", "object"],
       "title": "Invoice mini details",
       "properties": {
@@ -56,6 +58,7 @@
       }
     },
     "original_invoice": {
+      "description": "Details about the original invoice for which the credit payment is made.",
       "type": ["null", "object"],
       "title": "Invoice mini details",
       "properties": {
@@ -92,6 +95,7 @@
       "maxLength": 13
     },
     "refund_transaction": {
+      "description": "Details about the refund transaction associated with the credit payment.",
       "type": ["null", "object"],
       "properties": {
         "id": {

@@ -229,388 +229,511 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: ID of the subscription.
             type:
               - "null"
               - integer
           state:
+            description: Current state of the subscription.
             type:
               - "null"
               - string
           balance_in_cents:
+            description: The balance amount in cents associated with the subscription.
             type:
               - "null"
               - integer
           total_revenue_in_cents:
+            description: Total revenue amount in cents associated with the subscription.
             type:
               - "null"
               - integer
           product_price_in_cents:
+            description: Price amount in cents for the product of the subscription.
             type:
               - "null"
               - integer
           product_version_number:
+            description: Version number of the product associated with the subscription.
             type:
               - "null"
               - integer
           current_period_ends_at:
+            description: The date and time when the current billing period ends.
             type:
               - "null"
               - string
           next_assessment_at:
+            description: The date and time of the next assessment for the subscription.
             type:
               - "null"
               - string
           trial_started_at:
+            description:
+              The date and time when the trial period for the subscription
+              started.
             type:
               - "null"
               - string
           credit_balance_in_cents:
+            description: The credit balance amount in cents associated with the subscription.
             type:
               - "null"
               - integer
           currency:
+            description: The currency associated with the subscription.
             type:
               - "null"
               - string
           locale:
+            description: Locale associated with the subscription.
             type:
               - "null"
               - string
           prepayment_balance_in_cents:
+            description:
+              The prepayment balance amount in cents associated with the
+              subscription.
             type:
               - "null"
               - integer
           receives_invoice_emails:
+            description: Flag indicating whether the subscriber receives invoice emails.
             type:
               - "null"
               - boolean
           scheduled_cancellation_at:
+            description:
+              The date and time when the subscription is scheduled for
+              cancellation.
             type:
               - "null"
               - string
           trial_ended_at:
+            description:
+              The date and time when the trial period for the subscription
+              ended.
             type:
               - "null"
               - string
           activated_at:
+            description: The date and time when the subscription was activated.
             type:
               - "null"
               - string
           expires_at:
+            description: The date and time when the subscription expires.
             type:
               - "null"
               - string
           created_at:
+            description: The date and time when the subscription was created.
             type:
               - "null"
               - string
           updated_at:
+            description:
+              The date and time when the subscription information was last
+              updated.
             type:
               - "null"
               - string
           cancellation_message:
+            description: Any message related to the cancellation of the subscription.
             type:
               - "null"
               - string
           cancellation_method:
+            description: The method used to cancel the subscription.
             type:
               - "null"
               - string
           cancel_at_end_of_period:
+            description:
+              Flag indicating whether the subscription is set to be canceled
+              at the end of the current billing period.
             type:
               - "null"
               - boolean
           canceled_at:
+            description: The date and time when the subscription was canceled.
             type:
               - "null"
               - string
           current_period_started_at:
+            description: The date and time when the current billing period started.
             type:
               - "null"
               - string
           previous_state:
+            description: Previous state of the subscription.
             type:
               - "null"
               - string
           signup_payment_id:
+            description: ID of the signup payment associated with the subscription.
             type:
               - "null"
               - integer
           signup_revenue:
+            description: Revenue generated from signups for the subscription.
             type:
               - "null"
               - string
           delayed_cancel_at:
+            description:
+              The date and time when the cancellation of the subscription
+              was delayed to.
             type:
               - "null"
               - string
           coupon_code:
+            description: The coupon code associated with the subscription.
             type:
               - "null"
               - string
           snap_day:
+            description: The day of the month on which the subscription 'snaps'.
             type:
               - "null"
               - string
           payment_collection_method:
+            description: Payment collection method for the subscription.
             type:
               - "null"
               - string
           customer:
+            description: Information about the customer who owns the subscription.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               first_name:
+                description: First name of the customer.
                 type:
                   - "null"
                   - string
               last_name:
+                description: Last name of the customer.
                 type:
                   - "null"
                   - string
               email:
+                description: Email address of the customer.
                 type:
                   - "null"
                   - string
               cc_emails:
+                description: List of CC emails associated with the customer.
                 type:
                   - "null"
                   - string
               organization:
+                description: Organization the customer belongs to.
                 type:
                   - "null"
                   - string
               reference:
+                description: Reference information associated with the customer.
                 type:
                   - "null"
                   - string
               id:
+                description: ID of the customer.
                 type:
                   - "null"
                   - integer
               created_at:
+                description: The date and time when the customer was created.
                 type:
                   - "null"
                   - string
               updated_at:
+                description:
+                  The date and time when the customer information was last
+                  updated.
                 type:
                   - "null"
                   - string
               address:
+                description: Customer's address.
                 type:
                   - "null"
                   - string
               address_2:
+                description: Additional address information.
                 type:
                   - "null"
                   - string
               city:
+                description: City of the customer's address.
                 type:
                   - "null"
                   - string
               state:
+                description: State of the customer's address.
                 type:
                   - "null"
                   - string
               state_name:
+                description: Name of the customer's state.
                 type:
                   - "null"
                   - string
               zip:
+                description: Zip code of the customer's address.
                 type:
                   - "null"
                   - string
               country:
+                description: Country of the customer's address.
                 type:
                   - "null"
                   - string
               country_name:
+                description: Name of the customer's country.
                 type:
                   - "null"
                   - string
               phone:
+                description: Phone number of the customer.
                 type:
                   - "null"
                   - string
               verified:
+                description: Flag indicating whether the customer is verified.
                 type:
                   - "null"
                   - boolean
               portal_customer_created_at:
+                description:
+                  The date and time when the customer's portal account
+                  was created.
                 type:
                   - "null"
                   - string
               portal_invite_last_sent_at:
+                description:
+                  The date and time when the last portal invitation was
+                  sent to the customer.
                 type:
                   - "null"
                   - string
               portal_invite_last_accepted_at:
+                description:
+                  The date and time when the customer last accepted a portal
+                  invitation.
                 type:
                   - "null"
                   - string
               tax_exempt:
+                description: Flag indicating whether the customer is tax exempt.
                 type:
                   - "null"
                   - boolean
               vat_number:
+                description: VAT number of the customer.
                 type:
                   - "null"
                   - string
               parent_id:
+                description: ID of the parent customer.
                 type:
                   - "null"
                   - integer
               locale:
+                description: Locale of the customer.
                 type:
                   - "null"
                   - string
               default_subscription_group_uid:
+                description: Default subscription group UID for the customer.
                 type:
                   - "null"
                   - string
           product:
+            description: Information about the product subscribed to.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               id:
+                description: ID of the product.
                 type:
                   - "null"
                   - integer
               name:
+                description: Name of the product.
                 type:
                   - "null"
                   - string
               handle:
+                description: Handle of the product.
                 type:
                   - "null"
                   - string
               description:
+                description: Description of the product.
                 type:
                   - "null"
                   - string
               accounting_code:
+                description: Accounting code associated with the product.
                 type:
                   - "null"
                   - string
               request_credit_card:
+                description: Flag indicating whether credit card information is required.
                 type:
                   - "null"
                   - boolean
               expiration_interval:
+                description: Interval for product expiration.
                 type:
                   - "null"
                   - integer
               expiration_interval_unit:
+                description: Unit of the expiration interval.
                 type:
                   - "null"
                   - string
               created_at:
+                description: The date and time when the product was created.
                 type:
                   - "null"
                   - string
               updated_at:
+                description: The date and time when the product was last updated.
                 type:
                   - "null"
                   - string
               price_in_cents:
+                description: Price amount in cents for the product.
                 type:
                   - "null"
                   - integer
               interval:
+                description: Interval for the product.
                 type:
                   - "null"
                   - integer
               interval_unit:
+                description: Unit of the interval for the product.
                 type:
                   - "null"
                   - string
               initial_charge_in_cents:
+                description: Initial charge amount in cents for the product.
                 type:
                   - "null"
                   - integer
               trial_price_in_cents:
+                description: Trial price amount in cents for the product.
                 type:
                   - "null"
                   - integer
               trial_interval:
+                description: Interval for the trial period of the product.
                 type:
                   - "null"
                   - integer
               trial_interval_unit:
+                description: Unit of the trial interval.
                 type:
                   - "null"
                   - string
               archived_at:
+                description: The date and time when the product was archived.
                 type:
                   - "null"
                   - string
               require_credit_card:
+                description: Flag indicating whether credit card information is required.
                 type:
                   - "null"
                   - boolean
               return_params:
+                description: Return parameters associated with the product.
                 type:
                   - "null"
                   - string
               taxable:
+                description: Flag indicating whether the product is taxable.
                 type:
                   - "null"
                   - boolean
               update_return_url:
+                description: URL for update return for the product.
                 type:
                   - "null"
                   - string
               initial_charge_after_trial:
+                description:
+                  Flag indicating whether there is an initial charge after
+                  a trial.
                 type:
                   - "null"
                   - boolean
               version_number:
+                description: Version number of the product.
                 type:
                   - "null"
                   - integer
               update_return_params:
+                description: Update return parameters for the product.
                 type:
                   - "null"
                   - string
               product_family:
+                description:
+                  Information about the product family to which the subscribed
+                  product belongs.
                 type:
                   - "null"
                   - object
                 additionalProperties: true
                 properties:
                   id:
+                    description: ID of the product family.
                     type:
                       - "null"
                       - integer
                   name:
+                    description: Name of the product family.
                     type:
                       - "null"
                       - string
                   handle:
+                    description: Handle of the product family.
                     type:
                       - "null"
                       - string
                   accounting_code:
+                    description: Accounting code associated with the product family.
                     type:
                       - "null"
                       - string
                   description:
+                    description: Description of the product family.
                     type:
                       - "null"
                       - string
                   created_at:
+                    description: The date and time when the product family was created.
                     type:
                       - "null"
                       - string
                   updated_at:
+                    description:
+                      The date and time when the product family was last
+                      updated.
                     type:
                       - "null"
                       - string
               public_signup_pages:
+                description: List of public signup pages associated with the product.
                 type:
                   - "null"
                   - array
@@ -638,151 +761,191 @@ definitions:
                             - "null"
                             - string
               product_price_point_name:
+                description: Name of the product price point.
                 type:
                   - "null"
                   - string
               request_billing_address:
+                description: Flag indicating whether billing address is required.
                 type:
                   - "null"
                   - boolean
               require_billing_address:
+                description: Flag indicating whether billing address is required.
                 type:
                   - "null"
                   - boolean
               require_shipping_address:
+                description: Flag indicating whether shipping address is required.
                 type:
                   - "null"
                   - boolean
               tax_code:
+                description: Tax code for the product.
                 type:
                   - "null"
                   - string
               default_product_price_point_id:
+                description: ID of the default price point of the product.
                 type:
                   - "null"
                   - integer
           credit_card:
+            description: Information about the credit card associated with the subscription.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               id:
+                description: ID of the credit card.
                 type:
                   - "null"
                   - integer
               first_name:
+                description: First name on the credit card.
                 type:
                   - "null"
                   - string
               last_name:
+                description: Last name on the credit card.
                 type:
                   - "null"
                   - string
               masked_card_number:
+                description: Masked card number for security purposes.
                 type:
                   - "null"
                   - string
               card_type:
+                description: Type of credit card.
                 type:
                   - "null"
                   - string
               expiration_month:
+                description: Expiration month of the credit card.
                 type:
                   - "null"
                   - integer
               expiration_year:
+                description: Expiration year of the credit card.
                 type:
                   - "null"
                   - integer
               customer_id:
+                description: ID of the customer associated with the credit card.
                 type:
                   - "null"
                   - integer
               current_vault:
+                description: Current vault information.
                 type:
                   - "null"
                   - string
               vault_token:
+                description: Token associated with the vault.
                 type:
                   - "null"
                   - string
               billing_address:
+                description: Billing address associated with the credit card.
                 type:
                   - "null"
                   - string
               billing_city:
+                description: City of the billing address.
                 type:
                   - "null"
                   - string
               billing_state:
+                description: State of the billing address.
                 type:
                   - "null"
                   - string
               billing_zip:
+                description: Zip code of the billing address.
                 type:
                   - "null"
                   - string
               billing_country:
+                description: Country of the billing address.
                 type:
                   - "null"
                   - string
               customer_vault_token:
+                description: Vault token associated with the customer.
                 type:
                   - "null"
                   - string
               billing_address_2:
+                description: Additional billing address information.
                 type:
                   - "null"
                   - string
               payment_type:
+                description: Type of payment method.
                 type:
                   - "null"
                   - string
               disabled:
+                description: Flag indicating whether the credit card is disabled.
                 type:
                   - "null"
                   - boolean
               chargify_token:
+                description: Token associated with the credit card on Chargify.
                 type:
                   - "null"
                   - string
               site_gateway_setting_id:
+                description: ID of the site gateway setting.
                 type:
                   - "null"
                   - integer
               gateway_handle:
+                description:
+                  Handle of the payment gateway associated with the credit
+                  card.
                 type:
                   - "null"
                   - string
           group:
+            description:
+              Information about group membership or association of the
+              subscription.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
               uid:
+                description: UID of the group.
                 type:
                   - "null"
                   - string
               scheme:
+                description: Scheme of the group.
                 type:
                   - "null"
                   - string
               primary_subscription_id:
+                description: ID of the primary subscription in the group.
                 type:
                   - "null"
                   - string
               primary:
+                description: Flag indicating whether the group is primary.
                 type:
                   - "null"
                   - string
           bank_account:
+            description: Information about the bank account associated with the subscription.
             type:
               - "null"
               - object
             additionalProperties: true
             properties:
+              description: Bank account information associated with the subscription.
               bank_account_holder_type:
                 description: Type of bank account holder (e.g., individual, business)
                 type:
@@ -889,34 +1052,46 @@ definitions:
                   - "null"
                   - string
           payment_type:
+            description: Type of payment for the subscription.
             type:
               - "null"
               - string
           referral_code:
+            description: Referral code associated with the subscription.
             type:
               - "null"
               - string
           next_product_id:
+            description: ID of the next product associated with the subscription.
             type:
               - "null"
               - integer
           next_product_handle:
+            description: Handle of the next product associated with the subscription.
             type:
               - "null"
               - string
           coupon_use_count:
+            description:
+              The number of times the coupon associated with the subscription
+              has been used.
             type:
               - "null"
               - integer
           coupon_uses_allowed:
+            description:
+              The total number of times the coupon associated with the
+              subscription can be used.
             type:
               - "null"
               - integer
           product_price_point_type:
+            description: Type of the product price point.
             type:
               - "null"
               - string
           coupons:
+            description: List of coupons associated with the subscription.
             type:
               - "null"
               - array
@@ -926,14 +1101,19 @@ definitions:
                 - object
               additionalProperties: true
           reason_code:
+            description: Reason code associated with the subscription.
             type:
               - "null"
               - string
           automatically_resume_at:
+            description:
+              The date and time when the subscription will automatically
+              resume.
             type:
               - "null"
               - string
           coupon_codes:
+            description: List of coupon codes associated with the subscription.
             type:
               - "null"
               - array
@@ -942,50 +1122,70 @@ definitions:
                 - "null"
                 - string
           offer_id:
+            description: ID of the offer associated with the subscription.
             type:
               - "null"
               - integer
           payer_id:
+            description: ID of the payer associated with the subscription.
             type:
               - "null"
               - integer
           current_billing_amount_in_cents:
+            description: The current billing amount in cents for the subscription.
             type:
               - "null"
               - integer
           product_price_point_id:
+            description:
+              ID of the price point of the product associated with the
+              subscription.
             type:
               - "null"
               - integer
           next_product_price_point_id:
+            description:
+              ID of the price point of the next product associated with
+              the subscription.
             type:
               - "null"
               - integer
           net_terms:
+            description: Net terms for the subscription.
             type:
               - "null"
               - integer
           stored_credential_transaction_id:
+            description:
+              Transaction ID for stored credentials associated with the
+              subscription.
             type:
               - "null"
               - integer
           reference:
+            description: Reference information associated with the subscription.
             type:
               - "null"
               - string
           on_hold_at:
+            description: The date and time when the subscription was put on hold.
             type:
               - "null"
               - string
           prepaid_dunning:
+            description: Details related to prepaid dunning for the subscription.
             type:
               - "null"
               - boolean
           dunning_communication_delay_enabled:
+            description:
+              Flag indicating whether dunning communication delay is enabled
+              for the subscription.
             type:
               - "null"
               - boolean
           dunning_communication_delay_time_zone:
+            description: Time zone for dunning communication delay.
             type:
               - "null"
               - string
@@ -1115,6 +1315,7 @@ definitions:
               - "null"
               - string
           seller:
+            description: Details of the seller who issued the invoice.
             type:
               - "null"
               - object
@@ -1126,6 +1327,7 @@ definitions:
                   - "null"
                   - string
               address:
+                description: The address of the seller.
                 type:
                   - "null"
                   - object
@@ -1167,6 +1369,7 @@ definitions:
                   - "null"
                   - string
           customer:
+            description: Information about the customer who the invoice is for.
             type:
               - "null"
               - object
@@ -1203,6 +1406,7 @@ definitions:
               - "null"
               - string
           billing_address:
+            description: The billing address associated with the invoice.
             type:
               - "null"
               - object
@@ -1239,6 +1443,9 @@ definitions:
                   - "null"
                   - string
           shipping_address:
+            description:
+              The shipping address for the products or services in the
+              invoice.
             type:
               - "null"
               - object
@@ -1329,118 +1536,161 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the coupon.
             type:
               - "null"
               - integer
           name:
+            description: Name or title of the coupon.
             type:
               - "null"
               - string
           code:
+            description: Unique code identifying the coupon.
             type:
               - "null"
               - string
           description:
+            description: A brief description or notes about the coupon.
             type:
               - "null"
               - string
           amount:
+            description: The amount of the coupon.
             type:
               - "null"
               - integer
           amount_in_cents:
+            description: The amount of the coupon in cents.
             type:
               - "null"
               - integer
           product_family_id:
+            description: ID of the product family associated with the coupon.
             type:
               - "null"
               - integer
           product_family_name:
+            description: Name of the product family associated with the coupon.
             type:
               - "null"
               - string
           start_date:
+            description: Date the coupon becomes valid for use.
             type:
               - "null"
               - string
           end_date:
+            description: Date when the coupon expires.
             type:
               - "null"
               - string
           percentage:
+            description: Percentage discount offered by the coupon.
             type:
               - "null"
               - integer
           recurring:
+            description: Indicates if the coupon is for a recurring charge.
             type:
               - "null"
               - boolean
           recurring_scheme:
+            description: Scheme or plan for recurring charges with the coupon.
             type:
               - "null"
               - string
           duration_period_count:
+            description: Number of periods the coupon will be valid for.
             type:
               - "null"
               - integer
           duration_interval:
+            description: Interval value for the coupon's duration.
             type:
               - "null"
               - integer
           duration_interval_unit:
+            description: Unit for the duration interval (e.g., day, week, month).
             type:
               - "null"
               - string
           duration_interval_span:
+            description:
+              Span for the coupon's duration interval (e.g., days, weeks,
+              months).
             type:
               - "null"
               - string
           allow_negative_balance:
+            description:
+              Indicates whether the coupon can result in a negative account
+              balance.
             type:
               - "null"
               - boolean
           archived_at:
+            description: Timestamp indicating when the coupon was archived.
             type:
               - "null"
               - string
           conversion_limit:
+            description: Maximum number of times the coupon can be used.
             type:
               - "null"
               - string
           stackable:
+            description: Determines if the coupon can be stacked with other coupons.
             type:
               - "null"
               - boolean
           compounding_strategy:
+            description: Method used for combining multiple coupons in a subscription.
             type:
               - "null"
               - string
           use_site_exchange_rate:
+            description:
+              Specifies whether to use the site's exchange rate for currency
+              conversion.
             type:
               - "null"
               - boolean
           created_at:
+            description: Timestamp indicating when the coupon was created.
             type:
               - "null"
               - string
           updated_at:
+            description: Timestamp indicating when the coupon was last updated.
             type:
               - "null"
               - string
           discount_type:
+            description:
+              Type of discount provided by the coupon (e.g., fixed amount
+              or percentage).
             type:
               - "null"
               - string
           exclude_mid_period_allocations:
+            description:
+              Indicates whether to exclude mid-period allocations when
+              applying the coupon.
             type:
               - "null"
               - boolean
           "apply_on_cancel_at_end_of_period ":
+            description:
+              Determines if the coupon is applied when a subscription is
+              canceled at the end of its period.
             type:
               - "null"
               - boolean
           coupon_restrictions:
+            description:
+              Restrictions on the coupon such as applicable product or
+              service.
             type:
               - "null"
               - array
@@ -1451,22 +1701,27 @@ definitions:
               additionalProperties: true
               properties:
                 id:
+                  description: ID for the restriction.
                   type:
                     - "null"
                     - string
                 item_type:
+                  description: Type of the restricted item (e.g., product or service).
                   type:
                     - "null"
                     - string
                 item_id:
+                  description: ID of the restricted item.
                   type:
                     - "null"
                     - integer
                 name:
+                  description: Name of the restricted item.
                   type:
                     - "null"
                     - string
                 handle:
+                  description: Handle for identifying the restriction.
                   type:
                     - "null"
                     - string

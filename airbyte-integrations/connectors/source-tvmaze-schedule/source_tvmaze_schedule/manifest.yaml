@@ -106,6 +106,7 @@ definitions:
               - number
               - "null"
           rating:
+            description: Rating information of the show
             type: object
             properties:
               average:
@@ -114,6 +115,7 @@ definitions:
                   - number
                   - "null"
           image:
+            description: Information about the show's image
             type:
               - object
               - "null"
@@ -134,6 +136,7 @@ definitions:
               - string
               - "null"
           show:
+            description: Details of the show
             type: object
             properties:
               id:
@@ -162,6 +165,7 @@ definitions:
                   - string
                   - "null"
               genres:
+                description: Genres of the show
                 type: array
                 items:
                   description: List of genres the show belongs to
@@ -199,6 +203,7 @@ definitions:
                   - string
                   - "null"
               schedule:
+                description: Show airing schedule
                 type: object
                 properties:
                   time:
@@ -207,6 +212,7 @@ definitions:
                       - string
                       - "null"
                   days:
+                    description: Days the show airs on
                     type: array
                     items:
                       description: List of days the show airs on
@@ -214,6 +220,7 @@ definitions:
                         - string
                         - "null"
               rating:
+                description: Rating information of the show
                 type: object
                 properties:
                   average:
@@ -227,6 +234,7 @@ definitions:
                   - number
                   - "null"
               network:
+                description: Details of the network airing the show
                 type:
                   - object
                   - "null"
@@ -242,6 +250,7 @@ definitions:
                       - string
                       - "null"
                   country:
+                    description: Country details of the network
                     type: object
                     properties:
                       name:
@@ -266,6 +275,7 @@ definitions:
               dvdCountry:
                 description: Country where the DVD version of the show is distributed
               externals:
+                description: External IDs of the show
                 type: object
                 properties:
                   tvrage:
@@ -284,6 +294,7 @@ definitions:
                       - string
                       - "null"
               image:
+                description: Information about the show's image
                 type:
                   - object
                   - "null"
@@ -309,9 +320,11 @@ definitions:
                   - number
                   - "null"
               _links:
+                description: Links related to the show details
                 type: object
                 properties:
                   self:
+                    description: Link to the show's detailed information
                     type: object
                     properties:
                       href:
@@ -320,6 +333,7 @@ definitions:
                           - string
                           - "null"
                   previousepisode:
+                    description: Link to the previous episode information
                     type: object
                     properties:
                       href:
@@ -328,9 +342,11 @@ definitions:
                           - string
                           - "null"
           _links:
+            description: Links related to the show's schedule
             type: object
             properties:
               self:
+                description: Link to the current schedule information
                 type: object
                 properties:
                   href:

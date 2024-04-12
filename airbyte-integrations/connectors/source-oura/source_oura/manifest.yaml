@@ -89,6 +89,9 @@ definitions:
               - number
               - "null"
           contributors:
+            description:
+              Information about the contributors to the daily activity
+              data.
             type: object
             properties:
               meet_daily_targets:
@@ -170,6 +173,9 @@ definitions:
               - number
               - "null"
           met:
+            description:
+              Data related to the Metabolic Equivalent Task (MET) of the
+              daily activity.
             type: object
             properties:
               interval:
@@ -547,6 +553,7 @@ definitions:
               - number
               - "null"
           heart_rate:
+            description: The data related to heart rate during sleep periods
             type: object
             properties:
               interval:
@@ -568,6 +575,7 @@ definitions:
                   - "null"
                 format: date-time
           hrv:
+            description: The data related to heart rate variability during sleep periods
             type: object
             properties:
               interval:

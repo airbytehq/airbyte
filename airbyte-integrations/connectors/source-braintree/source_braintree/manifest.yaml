@@ -401,6 +401,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: The billing address associated with the card
                   oneOf:
                     - type: "null"
                     - type: object
@@ -472,140 +473,176 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: The bank identification number of the card
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: The type of card (e.g., Visa, Mastercard)
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: The name of the cardholder
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Indicates if the card is commercial
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: The country where the card was issued
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: The date and time the card was created
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description:
+                    The unique identifier of the customer associated with
+                    the card
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: The location of the customer
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Indicates if the card is a debit card
                   type:
                     - "null"
                     - string
                 default:
+                  description: Indicates if the card is set as the default payment method
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Indicates if the card is regulated under the Durbin Amendment
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: The expiration date of the card
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: The expiration month of the card
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: The expiration year of the card
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Indicates if the card has expired
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Indicates if the card is healthcare-related
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: The URL of the card image
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: The name of the bank that issued the card
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: The last 4 digits of the card number
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: The masked card number
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Indicates if the card is related to payroll
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Indicates if the card is prepaid
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: The ID of the product associated with the card
                   type:
                     - "null"
                     - string
                 token:
+                  description: The unique token associated with the card
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: The unique identifier of the card
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: The date and time the card information was last updated
                   type:
                     - "null"
                     - string
                   format: date-time
                 google_transaction_id:
+                  description: The Google transaction ID associated with the card
                   type:
                     - "null"
                     - string
                 source_card_type:
+                  description: The type of the source card (e.g., Visa, Mastercard)
                   type:
                     - "null"
                     - string
                 source_description:
+                  description: The description of the source
                   type:
                     - "null"
                     - string
                 is_network_tokenized:
+                  description: Indicates if the card is tokenized by a network
                   type:
                     - "null"
                     - boolean
                 source_card_last_4:
+                  description: The last 4 digits of the source card number
                   type:
                     - "null"
                     - string
                 virtual_card_last_4:
+                  description: The last 4 digits of the virtual card number
                   type:
                     - "null"
                     - string
                 virtual_card_type:
+                  description: The type of the virtual card (e.g., Visa, Mastercard)
                   type:
                     - "null"
                     - string
           apple_pay_cards:
+            description: Array of Apple Pay cards associated with the customer.
             type:
               - "null"
               - array
@@ -613,6 +650,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the card.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -684,124 +722,154 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number of the card.
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of the card.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the cardholder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the card is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the card was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the card was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: ID of the customer associated with the card.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the card is a debit card.
                   type:
                     - "null"
                     - string
                 default:
+                  description: Flag indicating if the card is the default payment method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the card is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the card.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the card.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the card.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the card has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the card is for healthcare.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL of the card image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the card.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the card number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked card number for security purposes.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the card is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the card is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the card.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token associated with the card.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the card number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the card was last updated.
                   type:
                     - "null"
                     - string
                   format: date-time
                 source_description:
+                  description: Description of the card source.
                   type:
                     - "null"
                     - string
                 payment_instrument_name:
+                  description: Name of the payment instrument.
                   type:
                     - "null"
                     - string
           company:
+            description: Company associated with the customer.
             type:
               - "null"
               - string
           created_at:
+            description: Date and time when the customer was created.
             type:
               - string
             format: date-time
@@ -813,6 +881,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: The billing address associated with the card
                   oneOf:
                     - type: "null"
                     - type: object
@@ -884,135 +953,170 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: The bank identification number of the card
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: The type of card (e.g., Visa, Mastercard)
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: The name of the cardholder
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Indicates if the card is commercial
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: The country where the card was issued
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: The date and time the card was created
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description:
+                    The unique identifier of the customer associated with
+                    the card
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: The location of the customer
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Indicates if the card is a debit card
                   type:
                     - "null"
                     - string
                 default:
+                  description: Indicates if the card is set as the default payment method
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Indicates if the card is regulated under the Durbin Amendment
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: The expiration date of the card
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: The expiration month of the card
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: The expiration year of the card
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Indicates if the card has expired
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Indicates if the card is healthcare-related
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: The URL of the card image
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: The name of the bank that issued the card
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: The last 4 digits of the card number
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: The masked card number
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Indicates if the card is related to payroll
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Indicates if the card is prepaid
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: The ID of the product associated with the card
                   type:
                     - "null"
                     - string
                 token:
+                  description: The unique token associated with the card
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: The unique identifier of the card
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: The date and time the card information was last updated
                   type:
                     - "null"
                     - string
                   format: date-time
           custom_fields:
+            description: Custom fields associated with the customer.
             type:
               - "null"
               - string
           email:
+            description: Email address of the customer.
             type:
               - "null"
               - string
           fax:
+            description: Fax number of the customer.
             type:
               - "null"
               - string
           first_name:
+            description: First name of the customer.
             type:
               - "null"
               - string
           graphql_id:
+            description: GraphQL ID for the customer.
             type:
               - "null"
               - string
           id:
+            description: Unique ID of the customer.
             type:
               - string
           last_name:
+            description: Last name of the customer.
             type:
               - "null"
               - string
@@ -1229,10 +1333,12 @@ streams:
                     - string
                   format: date-time
           payment_methods:
+            description: Array of payment methods associated with the customer.
             type:
               - "null"
               - array
             items:
+              description: Properties of the payment method.
               anyOf:
                 - type: object
                   properties:
@@ -2781,6 +2887,7 @@ streams:
                         - string
                       format: date-time
           paypal_accounts:
+            description: Array of PayPal accounts associated with the customer.
             type:
               - "null"
               - array
@@ -2788,6 +2895,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the PayPal account.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -2859,129 +2967,162 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number of the account.
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of the account.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the account holder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the account is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the account was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the account was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: ID of the customer associated with the account.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the account is a debit account.
                   type:
                     - "null"
                     - string
                 default:
+                  description:
+                    Flag indicating if the account is the default payment
+                    method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the account is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the account.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the account.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the account.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the account has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the account is for healthcare.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL of the account image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the account.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the account number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked account number for security purposes.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the account is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the account is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the account.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token associated with the account.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the account number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the account was last updated.
                   type:
                     - "null"
                     - string
                   format: date-time
                 billing_agreement_id:
+                  description: ID of the billing agreement.
                   type:
                     - "null"
                     - string
                 email:
+                  description: Email associated with the account.
                   type:
                     - "null"
                     - string
                 payer_id:
+                  description: ID of the payer.
                   type:
                     - "null"
                     - string
                 revoked_at:
+                  description: Date and time when the account was revoked.
                   type:
                     - "null"
                     - string
                   format: date-time
           phone:
+            description: Phone number of the customer.
             type:
               - "null"
               - string
@@ -3198,6 +3339,7 @@ streams:
                     - string
                   format: date-time
           updated_at:
+            description: Date and time when the customer data was last updated.
             type:
               - "null"
               - string
@@ -3210,6 +3352,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: The billing address associated with the bank account
                   oneOf:
                     - type: "null"
                     - type: object
@@ -3281,161 +3424,208 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: The bank identification number of the bank account
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: The type of card associated with the bank account
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: The name of the cardholder associated with the bank account
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Indicates if the bank account is commercial
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: The country where the bank account was issued
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: The date and time the bank account was created
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description:
+                    The unique identifier of the customer associated with
+                    the bank account
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: The location of the customer
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Indicates if the bank account is a debit account
                   type:
                     - "null"
                     - string
                 default:
+                  description:
+                    Indicates if the bank account is set as the default payment
+                    method
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description:
+                    Indicates if the bank account is regulated under the
+                    Durbin Amendment
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: The expiration date of the bank account
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: The expiration month of the bank account
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: The expiration year of the bank account
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Indicates if the bank account has expired
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Indicates if the bank account is healthcare-related
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: The URL of the bank account image
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: The name of the bank that issued the bank account
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: The last 4 digits of the bank account number
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: The masked bank account number
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Indicates if the bank account is related to payroll
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Indicates if the bank account is prepaid
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: The ID of the product associated with the bank account
                   type:
                     - "null"
                     - string
                 token:
+                  description: The unique token associated with the bank account
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: The unique identifier of the bank account
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description:
+                    The date and time the bank account information was last
+                    updated
                   type:
                     - "null"
                     - string
                   format: date-time
                 account_holder_name:
+                  description: The name of the account holder
                   type:
                     - "null"
                     - string
                 account_type:
+                  description: The type of the bank account
                   type:
                     - "null"
                     - string
                 ach_mandate:
+                  description: The ACH mandate associated with the bank account
                   type:
                     - "null"
                     - string
                 bank_name:
+                  description: The name of the bank
                   type:
                     - "null"
                     - string
                 business_name:
+                  description: The name of the business associated with the bank account
                   type:
                     - "null"
                     - string
                 last_name:
+                  description: The last name associated with the bank account
                   type:
                     - "null"
                     - string
                 owner_id:
+                  description: The identification of the owner of the bank account
                   type:
                     - "null"
                     - string
                 ownership_type:
+                  description: The type of ownership of the bank account
                   type:
                     - "null"
                     - string
                 plaid_verified_at:
+                  description: The date and time the bank account was verified by Plaid
                   type:
                     - "null"
                     - string
                   format: date-time
                 routing_number:
+                  description: The routing number of the bank account
                   type:
                     - "null"
                     - string
                 verifiable:
+                  description: Indicates if the bank account is verifiable
                   type:
                     - "null"
                     - boolean
                 verified:
+                  description: Indicates if the bank account is verified
                   type:
                     - "null"
                     - boolean
           venmo_accounts:
+            description: Array of Venmo accounts associated with the customer.
             type:
               - "null"
               - array
@@ -3443,6 +3633,7 @@ streams:
               type: object
               properties:
                 billing_address:
+                  description: Billing address associated with the Venmo account.
                   oneOf:
                     - type: "null"
                     - type: object
@@ -3514,120 +3705,151 @@ streams:
                             - string
                           format: date-time
                 bin:
+                  description: Bank Identification Number of the account.
                   type:
                     - "null"
                     - string
                 card_type:
+                  description: Type of the account.
                   type:
                     - "null"
                     - string
                 cardholder_name:
+                  description: Name of the account holder.
                   type:
                     - "null"
                     - string
                 commercial:
+                  description: Flag indicating if the account is commercial.
                   type:
                     - "null"
                     - string
                 country_of_issuance:
+                  description: Country where the account was issued.
                   type:
                     - "null"
                     - string
                 created_at:
+                  description: Date and time when the account was created.
                   type:
                     - "null"
                     - string
                   format: date-time
                 customer_id:
+                  description: ID of the customer associated with the account.
                   type:
                     - "null"
                     - string
                 customer_location:
+                  description: Location of the customer.
                   type:
                     - "null"
                     - string
                 debit:
+                  description: Flag indicating if the account is a debit account.
                   type:
                     - "null"
                     - string
                 default:
+                  description:
+                    Flag indicating if the account is the default payment
+                    method.
                   type:
                     - "null"
                     - boolean
                 durbin_regulated:
+                  description: Flag indicating if the account is Durbin regulated.
                   type:
                     - "null"
                     - string
                 expiration_date:
+                  description: Expiration date of the account.
                   type:
                     - "null"
                     - string
                 expiration_month:
+                  description: Expiration month of the account.
                   type:
                     - "null"
                     - string
                 expiration_year:
+                  description: Expiration year of the account.
                   type:
                     - "null"
                     - string
                 expired:
+                  description: Flag indicating if the account has expired.
                   type:
                     - "null"
                     - boolean
                 healthcare:
+                  description: Flag indicating if the account is for healthcare.
                   type:
                     - "null"
                     - string
                 image_url:
+                  description: URL of the account image.
                   type:
                     - "null"
                     - string
                 issuing_bank:
+                  description: Bank that issued the account.
                   type:
                     - "null"
                     - string
                 last_4:
+                  description: Last 4 digits of the account number.
                   type:
                     - "null"
                     - string
                 masked_number:
+                  description: Masked account number for security purposes.
                   type:
                     - "null"
                     - string
                 payroll:
+                  description: Flag indicating if the account is for payroll.
                   type:
                     - "null"
                     - string
                 prepaid:
+                  description: Flag indicating if the account is prepaid.
                   type:
                     - "null"
                     - string
                 product_id:
+                  description: ID of the product associated with the account.
                   type:
                     - "null"
                     - string
                 token:
+                  description: Token associated with the account.
                   type:
                     - "null"
                     - string
                 unique_number_identifier:
+                  description: Unique identifier for the account number.
                   type:
                     - "null"
                     - string
                 updated_at:
+                  description: Date and time when the account was last updated.
                   type:
                     - "null"
                     - string
                   format: date-time
                 source_description:
+                  description: Description of the account source.
                   type:
                     - "null"
                     - string
                 username:
+                  description: Username associated with the account.
                   type:
                     - "null"
                     - string
                 venmo_user_id:
+                  description: Venmo user ID.
                   type:
                     - "null"
                     - string
@@ -3844,6 +4066,7 @@ streams:
                     - string
                   format: date-time
           website:
+            description: Website associated with the customer.
             type:
               - "null"
               - string

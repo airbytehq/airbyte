@@ -74,6 +74,7 @@ definitions:
               - boolean
               - "null"
           role:
+            description: The role of the user.
             type:
               - object
               - "null"
@@ -251,10 +252,12 @@ definitions:
               - string
               - "null"
           sections:
+            description: Represents different sections or steps within an automation.
             type:
               - array
               - "null"
             items:
+              description: Individual section details in the automation flow.
               type: object
               properties:
                 id:
@@ -266,6 +269,7 @@ definitions:
                     - string
                     - "null"
                 template:
+                  description: Defines the template used in this section.
                   type:
                     - object
                     - "null"
@@ -306,10 +310,16 @@ definitions:
               - string
               - "null"
           sections:
+            description:
+              An array of sections where each section contains the information
+              related to A/B test templates.
             type:
               - array
               - "null"
             items:
+              description:
+                Details of each section including the template information
+                for A/B testing.
               type: object
               properties:
                 id:
@@ -321,6 +331,9 @@ definitions:
                     - string
                     - "null"
                 template:
+                  description:
+                    The specific template used for the A/B test within
+                    the section.
                   type:
                     - object
                     - "null"
@@ -341,6 +354,9 @@ definitions:
                         - string
                         - "null"
           tags:
+            description:
+              Additional tags or labels that can be associated with the
+              A/B test data.
             type:
               - array
               - "null"

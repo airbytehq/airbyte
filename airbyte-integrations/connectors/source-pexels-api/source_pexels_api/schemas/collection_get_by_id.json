@@ -14,11 +14,13 @@
       "pattern": "^.*$"
     },
     "media": {
+      "description": "Contains media items related to the collection",
       "$id": "#root/media",
       "title": "Media",
       "type": "array",
       "default": [],
       "items": {
+        "description": "Represents each individual media item in the collection",
         "$id": "#root/media/items",
         "title": "Items",
         "type": "object",
@@ -92,6 +94,7 @@
             "pattern": "^.*$"
           },
           "src": {
+            "description": "The source URL of the media item",
             "$id": "#root/media/items/src",
             "title": "Src",
             "type": "object",

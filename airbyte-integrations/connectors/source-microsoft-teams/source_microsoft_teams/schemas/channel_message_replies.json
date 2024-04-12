@@ -72,6 +72,7 @@
       "type": ["null", "string"]
     },
     "from": {
+      "description": "Information about the sender of the message",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -85,6 +86,7 @@
           "type": ["null", "string"]
         },
         "user": {
+          "description": "Details of the user who sent the message",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -109,6 +111,7 @@
       }
     },
     "body": {
+      "description": "Content of the message",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -123,6 +126,7 @@
       }
     },
     "channelIdentity": {
+      "description": "Identity information of the channel where the message is posted",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -137,6 +141,7 @@
       }
     },
     "attachments": {
+      "description": "List of attachments associated with the message",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -170,6 +175,7 @@
       }
     },
     "mentions": {
+      "description": "List of users mentioned in the message",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -184,6 +190,7 @@
             "type": ["null", "string"]
           },
           "mentioned": {
+            "description": "Details of the user mentioned in the message",
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
@@ -197,6 +204,7 @@
                 "type": ["null", "string"]
               },
               "user": {
+                "description": "Details of the mentioned user",
                 "type": ["null", "object"],
                 "additionalProperties": true,
                 "properties": {
@@ -220,6 +228,7 @@
       }
     },
     "reactions": {
+      "description": "List of reactions to the message",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -236,6 +245,7 @@
             "airbyte_type": "timestamp_without_timezone"
           },
           "user": {
+            "description": "Details of the user who reacted to the message",
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
@@ -249,6 +259,7 @@
                 "type": ["null", "string"]
               },
               "user": {
+                "description": "Details of the reacting user",
                 "type": ["null", "object"],
                 "additionalProperties": true,
                 "properties": {

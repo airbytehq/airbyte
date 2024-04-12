@@ -40,6 +40,7 @@
       "format": "date-time"
     },
     "state_reason": {
+      "description": "The reason associated with the change in state of the issue event.",
       "type": ["null", "string"]
     },
     "label": {

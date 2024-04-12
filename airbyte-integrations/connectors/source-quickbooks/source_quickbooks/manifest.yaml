@@ -963,6 +963,7 @@ definitions:
           - object
         properties:
           ParentRef:
+            description: Contains reference information of the parent class
             properties:
               name:
                 description: The name of the parent reference.
@@ -988,6 +989,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Contains metadata information about the class data
             properties:
               CreateTime:
                 description: The date and time when the class was created.
@@ -1773,6 +1775,7 @@ definitions:
           - object
         properties:
           ParentRef:
+            description: Reference to the parent department (if applicable)
             properties:
               name:
                 description: The name of the parent department.
@@ -1788,6 +1791,7 @@ definitions:
               - "null"
               - object
           MetaData:
+            description: Contains metadata information about the department data
             properties:
               LastUpdatedTime:
                 description: The timestamp when the department was last updated.
@@ -2185,6 +2189,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Contains metadata related to the employee data.
             properties:
               CreateTime:
                 description: The date and time the employee record was created.
@@ -3290,6 +3295,7 @@ definitions:
           - object
         properties:
           IncomeAccountRef:
+            description: Reference to the income account associated with the item
             properties:
               name:
                 description: The name of the income account associated with the item
@@ -3312,6 +3318,7 @@ definitions:
               - "null"
               - string
           ExpenseAccountRef:
+            description: Reference to the expense account associated with the item
             properties:
               name:
                 description: The name of the expense account associated with the item
@@ -3377,6 +3384,7 @@ definitions:
               - "null"
               - boolean
           AssetAccountRef:
+            description: Reference to the asset account associated with the item
             properties:
               name:
                 description: The name of the asset account associated with the item
@@ -3419,6 +3427,7 @@ definitions:
               - "null"
               - number
           MetaData:
+            description: Metadata information related to the item
             properties:
               CreateTime:
                 description: The creation timestamp of the item
@@ -3804,6 +3813,7 @@ definitions:
           - object
         properties:
           DepositToAccountRef:
+            description: The reference to the account where the payment is deposited.
             type:
               - "null"
               - object
@@ -3814,6 +3824,7 @@ definitions:
                   - "null"
                   - string
           CurrencyRef:
+            description: The reference to the currency of the payment.
             type:
               - "null"
               - object
@@ -3829,6 +3840,9 @@ definitions:
                   - "null"
                   - string
           ARAccountRef:
+            description:
+              The reference to the accounts receivable account associated
+              with the payment.
             type:
               - "null"
               - object
@@ -3846,20 +3860,26 @@ definitions:
                   - "null"
                   - string
           Line:
+            description: An array of line items associated with the payment
             type:
               - "null"
               - array
             items:
+              description: Details of each line item included in the payment
               type:
                 - "null"
                 - object
               properties:
                 LineEx:
+                  description: Extra information related to the line item
                   type:
                     - "null"
                     - object
                   properties:
                     any:
+                      description:
+                        Flexible field to store additional information
+                        for the line item
                       type:
                         - "null"
                         - array
@@ -3881,6 +3901,9 @@ definitions:
                               - "null"
                               - boolean
                           value:
+                            description:
+                              Details of the value associated with the
+                              field
                             type:
                               - "null"
                               - object
@@ -3906,6 +3929,9 @@ definitions:
                               - "null"
                               - boolean
                 LinkedTxn:
+                  description:
+                    An array of linked transactions related to the line
+                    item
                   type:
                     - "null"
                     - array
@@ -3955,6 +3981,7 @@ definitions:
               - "null"
               - number
           LinkedTxn:
+            description: An array of linked transactions associated with the payment.
             type:
               - "null"
               - array
@@ -3984,6 +4011,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Metadata information related to the payment data.
             type:
               - "null"
               - object
@@ -4014,6 +4042,7 @@ definitions:
               - "null"
               - string
           PaymentMethodRef:
+            description: The reference to the payment method used for the transaction.
             type:
               - "null"
               - object
@@ -4024,6 +4053,7 @@ definitions:
                   - "null"
                   - string
           CustomerRef:
+            description: The reference to the customer who made the payment.
             type:
               - "null"
               - object
@@ -4927,6 +4957,7 @@ definitions:
           - object
         properties:
           BillEmail:
+            description: Email address associated with the billing.
             properties:
               Address:
                 description: Email address for billing contact.
@@ -4937,6 +4968,7 @@ definitions:
               - "null"
               - object
           PaymentMethodRef:
+            description: Reference to the payment method used in the transaction.
             properties:
               name:
                 description: Name of the payment method for the refund receipt.
@@ -4952,6 +4984,7 @@ definitions:
               - "null"
               - object
           CustomerRef:
+            description: Reference to the customer making the transaction.
             properties:
               name:
                 description: Name of the customer associated with the refund receipt.
@@ -4972,6 +5005,7 @@ definitions:
               - "null"
               - string
           Line:
+            description: Line items included in the transaction.
             items:
               properties:
                 SubTotalLineDetail:
@@ -5007,8 +5041,10 @@ definitions:
                     - "null"
                     - number
                 SalesItemLineDetail:
+                  description: Details of the sales item in the line.
                   properties:
                     ItemRef:
+                      description: Reference to the item being sold.
                       properties:
                         name:
                           description: Name of the product or item.
@@ -5029,6 +5065,7 @@ definitions:
                         - "null"
                         - number
                     TaxCodeRef:
+                      description: Reference to the tax code applied to the item.
                       properties:
                         value:
                           description: Tax code value.
@@ -5054,6 +5091,7 @@ definitions:
               - "null"
               - array
           CurrencyRef:
+            description: Currency reference for the transaction.
             properties:
               name:
                 description: Name of the currency.
@@ -5074,6 +5112,7 @@ definitions:
               - "null"
               - integer
           TxnTaxDetail:
+            description: Tax details associated with the transaction.
             properties:
               TotalTax:
                 description: Total tax amount for the refund receipt.
@@ -5084,6 +5123,7 @@ definitions:
               - "null"
               - object
           DepositToAccountRef:
+            description: Reference to the account where the deposit is made.
             properties:
               name:
                 description: Name of the account where the deposit is made.
@@ -5099,6 +5139,7 @@ definitions:
               - "null"
               - object
           MetaData:
+            description: Metadata related to the transaction.
             properties:
               CreateTime:
                 description: Timestamp when the refund receipt was created.
@@ -5116,6 +5157,7 @@ definitions:
               - "null"
               - object
           CustomerMemo:
+            description: Memo or notes provided by the customer.
             properties:
               value:
                 description:
@@ -5149,6 +5191,7 @@ definitions:
               - "null"
               - string
           CustomField:
+            description: Custom additional fields related to the transaction.
             items:
               properties:
                 DefinitionId:
@@ -5173,6 +5216,7 @@ definitions:
               - "null"
               - array
           BillAddr:
+            description: Billing address of the customer.
             properties:
               Lat:
                 description: Latitude coordinate of the billing address.
@@ -5268,6 +5312,7 @@ definitions:
               - "null"
               - integer
           CustomerRef:
+            description: Customer reference for the sales receipt
             type:
               - "null"
               - object
@@ -5283,6 +5328,7 @@ definitions:
                   - "null"
                   - string
           LinkedTxn:
+            description: Linked transactions associated with the sales receipt
             type:
               - "null"
               - array
@@ -5312,6 +5358,7 @@ definitions:
               - "null"
               - string
           TxnTaxDetail:
+            description: Tax details for the entire transaction
             type:
               - "null"
               - object
@@ -5327,6 +5374,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Metadata information related to the sales receipt
             type:
               - "null"
               - object
@@ -5344,6 +5392,7 @@ definitions:
                   - string
                 format: date-time
           CustomField:
+            description: Custom fields associated with the sales receipt
             type:
               - "null"
               - array
@@ -5368,6 +5417,7 @@ definitions:
                     - "null"
                     - string
           BillAddr:
+            description: Billing address details
             type:
               - "null"
               - object
@@ -5423,6 +5473,7 @@ definitions:
               - "null"
               - string
           Line:
+            description: Items or services sold in the sales receipt
             type:
               - "null"
               - array
@@ -5440,6 +5491,7 @@ definitions:
                   additionalProperties: true
                   properties: {}
                 DiscountLineDetail:
+                  description: Discount details for a line item
                   type:
                     - "null"
                     - object
@@ -5455,6 +5507,7 @@ definitions:
                         - "null"
                         - integer
                     DiscountAccountRef:
+                      description: Reference to the account for applying discounts
                       type:
                         - "null"
                         - object
@@ -5485,11 +5538,13 @@ definitions:
                     - "null"
                     - string
                 SalesItemLineDetail:
+                  description: Details of a sales item in the line
                   type:
                     - "null"
                     - object
                   properties:
                     ItemRef:
+                      description: Reference to the item sold
                       type:
                         - "null"
                         - object
@@ -5515,6 +5570,7 @@ definitions:
                         - "null"
                         - number
                     TaxCodeRef:
+                      description: Reference to the tax code applied
                       type:
                         - "null"
                         - object
@@ -5535,6 +5591,7 @@ definitions:
                     - "null"
                     - string
           CurrencyRef:
+            description: Currency reference for the sales receipt
             type:
               - "null"
               - object
@@ -5550,6 +5607,7 @@ definitions:
                   - "null"
                   - string
           PaymentMethodRef:
+            description: Payment method reference used in the sales receipt
             type:
               - "null"
               - object
@@ -5581,6 +5639,7 @@ definitions:
               - "null"
               - string
           BillEmail:
+            description: Billing email address
             type:
               - "null"
               - object
@@ -5591,6 +5650,7 @@ definitions:
                   - "null"
                   - string
           CustomerMemo:
+            description: Customer memo or notes
             type:
               - "null"
               - object
@@ -5601,6 +5661,7 @@ definitions:
                   - "null"
                   - string
           ShipAddr:
+            description: Shipping address details
             type:
               - "null"
               - object
@@ -5661,6 +5722,7 @@ definitions:
               - "null"
               - number
           DepositToAccountRef:
+            description: Reference to the account where the payment is deposited
             type:
               - "null"
               - object
@@ -5731,6 +5793,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Contains metadata information about the tax_agencies data.
             properties:
               CreateTime:
                 description: The date and time when the tax agency was created.
@@ -5930,6 +5993,7 @@ definitions:
               - "null"
               - string
           AgencyRef:
+            description: Reference to the tax agency associated with the tax rate
             properties:
               value:
                 description: Reference to the agency associated with the tax rate
@@ -5945,6 +6009,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Metadata related to the tax rate data
             properties:
               CreateTime:
                 description: Date and time when the tax rate was created
@@ -6127,6 +6192,7 @@ definitions:
               - "null"
               - integer
           MetaData:
+            description: Contains metadata information related to the terms data.
             properties:
               CreateTime:
                 description: Date and time when the record was created.
@@ -6174,6 +6240,9 @@ definitions:
               - "null"
               - integer
           CustomerRef:
+            description:
+              Reference to the customer this time activity is associated
+              with.
             properties:
               name:
                 description: Name of the customer associated with the time activity
@@ -6206,6 +6275,7 @@ definitions:
               - "null"
               - integer
           MetaData:
+            description: Additional metadata or information related to the time activity.
             properties:
               CreateTime:
                 description:
@@ -6227,6 +6297,9 @@ definitions:
               - "null"
               - object
           ItemRef:
+            description:
+              Reference to the item or task being completed during this
+              time activity.
             properties:
               name:
                 description: Name of the item associated with the time activity
@@ -6263,6 +6336,7 @@ definitions:
               - "null"
               - string
           EmployeeRef:
+            description: Reference to the employee who performed the time activity.
             properties:
               name:
                 description: Name of the employee who performed the time activity
@@ -6325,6 +6399,7 @@ definitions:
               - "null"
               - string
           MetaData:
+            description: Additional metadata related to the transfer
             properties:
               LastUpdatedTime:
                 description: The timestamp when the transfer was last updated
@@ -6373,6 +6448,7 @@ definitions:
               - "null"
               - string
           ToAccountRef:
+            description: Reference to the account to which the transfer is being made
             properties:
               value:
                 description: The value of the account to which the transfer is made
@@ -6388,6 +6464,7 @@ definitions:
               - "null"
               - object
           CurrencyRef:
+            description: Reference to the currency used in the transfer
             properties:
               value:
                 description: The value of the currency
@@ -6403,6 +6480,7 @@ definitions:
               - "null"
               - object
           FromAccountRef:
+            description: Reference to the account from which the transfer originates
             properties:
               value:
                 description: The value of the account from which the transfer is made
@@ -6438,6 +6516,7 @@ definitions:
           - object
         properties:
           MetaData:
+            description: Metadata related to the vendor credit.
             properties:
               LastUpdatedTime:
                 description: The date and time when the vendor credit was last updated
@@ -6475,6 +6554,7 @@ definitions:
               - "null"
               - string
           VendorRef:
+            description: Reference to the vendor associated with the vendor credit.
             properties:
               value:
                 description: The value of the vendor reference
@@ -6490,6 +6570,7 @@ definitions:
               - "null"
               - object
           DepartmentRef:
+            description: Reference to the department associated with the vendor credit.
             properties:
               value:
                 description: The value of the department reference
@@ -6505,6 +6586,9 @@ definitions:
               - "null"
               - object
           APAccountRef:
+            description:
+              Reference to the Accounts Payable account associated with
+              the vendor credit.
             properties:
               value:
                 description: The value of the Accounts Payable account reference
@@ -6531,6 +6615,7 @@ definitions:
               - "null"
               - string
           Line:
+            description: Line items included in the vendor credit.
             items:
               properties:
                 LineNum:
@@ -6539,8 +6624,12 @@ definitions:
                     - "null"
                     - integer
                 AccountBasedExpenseLineDetail:
+                  description: Details of the account-based expense line.
                   properties:
                     CustomerRef:
+                      description:
+                        Reference to the customer associated with the expense
+                        line.
                       properties:
                         value:
                           description: The value of the customer reference
@@ -6556,6 +6645,9 @@ definitions:
                         - "null"
                         - object
                     ClassRef:
+                      description:
+                        Reference to the class associated with the expense
+                        line.
                       properties:
                         value:
                           description: The value of the class reference
@@ -6571,6 +6663,9 @@ definitions:
                         - "null"
                         - object
                     AccountRef:
+                      description:
+                        Reference to the account associated with the expense
+                        line.
                       properties:
                         value:
                           description: The value of the account reference
@@ -6591,6 +6686,9 @@ definitions:
                         - "null"
                         - string
                     TaxCodeRef:
+                      description:
+                        Reference to the tax code associated with the expense
+                        line.
                       properties:
                         value:
                           description: The value of the tax code reference
@@ -6630,6 +6728,7 @@ definitions:
               - "null"
               - array
           CurrencyRef:
+            description: Reference to the currency used for the vendor credit.
             properties:
               value:
                 description: The value of the currency reference

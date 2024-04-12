@@ -101,6 +101,7 @@ streams:
               - "null"
               - string
           metadata:
+            description: Additional metadata and information about this payment.
             type:
               - "null"
               - object
@@ -116,6 +117,9 @@ streams:
               - "null"
               - integer
           fx:
+            description:
+              Information related to foreign exchange conversion for this
+              payment.
             type:
               - "null"
               - object
@@ -141,6 +145,7 @@ streams:
                   - "null"
                   - string
           links:
+            description: Related URLs and links associated with this payment entry.
             type:
               - "null"
               - object
@@ -203,6 +208,7 @@ streams:
               - "null"
               - string
           metadata:
+            description: Additional information or metadata related to the refund
             type:
               - "null"
               - object
@@ -213,6 +219,9 @@ streams:
                   - "null"
                   - string
           fx:
+            description:
+              Data related to foreign exchange conversion for the refund
+              if applicable
             type:
               - "null"
               - object
@@ -238,6 +247,9 @@ streams:
                   - "null"
                   - string
           links:
+            description:
+              Links to related resources such as the refund details or payment
+              information
             type:
               - "null"
               - object
@@ -307,6 +319,7 @@ streams:
                   - "null"
                   - string
           links:
+            description: Object containing relevant links related to the mandate
             type:
               - "null"
               - object
@@ -392,6 +405,7 @@ streams:
               - "null"
               - string
           fx:
+            description: The foreign exchange information related to the payout.
             type:
               - "null"
               - object
@@ -436,6 +450,7 @@ streams:
               - "null"
               - integer
           links:
+            description: URL links related to the payout data.
             type:
               - "null"
               - object

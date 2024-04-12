@@ -155,6 +155,7 @@
       "type": ["null", "string"]
     },
     "line_items": {
+      "description": "Details of individual products purchased in the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -223,6 +224,7 @@
       "$ref": "taxes.json"
     },
     "shipping_lines": {
+      "description": "Details of the shipping methods used for the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -259,6 +261,7 @@
       }
     },
     "fee_lines": {
+      "description": "Details of any additional fees charged on the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -299,6 +302,7 @@
       }
     },
     "coupon_lines": {
+      "description": "Details of any applied coupons on the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -327,6 +331,7 @@
       }
     },
     "refunds": {
+      "description": "Details of any refunds issued for the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

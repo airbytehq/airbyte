@@ -92,6 +92,7 @@ definitions:
                 - string
                 - "null"
           settings:
+            description: Contains the configuration settings for custom fields.
             type:
               - object
               - "null"

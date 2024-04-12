@@ -10,43 +10,56 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order associated with the shipment event",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the shipment event",
             "type": ["null", "string"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "OrderChargeList": {
+            "description": "List of order charges associated with the shipment event",
             "type": ["null", "array"]
           },
           "OrderChargeAdjustmentList": {
+            "description": "List of order charge adjustments related to the shipment event",
             "type": ["null", "array"]
           },
           "ShipmentFeeList": {
+            "description": "List of shipment fees associated with the shipment event",
             "type": ["null", "array"]
           },
           "ShipmentFeeAdjustmentList": {
+            "description": "List of shipment fee adjustments related to the shipment event",
             "type": ["null", "array"]
           },
           "OrderFeeList": {
+            "description": "List of order fees associated with the shipment event",
             "type": ["null", "array"]
           },
           "OrderFeeAdjustmentList": {
+            "description": "List of order fee adjustments related to the shipment event",
             "type": ["null", "array"]
           },
           "DirectPaymentList": {
+            "description": "List of direct payments associated with the shipment event",
             "type": ["null", "array"]
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ShipmentItemList": {
+            "description": "List of shipment items associated with the shipment event",
             "type": ["null", "array"]
           },
           "ShipmentItemAdjustmentList": {
+            "description": "List of shipment item adjustments related to the shipment event",
             "type": ["null", "array"]
           }
         }
@@ -58,43 +71,56 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order associated with the refund event",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the refund event",
             "type": ["null", "string"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "OrderChargeList": {
+            "description": "List of order charges associated with the refund event",
             "type": ["null", "array"]
           },
           "OrderChargeAdjustmentList": {
+            "description": "List of order charge adjustments related to the refund event",
             "type": ["null", "array"]
           },
           "ShipmentFeeList": {
+            "description": "List of shipment fees associated with the refund event",
             "type": ["null", "array"]
           },
           "ShipmentFeeAdjustmentList": {
+            "description": "List of shipment fee adjustments related to the refund event",
             "type": ["null", "array"]
           },
           "OrderFeeList": {
+            "description": "List of order fees associated with the refund event",
             "type": ["null", "array"]
           },
           "OrderFeeAdjustmentList": {
+            "description": "List of order fee adjustments related to the refund event",
             "type": ["null", "array"]
           },
           "DirectPaymentList": {
+            "description": "List of direct payments associated with the refund event",
             "type": ["null", "array"]
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ShipmentItemList": {
+            "description": "List of shipment items associated with the refund event",
             "type": ["null", "array"]
           },
           "ShipmentItemAdjustmentList": {
+            "description": "List of shipment item adjustments related to the refund event",
             "type": ["null", "array"]
           }
         }
@@ -106,43 +132,56 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order associated with the guarantee claim event",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the guarantee claim event",
             "type": ["null", "string"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "OrderChargeList": {
+            "description": "List of order charges associated with the guarantee claim event",
             "type": ["null", "array"]
           },
           "OrderChargeAdjustmentList": {
+            "description": "List of order charge adjustments related to the guarantee claim event",
             "type": ["null", "array"]
           },
           "ShipmentFeeList": {
+            "description": "List of shipment fees associated with the guarantee claim event",
             "type": ["null", "array"]
           },
           "ShipmentFeeAdjustmentList": {
+            "description": "List of shipment fee adjustments related to the guarantee claim event",
             "type": ["null", "array"]
           },
           "OrderFeeList": {
+            "description": "List of order fees associated with the guarantee claim event",
             "type": ["null", "array"]
           },
           "OrderFeeAdjustmentList": {
+            "description": "List of order fee adjustments related to the guarantee claim event",
             "type": ["null", "array"]
           },
           "DirectPaymentList": {
+            "description": "List of direct payments associated with the guarantee claim event",
             "type": ["null", "array"]
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ShipmentItemList": {
+            "description": "List of shipment items associated with the guarantee claim event",
             "type": ["null", "array"]
           },
           "ShipmentItemAdjustmentList": {
+            "description": "List of shipment item adjustments related to the guarantee claim event",
             "type": ["null", "array"]
           }
         }
@@ -154,43 +193,56 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order",
             "type": ["null", "string"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "OrderChargeList": {
+            "description": "List of order charges associated with the chargeback event",
             "type": ["null", "array"]
           },
           "OrderChargeAdjustmentList": {
+            "description": "List of order charge adjustments related to the chargeback event",
             "type": ["null", "array"]
           },
           "ShipmentFeeList": {
+            "description": "List of shipment fees associated with the chargeback event",
             "type": ["null", "array"]
           },
           "ShipmentFeeAdjustmentList": {
+            "description": "List of shipment fee adjustments related to the chargeback event",
             "type": ["null", "array"]
           },
           "OrderFeeList": {
+            "description": "List of order fees associated with the chargeback event",
             "type": ["null", "array"]
           },
           "OrderFeeAdjustmentList": {
+            "description": "List of order fee adjustments related to the chargeback event",
             "type": ["null", "array"]
           },
           "DirectPaymentList": {
+            "description": "List of direct payments associated with the chargeback event",
             "type": ["null", "array"]
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ShipmentItemList": {
+            "description": "List of shipment items associated with the chargeback event",
             "type": ["null", "array"]
           },
           "ShipmentItemAdjustmentList": {
+            "description": "List of shipment item adjustments related to the chargeback event",
             "type": ["null", "array"]
           }
         }
@@ -202,34 +254,44 @@
         "type": ["null", "object"],
         "properties": {
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the payment event",
             "type": ["null", "string"]
           },
           "TransactionPostedDate": {
+            "description": "The date and time when the transaction was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "BusinessObjectType": {
+            "description": "Type of business object associated with the payment",
             "type": ["null", "string"]
           },
           "SalesChannel": {
+            "description": "Sales channel through which the payment was made",
             "type": ["null", "string"]
           },
           "Charge": {
+            "description": "Charged amount in the payment",
             "type": ["null", "object"]
           },
           "FeeList": {
+            "description": "List of fees associated with the payment",
             "type": ["null", "array"]
           },
           "PaymentAmountType": {
+            "description": "Type of payment amount",
             "type": ["null", "string"]
           },
           "AmountDescription": {
+            "description": "Description of the payment amount",
             "type": ["null", "string"]
           },
           "FulfillmentChannel": {
+            "description": "Channel through which fulfillment is done",
             "type": ["null", "string"]
           },
           "StoreName": {
+            "description": "Name of the store on which the payment was made",
             "type": ["null", "string"]
           }
         }
@@ -241,33 +303,43 @@
         "type": ["null", "object"],
         "properties": {
           "ProviderTransactionType": {
+            "description": "Type of transaction for the provider",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the service provider credit event",
             "type": ["null", "string"]
           },
           "MarketplaceId": {
+            "description": "ID of the marketplace",
             "type": ["null", "string"]
           },
           "MarketplaceCountryCode": {
+            "description": "Country code of the marketplace",
             "type": ["null", "string"]
           },
           "SellerId": {
+            "description": "ID of the seller",
             "type": ["null", "string"]
           },
           "SellerStoreName": {
+            "description": "Name of the seller's store",
             "type": ["null", "string"]
           },
           "ProviderId": {
+            "description": "ID of the provider",
             "type": ["null", "string"]
           },
           "ProviderStoreName": {
+            "description": "Name of the provider's store",
             "type": ["null", "string"]
           },
           "TransactionAmount": {
+            "description": "Amount of the transaction",
             "type": ["null", "object"]
           },
           "TransactionCreationDate": {
+            "description": "The date and time when the transaction was created",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -275,6 +347,7 @@
       }
     },
     "RetrochargeEventList": {
+      "description": "List of events related to retrocharge transactions.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -317,35 +390,45 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order associated with the rental transaction event",
             "type": ["null", "string"]
           },
           "RentalEventType": {
+            "description": "Type of rental event",
             "type": ["null", "string"]
           },
           "ExtensionLength": {
+            "description": "Length of rental extension",
             "type": "integer",
             "format": "int32"
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "RentalChargeList": {
+            "description": "List of rental charges associated with the rental transaction event",
             "type": ["null", "array"]
           },
           "RentalFeeList": {
+            "description": "List of rental fees associated with the rental transaction event",
             "type": ["null", "array"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "RentalInitialValue": {
+            "description": "Initial value of the rental transaction",
             "type": ["null", "object"]
           },
           "RentalReimbursement": {
+            "description": "Reimbursement amount in the rental transaction",
             "type": ["null", "object"]
           },
           "RentalTaxWithheldList": {
+            "description": "List of rental tax withheld in the rental transaction",
             "type": ["null", "array"]
           }
         }
@@ -357,6 +440,7 @@
       "items": {}
     },
     "ProductAdsPaymentEventList": {
+      "description": "List of events related to payments for product advertisements.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -390,6 +474,7 @@
       }
     },
     "ServiceFeeEventList": {
+      "description": "List of events related to service fees.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -426,6 +511,7 @@
       }
     },
     "SellerDealPaymentEventList": {
+      "description": "List of events related to payments for seller deals.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -472,18 +558,23 @@
         "type": ["null", "object"],
         "properties": {
           "DebtRecoveryType": {
+            "description": "Type of debt recovery event",
             "type": ["null", "string"]
           },
           "RecoveryAmount": {
+            "description": "Total amount recovered in the debt recovery",
             "type": ["null", "object"]
           },
           "OverPaymentCredit": {
+            "description": "Amount of overpayment credit in the debt recovery",
             "type": ["null", "object"]
           },
           "DebtRecoveryItemList": {
+            "description": "List of items involved in the debt recovery",
             "type": ["null", "array"]
           },
           "ChargeInstrumentList": {
+            "description": "List of charge instruments involved in the debt recovery event",
             "type": ["null", "array"]
           }
         }
@@ -507,6 +598,7 @@
       }
     },
     "AdjustmentEventList": {
+      "description": "List of adjustment events representing changes to financial transactions.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -532,6 +624,7 @@
       }
     },
     "SAFETReimbursementEventList": {
+      "description": "List of events representing SAFET reimbursements.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -561,6 +654,7 @@
       }
     },
     "SellerReviewEnrollmentPaymentEventList": {
+      "description": "List of events related to payments for seller review enrollments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -620,6 +714,7 @@
       }
     },
     "CouponPaymentEventList": {
+      "description": "List of events related to coupon payments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -688,6 +783,7 @@
       }
     },
     "NetworkComminglingTransactionEventList": {
+      "description": "List of events involving network commingling transactions.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -729,6 +825,7 @@
       }
     },
     "AffordabilityExpenseEventList": {
+      "description": "List of expense events related to affordability programs.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -774,6 +871,7 @@
       }
     },
     "AffordabilityExpenseReversalEventList": {
+      "description": "List of events reversing affordability expense transactions.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -819,6 +917,7 @@
       }
     },
     "TrialShipmentEventList": {
+      "description": "List of events related to trial shipments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -848,6 +947,7 @@
       }
     },
     "TDSReimbursementEventList": {
+      "description": "List of events representing TDS reimbursements.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -908,43 +1008,56 @@
         "type": ["null", "object"],
         "properties": {
           "AmazonOrderId": {
+            "description": "The unique identifier of the Amazon order associated with the shipment settle event",
             "type": ["null", "string"]
           },
           "SellerOrderId": {
+            "description": "The unique identifier of the seller's order associated with the shipment settle event",
             "type": ["null", "string"]
           },
           "MarketplaceName": {
+            "description": "The name of the marketplace where the event occurred",
             "type": ["null", "string"]
           },
           "OrderChargeList": {
+            "description": "List of order charges associated with the shipment settle event",
             "type": ["null", "array"]
           },
           "OrderChargeAdjustmentList": {
+            "description": "List of order charge adjustments related to the shipment settle event",
             "type": ["null", "array"]
           },
           "ShipmentFeeList": {
+            "description": "List of shipment fees associated with the shipment settle event",
             "type": ["null", "array"]
           },
           "ShipmentFeeAdjustmentList": {
+            "description": "List of shipment fee adjustments related to the shipment settle event",
             "type": ["null", "array"]
           },
           "OrderFeeList": {
+            "description": "List of order fees associated with the shipment settle event",
             "type": ["null", "array"]
           },
           "OrderFeeAdjustmentList": {
+            "description": "List of order fee adjustments related to the shipment settle event",
             "type": ["null", "array"]
           },
           "DirectPaymentList": {
+            "description": "List of direct payments associated with the shipment settle event",
             "type": ["null", "array"]
           },
           "PostedDate": {
+            "description": "The date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "ShipmentItemList": {
+            "description": "List of shipment items associated with the shipment settle event",
             "type": ["null", "array"]
           },
           "ShipmentItemAdjustmentList": {
+            "description": "List of shipment item adjustments related to the shipment settle event",
             "type": ["null", "array"]
           }
         }
@@ -968,6 +1081,7 @@
       }
     },
     "FailedAdhocDisbursementEventList": {
+      "description": "List of events representing failed ad-hoc disbursements.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -1092,6 +1206,7 @@
       }
     },
     "RemovalShipmentAdjustmentEventList": {
+      "description": "List of events representing adjustments to removal shipments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

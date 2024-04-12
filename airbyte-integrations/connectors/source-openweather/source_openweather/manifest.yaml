@@ -89,6 +89,7 @@ definitions:
             description: Time offset in seconds from UTC
             type: number
           current:
+            description: Contains current weather data
             type: object
             additionalProperties: true
             properties:
@@ -135,6 +136,7 @@ definitions:
                 description: Weather condition
                 type: array
               rain:
+                description: Information about precipitation in the last hour
                 type: object
                 additionalProperties: true
                 properties:

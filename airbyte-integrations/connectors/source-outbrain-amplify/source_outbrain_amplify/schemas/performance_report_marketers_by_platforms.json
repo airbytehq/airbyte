@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Additional information related to the report, e.g., date of report generation, report ID, etc.",
       "type": "object",
       "properties": {
         "platform": {
@@ -17,6 +18,7 @@
       }
     },
     "metrics": {
+      "description": "Key performance metrics data for marketers by platforms.",
       "type": "object",
       "properties": {
         "impressions": {

@@ -204,6 +204,7 @@ definitions:
             description: Timestamp indicating when the adgroup was created
             type: string
           defaultBidAmount:
+            description: The default bid amount set for this adgroup
             properties:
               amount:
                 description: Default bid amount
@@ -384,6 +385,7 @@ definitions:
             description: The ID of the ad group where the keyword is associated.
             type: integer
           bidAmount:
+            description: The bid amount for the keyword
             properties:
               amount:
                 description: The bid amount for the keyword.
@@ -483,6 +485,9 @@ definitions:
             description: Date for which the report data is generated.
             type: string
           granularity:
+            description:
+              The level of detail for the data, such as daily, weekly,
+              or monthly.
             items:
               properties:
                 avgCPA:
@@ -568,6 +573,7 @@ definitions:
               type: object
             type: array
           metadata:
+            description: Additional information or details about the data.
             properties:
               adChannelType:
                 description: Type of ad channel used for the campaign.
@@ -694,6 +700,7 @@ definitions:
             description: The date of the data
             type: string
           granularity:
+            description: The time interval for which the ad group report data is aggregated.
             items:
               properties:
                 avgCPA:
@@ -769,6 +776,9 @@ definitions:
               type: object
             type: array
           metadata:
+            description:
+              Additional information or context related to the ad group
+              report data.
             properties:
               adGroupDisplayStatus:
                 description: The display status of the ad group
@@ -878,9 +888,11 @@ definitions:
             description: The date for which the report data is generated.
             type: string
           granularity:
+            description: Data related to keyword performance on a daily granularity
             items:
               properties:
                 avgCPA:
+                  description: Average Cost Per Acquisition for the keyword
                   properties:
                     amount:
                       description: The average cost per acquisition.
@@ -892,6 +904,7 @@ definitions:
                       type: string
                   type: object
                 avgCPT:
+                  description: Average Cost Per Tap for the keyword
                   properties:
                     amount:
                       description: The average cost per tap.
@@ -906,6 +919,7 @@ definitions:
                   description: The conversion rate.
                   type: number
                 date:
+                  description: Date for the data entry
                   type: string
                 impressions:
                   description: The number of impressions.
@@ -920,6 +934,7 @@ definitions:
                   description: The number of latent on installs.
                   type: integer
                 localSpend:
+                  description: Local spend on the keyword for the day
                   properties:
                     amount:
                       description: The local spend amount.
@@ -945,8 +960,10 @@ definitions:
               type: object
             type: array
           insights:
+            description: Insights and recommendations based on keyword performance
             properties:
               bidRecommendation:
+                description: Recommended bid amount for the keyword
                 properties:
                   bidMax:
                     description: The maximum bid recommendation.
@@ -974,6 +991,7 @@ definitions:
             description: The unique identifier for the keyword.
             type: integer
           metadata:
+            description: Metadata related to the keyword
             properties:
               adGroupDeleted:
                 description: Indicates if the ad group is deleted.
@@ -985,6 +1003,7 @@ definitions:
                 description: The name of the ad group.
                 type: string
               bidAmount:
+                description: Current bid amount set for the keyword
                 properties:
                   amount:
                     description: The bid amount.
@@ -1019,6 +1038,7 @@ definitions:
                 type: string
             type: object
           other:
+            description: Any other miscellaneous data related to the keyword
             type: boolean
         type: object
 streams:

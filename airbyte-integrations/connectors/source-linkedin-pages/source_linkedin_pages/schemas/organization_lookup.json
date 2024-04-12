@@ -50,6 +50,7 @@
       }
     },
     "groups": {
+      "description": "Associated LinkedIn groups related to the organization",
       "type": ["null", "array"],
       "items": {
         "items": {
@@ -145,6 +146,7 @@
       "type": ["null", "string"]
     },
     "alternativeNames": {
+      "description": "Alternative names or variations of the organization",
       "type": ["null", "array"],
       "items": {
         "items": {
@@ -153,6 +155,7 @@
       }
     },
     "specialties": {
+      "description": "Core specialties or services provided by the organization",
       "type": ["null", "array"],
       "items": {
         "items": {
@@ -165,6 +168,7 @@
       "type": ["null", "string"]
     },
     "localizedSpecialties": {
+      "description": "Specialized areas or services of the organization specific to certain regions",
       "type": ["null", "array"],
       "items": {
         "items": {
@@ -173,6 +177,7 @@
       }
     },
     "industries": {
+      "description": "Industries in which the organization operates",
       "type": ["null", "array"],
       "items": {
         "description": "Array of industries the organization belongs to.",
@@ -213,6 +218,7 @@
       "type": ["null", "string"]
     },
     "locations": {
+      "description": "Physical locations of the organization",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

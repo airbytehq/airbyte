@@ -322,6 +322,7 @@ definitions:
               - "null"
               - string
           extra:
+            description: Contains additional information related to the activity
             type:
               - "null"
               - object

@@ -481,6 +481,7 @@ definitions:
               - "null"
               - string
           descData:
+            description: Metadata related to the organization's description data.
             type: object
             properties:
               emoji:
@@ -492,6 +493,7 @@ definitions:
               - "null"
               - string
           idBoards:
+            description: An array of board IDs associated with the organization.
             type: array
             items:
               description: List of board IDs associated with the organization
@@ -512,12 +514,15 @@ definitions:
             description: Information about invitations sent by the organization
             type: array
           limits:
+            description: Limits set for the organization.
             type: object
             properties:
               orgs:
+                description: Limits specific to the organization.
                 type: object
                 properties:
                   totalMembersPerOrg:
+                    description: Total members allowed per organization.
                     type: object
                     properties:
                       status:
@@ -538,6 +543,7 @@ definitions:
                           - "null"
                           - integer
                   freeBoardsPerOrg:
+                    description: Number of free boards allowed per organization.
                     type: object
                     properties:
                       status:
@@ -558,8 +564,10 @@ definitions:
                           - "null"
                           - integer
           memberships:
+            description: Memberships information for the organization.
             type: array
             items:
+              description: Details of each membership.
               type: object
               properties:
                 idMember:
@@ -593,6 +601,7 @@ definitions:
               - "null"
               - integer
           prefs:
+            description: Preferences set for the organization.
             type: object
             properties:
               permissionLevel:
@@ -621,6 +630,7 @@ definitions:
                   - "null"
                   - integer
               boardVisibilityRestrict:
+                description: Restrictions related to board visibility.
                 type: object
                 properties:
                   private:
@@ -644,6 +654,7 @@ definitions:
                       - "null"
                       - string
               boardDeleteRestrict:
+                description: Restrictions related to board deletion.
                 type: object
                 properties:
                   private:
@@ -695,6 +706,7 @@ definitions:
               - "null"
               - string
           premiumFeatures:
+            description: Information about premium features available for the organization.
             type: array
             items:
               description: List of premium features available to the organization

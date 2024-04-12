@@ -59,6 +59,7 @@
       "type": ["null", "boolean"]
     },
     "counts": {
+      "description": "Data related to the counts of email templates.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -85,6 +86,7 @@
       }
     },
     "template_owner": {
+      "description": "Properties related to the owner of the email template.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -99,6 +101,7 @@
       }
     },
     "team_template": {
+      "description": "Data related to the team's email template.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -113,6 +116,7 @@
       }
     },
     "_links": {
+      "description": "Links related to email templates endpoint.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -123,8 +127,10 @@
       }
     },
     "groups": {
+      "description": "Array of groups containing email templates.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties of each group.",
         "type": "object",
         "additionalProperties": true,
         "properties": {
@@ -140,6 +146,7 @@
       }
     },
     "tags": {
+      "description": "Tags associated with the email templates.",
       "type": ["null", "array"],
       "items": {
         "description": "Tags associated with the email template.",

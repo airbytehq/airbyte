@@ -203,6 +203,7 @@ definitions:
               - string
               - "null"
           users:
+            description: This field represents the list of users in the teams.
             items:
               properties:
                 id:

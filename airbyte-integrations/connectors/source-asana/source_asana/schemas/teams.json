@@ -22,6 +22,7 @@
       "type": ["null", "string"]
     },
     "organization": {
+      "description": "Details about the organization including name, contact information, etc.",
       "type": ["null", "object"],
       "properties": {
         "gid": {

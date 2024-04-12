@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Additional information about the data or request context.",
       "type": "object",
       "properties": {
         "id": {
@@ -21,6 +22,7 @@
       }
     },
     "metrics": {
+      "description": "Performance metrics related to marketers' data segmented by interest.",
       "type": "object",
       "properties": {
         "impressions": {

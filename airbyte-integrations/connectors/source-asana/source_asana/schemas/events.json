@@ -2,6 +2,7 @@
   "type": ["null", "object"],
   "properties": {
     "user": {
+      "description": "User associated with the event",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -19,6 +20,7 @@
       }
     },
     "resource": {
+      "description": "Resource affected by the event",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -44,6 +46,7 @@
       "type": ["null", "string"]
     },
     "parent": {
+      "description": "Parent entity related to the event",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -63,6 +66,7 @@
       "format": "date-time"
     },
     "change": {
+      "description": "Details of the changes made in the event",
       "type": ["null", "object"],
       "properties": {
         "field": {
@@ -74,6 +78,7 @@
           "type": ["null", "string"]
         },
         "new_value": {
+          "description": "The new value after the change",
           "type": ["null", "object"],
           "properties": {
             "gid": {
@@ -87,6 +92,7 @@
           }
         },
         "added_value": {
+          "description": "Value that was added during the change",
           "type": ["null", "object"],
           "properties": {
             "gid": {
@@ -100,6 +106,7 @@
           }
         },
         "removed_value": {
+          "description": "Value that was removed during the change",
           "type": ["null", "object"],
           "properties": {
             "gid": {

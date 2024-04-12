@@ -5,6 +5,7 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "accountCategory1": {
+      "description": "Represents account category 1 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -18,6 +19,7 @@
       }
     },
     "accountCategory2": {
+      "description": "Represents account category 2 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -31,6 +33,7 @@
       }
     },
     "accountCategory3": {
+      "description": "Represents account category 3 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -44,6 +47,7 @@
       }
     },
     "accountCategory4": {
+      "description": "Represents account category 4 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -57,6 +61,7 @@
       }
     },
     "accountCategory5": {
+      "description": "Represents account category 5 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -70,6 +75,7 @@
       }
     },
     "accountCategory6": {
+      "description": "Represents account category 6 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -83,6 +89,7 @@
       }
     },
     "accountCategory7": {
+      "description": "Represents account category 7 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -96,6 +103,7 @@
       }
     },
     "accountCategory8": {
+      "description": "Represents account category 8 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -109,6 +117,7 @@
       }
     },
     "accountCategory9": {
+      "description": "Represents account category 9 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -122,6 +131,7 @@
       }
     },
     "accountCategory10": {
+      "description": "Represents account category 10 data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -155,6 +165,7 @@
       "type": ["string", "null"]
     },
     "bank": {
+      "description": "Represents bank data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -168,6 +179,7 @@
       }
     },
     "branch": {
+      "description": "Represents branch data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -185,6 +197,7 @@
       "type": ["null", "string"]
     },
     "calendar": {
+      "description": "Represents calendar data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -210,6 +223,7 @@
       "type": ["string", "null"]
     },
     "company": {
+      "description": "Represents company data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -231,6 +245,7 @@
       "type": ["string", "null"]
     },
     "currency": {
+      "description": "Represents currency data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -244,6 +259,7 @@
       }
     },
     "defaultGroup": {
+      "description": "Represents default group data",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -269,6 +285,7 @@
       "type": ["boolean", "null"]
     },
     "glAccount": {
+      "description": "Represents general ledger account data",
       "type": ["object", "null"],
       "properties": {
         "code": {

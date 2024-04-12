@@ -65,6 +65,7 @@ definitions:
               - "null"
               - string
           tags:
+            description: Tags assigned to the campaign
             type:
               - "null"
               - array
@@ -83,6 +84,7 @@ definitions:
               - "null"
               - string
           trigger_segment_ids:
+            description: Segment IDs that trigger the campaign
             type:
               - "null"
               - array
@@ -144,6 +146,7 @@ definitions:
               - "null"
               - boolean
           msg_templates:
+            description: Templates for the messages in the campaign
             type: array
             items:
               type:
@@ -161,6 +164,7 @@ definitions:
                     - "null"
                     - string
           actions:
+            description: List of actions associated with the campaign
             type: array
             items:
               type:

@@ -11,6 +11,7 @@
       "type": "string"
     },
     "rates": {
+      "description": "Object containing exchange rates for various currencies",
       "type": "object",
       "properties": {
         "GBP": {

@@ -114,11 +114,13 @@ definitions:
             type: integer
             default: 0
           photos:
+            description: Contains the list of photos returned from the search query
             $id: "#root/photos"
             title: Photos
             type: array
             default: []
             items:
+              description: Represents an individual photo object
               $id: "#root/photos/items"
               title: Items
               type: object
@@ -176,6 +178,9 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 src:
+                  description:
+                    Contains the various sources (URLs) for the photo in
+                    different sizes and formats
                   $id: "#root/photos/items/src"
                   title: Src
                   type: object
@@ -290,11 +295,13 @@ definitions:
             type: integer
             default: 0
           photos:
+            description: Array of curated photos
             $id: "#root/photos"
             title: Photos
             type: array
             default: []
             items:
+              description: Each curated photo object
               $id: "#root/photos/items"
               title: Items
               type: object
@@ -352,6 +359,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 src:
+                  description: Source URL of the photo
                   $id: "#root/photos/items/src"
                   title: Src
                   type: object
@@ -479,6 +487,7 @@ definitions:
             default: ""
             pattern: ^.*$
           videos:
+            description: A collection of video data
             $id: "#root/videos"
             title: Videos
             type: array
@@ -533,6 +542,7 @@ definitions:
                   type: integer
                   default: 0
                 user:
+                  description: Information about the user who uploaded the video
                   $id: "#root/videos/items/user"
                   title: User
                   type: object
@@ -558,6 +568,7 @@ definitions:
                       default: ""
                       pattern: ^.*$
                 video_files:
+                  description: Collection of video files associated with the video
                   $id: "#root/videos/items/video_files"
                   title: Video_files
                   type: array
@@ -613,6 +624,7 @@ definitions:
                         default: ""
                         pattern: ^.*$
                 video_pictures:
+                  description: Collection of pictures representing the video
                   $id: "#root/videos/items/video_pictures"
                   title: Video_pictures
                   type: array
@@ -866,11 +878,13 @@ definitions:
         type: object
         properties:
           collections:
+            description: List of featured collections
             $id: "#root/collections"
             title: Collections
             type: array
             default: []
             items:
+              description: Object containing information about each featured collection
               $id: "#root/collections/items"
               title: Items
               type: object

@@ -637,11 +637,14 @@ definitions:
               - string
             format: date-time
           associations:
+            description: Associations with other resources related to the cart
             type: object
             properties:
               cart_rows:
+                description: Details of the products added to the cart
                 type: array
                 items:
+                  description: Information about each product in the cart
                   type: object
                   properties:
                     id_product:
@@ -770,11 +773,14 @@ definitions:
               - "null"
               - string
           associations:
+            description: This field contains associations related to the category.
             type: object
             properties:
               categories:
+                description: List of sub-categories associated with the main category.
                 type: array
                 items:
+                  description: Properties related to each sub-category.
                   type: object
                   properties:
                     id:
@@ -1513,6 +1519,7 @@ definitions:
             type: object
             properties:
               groups:
+                description: List of customer groups associated with the customer
                 type: array
                 items:
                   type: object
@@ -3009,11 +3016,14 @@ definitions:
               - "null"
               - string
           associations:
+            description: Associations related to the order
             type: object
             properties:
               order_rows:
+                description: Data of the order rows
                 type: array
                 items:
+                  description: Properties of each order row
                   type: object
                   properties:
                     id:
@@ -3893,11 +3903,16 @@ definitions:
               - "null"
               - string
           associations:
+            description:
+              Associations related to the product such as categories, images,
+              and stock availables.
             type: object
             properties:
               categories:
+                description: Related categories associated with the product.
                 type: array
                 items:
+                  description: Details of each category associated with the product.
                   type: object
                   properties:
                     id:
@@ -3906,8 +3921,10 @@ definitions:
                         - "null"
                         - string
               images:
+                description: Images associated with the product.
                 type: array
                 items:
+                  description: Details of each image associated with the product.
                   type: object
                   properties:
                     id:
@@ -3916,8 +3933,12 @@ definitions:
                         - "null"
                         - string
               stock_availables:
+                description: Stock availability information related to the product.
                 type: array
                 items:
+                  description:
+                    Details of each stock availability record related to
+                    the product.
                   type: object
                   properties:
                     id:

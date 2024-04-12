@@ -42,11 +42,13 @@ definitions:
               - "null"
               - boolean
           indexes:
+            description: Air quality index data
             type:
               - "null"
               - object
             properties:
               baqi:
+                description: BreezoMeter AQI (BAQI) value
                 type:
                   - "null"
                   - object
@@ -129,6 +131,7 @@ definitions:
               - "null"
               - boolean
           indexes:
+            description: Contains air quality index forecasts for various pollutants.
             type:
               - "null"
               - object
@@ -221,11 +224,17 @@ definitions:
               - "null"
               - boolean
           indexes:
+            description:
+              Contains various air quality indexes for the specified historical
+              data.
             type:
               - "null"
               - object
             properties:
               baqi:
+                description:
+                  The BreezoMeter Air Quality Index (BAQI) provides a comprehensive
+                  and user-friendly method to analyze real-time air quality information.
                 type:
                   - "null"
                   - object
@@ -313,11 +322,13 @@ definitions:
               - "null"
               - string
           types:
+            description: Different types of pollen forecasts available
             type:
               - "null"
               - object
             properties:
               grass:
+                description: Pollen forecast for grass
                 type:
                   - "null"
                   - object
@@ -342,6 +353,7 @@ definitions:
                       - "null"
                       - boolean
                   index:
+                    description: Pollen index data for grass
                     type:
                       - "null"
                       - object
@@ -362,6 +374,7 @@ definitions:
                           - "null"
                           - string
               tree:
+                description: Pollen forecast for trees
                 type:
                   - "null"
                   - object
@@ -386,6 +399,7 @@ definitions:
                       - "null"
                       - boolean
                   index:
+                    description: Pollen index data for trees
                     type:
                       - "null"
                       - object
@@ -406,6 +420,7 @@ definitions:
                           - "null"
                           - string
               weed:
+                description: Pollen forecast for weeds
                 type:
                   - "null"
                   - object
@@ -430,6 +445,7 @@ definitions:
                       - "null"
                       - boolean
                   index:
+                    description: Pollen index data for weeds
                     type:
                       - "null"
                       - object
@@ -494,6 +510,9 @@ definitions:
               - "null"
               - string
           temperature:
+            description:
+              Measure of hotness or coldness of the air typically measured
+              in degrees Celsius or Fahrenheit.
             type:
               - "null"
               - object
@@ -509,6 +528,9 @@ definitions:
                   - "null"
                   - string
           feels_like_temperature:
+            description:
+              Subjective temperature perceived by humans, taking into account
+              the effects of temperature, humidity, and wind.
             type:
               - "null"
               - object
@@ -529,6 +551,9 @@ definitions:
               - "null"
               - integer
           precipitation:
+            description:
+              Measurements related to any forms of water, such as rain
+              or snow, falling from the atmosphere.
             type:
               - "null"
               - object
@@ -539,6 +564,9 @@ definitions:
                   - "null"
                   - integer
               total_precipitation:
+                description:
+                  Total amount of precipitation that has fallen in a specific
+                  time period.
                 type:
                   - "null"
                   - object
@@ -554,11 +582,17 @@ definitions:
                       - "null"
                       - string
           wind:
+            description:
+              Movement of air in the atmosphere, carries weather systems
+              and affects temperatures.
             type:
               - "null"
               - object
             properties:
               speed:
+                description:
+                  Rate at which air is moving, usually in kilometers per
+                  hour or miles per hour.
                 type:
                   - "null"
                   - object
@@ -579,6 +613,9 @@ definitions:
                   - "null"
                   - integer
           wind_gust:
+            description:
+              Brief increase in the speed of wind that lasts for less than
+              20 seconds followed by a rapid decrease.
             type:
               - "null"
               - object
@@ -594,6 +631,9 @@ definitions:
                   - "null"
                   - string
           pressure:
+            description:
+              Force exerted by the atmosphere on a specific area, influencing
+              weather patterns.
             type:
               - "null"
               - object
@@ -609,6 +649,9 @@ definitions:
                   - "null"
                   - string
           visibility:
+            description:
+              Distance at which objects can be clearly seen, affected by
+              weather conditions like fog or rain.
             type:
               - "null"
               - object
@@ -624,6 +667,9 @@ definitions:
                   - "null"
                   - string
           dew_point:
+            description:
+              Indicates the temperature at which air becomes saturated
+              with water vapor and dew forms.
             type:
               - "null"
               - object
@@ -673,6 +719,7 @@ definitions:
               - "null"
               - string
           sun:
+            description: Information related to sun events and conditions.
             type:
               - "null"
               - object
@@ -688,6 +735,7 @@ definitions:
                   - "null"
                   - string
           moon:
+            description: Information related to moon events and conditions.
             type:
               - "null"
               - object

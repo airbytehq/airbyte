@@ -10,6 +10,7 @@
       "type": ["null", "string"]
     },
     "created_by": {
+      "description": "The user who created the custom field",
       "type": ["null", "object"],
       "properties": {
         "gid": {
@@ -51,8 +52,10 @@
       "type": ["null", "boolean"]
     },
     "enum_options": {
+      "description": "Array of options for the custom field",
       "type": ["null", "array"],
       "items": {
+        "description": "Options available for selection in the custom field",
         "type": ["null", "object"],
         "properties": {
           "gid": {
@@ -79,6 +82,7 @@
       }
     },
     "enum_value": {
+      "description": "The selected value from the enum_options for the custom field",
       "type": ["null", "object"],
       "properties": {
         "gid": {

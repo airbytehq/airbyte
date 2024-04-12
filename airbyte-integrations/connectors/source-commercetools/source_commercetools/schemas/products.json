@@ -38,6 +38,7 @@
       "$ref": "reference.json"
     },
     "masterData": {
+      "description": "Contains the main data of the product such as name, description, categories, and other key details.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -68,6 +69,7 @@
       "$ref": "reference.json"
     },
     "reviewRatingStatistics": {
+      "description": "Includes statistics related to the product reviews and ratings received by customers.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

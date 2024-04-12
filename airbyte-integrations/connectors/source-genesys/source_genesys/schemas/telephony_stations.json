@@ -27,6 +27,7 @@
       "type": ["null", "string"]
     },
     "primaryEdge": {
+      "description": "The primary edge telephony station used for communication.",
       "type": "object",
       "properties": {
         "id": {
@@ -44,6 +45,7 @@
       }
     },
     "secondaryEdge": {
+      "description": "The secondary edge telephony station used for communication.",
       "type": "object",
       "properties": {
         "id": {

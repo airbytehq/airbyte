@@ -471,6 +471,9 @@ definitions:
               - "null"
               - string
           messages:
+            description:
+              Contains information related to messages sent as part of
+              campaigns.
             type:
               - "null"
               - object
@@ -824,52 +827,64 @@ definitions:
         additionalProperties: true
         properties:
           message:
+            description: Content of the campaign message.
             type: string
           created_at:
+            description: Timestamp indicating when the campaign was created.
             type:
               - "null"
               - string
             format: date-time
           updated_at:
+            description: Timestamp indicating when the campaign was last updated.
             type:
               - "null"
               - string
             format: date-time
           archived:
+            description: Indicates whether the campaign is archived.
             type:
               - "null"
               - boolean
           draft:
+            description: Indicates whether the campaign is in draft mode.
             type:
               - "null"
               - boolean
           name:
+            description: Name or title of the campaign.
             type:
               - "null"
               - string
           description:
+            description: Description of the campaign.
             type:
               - "null"
               - string
           schedule_type:
+            description: Type of schedule for sending the campaign.
             type:
               - "null"
               - string
           first_sent:
+            description: Timestamp of the first time the campaign was sent.
             type:
               - "null"
               - string
             format: date-time
           last_sent:
+            description: Timestamp of the most recent time the campaign was sent.
             type:
               - "null"
               - string
             format: date-time
           campaign_id:
+            description: Unique identifier for the campaign.
             type:
               - "null"
               - string
           channels:
+            description: Channels associated with the campaign.
             type:
               - "null"
               - array
@@ -878,6 +893,7 @@ definitions:
                 - "null"
                 - string
           conversion_behaviors:
+            description: Conversion behaviors linked to the campaign.
             type:
               - "null"
               - array
@@ -888,16 +904,19 @@ definitions:
               additionalProperties: true
               properties: {}
           messages:
+            description: Messages associated with the campaign.
             type:
               - "null"
               - object
             additionalProperties: true
             properties: {}
           enabled:
+            description: Indicates whether the campaign is enabled or not.
             type:
               - "null"
               - boolean
           tags:
+            description: Tags associated with the campaign.
             type:
               - "null"
               - array
@@ -997,6 +1016,9 @@ definitions:
               - "null"
               - string
           channels:
+            description:
+              Contains information about the channels associated with the
+              canvas.
             type:
               - "null"
               - array
@@ -1006,6 +1028,7 @@ definitions:
                 - "null"
                 - string
           steps:
+            description: Describes the various steps or components of the canvas.
             type:
               - "null"
               - array
@@ -1017,6 +1040,9 @@ definitions:
               additionalProperties: true
               properties: {}
           variants:
+            description:
+              Provides details on different variations or versions of the
+              canvas.
             type:
               - "null"
               - array
@@ -1033,6 +1059,9 @@ definitions:
               - "null"
               - boolean
           tags:
+            description:
+              Specifies any tags assigned to the canvas for categorization
+              or filtering purposes.
             type:
               - "null"
               - array

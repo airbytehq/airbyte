@@ -47,9 +47,11 @@
       "type": ["object", "null"],
       "properties": {
         "assignee": {
+          "description": "The entity that has been assigned the group role.",
           "type": ["object", "null"],
           "properties": {
             "assignee": {
+              "description": "Details of the entity assigned the role.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
@@ -59,6 +61,7 @@
               }
             },
             "role": {
+              "description": "The role assigned to the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
@@ -68,6 +71,7 @@
               }
             },
             "resource-set": {
+              "description": "Details of the resource set associated with the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
@@ -77,6 +81,7 @@
               }
             },
             "permissions": {
+              "description": "Permissions granted to the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
@@ -86,6 +91,7 @@
               }
             },
             "member": {
+              "description": "Details of the group member.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {

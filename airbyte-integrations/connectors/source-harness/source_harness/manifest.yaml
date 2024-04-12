@@ -48,6 +48,7 @@ definitions:
           - "null"
         properties:
           organization:
+            description: Represents an organization entity
             type:
               - object
               - "null"
@@ -68,6 +69,7 @@ definitions:
                   - string
                   - "null"
               tags:
+                description: Collection of tags associated with the organization
                 type:
                   - object
                   - "null"

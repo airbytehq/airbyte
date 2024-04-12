@@ -3,6 +3,7 @@
   "type": "object",
   "properties": {
     "request": {
+      "description": "Contains information about the request made to the API, such as query parameters.",
       "type": ["null", "object"],
       "properties": {
         "type": {
@@ -24,6 +25,7 @@
       }
     },
     "location": {
+      "description": "Includes details about the location for which the weather data is retrieved.",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -65,6 +67,7 @@
       }
     },
     "current": {
+      "description": "Provides information about the current weather conditions.",
       "type": ["null", "object"],
       "properties": {
         "observation_time": {

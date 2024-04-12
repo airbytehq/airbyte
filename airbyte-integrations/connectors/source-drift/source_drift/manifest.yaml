@@ -74,8 +74,10 @@ definitions:
             description: The unique identifier for the account
             type: string
           customProperties:
+            description: Additional custom properties for the account
             type: array
             items:
+              description: A custom property for the account
               type: object
               properties:
                 label:
@@ -122,6 +124,7 @@ definitions:
             description: The unique identifier of the conversation.
             type: integer
           participants:
+            description: List of participants involved in the conversation
             type: array
             items:
               description: Details of the participants in the conversation.
@@ -158,8 +161,10 @@ definitions:
               - "null"
               - string
           conversationTags:
+            description: Tags associated with the conversation
             type: array
             items:
+              description: Properties of each conversation tag
               type: object
               properties:
                 color:
@@ -320,6 +325,7 @@ definitions:
             description: The main content/body of the message.
             type: string
           author:
+            description: Details about the author of the message.
             type: object
             properties:
               type:
@@ -346,6 +352,7 @@ definitions:
             description: Timestamp indicating when the message was created.
             type: integer
           buttons:
+            description: Action buttons associated with the message.
             type: array
             items:
               type: object
@@ -365,6 +372,7 @@ definitions:
                   description: Visual style of the button (e.g., primary, secondary).
                   type: string
                 reaction:
+                  description: Reaction associated with the button click.
                   type: object
                   properties:
                     type:
@@ -374,6 +382,7 @@ definitions:
                       description: Message triggered by clicking the button.
                       type: string
           context:
+            description: Contextual information related to the message.
             type: object
             properties:
               ip:

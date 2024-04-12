@@ -66,6 +66,7 @@
       "type": ["null", "string"]
     },
     "from": {
+      "description": "Details of the sender of the message.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -82,6 +83,7 @@
           "type": ["null", "string"]
         },
         "user": {
+          "description": "Information about the user who sent the message.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -102,6 +104,7 @@
       }
     },
     "body": {
+      "description": "The main content of the message body.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -116,6 +119,7 @@
       }
     },
     "channelIdentity": {
+      "description": "Identity information of the channel where the message was posted.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

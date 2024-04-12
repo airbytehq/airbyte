@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Custom properties associated with the task.",
       "type": "object",
       "properties": {
         "hs_all_assigned_business_unit_ids": {
@@ -259,30 +260,39 @@
       }
     },
     "properties_hs_all_assigned_business_unit_ids": {
+      "description": "List of all business unit IDs assigned to this task.",
       "type": ["null", "string"]
     },
     "properties_hs_at_mentioned_owner_ids": {
+      "description": "List of user IDs mentioned in the task.",
       "type": ["null", "string"]
     },
     "properties_hs_attachment_ids": {
+      "description": "List of attachment IDs associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview": {
+      "description": "Preview of the task body content.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_html": {
+      "description": "HTML formatted preview of the task body content.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_is_truncated": {
+      "description": "Flag indicating if the body preview is truncated.",
       "type": ["null", "boolean"]
     },
     "properties_hs_calendar_event_id": {
+      "description": "ID of the calendar event associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_created_by": {
+      "description": "User who created the task.",
       "type": ["null", "number"]
     },
     "properties_hs_created_by_user_id": {
+      "description": "User ID of the task creator.",
       "type": ["null", "number"]
     },
     "properties_hs_createdate": {
@@ -291,15 +301,19 @@
       "format": "date-time"
     },
     "properties_hs_engagement_source": {
+      "description": "Source of the task engagement.",
       "type": ["null", "string"]
     },
     "properties_hs_engagement_source_id": {
+      "description": "ID of the task engagement source.",
       "type": ["null", "string"]
     },
     "properties_hs_follow_up_action": {
+      "description": "Follow-up action associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_gdpr_deleted": {
+      "description": "Flag indicating if the task is deleted due to GDPR compliance.",
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
@@ -308,42 +322,55 @@
       "format": "date-time"
     },
     "properties_hs_merged_object_ids": {
+      "description": "List of object IDs merged with this task.",
       "type": ["null", "string"]
     },
     "properties_hs_modified_by": {
+      "description": "User who last modified the task.",
       "type": ["null", "number"]
     },
     "properties_hs_msteams_message_id": {
+      "description": "ID of the Microsoft Teams message associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_num_associated_companies": {
+      "description": "Number of companies associated with the task.",
       "type": ["null", "number"]
     },
     "properties_hs_num_associated_contacts": {
+      "description": "Number of contacts associated with the task.",
       "type": ["null", "number"]
     },
     "properties_hs_num_associated_deals": {
+      "description": "Number of deals associated with the task.",
       "type": ["null", "number"]
     },
     "properties_hs_num_associated_queue_objects": {
+      "description": "Number of queue objects associated with the task.",
       "type": ["null", "number"]
     },
     "properties_hs_num_associated_tickets": {
+      "description": "Number of tickets associated with the task.",
       "type": ["null", "number"]
     },
     "properties_hs_object_id": {
+      "description": "ID of the task object.",
       "type": ["null", "number"]
     },
     "properties_hs_product_name": {
+      "description": "Product name associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_queue_membership_ids": {
+      "description": "List of queue membership IDs associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_scheduled_tasks": {
+      "description": "Flag indicating if the task is scheduled.",
       "type": ["null", "string"]
     },
     "properties_hs_task_body": {
+      "description": "Full body content of the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_completion_date": {
@@ -352,12 +379,15 @@
       "format": "date-time"
     },
     "properties_hs_task_contact_timezone": {
+      "description": "Time zone of the contact associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_for_object_type": {
+      "description": "Type of object the task is for (e.g., contact, deal).",
       "type": ["null", "string"]
     },
     "properties_hs_task_is_all_day": {
+      "description": "Flag indicating if the task is an all-day task.",
       "type": ["null", "boolean"]
     },
     "properties_hs_task_last_contact_outreach": {
@@ -371,42 +401,55 @@
       "format": "date-time"
     },
     "properties_hs_task_priority": {
+      "description": "Priority level of the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_probability_to_complete": {
+      "description": "Probability of completing the task.",
       "type": ["null", "number"]
     },
     "properties_hs_task_relative_reminders": {
+      "description": "List of relative reminders set for the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_reminders": {
+      "description": "List of reminders set for the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_repeat_interval": {
+      "description": "Repeat interval for recurring tasks.",
       "type": ["null", "string"]
     },
     "properties_hs_task_send_default_reminder": {
+      "description": "Flag indicating if default reminders should be sent for the task.",
       "type": ["null", "boolean"]
     },
     "properties_hs_task_sequence_enrollment_active": {
+      "description": "Flag indicating if the task sequence enrollment is active.",
       "type": ["null", "boolean"]
     },
     "properties_hs_task_sequence_step_enrollment_id": {
+      "description": "ID of the task sequence step enrollment.",
       "type": ["null", "string"]
     },
     "properties_hs_task_sequence_step_order": {
+      "description": "Order of the task within the sequence step.",
       "type": ["null", "number"]
     },
     "properties_hs_task_status": {
+      "description": "Status of the task (e.g., open, closed).",
       "type": ["null", "string"]
     },
     "properties_hs_task_subject": {
+      "description": "Subject of the task.",
       "type": ["null", "string"]
     },
     "properties_hs_task_template_id": {
+      "description": "ID of the task template.",
       "type": ["null", "number"]
     },
     "properties_hs_task_type": {
+      "description": "Type of the task (e.g., call, email).",
       "type": ["null", "string"]
     },
     "properties_hs_timestamp": {
@@ -415,21 +458,27 @@
       "format": "date-time"
     },
     "properties_hs_unique_creation_key": {
+      "description": "Unique key for identifying task creation.",
       "type": ["null", "string"]
     },
     "properties_hs_unique_id": {
+      "description": "Unique ID for the task.",
       "type": ["null", "string"]
     },
     "properties_hs_updated_by_user_id": {
+      "description": "User ID of the user who last updated the task.",
       "type": ["null", "number"]
     },
     "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "List of user IDs following notifications for the task.",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "List of user IDs not following notifications for the task.",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_owners": {
+      "description": "List of user IDs who are owners of the task.",
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
@@ -438,18 +487,23 @@
       "format": "date-time"
     },
     "properties_hubspot_owner_id": {
+      "description": "ID of the HubSpot owner associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hubspot_team_id": {
+      "description": "ID of the HubSpot team associated with the task.",
       "type": ["null", "string"]
     },
     "properties_hs_all_owner_ids": {
+      "description": "List of all user IDs who are owners of this task.",
       "type": ["null", "string"]
     },
     "properties_hs_all_team_ids": {
+      "description": "List of all team IDs assigned to this task.",
       "type": ["null", "string"]
     },
     "properties_hs_all_accessible_team_ids": {
+      "description": "List of all team IDs that have access to this task.",
       "type": ["null", "string"]
     },
     "createdAt": {

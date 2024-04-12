@@ -85,6 +85,7 @@ definitions:
             type:
               - string
           email:
+            description: Represents email related information
             type:
               - object
             properties:
@@ -130,6 +131,7 @@ definitions:
                   - string
                 format: date-time
               recipient:
+                description: Represents the recipient of the email
                 type:
                   - object
                 properties:

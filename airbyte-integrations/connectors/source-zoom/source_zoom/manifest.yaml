@@ -307,6 +307,7 @@ definitions:
               - "null"
               - string
           occurrences:
+            description: List of individual occurrences (instances) of the meeting
             type:
               - "null"
               - array
@@ -356,6 +357,7 @@ definitions:
               - "null"
               - string
           recurrence:
+            description: Details about the recurrence pattern of the meeting
             type:
               - "null"
               - object
@@ -401,6 +403,7 @@ definitions:
                   - "null"
                   - string
           settings:
+            description: Settings related to the meeting configuration
             type:
               - "null"
               - object
@@ -433,6 +436,9 @@ definitions:
                   - "null"
                   - number
               approved_or_denied_countries_or_regions:
+                description:
+                  List of approved or denied countries or regions for the
+                  meeting
                 type:
                   - "null"
                   - object
@@ -900,6 +906,9 @@ definitions:
               - "null"
               - string
           resources:
+            description:
+              List of resources (e.g., rooms, equipment) associated with
+              the meeting
             type:
               - "null"
               - array
@@ -1225,6 +1234,7 @@ definitions:
               - "null"
               - number
           questions:
+            description: List of questions asked in the meeting poll
             type:
               - "null"
               - array
@@ -1249,6 +1259,7 @@ definitions:
                     - "null"
                     - boolean
                 answers:
+                  description: List of possible answers for the question
                   type:
                     - "null"
                     - array
@@ -1268,6 +1279,9 @@ definitions:
                     - "null"
                     - string
                 prompts:
+                  description:
+                    List of prompts presented to the participants for the
+                    question
                   type:
                     - "null"
                     - array
@@ -1282,6 +1296,7 @@ definitions:
                           - "null"
                           - string
                       prompt_right_answers:
+                        description: List of correct answers for the prompt
                         type:
                           - "null"
                           - array
@@ -1311,6 +1326,7 @@ definitions:
                     - "null"
                     - number
                 right_answers:
+                  description: List of correct answers for the question
                   type:
                     - "null"
                     - array
@@ -1495,6 +1511,7 @@ definitions:
               - "null"
               - integer
           custom_questions:
+            description: Custom registration questions for the meeting
             type:
               - "null"
               - array
@@ -1532,6 +1549,7 @@ definitions:
                     - "null"
                     - string
           questions:
+            description: Standard registration questions for the meeting
             type:
               - "null"
               - array
@@ -2444,6 +2462,7 @@ definitions:
               - "null"
               - string
           custom_questions:
+            description: Custom questions included in the webinar for attendees.
             type:
               - "null"
               - array
@@ -2609,10 +2628,12 @@ definitions:
               - "null"
               - number
           questions:
+            description: List of poll questions included in the webinar.
             type:
               - "null"
               - array
             items:
+              description: Details about a specific poll question.
               type:
                 - "null"
                 - object
@@ -3383,6 +3404,7 @@ definitions:
               - "null"
               - string
           custom_keys:
+            description: Array of custom keys associated with the webinar
             type:
               - "null"
               - array
@@ -3442,6 +3464,7 @@ definitions:
               - "null"
               - number
           tracking_fields:
+            description: Array of tracking fields associated with the webinar
             type:
               - "null"
               - array

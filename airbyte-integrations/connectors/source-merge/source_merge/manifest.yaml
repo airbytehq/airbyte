@@ -173,6 +173,7 @@ definitions:
               - "null"
               - boolean
           field_mappings:
+            description: Mapping of fields from source to destination
             type:
               - "null"
               - object
@@ -296,11 +297,15 @@ definitions:
               - "null"
               - boolean
           field_mappings:
+            description:
+              Field mappings for defining targets for different types of
+              accounts
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Targets defined for organization accounts
                 type:
                   - "null"
                   - object
@@ -311,6 +316,7 @@ definitions:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Targets defined for linked user accounts
                 type:
                   - "null"
                   - object
@@ -321,10 +327,12 @@ definitions:
                       - "null"
                       - string
           remote_data:
+            description: Data fetched from remote sources
             type:
               - "null"
               - array
             items:
+              description: Individual data object from the remote source
               type:
                 - "null"
                 - object
@@ -335,6 +343,7 @@ definitions:
                     - "null"
                     - string
                 data:
+                  description: Specific data retrieved from remote source
                   type:
                     - "null"
                     - array
@@ -394,11 +403,15 @@ definitions:
               - "null"
               - boolean
           field_mappings:
+            description:
+              Mappings for fields in the attachments data from different
+              sources.
             type:
               - "null"
               - object
             properties:
               organization_defined_targets:
+                description: Targets defined by the organization for mapping fields.
                 type:
                   - "null"
                   - object
@@ -409,6 +422,7 @@ definitions:
                       - "null"
                       - string
               linked_account_defined_targets:
+                description: Targets defined by linked user accounts for mapping fields.
                 type:
                   - "null"
                   - object
@@ -419,6 +433,7 @@ definitions:
                       - "null"
                       - string
           remote_data:
+            description: Data fetched remotely related to attachments.
             type:
               - "null"
               - array
@@ -433,6 +448,7 @@ definitions:
                     - "null"
                     - string
                 data:
+                  description: Actual attachment data fetched remotely.
                   type: array
                   items:
                     description: Data associated with the attachment
@@ -813,6 +829,9 @@ definitions:
               - "null"
               - boolean
           field_mappings:
+            description:
+              This object contains the mappings for fields representing
+              data related to EEOCs (Equal Employment Opportunity Commission).
             type:
               - "null"
               - object
@@ -1573,6 +1592,7 @@ definitions:
               - "null"
               - string
           field_mappings:
+            description: Mappings for fields between different systems
             type:
               - "null"
               - object

@@ -34,6 +34,7 @@
       "type": ["null", "string"]
     },
     "cadence": {
+      "description": "Details about the cadence associated with the membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -48,6 +49,7 @@
       }
     },
     "person": {
+      "description": "Details about the person associated with the cadence membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -62,6 +64,7 @@
       }
     },
     "user": {
+      "description": "Information about the user who is managing the cadence membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -76,6 +79,7 @@
       }
     },
     "latest_action": {
+      "description": "Information about the latest action taken within the cadence.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -90,6 +94,7 @@
       }
     },
     "counts": {
+      "description": "Counts related to the cadence membership like tasks completed, emails sent, etc.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

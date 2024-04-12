@@ -361,6 +361,7 @@ definitions:
               - "null"
               - string
           address:
+            description: The primary address of the contact.
             type:
               - "null"
               - object
@@ -368,6 +369,7 @@ definitions:
             properties:
               description: Primary physical address of the contact.
           billing_address:
+            description: The billing address of the contact.
             type:
               - "null"
               - object
@@ -375,6 +377,7 @@ definitions:
             properties:
               description: Billing address for the contact.
           shipping_address:
+            description: The shipping address of the contact.
             type:
               - "null"
               - object

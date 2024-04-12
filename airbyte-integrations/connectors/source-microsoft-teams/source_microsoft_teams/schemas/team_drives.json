@@ -18,6 +18,7 @@
       "type": ["null", "string"]
     },
     "lastModifiedBy": {
+      "description": "Details of the user who last modified the team drive",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -50,10 +51,12 @@
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "Details of the user who created the team drive",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "user": {
+          "description": "Details of the user who created the team drive",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -66,10 +69,12 @@
       }
     },
     "owner": {
+      "description": "Details of the group that owns the team drive",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "group": {
+          "description": "Details of the group that owns the team drive",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -90,6 +95,7 @@
       }
     },
     "quota": {
+      "description": "Quota information for the team drive",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

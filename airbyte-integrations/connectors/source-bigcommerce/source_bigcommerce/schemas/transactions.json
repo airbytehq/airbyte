@@ -47,6 +47,7 @@
       "type": ["null", "integer"]
     },
     "offline": {
+      "description": "Offline payment details for the transaction",
       "type": ["null", "object"],
       "properties": {
         "display_name": {
@@ -56,6 +57,7 @@
       }
     },
     "custom": {
+      "description": "Custom data related to the transaction",
       "type": ["null", "object"],
       "properties": {
         "payment_method": {
@@ -81,6 +83,7 @@
       "type": ["null", "string"]
     },
     "avs_result": {
+      "description": "Address Verification System (AVS) result for the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
@@ -102,6 +105,7 @@
       }
     },
     "cvv_result": {
+      "description": "Card Verification Value (CVV) result for the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
@@ -115,6 +119,7 @@
       }
     },
     "credit_card": {
+      "description": "Credit card details used for the transaction",
       "type": ["null", "object"],
       "properties": {
         "card_type": {
@@ -140,6 +145,7 @@
       }
     },
     "gift_certificate": {
+      "description": "Information about any gift certificates used in the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
@@ -165,6 +171,7 @@
       }
     },
     "store_credit": {
+      "description": "Store credit applied to the transaction",
       "type": ["null", "object"],
       "properties": {
         "remaining_balance": {

@@ -81,6 +81,7 @@ streams:
               - boolean
               - "null"
           object:
+            description: Represents an individual person's data
             type:
               - string
               - "null"
@@ -387,6 +388,7 @@ streams:
         type: object
         properties:
           person:
+            description: Represents the information of an employee
             type: object
             properties:
               url:
@@ -657,6 +659,7 @@ streams:
               - string
               - "null"
           labor_group:
+            description: Details related to the labor group at the location
             type: object
             properties:
               ref_object:
@@ -680,6 +683,7 @@ streams:
               - string
               - "null"
           people:
+            description: Data regarding the people associated with the location
             type: object
             properties:
               ref_object:
@@ -737,6 +741,7 @@ streams:
               - string
               - "null"
           company:
+            description: Information about the company at the location
             type: object
             properties:
               ref_object:
@@ -824,6 +829,7 @@ streams:
               - string
               - "null"
           labor_group_type:
+            description: Type of labor group.
             type: object
             properties:
               ref_object:
@@ -842,6 +848,7 @@ streams:
                   - string
                   - "null"
           assigned_members:
+            description: Members assigned to this labor group.
             type: object
             properties:
               url:
@@ -860,15 +867,18 @@ streams:
                   - string
                   - "null"
               data:
+                description: Data related to assigned members.
                 type:
                   - array
                   - "null"
                 items:
+                  description: Details about a specific assigned member.
                   type:
                     - object
                     - "null"
                   properties:
                     url:
+                      description: URL link associated with the member.
                       type:
                         - string
                         - "null"
@@ -880,10 +890,12 @@ streams:
                         - boolean
                         - "null"
                     object:
+                      description: Object metadata.
                       type:
                         - string
                         - "null"
                     ref_object:
+                      description: Reference to another object.
                       type:
                         - string
                         - "null"
@@ -1310,6 +1322,7 @@ streams:
               - string
               - "null"
           vacation_type:
+            description: Type of vacation requested (e.g., sick leave, annual leave)
             type: object
             properties:
               url:
@@ -1333,6 +1346,7 @@ streams:
               - string
               - "null"
           creator:
+            description: Details of the user who created the vacation request
             type: object
             properties:
               url:
@@ -1381,6 +1395,7 @@ streams:
               - string
               - "null"
           person:
+            description: Details of the person requesting vacation
             type: object
             properties:
               url:
@@ -1599,6 +1614,7 @@ streams:
               - "null"
             format: date-time
           person:
+            description: Details of the person for whom the time duration is being fetched
             type: object
             properties:
               ref_object:
@@ -1622,6 +1638,7 @@ streams:
               - string
               - "null"
           approver:
+            description: Details of the user who approved the time duration
             type: object
             properties:
               ref_object:

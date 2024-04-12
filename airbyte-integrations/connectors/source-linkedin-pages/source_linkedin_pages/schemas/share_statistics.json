@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "totalShareStatistics": {
+      "description": "Contains the aggregate share statistics for a given page",
       "type": ["null", "object"],
       "properties": {
         "uniqueImpressionsCount": {

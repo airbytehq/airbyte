@@ -154,6 +154,7 @@ streams:
               - boolean
               - "null"
           recordings:
+            description: List of recordings for the call
             type:
               - array
               - "null"
@@ -184,6 +185,7 @@ streams:
                   items:
                     type: string
                 file:
+                  description: Information about the recorded file
                   type:
                     - object
                     - "null"
@@ -217,6 +219,7 @@ streams:
                   maxLength: 256
                   type: string
                 agent:
+                  description: Details of the agent who made the recording
                   type: object
                   properties:
                     id:
@@ -235,6 +238,7 @@ streams:
                         - string
                         - "null"
           bridged:
+            description: Data related to the bridged calls
             type:
               - object
               - "null"

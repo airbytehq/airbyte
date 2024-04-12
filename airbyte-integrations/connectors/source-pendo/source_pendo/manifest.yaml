@@ -608,16 +608,22 @@ streams:
             description: Name of the report
             type: string
           type:
+            description: The type or category of the report data.
             type: string
           level:
+            description: The level at which the report data is generated or accessed.
             type: string
           scope:
+            description: The scope or range of data to include in the report.
             type: string
           share:
+            description: Information about sharing settings or permissions for the report.
             type: string
           shared:
+            description: Flag indicating whether the report is shared with others.
             type: boolean
           target:
+            description: The target or audience for which the report is intended.
             type: string
           createdAt:
             description: Timestamp when the report was created
@@ -1289,13 +1295,18 @@ streams:
             description: Timestamp of the last update of the report
             type: integer
           rootVersionId:
+            description: The identifier for the root version of the report.
             type: string
           stableVersionId:
+            description: The identifier for the stable version of the report.
             type: string
           lastSuccessRunAt:
             description: Timestamp of the last successful run of the report
             type: integer
           lastSuccessRunObj:
+            description:
+              The object containing information about the last successful
+              run.
             type: string
           lastUpdatedByUser:
             description: User who last updated the report
@@ -2197,6 +2208,9 @@ streams:
             description: Identifier of the root version of the guide.
             type: string
           audienceUiHint:
+            description:
+              Provides hints on the intended audience for displaying the
+              guide.
             type: object
             properties:
               filters:
@@ -2317,8 +2331,10 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           agent:
+            description: Information related to the agent associated with the account.
             properties:
               id:
+                description: The unique identifier of the agent.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2357,6 +2373,7 @@ streams:
                     type: boolean
                 type: object
               name:
+                description: The name of the agent.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2404,6 +2421,7 @@ streams:
                     type: string
                 type: object
               size:
+                description: The size of the agent.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2451,6 +2469,7 @@ streams:
                     type: string
                 type: object
               tier:
+                description: The tier of the agent.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2498,6 +2517,7 @@ streams:
                     type: string
                 type: object
               timezone:
+                description: The timezone of the agent.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2550,8 +2570,10 @@ streams:
                 type: object
             type: object
           auto:
+            description: Automatic data related to visits.
             properties:
               firstvisit:
+                description: The timestamp of the first visit.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2594,6 +2616,7 @@ streams:
                     type: boolean
                 type: object
               id:
+                description: The unique identifier of the visit.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2632,6 +2655,7 @@ streams:
                     type: boolean
                 type: object
               lastvisit:
+                description: The timestamp of the last visit.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2673,8 +2697,10 @@ streams:
                 type: object
             type: object
           pendo:
+            description: Pendo-specific metadata.
             properties:
               blacklistguides:
+                description: List of guides that are blacklisted.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2723,6 +2749,9 @@ streams:
                     type: boolean
                 type: object
               donotprocess:
+                description:
+                  Flag indicating whether the account metadata should not
+                  be processed.
                 properties:
                   Dirty:
                     description: Flag indicating if the data is dirty or not.
@@ -2804,6 +2833,7 @@ streams:
           agent:
             properties:
               age:
+                description: The age of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2831,6 +2861,7 @@ streams:
                     type: string
                 type: object
               country:
+                description: The country of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2858,6 +2889,7 @@ streams:
                     type: string
                 type: object
               displayname:
+                description: The display name of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2885,6 +2917,7 @@ streams:
                     type: string
                 type: object
               email:
+                description: The email address of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2912,6 +2945,7 @@ streams:
                     type: string
                 type: object
               firstname:
+                description: The first name of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2939,6 +2973,7 @@ streams:
                     type: string
                 type: object
               gender:
+                description: The gender of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2966,6 +3001,7 @@ streams:
                     type: string
                 type: object
               language:
+                description: The language preference of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -2993,6 +3029,7 @@ streams:
                     type: string
                 type: object
               loccomplete:
+                description: The location completeness flag for the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3020,6 +3057,7 @@ streams:
                     type: string
                 type: object
               name:
+                description: The name of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3047,6 +3085,7 @@ streams:
                     type: string
                 type: object
               role:
+                description: The role of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3074,6 +3113,7 @@ streams:
                     type: string
                 type: object
               tags:
+                description: Tags associated with the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3106,6 +3146,7 @@ streams:
           auto:
             properties:
               accountid:
+                description: The account ID associated with the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3131,6 +3172,7 @@ streams:
                     type: boolean
                 type: object
               accountids:
+                description: List of account IDs associated with the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3156,6 +3198,7 @@ streams:
                     type: boolean
                 type: object
               firstvisit:
+                description: Timestamp of the first visit of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3181,6 +3224,7 @@ streams:
                     type: boolean
                 type: object
               id:
+                description: Unique identifier of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3206,6 +3250,7 @@ streams:
                     type: boolean
                 type: object
               lastbrowsername:
+                description: Name of the last browser used by the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3231,6 +3276,7 @@ streams:
                     type: boolean
                 type: object
               lastbrowserversion:
+                description: Version of the last browser used by the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3256,6 +3302,7 @@ streams:
                     type: boolean
                 type: object
               lastoperatingsystem:
+                description: Operating system of the last device used by the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3281,6 +3328,7 @@ streams:
                     type: boolean
                 type: object
               lastservername:
+                description: Last known server name for the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3306,6 +3354,7 @@ streams:
                     type: boolean
                 type: object
               lastvisit:
+                description: Timestamp of the last visit of the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3334,6 +3383,7 @@ streams:
           custom:
             properties:
               practicumtest:
+                description: Flag for practicum test status
                 properties:
                   Dirty:
                     type: boolean
@@ -3359,6 +3409,7 @@ streams:
                     type: boolean
                 type: object
               rmlsurveytest:
+                description: Flag for RML survey test status
                 properties:
                   Dirty:
                     type: boolean
@@ -3384,6 +3435,7 @@ streams:
                     type: boolean
                 type: object
               special:
+                description: Special custom field for the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3412,6 +3464,7 @@ streams:
           pendo:
             properties:
               blacklistguides:
+                description: Flag to blacklist certain guides for the visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3437,6 +3490,9 @@ streams:
                     type: boolean
                 type: object
               designerenabled:
+                description:
+                  Flag to indicate whether the designer is enabled for the
+                  visitor
                 properties:
                   Dirty:
                     type: boolean
@@ -3462,6 +3518,9 @@ streams:
                     type: boolean
                 type: object
               donotprocess:
+                description:
+                  Flag to indicate whether certain processes should not be
+                  carried out for the visitor
                 properties:
                   Dirty:
                     type: boolean

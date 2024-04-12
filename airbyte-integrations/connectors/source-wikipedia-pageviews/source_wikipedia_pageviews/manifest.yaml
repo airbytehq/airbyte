@@ -121,8 +121,10 @@ definitions:
             description: Day of the month when the data was fetched
             type: string
           articles:
+            description: List of top articles based on pageviews.
             type: array
             items:
+              description: Details of each article.
               type: object
               properties:
                 rank:

@@ -465,6 +465,7 @@ streams:
               - "null"
               - string
           athlete:
+            description: Details of the athlete who recorded the activity
             type: object
             additionalProperties: true
             properties:
@@ -539,6 +540,9 @@ streams:
               - "null"
               - number
           start_latlng:
+            description:
+              Latitude and longitude coordinates of the start point of the
+              activity
             type:
               - "null"
               - array
@@ -548,6 +552,9 @@ streams:
                 - "null"
                 - number
           end_latlng:
+            description:
+              Latitude and longitude coordinates of the end point of the
+              activity
             type:
               - "null"
               - array
@@ -587,6 +594,7 @@ streams:
               - "null"
               - integer
           map:
+            description: Information related to the map of the activity route
             type: object
             additionalProperties: true
             properties:

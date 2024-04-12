@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Information related to the properties of the call engagement.",
       "type": "object",
       "properties": {
         "hs_activity_type": {

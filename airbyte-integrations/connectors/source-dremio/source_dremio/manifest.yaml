@@ -36,8 +36,10 @@ definitions:
         type: object
         properties:
           data:
+            description: The main data container for catalogs
             type: array
             items:
+              description: An individual catalog entry
               type: object
               properties:
                 id:

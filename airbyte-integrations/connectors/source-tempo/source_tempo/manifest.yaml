@@ -79,6 +79,7 @@ definitions:
               - "null"
               - integer
           lead:
+            description: Represents the lead information associated with the account.
             type: object
             properties:
               self:
@@ -90,6 +91,7 @@ definitions:
                 description: Unique identifier for the lead account
                 type: string
           contact:
+            description: Represents the contact details associated with the account.
             type: object
             properties:
               self:
@@ -102,6 +104,7 @@ definitions:
                 description: Type of contact
                 type: string
           category:
+            description: Represents the category information associated with the account.
             type: object
             properties:
               self:
@@ -117,12 +120,14 @@ definitions:
                 description: Name of the category
                 type: string
               type:
+                description: Represents the type information within the category.
                 type: object
                 properties:
                   name:
                     description: Name of the category type
                     type: string
           customer:
+            description: Represents the customer details related to the account.
             type:
               - "null"
               - object
@@ -140,6 +145,9 @@ definitions:
                 description: Name of the customer
                 type: string
           links:
+            description:
+              Represents any relevant links or references associated with
+              the account.
             type: object
             properties:
               self:

@@ -71,6 +71,7 @@
       "type": "integer"
     },
     "address": {
+      "description": "User's address information.",
       "type": "object",
       "properties": {
         "street_number": {

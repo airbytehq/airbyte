@@ -225,6 +225,7 @@ definitions:
               - string
               - "null"
           fields:
+            description: A collection of subscriber fields.
             type:
               - object
               - "null"

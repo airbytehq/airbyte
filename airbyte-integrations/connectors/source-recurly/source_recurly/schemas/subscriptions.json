@@ -3,13 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the subscription.",
       "type": ["null", "string"],
       "maxLength": 13
     },
     "object": {
+      "description": "Indicates the type of object (subscription).",
       "type": ["null", "string"]
     },
     "uuid": {
+      "description": "Universally unique identifier for the subscription.",
       "type": ["null", "string"],
       "maxLength": 32
     },
@@ -73,6 +76,7 @@
       }
     },
     "state": {
+      "description": "Current state of the subscription (e.g., active, cancelled).",
       "type": ["null", "string"],
       "maxLength": 256
     },
@@ -113,6 +117,7 @@
       }
     },
     "coupon_redemptions": {
+      "description": "Details of any coupons redeemed for the subscription.",
       "$ref": "coupon_redemptions.json"
     },
     "pending_change": {
@@ -198,15 +203,19 @@
       "format": "date-time"
     },
     "remaining_billing_cycles": {
+      "description": "Number of billing cycles remaining before subscription ends.",
       "type": ["null", "number"]
     },
     "total_billing_cycles": {
+      "description": "Total number of billing cycles for the subscription.",
       "type": ["null", "number"]
     },
     "renewal_billing_cycles": {
+      "description": "Number of billing cycles in the renewal period.",
       "type": ["null", "number"]
     },
     "auto_renew": {
+      "description": "Flag indicating whether the subscription auto renews.",
       "type": ["null", "boolean"]
     },
     "ramp_intervals": {
@@ -243,26 +252,33 @@
       "format": "date-time"
     },
     "remaining_pause_cycles": {
+      "description": "Number of pause cycles remaining for the subscription.",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "Currency used for billing the subscription.",
       "type": ["null", "string"],
       "maxLength": 3
     },
     "revenue_schedule_type": {
+      "description": "Type of revenue schedule for the subscription.",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "unit_amount": {
+      "description": "Amount charged per unit for the subscription.",
       "type": ["null", "number"]
     },
     "tax_inclusive": {
+      "description": "Flag indicating if taxes are included in the total amount.",
       "type": ["null", "boolean"]
     },
     "quantity": {
+      "description": "Number of units or items included in the subscription.",
       "type": ["null", "number"]
     },
     "add_ons": {
+      "description": "Any additional services or items added to the subscription.",
       "type": ["null", "array"],
       "title": "Add-ons",
       "items": {
@@ -285,43 +301,55 @@
       }
     },
     "add_ons_total": {
+      "description": "Total amount charged for the additional services or items.",
       "type": ["null", "number"]
     },
     "subtotal": {
+      "description": "Subtotal amount before taxes and additional charges.",
       "type": ["null", "number"]
     },
     "tax": {
+      "description": "Total tax amount applied to the subscription.",
       "type": ["null", "number"]
     },
     "tax_info": {
+      "description": "Details of the tax information for the subscription.",
       "$ref": "tax_info.json"
     },
     "total": {
+      "description": "Total amount including taxes and additional charges.",
       "type": ["null", "number"]
     },
     "collection_method": {
+      "description": "Method used for collecting payments for the subscription.",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "po_number": {
+      "description": "Purchase order number associated with the subscription.",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "net_terms": {
+      "description": "Number of net terms for payment.",
       "type": ["null", "number"]
     },
     "net_terms_type": {
+      "description": "Type of net terms (e.g., days).",
       "type": ["null", "string"]
     },
     "terms_and_conditions": {
+      "description": "Terms and conditions agreed upon for the subscription.",
       "type": ["null", "string"],
       "maxLength": 16384
     },
     "customer_notes": {
+      "description": "Any notes or comments added by the customer.",
       "type": ["null", "string"],
       "maxLength": 1024
     },
     "expiration_reason": {
+      "description": "Reason for the subscription expiration.",
       "type": ["null", "string"],
       "maxLength": 1024
     },
@@ -371,17 +399,21 @@
       "format": "date-time"
     },
     "gateway_code": {
+      "description": "Code associated with the payment gateway used for processing payments.",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "billing_info_id": {
+      "description": "ID of the billing information associated with the subscription.",
       "type": ["null", "string"],
       "maxLength": 13
     },
     "active_invoice_id": {
+      "description": "ID of the active invoice associated with the subscription.",
       "type": ["null", "string"]
     },
     "started_with_gift": {
+      "description": "Indicates if the subscription started with a gift or promotion.",
       "type": ["null", "boolean"]
     },
     "converted_at": {
@@ -390,6 +422,7 @@
       "format": "date-time"
     },
     "action_result": {
+      "description": "Result of the action performed on the subscription.",
       "type": ["null", "object"],
       "additionalProperties": true
     }

@@ -67,6 +67,7 @@
       "type": ["null", "string"]
     },
     "timezone": {
+      "description": "Store timezone information",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -82,6 +83,7 @@
           "type": ["null", "integer"]
         },
         "date_format": {
+          "description": "Date formatting options for the store",
           "type": ["null", "object"],
           "properties": {
             "display": {
@@ -165,6 +167,7 @@
       "type": ["null", "string"]
     },
     "logo": {
+      "description": "Store logo details",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -197,6 +200,7 @@
       "type": ["null", "array"]
     },
     "features": {
+      "description": "Features available in the store",
       "type": ["null", "object"],
       "properties": {
         "stencil_enabled": {

@@ -113,6 +113,7 @@ definitions:
               updated.
             type: string
           fields:
+            description: Subscriber fields data
             type: object
             properties:
               name:
@@ -1516,6 +1517,7 @@ definitions:
             description: Total count of opens on the form_popup
             type: integer
           conversion_rate:
+            description: Conversion rate metrics of the form popup.
             type: object
             properties:
               float:
@@ -1528,6 +1530,7 @@ definitions:
               - float
               - string
           settings:
+            description: Settings configurations for the form popup.
             type: object
             properties:
               double_optin:
@@ -1540,6 +1543,7 @@ definitions:
                 description: Type of the form_popup
                 type: string
               triggers:
+                description: Triggers that initiate the display of the form popup.
                 type: array
                 items:
                   description: List of triggers for the form_popup display
@@ -1560,6 +1564,7 @@ definitions:
                 description: Visibility settings for the form_popup
                 type: string
               url_list:
+                description: List of URLs where the form popup should appear.
                 type: array
                 items:
                   description: List of URLs where the form_popup is displayed
@@ -1570,6 +1575,7 @@ definitions:
                   - "null"
                   - string
               hide_on:
+                description: Conditions where the form popup should be hidden.
                 type: array
                 items:
                   description: List of items to hide the form_popup on
@@ -1606,6 +1612,7 @@ definitions:
             description: Indicates if the form_popup has content
             type: boolean
           can:
+            description: Details related to the capabilities of the form popup.
             type: object
             properties:
               update:
@@ -1617,6 +1624,7 @@ definitions:
             description: Indicates if the form_popup is used in automations
             type: boolean
           warnings:
+            description: Any warnings or alert messages related to the form popup.
             type: array
             items:
               description: List of warnings associated with the form_popup
@@ -1635,6 +1643,7 @@ definitions:
             description: Indicates if there are missing groups in the form_popup
             type: boolean
           groups:
+            description: Group-specific data for the form popup.
             type: array
             items:
               type: object
@@ -1655,6 +1664,7 @@ definitions:
                   description: Total count of opens on group
                   type: integer
                 open_rate:
+                  description: Open rate for this group.
                   type: object
                   properties:
                     float:
@@ -1670,6 +1680,7 @@ definitions:
                   description: Total count of clicks on group
                   type: integer
                 click_rate:
+                  description: Click-through rate for this group.
                   type: object
                   properties:
                     float:
@@ -1768,6 +1779,7 @@ definitions:
             description: The total count of opens for the form.
             type: integer
           conversion_rate:
+            description: Conversion rate of form submissions to desired actions
             type: object
             properties:
               float:
@@ -1780,6 +1792,7 @@ definitions:
               - float
               - string
           settings:
+            description: Configuration settings for forms and their behaviors
             type: object
             properties:
               double_optin:
@@ -1806,6 +1819,7 @@ definitions:
             description: Indicates if the form has content or not.
             type: boolean
           can:
+            description: Permission settings indicating what actions can be performed
             type: object
             properties:
               update:
@@ -1817,6 +1831,9 @@ definitions:
             description: Indicates if the form is used in automations.
             type: boolean
           warnings:
+            description:
+              Any warning messages or notifications related to the form
+              data
             type: array
             items:
               description:
@@ -1835,6 +1852,7 @@ definitions:
               form.
             type: boolean
           groups:
+            description: Information about different form groups
             type: array
             items:
               type: object
@@ -1855,6 +1873,7 @@ definitions:
                   description: The total count of opens in the group.
                   type: integer
                 open_rate:
+                  description: Rate at which form views are opened by users
                   type: object
                   properties:
                     float:
@@ -1870,6 +1889,7 @@ definitions:
                   description: The total count of clicks in the group.
                   type: integer
                 click_rate:
+                  description: Rate at which users click on form elements
                   type: object
                   properties:
                     float:
@@ -1970,6 +1990,7 @@ definitions:
             description: Total count of form opens
             type: integer
           conversion_rate:
+            description: Conversion rate of the form promotion
             type: object
             properties:
               float:
@@ -1982,6 +2003,7 @@ definitions:
               - float
               - string
           settings:
+            description: Settings of the form promotion
             type: object
             properties:
               groot_id:
@@ -1991,6 +2013,7 @@ definitions:
                 description: Type of the form
                 type: string
               triggers:
+                description: Triggers that activate the form promotion
                 type: array
                 items:
                   description: List of triggers
@@ -2011,11 +2034,13 @@ definitions:
                 description: Visibility settings
                 type: string
               url_list:
+                description: List of URLs where the form promotion is displayed
                 type: array
                 items:
                   description: List of URLs
                   type: string
               url_list_strict:
+                description: Strict list of URLs where the form promotion is displayed
                 type:
                   - array
                   - "null"
@@ -2023,6 +2048,7 @@ definitions:
                   description: Strict list of URLs
                   type: string
               hide_on:
+                description: Conditions under which the form is hidden
                 type: array
                 items:
                   description: List of items that are hidden
@@ -2070,6 +2096,7 @@ definitions:
             description: Flag indicating if the form promotion has content
             type: boolean
           can:
+            description: Permissions of the form promotion
             type: object
             properties:
               update:
@@ -2081,6 +2108,7 @@ definitions:
             description: Flag indicating if the form promotion is used in automations
             type: boolean
           warnings:
+            description: Any warnings related to the form promotion
             type: array
             items:
               description: List of warning items
@@ -2099,6 +2127,7 @@ definitions:
             description: Flag indicating if there are missing groups associated
             type: boolean
           groups:
+            description: Groups associated with the form promotion
             type: array
             items:
               description: List of groups associated with the form promotion

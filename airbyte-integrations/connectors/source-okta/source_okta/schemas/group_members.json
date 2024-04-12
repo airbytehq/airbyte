@@ -17,14 +17,17 @@
       "type": ["null", "string"]
     },
     "credentials": {
+      "description": "User credentials related information",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "password": {
+          "description": "User password details",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "hash": {
+              "description": "Hashed password information",
               "type": ["null", "object"],
               "properties": {
                 "algorithm": {
@@ -50,6 +53,7 @@
               }
             },
             "hook": {
+              "description": "Password hook configuration",
               "type": ["null", "object"],
               "properties": {
                 "type": {
@@ -65,6 +69,7 @@
           }
         },
         "provider": {
+          "description": "Identity provider details",
           "properties": {
             "name": {
               "description": "Name of the provider associated with the credentials",
@@ -78,6 +83,7 @@
           "type": ["null", "object"]
         },
         "recovery_question": {
+          "description": "Recovery question details",
           "properties": {
             "answer": {
               "description": "Answer to the recovery question",

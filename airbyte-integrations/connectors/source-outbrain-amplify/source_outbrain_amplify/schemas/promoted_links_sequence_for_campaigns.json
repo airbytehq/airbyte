@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "sequences": {
+      "description": "Array of sequences for the campaign",
       "type": ["array", "null"],
       "items": {
         "type": "object",
@@ -25,6 +26,7 @@
             "type": ["boolean", "null"]
           },
           "onAirStatus": {
+            "description": "Status indicating if the sequence is currently active or not",
             "type": "object",
             "properties": {
               "onAir": {
@@ -46,6 +48,7 @@
             "type": ["string", "null"]
           },
           "promotedLinks": {
+            "description": "Array of promoted links within the sequence",
             "type": ["array", "null"],
             "items": {
               "type": "object",
@@ -103,6 +106,7 @@
                   "type": ["string", "null"]
                 },
                 "onAirStatus": {
+                  "description": "Status indicating if the promoted link is currently active or not",
                   "type": "object",
                   "properties": {
                     "onAir": {
@@ -124,6 +128,7 @@
                   "type": ["string", "null"]
                 },
                 "sequenceSettings": {
+                  "description": "Settings specific to this promoted link's sequence",
                   "type": "object",
                   "properties": {
                     "sequenceId": {
@@ -137,6 +142,7 @@
                   }
                 },
                 "approvalStatus": {
+                  "description": "Status indicating if the promoted link is approved or not",
                   "type": "object",
                   "properties": {
                     "status": {

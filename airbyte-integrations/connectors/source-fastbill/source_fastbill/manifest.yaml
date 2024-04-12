@@ -302,65 +302,81 @@ definitions:
           - object
         properties:
           INVOICE_ID:
+            description: Unique ID of the invoice
             type:
               - string
           TYPE:
+            description: Type of the recurring invoice
             type:
               - "null"
               - string
           CUSTOMER_ID:
+            description: Unique ID of the customer
             type:
               - "null"
               - string
           CUSTOMER_NUMBER:
+            description: Customer's unique identification number
             type:
               - "null"
               - string
           CUSTOMER_COSTCENTER_ID:
+            description: Customer's cost center ID
             type:
               - "null"
               - string
           CONTACT_ID:
+            description: Contact ID of the customer
             type:
               - "null"
               - string
           PROJECT_ID:
+            description: ID of the associated project
             type:
               - "null"
               - string
           CURRENCY_CODE:
+            description: Currency code used for the invoice
             type:
               - "null"
               - string
           DELIVERY_DATE:
+            description: Date of delivery
             type:
               - "null"
               - string
           INVOICE_TITLE:
+            description: Title of the invoice
             type:
               - "null"
               - string
           CASH_DISCOUNT_PERCENT:
+            description: Percentage of cash discount
             type:
               - "null"
               - string
           CASH_DISCOUNT_DAYS:
+            description: Number of days for cash discount
             type:
               - "null"
               - string
           SUB_TOTAL:
+            description: Total amount before tax
             type:
               - "null"
               - number
           VAT_TOTAL:
+            description: Total VAT amount
             type:
               - "null"
               - number
           VAT_CASE:
+            description: VAT case type
             type:
               - "null"
               - string
           VAT_ITEMS:
+            description: List of VAT items in the invoice
             type:
               - "null"
               - array
@@ -370,18 +386,22 @@ definitions:
                 - object
               properties:
                 VAT_PERCENT:
+                  description: VAT percentage for the VAT item
                   type:
                     - "null"
                     - number
                 COMPLETE_NET:
+                  description: Total net amount of the VAT item
                   type:
                     - "null"
                     - number
                 VAT_VALUE:
+                  description: VAT value of the VAT item
                   type:
                     - "null"
                     - number
           ITEMS:
+            description: List of items in the invoice
             type:
               - "null"
               - array
@@ -391,42 +411,52 @@ definitions:
                 - object
               properties:
                 INVOICE_ITEM_ID:
+                  description: Unique ID of the invoice item
                   type:
                     - "null"
                     - number
                 ARTICLE_NUMBER:
+                  description: Article number of the item
                   type:
                     - "null"
                     - string
                 DESCRIPTION:
+                  description: Description of the item
                   type:
                     - "null"
                     - string
                 QUANTITY:
+                  description: Quantity of the item
                   type:
                     - "null"
                     - number
                 UNIT_PRICE:
+                  description: Price per unit of the item
                   type:
                     - "null"
                     - number
                 VAT_PERCENT:
+                  description: VAT percentage applied to the item
                   type:
                     - "null"
                     - number
                 VAT_VALUE:
+                  description: VAT value of the item
                   type:
                     - "null"
                     - number
                 COMPLETE_NET:
+                  description: Total net amount of the item
                   type:
                     - "null"
                     - number
                 COMPLETE_GROSS:
+                  description: Total gross amount of the item
                   type:
                     - "null"
                     - number
                 CATEGORY:
+                  description: Category of the item
                   type:
                     - "null"
                     - string
@@ -434,132 +464,160 @@ definitions:
                   empty: true
                   items: {}
                 CATEGORY_ID:
+                  description: Unique ID of the category
                   type:
                     - "null"
                     - integer
                     - array
                   items: {}
                 SORT_ORDER:
+                  description: Order in which the item appears
                   type:
                     - "null"
                     - number
           TOTAL:
+            description: Total amount including tax
             type:
               - "null"
               - number
           ORGANIZATION:
+            description: Customer's organization
             type:
               - "null"
               - string
             empty: true
           NOTE:
+            description: Additional notes or comments
             type:
               - "null"
               - string
             empty: true
           SALUTATION:
+            description: Customer's salutation
             type:
               - "null"
               - string
             empty: true
           FIRST_NAME:
+            description: Customer's first name
             type:
               - "null"
               - string
             empty: true
           LAST_NAME:
+            description: Customer's last name
             type:
               - "null"
               - string
             empty: true
           ADDRESS:
+            description: Customer's street address
             type:
               - "null"
               - string
             empty: true
           ADDRESS_2:
+            description: Additional address information
             type:
               - "null"
               - string
             empty: true
           ZIPCODE:
+            description: Customer's ZIP code
             type:
               - "null"
               - string
             empty: true
           CITY:
+            description: Customer's city
             type:
               - "null"
               - string
             empty: true
           SERVICE_PERIOD_START:
+            description: Start date of the service period
             type:
               - "null"
               - string
           SERVICE_PERIOD_END:
+            description: End date of the service period
             type:
               - "null"
               - string
           PAYMENT_TYPE:
+            description: Payment method type
             type:
               - "null"
               - string
           BANK_NAME:
+            description: Name of the customer's bank
             type:
               - "null"
               - string
             empty: true
           BANK_ACCOUNT_NUMBER:
+            description: Customer's bank account number
             type:
               - "null"
               - string
             empty: true
           BANK_CODE:
+            description: Bank code or routing number
             type:
               - "null"
               - string
             empty: true
           BANK_ACCOUNT_OWNER:
+            description: Owner's name of the bank account
             type:
               - "null"
               - string
             empty: true
           BANK_IBAN:
+            description: International Bank Account Number
             type:
               - "null"
               - string
             empty: true
           BANK_BIC:
+            description: Bank Identifier Code
             type:
               - "null"
               - string
             empty: true
           TEMPLATE_ID:
+            description: Unique ID of the template used for the invoice
             type:
               - "null"
               - string
             empty: true
           OCCURENCES:
+            description: Number of occurrences for the recurring invoice
             type:
               - "null"
               - string
           FREQUENCY:
+            description: Frequency of the recurring invoice
             type:
               - "null"
               - string
           START_DATE:
+            description: Start date of the recurring invoice
             type:
               - "null"
               - string
           EMAIL_NOTIFY:
+            description: Flag to indicate if customer was notified via email
             type:
               - "null"
               - string
           OUTPUT_TYPE:
+            description: Output format type
             type:
               - "null"
               - string
           INTROTEXT:
+            description: Introduction text for the invoice
             type:
               - "null"
               - string

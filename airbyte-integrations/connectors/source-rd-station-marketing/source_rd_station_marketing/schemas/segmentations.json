@@ -27,8 +27,10 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Array of links associated with the segmentations data.",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual link object.",
         "type": ["null", "object"],
         "properties": {
           "rel": {

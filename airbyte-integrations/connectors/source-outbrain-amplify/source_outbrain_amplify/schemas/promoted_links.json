@@ -52,6 +52,7 @@
       "type": ["string", "null"]
     },
     "onAirStatus": {
+      "description": "The on-air status indicating if the promoted link is active",
       "type": "object",
       "properties": {
         "onAir": {
@@ -77,6 +78,7 @@
       "type": ["string", "null"]
     },
     "approvalStatus": {
+      "description": "The approval status of the promoted link",
       "type": "object",
       "properties": {
         "status": {
@@ -94,6 +96,7 @@
       "type": ["string", "null"]
     },
     "callToAction": {
+      "description": "The call-to-action content for the promoted link",
       "type": "object",
       "properties": {
         "type": {

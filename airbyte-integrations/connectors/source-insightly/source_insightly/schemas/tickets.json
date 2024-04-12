@@ -75,6 +75,7 @@
       "type": ["string", "null"]
     },
     "CUSTOMFIELDS": {
+      "description": "Additional custom fields associated with the ticket.",
       "type": "array",
       "items": {
         "description": "Custom fields associated with the ticket.",
@@ -92,6 +93,7 @@
       }
     },
     "TAGS": {
+      "description": "Tags associated with the ticket for categorization or grouping purposes.",
       "type": "array",
       "items": {
         "description": "Tags associated with the ticket.",

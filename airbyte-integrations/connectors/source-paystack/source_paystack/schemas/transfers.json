@@ -26,6 +26,7 @@
       "type": ["null", "string"]
     },
     "recipient": {
+      "description": "Details of the recipient who received the transfer",
       "type": ["null", "object"],
       "properties": {
         "domain": {
@@ -45,6 +46,7 @@
           "type": ["null", "string"]
         },
         "details": {
+          "description": "Additional details about the recipient",
           "type": ["null", "object"],
           "properties": {
             "account_number": {

@@ -72,6 +72,7 @@
       "format": "date-time"
     },
     "guests": {
+      "description": "Information about guests invited to the meeting",
       "type": ["null", "array"],
       "items": {
         "description": "List of guests invited to the meeting",
@@ -79,6 +80,7 @@
       }
     },
     "attendees": {
+      "description": "Details of attendees participating in the meeting",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -113,6 +115,7 @@
       }
     },
     "person": {
+      "description": "Details of the person associated with the meeting",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -127,6 +130,7 @@
       }
     },
     "cadence": {
+      "description": "Information about the cadence associated with the meeting",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -141,6 +145,7 @@
       }
     },
     "step": {
+      "description": "Specific step or stage of the meeting process",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -155,6 +160,7 @@
       }
     },
     "booked_by_user": {
+      "description": "User who booked the meeting",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -212,6 +218,7 @@
       "type": ["null", "string"]
     },
     "owned_by_meetings_settings": {
+      "description": "Settings related to meetings owned by a user",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -222,6 +229,7 @@
       }
     },
     "booked_by_meetings_settings": {
+      "description": "Settings related to the meeting booking",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

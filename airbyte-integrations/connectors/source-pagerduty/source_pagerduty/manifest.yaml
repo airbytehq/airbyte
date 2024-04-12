@@ -1620,6 +1620,7 @@ definitions:
               - "null"
               - string
           teams:
+            description: Teams associated with the service
             type:
               - "null"
               - array
@@ -1634,6 +1635,7 @@ definitions:
               - "null"
               - string
           addons:
+            description: Add-ons associated with the service
             type:
               - "null"
               - array
@@ -1645,6 +1647,7 @@ definitions:
                 - "null"
                 - string
           scheduled_actions:
+            description: Scheduled actions related to the service
             type:
               - "null"
               - array
@@ -1664,6 +1667,7 @@ definitions:
               - "null"
               - string
           escalation_policy:
+            description: Escalation policy linked to the service
             type:
               - "null"
               - object
@@ -1694,6 +1698,7 @@ definitions:
                   - "null"
                   - string
           incident_urgency_rule:
+            description: Incident urgency rule for the service
             type:
               - "null"
               - object
@@ -1729,6 +1734,7 @@ definitions:
               - "null"
               - string
           alert_grouping_parameters:
+            description: Alert grouping parameters for the service
             type:
               - "null"
               - object
@@ -1739,6 +1745,7 @@ definitions:
                   - "null"
                   - string
               config:
+                description: Configuration settings for alert grouping
                 type:
                   - "null"
                   - object
@@ -1754,10 +1761,12 @@ definitions:
                       - "null"
                       - number
           integrations:
+            description: Integrations used by the service
             type:
               - "null"
               - array
             items:
+              description: Details of each integration used
               type:
                 - "null"
                 - object
@@ -1879,6 +1888,7 @@ definitions:
               - "null"
               - string
           teams:
+            description: A list of teams the user is part of.
             type:
               - "null"
               - array
@@ -1913,6 +1923,7 @@ definitions:
                     - "null"
                     - string
           contact_methods:
+            description: A list of contact methods associated with the user.
             type:
               - "null"
               - array
@@ -1947,6 +1958,7 @@ definitions:
                     - "null"
                     - string
           notification_rules:
+            description: A list of notification rules set up for the user.
             type:
               - "null"
               - array
@@ -1981,6 +1993,7 @@ definitions:
                     - "null"
                     - string
           coordinated_incidents:
+            description: A list of incidents where the user is a coordinator.
             type:
               - "null"
               - array
@@ -1990,6 +2003,7 @@ definitions:
                 - object
               properties:
                 incident:
+                  description: Details of the incident being coordinated.
                   type:
                     - "null"
                     - object
@@ -2020,6 +2034,7 @@ definitions:
                         - "null"
                         - string
                 requester:
+                  description: Details of the user who requested the incident coordination.
                   type:
                     - "null"
                     - object

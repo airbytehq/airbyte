@@ -316,6 +316,7 @@ definitions:
               - "null"
               - string
           rbac:
+            description: Access control policies related to role-based access control.
             type:
               - "null"
               - object

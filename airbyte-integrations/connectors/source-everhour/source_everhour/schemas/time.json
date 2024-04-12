@@ -51,6 +51,7 @@
           "type": ["null", "string"]
         },
         "projects": {
+          "description": "Specifies the projects the task is associated with.",
           "type": ["null", "array"],
           "items": {
             "description": "Projects the task is associated with.",
@@ -62,6 +63,7 @@
           "type": ["null", "string"]
         },
         "labels": {
+          "description": "Provides labels associated with the task.",
           "type": ["null", "array"],
           "items": {
             "description": "Labels associated with the task.",
@@ -76,6 +78,7 @@
               "type": ["null", "integer"]
             },
             "users": {
+              "description": "Contains users and their time entries for the task.",
               "type": ["null", "object"],
               "properties": {
                 "1029023": {
@@ -95,6 +98,7 @@
           "type": ["null", "boolean"]
         },
         "assignees": {
+          "description": "Lists the users assigned to the task.",
           "type": ["null", "array"],
           "items": {
             "description": "Assignees assigned to the task.",
@@ -104,6 +108,7 @@
       }
     },
     "history": {
+      "description": "Represents the time entry history related to the task.",
       "type": ["null", "array"],
       "items": {
         "description": "History items related to the time entry.",
@@ -112,6 +117,7 @@
       }
     },
     "lockReasons": {
+      "description": "Contains reasons for locking the time entry.",
       "type": ["null", "array"],
       "items": {
         "description": "Reasons for locking the time entry.",

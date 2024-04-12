@@ -154,57 +154,74 @@ definitions:
         type: object
         properties:
           account_sid:
+            description:
+              The unique identifier for the account that this worker belongs
+              to.
             type:
               - "null"
               - string
           date_created:
+            description: The date and time when the worker was created.
             type:
               - "null"
               - string
             format: date-time
           date_updated:
+            description: The date and time when the worker was last updated.
             type:
               - "null"
               - string
             format: date-time
           workspace_sid:
+            description:
+              The unique identifier for the workspace that this worker
+              belongs to.
             type:
               - "null"
               - string
           attributes:
+            description: Custom attributes or metadata associated with the worker.
             type:
               - "null"
               - string
           date_status_changed:
+            description: The date and time when the worker's status was last changed.
             type:
               - "null"
               - string
             format: date-time
           friendly_name:
+            description: A friendly name or label for the worker.
             type:
               - "null"
               - string
           available:
+            description: Indicates if the worker is available for tasks.
             type:
               - "null"
               - boolean
           sid:
+            description: The unique identifier for the worker.
             type:
               - "null"
               - string
           actvity_name:
+            description: The name of the current activity of the worker.
             type:
               - "null"
               - string
           activity_sid:
+            description: The unique identifier of the current activity of the worker.
             type:
               - "null"
               - string
           url:
+            description: The resource URL for accessing details of the worker.
             type:
               - "null"
               - string
           links:
+            description: Related resource URIs for the worker.
             type:
               - "null"
               - object

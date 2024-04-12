@@ -138,7 +138,9 @@ definitions:
               - "null"
               - integer
           steps:
+            description: An array containing the steps of the workflow.
             items:
+              description: Details of each step in the workflow.
               properties:
                 name:
                   description: The name of the step within the workflow.

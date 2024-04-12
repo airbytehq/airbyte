@@ -172,6 +172,7 @@ definitions:
               - "null"
               - string
           guest:
+            description: Details about the guest who made the booking
             type: object
             properties:
               id:

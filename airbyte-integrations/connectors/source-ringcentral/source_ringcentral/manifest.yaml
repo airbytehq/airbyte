@@ -568,6 +568,7 @@ definitions:
               - "null"
               - string
           to:
+            description: The recipient of the call or message
             type:
               - "null"
               - object
@@ -583,6 +584,7 @@ definitions:
                   - "null"
                   - string
           from:
+            description: The sender of the call or message
             type:
               - "null"
               - object
@@ -598,6 +600,7 @@ definitions:
                   - "null"
                   - string
           message:
+            description: The content of the message
             type:
               - "null"
               - object
@@ -692,6 +695,7 @@ definitions:
               - "null"
               - string
           to:
+            description: Represents the receiver who is receiving the call.
             type:
               - "null"
               - object
@@ -707,6 +711,7 @@ definitions:
                   - "null"
                   - string
           from:
+            description: Represents the caller who initiated the call.
             type:
               - "null"
               - object
@@ -722,6 +727,7 @@ definitions:
                   - "null"
                   - string
           message:
+            description: Provides any relevant message or notes related to the call.
             type:
               - "null"
               - object

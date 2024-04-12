@@ -47,6 +47,7 @@
       "type": ["number", "null"]
     },
     "delta": {
+      "description": "Represents the changes or variations in the data compared to the previous values.",
       "type": "object",
       "properties": {
         "cases": {
@@ -69,6 +70,7 @@
       "required": ["cases", "deaths", "recovered", "weekIncidence"]
     },
     "hospitalization": {
+      "description": "Provides information related to hospitalization cases in the specific Germany state.",
       "type": "object",
       "properties": {
         "cases7Days": {

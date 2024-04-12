@@ -238,10 +238,12 @@ definitions:
               - "null"
               - string
           parts:
+            description: An array containing the message parts
             type:
               - "null"
               - array
             items:
+              description: Details of a specific message part
               type:
                 - "null"
                 - object

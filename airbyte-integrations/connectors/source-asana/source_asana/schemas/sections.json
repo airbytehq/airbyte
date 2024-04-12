@@ -19,6 +19,7 @@
       "format": "date-time"
     },
     "project": {
+      "description": "Project details containing information about a specific project",
       "type": ["null", "object"],
       "properties": {
         "gid": {

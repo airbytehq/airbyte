@@ -1455,6 +1455,7 @@ definitions:
               - "null"
               - boolean
           chargePlans:
+            description: List of charge plans associated with the product
             type: array
             items:
               type: object
@@ -1490,6 +1491,7 @@ definitions:
                     - "null"
                     - string
                 charges:
+                  description: List of charges related to the charge plan
                   type: array
                   items:
                     type: object
@@ -1605,6 +1607,7 @@ definitions:
                           - "null"
                           - object
                       priceDetails:
+                        description: Details of pricing related to the charge
                         type: array
                         items:
                           type: object
@@ -1673,118 +1676,147 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the subscription
             type:
               - "null"
               - string
           orderNumber:
+            description: Order number associated with the subscription
             type:
               - "null"
               - string
           created:
+            description: Date of subscription creation
             type:
               - "null"
               - string
           modified:
+            description: Date of the last modification to the subscription
             type:
               - "null"
               - string
           orderBillingPeriod:
+            description: Billing period for the order
             type:
               - "null"
               - string
           setOrderBillingPeriod:
+            description: Setup billing period for the order
             type:
               - "null"
               - boolean
           version:
+            description: Version of the data
             type:
               - "null"
               - number
           isLastVersion:
+            description: Flag indicating if the subscription is the last version
             type:
               - "null"
               - boolean
           status:
+            description: Status of the subscription
             type:
               - "null"
               - string
           description:
+            description: Description of the subscription
             type:
               - "null"
               - string
           remarks:
+            description: Additional remarks or notes
             type:
               - "null"
               - string
           effectiveStartDate:
+            description: Effective start date of the subscription
             type:
               - "null"
               - string
           effectiveEndDate:
+            description: Effective end date of the subscription
             type:
               - "null"
               - string
           cancellationDate:
+            description: Date of subscription cancellation
             type:
               - "null"
               - string
           effectiveChangeDate:
+            description: Effective date of subscription change
             type:
               - "null"
               - string
           orderDate:
+            description: Date of the order
             type:
               - "null"
               - string
           noticePeriodDate:
+            description: Date when notice period starts
             type:
               - "null"
               - string
           lastRenewalDate:
+            description: Date of the last renewal
             type:
               - "null"
               - string
           noticePeriod:
+            description: Notice period for subscription cancellation
             type:
               - "null"
               - number
           term:
+            description: Term of the subscription
             type:
               - "null"
               - number
           renewalTerm:
+            description: Renewal term for the subscription
             type:
               - "null"
               - number
           isAutoRenewed:
+            description: Flag indicating if the subscription is set to auto-renew
             type:
               - "null"
               - boolean
           orderType:
+            description: Type of the order
             type:
               - "null"
               - string
           termType:
+            description: Type of the subscription term
             type:
               - "null"
               - string
           orderPaymentMethod:
+            description: Payment method used for the order
             type:
               - "null"
               - string
           invoiceSeparatly:
+            description: Flag indicating if the subscription is invoiced separately
             type:
               - "null"
               - boolean
           yourReference:
+            description: Reference provided by user
             type:
               - "null"
               - string
           ourReference:
+            description: Our reference for the subscription
             type:
               - "null"
               - string
           yourOrderNumber:
+            description: Order number specified by user
             type:
               - "null"
               - string
@@ -1792,42 +1824,52 @@ definitions:
             type: object
             properties:
               id:
+                description: Unique identifier for the address
                 type:
                   - "null"
                   - string
               description:
+                description: Description of invoice address
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the invoice address
                 type:
                   - "null"
                   - string
               street:
+                description: Street of invoice address
                 type:
                   - "null"
                   - string
               street2:
+                description: Additional street information
                 type:
                   - "null"
                   - string
               city:
+                description: City of invoice address
                 type:
                   - "null"
                   - string
               county:
+                description: County of invoice address
                 type:
                   - "null"
                   - string
               state:
+                description: State of invoice address
                 type:
                   - "null"
                   - string
               zip:
+                description: Zip code of invoice address
                 type:
                   - "null"
                   - string
               country:
+                description: Country of invoice address
                 type:
                   - "null"
                   - string
@@ -1835,42 +1877,52 @@ definitions:
             type: object
             properties:
               id:
+                description: Unique identifier for the address
                 type:
                   - "null"
                   - string
               description:
+                description: Description of delivery address
                 type:
                   - "null"
                   - string
               name:
+                description: Name of the delivery address
                 type:
                   - "null"
                   - string
               street:
+                description: Street of delivery address
                 type:
                   - "null"
                   - string
               street2:
+                description: Additional street information
                 type:
                   - "null"
                   - string
               city:
+                description: City of delivery address
                 type:
                   - "null"
                   - string
               county:
+                description: County of delivery address
                 type:
                   - "null"
                   - string
               state:
+                description: State of delivery address
                 type:
                   - "null"
                   - string
               zip:
+                description: Zip code of delivery address
                 type:
                   - "null"
                   - string
               country:
+                description: Country of delivery address
                 type:
                   - "null"
                   - string
@@ -1878,22 +1930,27 @@ definitions:
             type: object
             properties:
               id:
+                description: Unique identifier for the invoice batch group
                 type:
                   - "null"
                   - string
               code:
+                description: Code of the invoice batch group
                 type:
                   - "null"
                   - string
               description:
+                description: Description of the invoice batch group
                 type:
                   - "null"
                   - string
           paymentTerm:
+            description: Payment term for the subscription
             type:
               - "null"
               - string
           useAccountInvoiceBatchGroup:
+            description: Flag indicating if account invoice batch group is used
             type:
               - "null"
               - boolean
@@ -1901,22 +1958,27 @@ definitions:
             type: object
             properties:
               name:
+                description: Name of the account
                 type:
                   - "null"
                   - string
               accountNumber:
+                description: Unique identifier for the account
                 type:
                   - "null"
                   - string
               id:
+                description: Unique identifier for the account
                 type:
                   - "null"
                   - string
               externalERPId:
+                description: External ERP system ID associated with the account
                 type:
                   - "null"
                   - string
               externalCRMId:
+                description: External CRM system ID associated with the account
                 type:
                   - "null"
                   - string
@@ -1924,22 +1986,27 @@ definitions:
             type: object
             properties:
               name:
+                description: Name of the invoice account
                 type:
                   - "null"
                   - string
               accountNumber:
+                description: Account number linked to the invoice
                 type:
                   - "null"
                   - string
               id:
+                description: Unique identifier for the invoice account
                 type:
                   - "null"
                   - string
               externalERPId:
+                description: External ERP system ID associated with the invoice account
                 type:
                   - "null"
                   - string
               externalCRMId:
+                description: External CRM system ID associated with the invoice account
                 type:
                   - "null"
                   - string
@@ -1949,30 +2016,37 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the product
                   type:
                     - "null"
                     - string
                 productNumber:
+                  description: Number of the product
                   type:
                     - "null"
                     - string
                 chargePlanId:
+                  description: ID of the charge plan
                   type:
                     - "null"
                     - string
                 chargePlanName:
+                  description: Name of the charge plan
                   type:
                     - "null"
                     - string
                 chargePlanNumber:
+                  description: Number of the charge plan
                   type:
                     - "null"
                     - string
                 productLineNumber:
+                  description: Line number for the product
                   type:
                     - "null"
                     - number
                 name:
+                  description: Name of the product
                   type:
                     - "null"
                     - string
@@ -1982,146 +2056,184 @@ definitions:
                     type: object
                     properties:
                       id:
+                        description: Unique identifier for the charge
                         type:
                           - "null"
                           - string
                       chargeNumber:
+                        description: Number of the charge
                         type:
                           - "null"
                           - string
                       version:
+                        description: Version of the charge
                         type:
                           - "null"
                           - number
                       isLastVersion:
+                        description: Flag indicating if the charge is the last version
                         type:
                           - "null"
                           - boolean
                       name:
+                        description: Name of the charge
                         type:
                           - "null"
                           - string
                       chargeType:
+                        description: Type of charge
                         type:
                           - "null"
                           - string
                       priceModel:
+                        description: Pricing model for the charge
                         type:
                           - "null"
                           - string
                       effectiveStartDate:
+                        description: Effective start date of the charge
                         type:
                           - "null"
                           - string
                       effectiveEndDate:
+                        description: Effective end date of the charge
                         type:
                           - "null"
                           - string
                       quantity:
+                        description: Quantity of the charge
                         type:
                           - "null"
                           - number
                       unitCode:
+                        description: Unit code for the charge
                         type:
                           - "null"
                           - string
                       startOn:
+                        description: Start date for the charge
                         type:
                           - "null"
                           - string
                       endOn:
+                        description: End date for the charge
                         type:
                           - "null"
                           - string
                       chargedThroughDate:
+                        description: Date charges are accounted for
                         type:
                           - "null"
                           - string
                       lastRenewalDate:
+                        description: Date of the last renewal
                         type:
                           - "null"
                           - string
                       lastPriceAdjustmentDate:
+                        description: Date of the last price adjustment
                         type:
                           - "null"
                           - string
                       pricePeriod:
+                        description: Pricing period for the charge
                         type:
                           - "null"
                           - string
                       usageRating:
+                        description: Usage rating for the charge
                         type:
                           - "null"
                           - string
                       revenueRecognitionRule:
+                        description: Rule for revenue recognition
                         type:
                           - "null"
                           - string
                       billingDay:
+                        description: Billing day for the charge
                         type:
                           - "null"
                           - string
                       specificBillingDay:
+                        description: Specific billing day for the charge
                         type:
                           - "null"
                           - number
                       billingPeriod:
+                        description: Billing period for the charge
                         type:
                           - "null"
                           - string
                       billingTiming:
+                        description: Billing timing for the charge
                         type:
                           - "null"
                           - string
                       periodAlignment:
+                        description: Period alignment for the charge
                         type:
                           - "null"
                           - string
                       taxTemplate:
+                        description: Tax template applied to the charge
                         type:
                           - "null"
                           - string
                       taxIncluded:
+                        description: Flag indicating if tax is included in the charge
                         type:
                           - "null"
                           - boolean
                       createInvoiceLinesPerTier:
+                        description:
+                          Flag indicating if invoice lines are created
+                          per tier
                         type:
                           - "null"
                           - boolean
                       estimatedUsage:
+                        description: Estimated usage for the charge
                         type:
                           - "null"
                           - number
                       estimatedQuantity:
+                        description: Estimated quantity for the charge
                         type:
                           - "null"
                           - number
                       remarks:
+                        description: Remarks or notes for the charge
                         type:
                           - "null"
                           - string
                       accountsReceivableAccount:
+                        description: Account for accounts receivable
                         type:
                           - "null"
                           - string
                       deferredRevenueAccount:
+                        description: Account for deferred revenue
                         type:
                           - "null"
                           - string
                       recognizedRevenueAccount:
+                        description: Account for recognized revenue
                         type:
                           - "null"
                           - string
                       changeState:
+                        description: Change state for the charge
                         type:
                           - "null"
                           - string
                       displayPrice:
+                        description: Price displayed for the charge
                         type:
                           - "null"
                           - number
                       customFields:
+                        description: Custom fields associated with the charge
                         type:
                           - "null"
                           - object
@@ -2131,46 +2243,57 @@ definitions:
                           type: object
                           properties:
                             tier:
+                              description: Pricing tier of the charge
                               type:
                                 - "null"
                                 - number
                             price:
+                              description: Price of the charge
                               type:
                                 - "null"
                                 - number
                             listPrice:
+                              description: List price of the charge
                               type:
                                 - "null"
                                 - number
                             description:
+                              description: Description of the price
                               type:
                                 - "null"
                                 - string
                             fromQuantity:
+                              description: Quantity from which the price applies
                               type:
                                 - "null"
                                 - number
                             toQuantity:
+                              description: Quantity up to which the price applies
                               type:
                                 - "null"
                                 - number
                             priceBase:
+                              description: Base price of the charge
                               type:
                                 - "null"
                                 - string
                             lineDiscountPercent:
+                              description: Percentage of line discount
                               type:
                                 - "null"
                                 - number
                             lineDiscountAmount:
+                              description: Amount of line discount
                               type:
                                 - "null"
                                 - number
                       recurringMonthlyAmount:
+                        description: Recurring monthly amount for the charge
                         type:
                           - "null"
                           - number
                       recurringMonthlyAmountBase:
+                        description: Base recurring monthly amount for the charge
                         type:
                           - "null"
                           - number
@@ -2180,10 +2303,12 @@ definitions:
                           type: object
                           properties:
                             code:
+                              description: Feature code
                               type:
                                 - "null"
                                 - string
                             description:
+                              description: Description of the feature
                               type:
                                 - "null"
                                 - string
@@ -2193,18 +2318,22 @@ definitions:
                           type: object
                           properties:
                             orderDiscountId:
+                              description: Discount ID linked to the order
                               type:
                                 - "null"
                                 - string
                             chargeId:
+                              description: Charge ID linked to the order
                               type:
                                 - "null"
                                 - string
                       externalERPId:
+                        description: External ERP system ID associated with the charge
                         type:
                           - "null"
                           - string
                       externalCRMId:
+                        description: External CRM system ID associated with the charge
                         type:
                           - "null"
                           - string
@@ -2212,22 +2341,27 @@ definitions:
                         type: object
                         properties:
                           amount:
+                            description: Amount of Committed Monthly Recurring Revenue
                             type:
                               - "null"
                               - number
                           currencyCode:
+                            description: Currency code
                             type:
                               - "null"
                               - string
                           currencyConversionDate:
+                            description: Date of currency conversion
                             type:
                               - "null"
                               - string
                           baseCurrencyAmount:
+                            description: Amount in base currency
                             type:
                               - "null"
                               - number
                           baseCurrencyCode:
+                            description: Base currency code
                             type:
                               - "null"
                               - string
@@ -2235,22 +2369,27 @@ definitions:
                         type: object
                         properties:
                           amount:
+                            description: Amount of Annual Contract Value
                             type:
                               - "null"
                               - number
                           currencyCode:
+                            description: Currency code
                             type:
                               - "null"
                               - string
                           currencyConversionDate:
+                            description: Date of currency conversion
                             type:
                               - "null"
                               - string
                           baseCurrencyAmount:
+                            description: Amount in base currency
                             type:
                               - "null"
                               - number
                           baseCurrencyCode:
+                            description: Base currency code
                             type:
                               - "null"
                               - string
@@ -2258,22 +2397,27 @@ definitions:
                         type: object
                         properties:
                           amount:
+                            description: Total Contract Value amount
                             type:
                               - "null"
                               - number
                           currencyCode:
+                            description: Currency code
                             type:
                               - "null"
                               - string
                           currencyConversionDate:
+                            description: Date of currency conversion
                             type:
                               - "null"
                               - string
                           baseCurrencyAmount:
+                            description: Amount in base currency
                             type:
                               - "null"
                               - number
                           baseCurrencyCode:
+                            description: Base currency code
                             type:
                               - "null"
                               - string
@@ -2281,22 +2425,27 @@ definitions:
                         type: object
                         properties:
                           amount:
+                            description: Amount of Estimated Monthly Recurring Revenue
                             type:
                               - "null"
                               - number
                           currencyCode:
+                            description: Currency code
                             type:
                               - "null"
                               - string
                           currencyConversionDate:
+                            description: Date of currency conversion
                             type:
                               - "null"
                               - string
                           baseCurrencyAmount:
+                            description: Amount in base currency
                             type:
                               - "null"
                               - number
                           baseCurrencyCode:
+                            description: Base currency code
                             type:
                               - "null"
                               - string
@@ -2304,42 +2453,52 @@ definitions:
                         type: object
                         properties:
                           amount:
+                            description: Total amount of one-time fees
                             type:
                               - "null"
                               - number
                           currencyCode:
+                            description: Currency code
                             type:
                               - "null"
                               - string
                           currencyConversionDate:
+                            description: Date of currency conversion
                             type:
                               - "null"
                               - string
                           baseCurrencyAmount:
+                            description: Amount in base currency
                             type:
                               - "null"
                               - number
                           baseCurrencyCode:
+                            description: Base currency code
                             type:
                               - "null"
                               - string
                       orderProductId:
+                        description: Product ID linked to the order
                         type:
                           - "null"
                           - string
                       orderId:
+                        description: Order ID linked to the charge
                         type:
                           - "null"
                           - string
                 customFields:
+                  description: Custom fields associated with the product
                   type:
                     - "null"
                     - object
                 externalERPId:
+                  description: External ERP system ID associated with the product
                   type:
                     - "null"
                     - string
                 externalCRMId:
+                  description: External CRM system ID associated with the product
                   type:
                     - "null"
                     - string
@@ -2347,22 +2506,27 @@ definitions:
                   type: object
                   properties:
                     amount:
+                      description: Amount of Committed Monthly Recurring Revenue
                       type:
                         - "null"
                         - number
                     currencyCode:
+                      description: Currency code
                       type:
                         - "null"
                         - string
                     currencyConversionDate:
+                      description: Date of currency conversion
                       type:
                         - "null"
                         - string
                     baseCurrencyAmount:
+                      description: Amount in base currency
                       type:
                         - "null"
                         - number
                     baseCurrencyCode:
+                      description: Base currency code
                       type:
                         - "null"
                         - string
@@ -2370,22 +2534,27 @@ definitions:
                   type: object
                   properties:
                     amount:
+                      description: Amount of Annual Contract Value
                       type:
                         - "null"
                         - number
                     currencyCode:
+                      description: Currency code
                       type:
                         - "null"
                         - string
                     currencyConversionDate:
+                      description: Date of currency conversion
                       type:
                         - "null"
                         - string
                     baseCurrencyAmount:
+                      description: Amount in base currency
                       type:
                         - "null"
                         - number
                     baseCurrencyCode:
+                      description: Base currency code
                       type:
                         - "null"
                         - string
@@ -2393,22 +2562,27 @@ definitions:
                   type: object
                   properties:
                     amount:
+                      description: Amount of Estimated Monthly Recurring Revenue
                       type:
                         - "null"
                         - number
                     currencyCode:
+                      description: Currency code
                       type:
                         - "null"
                         - string
                     currencyConversionDate:
+                      description: Date of currency conversion
                       type:
                         - "null"
                         - string
                     baseCurrencyAmount:
+                      description: Amount in base currency
                       type:
                         - "null"
                         - number
                     baseCurrencyCode:
+                      description: Base currency code
                       type:
                         - "null"
                         - string
@@ -2416,22 +2590,27 @@ definitions:
                   type: object
                   properties:
                     amount:
+                      description: Total amount of one-time fees
                       type:
                         - "null"
                         - number
                     currencyCode:
+                      description: Currency code
                       type:
                         - "null"
                         - string
                     currencyConversionDate:
+                      description: Date of currency conversion
                       type:
                         - "null"
                         - string
                     baseCurrencyAmount:
+                      description: Amount in base currency
                       type:
                         - "null"
                         - number
                     baseCurrencyCode:
+                      description: Base currency code
                       type:
                         - "null"
                         - string
@@ -2439,22 +2618,27 @@ definitions:
                   type: object
                   properties:
                     amount:
+                      description: Total Contract Value amount
                       type:
                         - "null"
                         - number
                     currencyCode:
+                      description: Currency code
                       type:
                         - "null"
                         - string
                     currencyConversionDate:
+                      description: Date of currency conversion
                       type:
                         - "null"
                         - string
                     baseCurrencyAmount:
+                      description: Amount in base currency
                       type:
                         - "null"
                         - number
                     baseCurrencyCode:
+                      description: Base currency code
                       type:
                         - "null"
                         - string
@@ -2464,26 +2648,32 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the milestone
                   type:
                     - "null"
                     - string
                 orderId:
+                  description: Order ID linked to the milestone
                   type:
                     - "null"
                     - string
                 name:
+                  description: Name of the milestone
                   type:
                     - "null"
                     - string
                 description:
+                  description: Description of the milestone
                   type:
                     - "null"
                     - string
                 milestoneDate:
+                  description: Date of the milestone
                   type:
                     - "null"
                     - string
                 plannedDate:
+                  description: Planned date for the milestone
                   type:
                     - "null"
                     - string
@@ -2493,34 +2683,42 @@ definitions:
               type: object
               properties:
                 id:
+                  description: Unique identifier for the discount
                   type:
                     - "null"
                     - string
                 orderId:
+                  description: Order ID linked to the discount
                   type:
                     - "null"
                     - string
                 startOn:
+                  description: Start date for the discount
                   type:
                     - "null"
                     - string
                 endOn:
+                  description: End date for the discount
                   type:
                     - "null"
                     - string
                 startDate:
+                  description: Start date of the discount
                   type:
                     - "null"
                     - string
                 endDate:
+                  description: End date of the discount
                   type:
                     - "null"
                     - string
                 percent:
+                  description: Percentage of the discount
                   type:
                     - "null"
                     - number
                 discountType:
+                  description: Type of discount applied to the order
                   type:
                     - "null"
                     - string
@@ -2530,34 +2728,44 @@ definitions:
                     type: object
                     properties:
                       orderDiscountId:
+                        description: Discount ID linked to the order
                         type:
                           - "null"
                           - string
                       chargeId:
+                        description: Charge ID linked to the order
                         type:
                           - "null"
                           - string
                 onSpecificCharges:
+                  description:
+                    Flag indicating if the discount is applied to specific
+                    charges
                   type:
                     - "null"
                     - boolean
           currency:
+            description: Currency used for the subscription
             type:
               - "null"
               - string
           externalERPId:
+            description: External ERP system ID associated with the subscription
             type:
               - "null"
               - string
           externalCRMId:
+            description: External CRM system ID associated with the subscription
             type:
               - "null"
               - string
           currencyCodeToUseWhenInvoice:
+            description: Currency code used for invoicing
             type:
               - "null"
               - string
           customFields:
+            description: Custom fields associated with the subscription
             type:
               - "null"
               - object
@@ -2565,22 +2773,27 @@ definitions:
             type: object
             properties:
               amount:
+                description: Amount of Committed Monthly Recurring Revenue
                 type:
                   - "null"
                   - number
               currencyCode:
+                description: Currency code
                 type:
                   - "null"
                   - string
               currencyConversionDate:
+                description: Date of currency conversion
                 type:
                   - "null"
                   - string
               baseCurrencyAmount:
+                description: Amount in base currency
                 type:
                   - "null"
                   - number
               baseCurrencyCode:
+                description: Base currency code
                 type:
                   - "null"
                   - string
@@ -2588,22 +2801,27 @@ definitions:
             type: object
             properties:
               amount:
+                description: Amount of Annual Contract Value
                 type:
                   - "null"
                   - number
               currencyCode:
+                description: Currency code
                 type:
                   - "null"
                   - string
               currencyConversionDate:
+                description: Date of currency conversion
                 type:
                   - "null"
                   - string
               baseCurrencyAmount:
+                description: Amount in base currency
                 type:
                   - "null"
                   - number
               baseCurrencyCode:
+                description: Base currency code
                 type:
                   - "null"
                   - string
@@ -2611,22 +2829,27 @@ definitions:
             type: object
             properties:
               amount:
+                description: Amount of Estimated Monthly Recurring Revenue
                 type:
                   - "null"
                   - number
               currencyCode:
+                description: Currency code
                 type:
                   - "null"
                   - string
               currencyConversionDate:
+                description: Date of currency conversion
                 type:
                   - "null"
                   - string
               baseCurrencyAmount:
+                description: Amount in base currency
                 type:
                   - "null"
                   - number
               baseCurrencyCode:
+                description: Base currency code
                 type:
                   - "null"
                   - string
@@ -2634,22 +2857,27 @@ definitions:
             type: object
             properties:
               amount:
+                description: Total amount of one-time fees
                 type:
                   - "null"
                   - number
               currencyCode:
+                description: Currency code
                 type:
                   - "null"
                   - string
               currencyConversionDate:
+                description: Date of currency conversion
                 type:
                   - "null"
                   - string
               baseCurrencyAmount:
+                description: Amount in base currency
                 type:
                   - "null"
                   - number
               baseCurrencyCode:
+                description: Base currency code
                 type:
                   - "null"
                   - string
@@ -2657,22 +2885,27 @@ definitions:
             type: object
             properties:
               amount:
+                description: Total Contract Value amount
                 type:
                   - "null"
                   - number
               currencyCode:
+                description: Currency code
                 type:
                   - "null"
                   - string
               currencyConversionDate:
+                description: Date of currency conversion
                 type:
                   - "null"
                   - string
               baseCurrencyAmount:
+                description: Amount in base currency
                 type:
                   - "null"
                   - number
               baseCurrencyCode:
+                description: Base currency code
                 type:
                   - "null"
                   - string

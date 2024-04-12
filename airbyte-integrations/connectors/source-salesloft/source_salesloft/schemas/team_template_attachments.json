@@ -11,6 +11,7 @@
       "type": ["null", "integer"]
     },
     "team_template": {
+      "description": "Details of the team template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

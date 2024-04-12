@@ -80,6 +80,7 @@ definitions:
           - certifications
         properties:
           certifications:
+            description: Contains certification information for movies.
             $id: "#root/certifications"
             title: Certifications
             type: object
@@ -1479,6 +1480,7 @@ definitions:
             type: integer
             default: 0
           genres:
+            description: The genres of the movie.
             $id: "#root/genres"
             title: Genres
             type:
@@ -1563,6 +1565,7 @@ definitions:
               - "null"
             default:
           production_companies:
+            description: The production companies involved in making the movie.
             $id: "#root/production_companies"
             title: Production_companies
             type:
@@ -1604,6 +1607,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
           production_countries:
+            description: The countries where the movie was produced.
             $id: "#root/production_countries"
             title: Production_countries
             type:
@@ -1651,6 +1655,7 @@ definitions:
               - integer
             default: 0
           spoken_languages:
+            description: The languages spoken in the movie.
             $id: "#root/spoken_languages"
             title: Spoken_languages
             type:
@@ -2424,11 +2429,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: List of recommended movies
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Movie details
               $id: "#root/results/items"
               title: Items
               type: object
@@ -2448,6 +2455,7 @@ definitions:
                     - "null"
                   default:
                 genre_ids:
+                  description: List of genre ids associated with the movie
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -2659,11 +2667,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the list of movie reviews
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of a movie review
               $id: "#root/results/items"
               title: Items
               type: object
@@ -2676,6 +2686,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 author_details:
+                  description: Details of the author of the review
                   $id: "#root/results/items/author_details"
                   title: Author_details
                   type: object
@@ -2782,11 +2793,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: List of similar movies to a given movie.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of a similar movie.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -2806,6 +2819,7 @@ definitions:
                     - "null"
                   default:
                 genre_ids:
+                  description: Array of genre ids associated with the movie.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -3516,11 +3530,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the list of movie videos data.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of each movie video.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -3538,6 +3554,7 @@ definitions:
                   type: "null"
                   default:
                 genre_ids:
+                  description: Array of genre IDs associated with the movie video.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -8501,6 +8518,7 @@ definitions:
             type: integer
             default: 0
           genres:
+            description: List of genres associated with the movie
             $id: "#root/genres"
             title: Genres
             type: array
@@ -8842,11 +8860,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Array containing popular movie objects.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Properties of each popular movie object.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -8879,6 +8899,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 genre_ids:
+                  description: Array of genre IDs associated with the movie.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -9414,11 +9435,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the list of upcoming movies.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of each upcoming movie.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -9451,6 +9474,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 genre_ids:
+                  description: An array of genre ids associated with the movie.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -9522,6 +9546,7 @@ definitions:
                   type: number
                   default: 0.0
           dates:
+            description: Represents the release dates for the upcoming movies.
             $id: "#root/dates"
             title: Dates
             type: object
@@ -9574,11 +9599,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the trending items.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of each trending item.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -9597,6 +9624,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 genre_ids:
+                  description: An array of genre IDs associated with the item.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -9713,11 +9741,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains an array of companies that match the search query.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Represents a single company.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -9849,11 +9879,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: A list of search results based on the query keywords
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Information related to each search result item
               $id: "#root/results/items"
               title: Items
               type: object
@@ -9905,11 +9937,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the list of movies returned from the search.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Represents a single movie item.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -9944,6 +9978,9 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 genre_ids:
+                  description:
+                    An array of genre ids associated with the movie. These
+                    can be correlated with genre names retrieved from a separate endpoint.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array
@@ -10048,11 +10085,15 @@ definitions:
             type: integer
             default: 0
           results:
+            description:
+              An array of search results from multiple categories such
+              as movies, TV shows, and people.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Each item representing a specific search result.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -10117,6 +10158,9 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 origin_country:
+                  description:
+                    The country of origin for the item, which can be the
+                    production country for a movie or the origin country for a person.
                   $id: "#root/results/items/origin_country"
                   title: Origin_country
                   type: array
@@ -10195,11 +10239,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: An array of search results for people.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: A specific person's details.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -10226,11 +10272,15 @@ definitions:
                   type: integer
                   default: 0
                 known_for:
+                  description:
+                    The list of movies or TV shows the person is known
+                    for.
                   $id: "#root/results/items/known_for"
                   title: Known_for
                   type: array
                   default: []
                   items:
+                    description: Details of a specific movie or TV show.
                     $id: "#root/results/items/known_for/items"
                     title: Items
                     type: object
@@ -10270,6 +10320,9 @@ definitions:
                         default: ""
                         pattern: ^.*$
                       genre_ids:
+                        description:
+                          An array of genre IDs associated with the movie
+                          or TV show.
                         $id: "#root/results/items/known_for/items/genre_ids"
                         title: Genre_ids
                         type: array
@@ -10389,11 +10442,13 @@ definitions:
             type: integer
             default: 0
           results:
+            description: Contains the list of TV shows that match the search query.
             $id: "#root/results"
             title: Results
             type: array
             default: []
             items:
+              description: Details of each TV show in the search results.
               $id: "#root/results/items"
               title: Items
               type: object
@@ -10453,6 +10508,7 @@ definitions:
                   default: ""
                   pattern: ^.*$
                 origin_country:
+                  description: The origin country of the TV show.
                   $id: "#root/results/items/origin_country"
                   title: Origin_country
                   type: array
@@ -10467,6 +10523,9 @@ definitions:
                     default: ""
                     pattern: ^.*$
                 genre_ids:
+                  description:
+                    An array of genre IDs that are associated with the
+                    TV show.
                   $id: "#root/results/items/genre_ids"
                   title: Genre_ids
                   type: array

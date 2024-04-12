@@ -33,6 +33,7 @@
       "format": "date-time"
     },
     "user": {
+      "description": "User details associated with the call activity (e.g., user ID, name)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -47,6 +48,7 @@
       }
     },
     "action": {
+      "description": "Details of the action related to the call (e.g., call type, outcome)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -57,6 +59,7 @@
       }
     },
     "called_person": {
+      "description": "Data about the person who was called (e.g., name, contact information)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -71,6 +74,7 @@
       }
     },
     "crm_activity": {
+      "description": "CRM activity details linked to the call (e.g., activity type, status)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -85,6 +89,7 @@
       }
     },
     "note": {
+      "description": "Additional notes or comments related to the call",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -99,6 +104,7 @@
       }
     },
     "cadence": {
+      "description": "Information about the cadence associated with the call (e.g., cadence name, type)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -113,6 +119,7 @@
       }
     },
     "step": {
+      "description": "Information about the step in the call process (e.g., step number, description)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

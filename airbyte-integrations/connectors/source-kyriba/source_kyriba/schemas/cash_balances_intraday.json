@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "account": {
+      "description": "Details about the account associated with the cash balance data.",
       "type": ["object", "null"],
       "properties": {
         "code": {
@@ -45,6 +46,7 @@
       }
     },
     "cashFlowStatus": {
+      "description": "The current status of cash flow.",
       "type": ["object", "null"],
       "properties": {
         "actual": {

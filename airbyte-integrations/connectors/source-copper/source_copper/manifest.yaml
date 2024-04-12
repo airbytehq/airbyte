@@ -68,6 +68,7 @@ definitions:
               - "null"
               - string
           socials:
+            description: Social media profiles of the person
             type:
               - "null"
               - array
@@ -80,6 +81,7 @@ definitions:
                   - "null"
                   - string
           leads_converted_from:
+            description: Details of leads converted to the person
             type:
               - "null"
               - array
@@ -92,6 +94,7 @@ definitions:
                   - "null"
                   - string
           tags:
+            description: Tags or labels assigned to the person
             type:
               - "null"
               - array
@@ -104,6 +107,7 @@ definitions:
                   - "null"
                   - string
           custom_fields:
+            description: Additional custom fields related to the person
             type:
               - "null"
               - array
@@ -143,6 +147,7 @@ definitions:
               - "null"
               - string
           address:
+            description: Physical address details of the person
             type:
               - "null"
               - object
@@ -196,6 +201,7 @@ definitions:
             description: Additional details or notes about the person.
             type: "null"
           emails:
+            description: Email addresses associated with the person
             type:
               - "null"
               - array
@@ -217,6 +223,7 @@ definitions:
                     - "null"
                     - string
           phone_numbers:
+            description: Phone numbers associated with the person
             type:
               - "null"
               - array
@@ -243,6 +250,7 @@ definitions:
               - "null"
               - string
           websites:
+            description: Websites associated with the person
             type:
               - "null"
               - array
@@ -317,6 +325,7 @@ definitions:
               - "null"
               - string
           tags:
+            description: Tags associated with the project for categorization.
             type:
               - "null"
               - array
@@ -327,6 +336,7 @@ definitions:
                   - "null"
                   - string
           custom_fields:
+            description: Custom fields specific to each project.
             type:
               - "null"
               - array

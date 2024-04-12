@@ -566,6 +566,7 @@ definitions:
               - string
               - "null"
           creator:
+            description: Information about the user who created the monitor.
             additionalProperties: true
             properties:
               email:
@@ -597,6 +598,7 @@ definitions:
               - integer
               - "null"
           matching_downtimes:
+            description: Downtime instances that match the monitor.
             items:
               additionalProperties: true
               properties:
@@ -611,6 +613,7 @@ definitions:
                     - integer
                     - "null"
                 scope:
+                  description: Scope of the downtime.
                   items:
                     description: Scope of the matching downtime
                     type:
@@ -651,12 +654,15 @@ definitions:
               - string
               - "null"
           options:
+            description: Settings and configurations for the monitor.
             additionalProperties: true
             properties:
               aggregation:
+                description: Aggregation settings for the monitor.
                 additionalProperties: true
                 properties:
                   groupBy:
+                    description: Grouping criteria.
                     items:
                       description: Fields used for grouping data
                       type:
@@ -679,6 +685,7 @@ definitions:
                   - object
                   - "null"
               device_ids:
+                description: Ids of the devices the monitor is associated with.
                 items:
                   description: List of device IDs associated with the monitor
                   type:
@@ -753,6 +760,7 @@ definitions:
                   - boolean
                   - "null"
               notify_by:
+                description: Notification settings for alerts.
                 items:
                   description: Methods to notify/alert (e.g., email, SMS)
                   type:
@@ -782,6 +790,7 @@ definitions:
                   - integer
                   - "null"
               renotify_statuses:
+                description: Settings for re-notifying based on statuses.
                 items:
                   description: Statuses on which to renotify
                   type:
@@ -796,9 +805,11 @@ definitions:
                   - boolean
                   - "null"
               scheduling_options:
+                description: Options related to monitor evaluation scheduling.
                 additionalProperties: true
                 properties:
                   evaluation_window:
+                    description: Time window for evaluating the monitor.
                     additionalProperties: true
                     properties:
                       day_starts:
@@ -823,6 +834,7 @@ definitions:
                   - object
                   - "null"
               silenced:
+                description: Patterns for silencing alerts.
                 patternProperties:
                   .+:
                     description: Pattern properties for silencing alerts
@@ -835,6 +847,7 @@ definitions:
                   - string
                   - "null"
               threshold_windows:
+                description: Time windows for threshold conditions.
                 additionalProperties: true
                 properties:
                   recovery_window:
@@ -851,6 +864,7 @@ definitions:
                   - object
                   - "null"
               thresholds:
+                description: Threshold settings for triggering alerts.
                 additionalProperties: true
                 properties:
                   critical:
@@ -892,10 +906,12 @@ definitions:
                   - integer
                   - "null"
               variables:
+                description: Variables used in the monitor conditions.
                 items:
                   additionalProperties: true
                   properties:
                     compute:
+                      description: Compute logic for variables.
                       additionalProperties: true
                       properties:
                         aggregation:
@@ -922,6 +938,7 @@ definitions:
                         - string
                         - "null"
                     group_by:
+                      description: Grouping criteria for variables.
                       items:
                         additionalProperties: true
                         properties:
@@ -936,6 +953,7 @@ definitions:
                               - integer
                               - "null"
                           sort:
+                            description: Sorting criteria for grouping.
                             additionalProperties: true
                             properties:
                               aggregation:
@@ -963,6 +981,7 @@ definitions:
                         - array
                         - "null"
                     indexes:
+                      description: Indexes specific to the variables.
                       items:
                         description: Indexes for the variable
                         type:
@@ -977,6 +996,7 @@ definitions:
                         - string
                         - "null"
                     search:
+                      description: Search criteria for variables.
                       additionalProperties: true
                       properties:
                         query:
@@ -1012,6 +1032,7 @@ definitions:
               - string
               - "null"
           restricted_roles:
+            description: Roles with restricted access to the monitor.
             items:
               description: Roles with restrictions on the monitor
               type:
@@ -1021,10 +1042,13 @@ definitions:
               - array
               - "null"
           state:
+            description: Current state of the monitor.
             properties:
               groups:
+                description: Group-specific properties related to the monitor.
                 patternProperties:
                   .+:
+                    description: Pattern-based group property.
                     properties:
                       last_nodata_ts:
                         description: Timestamp of last no data occurrence
@@ -1066,6 +1090,7 @@ definitions:
               - object
               - "null"
           tags:
+            description: Tags associated with the monitor.
             items:
               description: Tags associated with the monitor
               type:
@@ -1109,6 +1134,7 @@ definitions:
               - integer
               - "null"
           creator:
+            description: The user who created the service level objective
             additionalProperties: true
             properties:
               email:
@@ -1135,6 +1161,7 @@ definitions:
               - string
               - "null"
           groups:
+            description: The groups associated with the service level objective
             items:
               description: Array of groups associated with the service level objective.
               type:
@@ -1154,6 +1181,7 @@ definitions:
               - integer
               - "null"
           monitor_ids:
+            description: The list of monitor IDs linked to the service level objective
             items:
               description: Array of monitor IDs linked to the service level objective.
               type:
@@ -1163,6 +1191,9 @@ definitions:
               - array
               - "null"
           monitor_tags:
+            description:
+              The tags associated with the monitors linked to the service
+              level objective
             items:
               description:
                 Array of monitor tags associated with the service level
@@ -1179,6 +1210,7 @@ definitions:
               - string
               - "null"
           query:
+            description: The query parameters used to define the service level objective
             additionalProperties: true
             properties:
               denominator:
@@ -1195,6 +1227,7 @@ definitions:
               - object
               - "null"
           tags:
+            description: The tags associated with the service level objective
             items:
               description: Array of tags associated with the service level objective.
               type:
@@ -1209,7 +1242,9 @@ definitions:
               - number
               - "null"
           thresholds:
+            description: The threshold values set for the service level objective
             items:
+              description: Individual threshold properties
               additionalProperties: true
               properties:
                 target:

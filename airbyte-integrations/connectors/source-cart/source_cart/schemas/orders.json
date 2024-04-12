@@ -20,6 +20,7 @@
       "type": ["string", "null"]
     },
     "shipping_selections": {
+      "description": "The selected shipping options for the order",
       "type": ["array", "null"],
       "items": {
         "description": "Details of the items selected for shipping",

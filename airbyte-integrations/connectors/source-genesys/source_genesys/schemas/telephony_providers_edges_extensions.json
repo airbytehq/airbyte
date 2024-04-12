@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Details about the division associated with the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {
@@ -70,6 +71,7 @@
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "Owner details of the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {
@@ -87,6 +89,7 @@
       }
     },
     "extensionPool": {
+      "description": "Information related to the extension pool used by the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {

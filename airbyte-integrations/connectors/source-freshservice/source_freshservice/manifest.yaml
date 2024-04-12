@@ -301,6 +301,7 @@ definitions:
               - "null"
               - string
           questionnaire_responses:
+            description: List of questionnaire responses provided by users
             type:
               - "null"
               - object
@@ -311,6 +312,7 @@ definitions:
               additionalProperties: true
               properties:
                 question:
+                  description: Details of the question asked in the survey
                   type:
                     - "null"
                     - object
@@ -322,6 +324,7 @@ definitions:
                         - "null"
                         - string
                 answers:
+                  description: List of answers provided by users for the questions
                   type:
                     - "null"
                     - array
@@ -588,6 +591,9 @@ definitions:
               - string
               - "null"
           attachments:
+            description:
+              Contains any additional files or documents attached to the
+              problem for reference or analysis.
             type:
               - "null"
               - array
@@ -600,6 +606,9 @@ definitions:
               - "null"
               - integer
           assets:
+            description:
+              Contains information about assets related to the problem,
+              such as hardware or software configurations.
             type:
               - "null"
               - array
@@ -750,6 +759,9 @@ definitions:
               - string
               - "null"
           attachments:
+            description:
+              Contains data related to any attachments associated with
+              the changes.
             type:
               - "null"
               - array
@@ -774,6 +786,7 @@ definitions:
               - "null"
               - integer
           assets:
+            description: Contains information about the assets that were changed.
             type:
               - "null"
               - array

@@ -123,6 +123,7 @@ streams:
               - "null"
               - string
           stats:
+            description: Statistics related to the dataset collection
             type:
               - "null"
               - object
@@ -218,6 +219,7 @@ streams:
               - "null"
               - string
           stats:
+            description: Contains statistical information about the dataset.
             type:
               - "null"
               - object

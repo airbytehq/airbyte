@@ -333,10 +333,12 @@ definitions:
               - boolean
               - "null"
           segments:
+            description: List of segments associated with the campaign
             type:
               - array
               - "null"
             items:
+              description: Details of each segment
               type: object
               properties:
                 segmentID:
@@ -403,8 +405,10 @@ definitions:
               - string
               - "null"
           products:
+            description: List of products in the cart
             type: array
             items:
+              description: Details of each product in the cart
               type: object
               properties:
                 cartProductID:

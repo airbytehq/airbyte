@@ -23,6 +23,7 @@
       "type": ["string", "null"]
     },
     "_links": {
+      "description": "Contains links to related resources.",
       "properties": {
         "assignee": {
           "description": "Related assignee information for the resource set.",

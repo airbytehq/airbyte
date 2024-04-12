@@ -67,6 +67,7 @@ definitions:
             type: string
             format: date-time
           metadata:
+            description: Additional information about the businesses data
             type:
               - "null"
               - array
@@ -74,8 +75,10 @@ definitions:
               description: Additional metadata associated with the business.
               type: string
           connections:
+            description: Represents the list of connections between businesses
             type: array
             items:
+              description: Details of each individual connection between businesses
               type: object
               properties:
                 businessName:
@@ -517,6 +520,7 @@ definitions:
               - "null"
               - integer
           currencyRef:
+            description: Reference to the currency associated with the account.
             type:
               - "null"
               - object
@@ -564,6 +568,9 @@ definitions:
             description: Indicates if the account is currently active or not.
             type: boolean
           subsidiaryRefs:
+            description:
+              List of references to any subsidiary accounts linked to this
+              account.
             type:
               - "null"
               - array
@@ -583,6 +590,7 @@ definitions:
                     - "null"
                     - string
           parentRef:
+            description: Reference to the parent account of this account.
             type:
               - "null"
               - object
@@ -891,10 +899,12 @@ definitions:
               - "null"
               - number
           components:
+            description: An array of tax rates components.
             type:
               - "null"
               - array
             items:
+              description: Details of each tax rate component.
               type:
                 - "null"
                 - object
@@ -1530,6 +1540,7 @@ definitions:
             type: string
             format: date-time
           currencyRef:
+            description: Reference to the currency used in the bank transfer
             type:
               - "null"
               - object
@@ -1559,6 +1570,7 @@ definitions:
               - number
               - string
           fromAccountRef:
+            description: Reference to the account from which the transfer was made
             type: object
             properties:
               id:
@@ -1574,6 +1586,7 @@ definitions:
                   - "null"
                   - string
           toAccountRef:
+            description: Reference to the account to which the transfer was sent
             type: object
             properties:
               id:
@@ -4046,6 +4059,7 @@ definitions:
             description: The name of the service associated with the purchase order
             type: string
           vendorRef:
+            description: Reference to the vendor from whom the items are being purchased
             type: object
             properties:
               id:
@@ -4081,6 +4095,7 @@ definitions:
               - string
             format: date-time
           currencyRef:
+            description: Reference to the currency used in the purchase order
             type:
               - "null"
               - object
@@ -4106,6 +4121,7 @@ definitions:
               - "null"
               - number
           lines:
+            description: List of line items included in the purchase order
             type:
               - "null"
               - array
@@ -4156,6 +4172,7 @@ definitions:
                     - number
                     - string
                 taxRateRef:
+                  description: Reference to the tax rate applied to the line item
                   type:
                     - "null"
                     - object
@@ -4176,6 +4193,7 @@ definitions:
                         - "null"
                         - number
                 inventoryRef:
+                  description: Reference to the inventory item being purchased
                   type:
                     - "null"
                     - object
@@ -4191,6 +4209,7 @@ definitions:
                         - "null"
                         - string
                 trackingCategoryRef:
+                  description: Reference to the tracking category for the line item
                   type:
                     - "null"
                     - object
@@ -4222,6 +4241,7 @@ definitions:
                     - string
                     - integer
                 accountRef:
+                  description: Reference to the account associated with the line item
                   type:
                     - "null"
                     - object
@@ -4270,6 +4290,7 @@ definitions:
               - "null"
               - string
           shippingAddress:
+            description: Address where the purchase order will be shipped
             type: object
             properties:
               line1:
@@ -4303,6 +4324,9 @@ definitions:
                   - string
                   - "null"
           contacts:
+            description:
+              Information about the contacts associated with the purchase
+              order
             type:
               - "null"
               - object
@@ -4646,6 +4670,7 @@ definitions:
               - string
             format: date-time
           orderRef:
+            description: Reference to the order associated with the dispute
             type:
               - "null"
               - object
@@ -4661,6 +4686,7 @@ definitions:
                   - "null"
                   - string
           currencyRef:
+            description: Reference to the currency used in the dispute transaction
             type:
               - "null"
               - object
@@ -5221,6 +5247,7 @@ definitions:
               - number
               - string
           currencyRef:
+            description: Reference to the currency used in the transaction
             type:
               - "null"
               - object
@@ -5238,10 +5265,14 @@ definitions:
                 description: The symbol of the currency.
                 type: string
           transactionSourceRefs:
+            description:
+              References to the sources of the transaction (e.g., online
+              store, POS terminal)
             type:
               - "null"
               - array
             items:
+              description: Specific details about each transaction source
               type:
                 - "null"
                 - object

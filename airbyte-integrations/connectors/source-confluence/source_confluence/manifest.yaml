@@ -235,12 +235,16 @@ definitions:
         additionalProperties: true
         properties:
           id:
+            description: Unique identifier for the blog post.
             type: string
           title:
+            description: Title of the blog post.
             type: string
           type:
+            description: Type/category of the blog post.
             type: string
           status:
+            description: Current status of the blog post (e.g., draft, published).
             type: string
           history:
             description: Historical information related to the blog post
@@ -263,6 +267,7 @@ definitions:
               previousVersion:
                 $ref: "#/definitions/version"
           version:
+            description: Version number of the blog post.
             $ref: "#/definitions/version"
           descendants:
             description: Details of the descendants of the blog post, such as comments

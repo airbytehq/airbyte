@@ -680,6 +680,7 @@ definitions:
               - "null"
               - string
           hourly_rate:
+            description: The hourly wage rate of the team member.
             type:
               - "null"
               - object
@@ -719,6 +720,7 @@ definitions:
               - "null"
               - string
           address:
+            description: The address details for a specific location
             type:
               - "null"
               - object
@@ -916,6 +918,9 @@ definitions:
               - string
               - "null"
           opened_cash_money:
+            description:
+              The amount of money in the cash drawer at the time it was
+              opened
             type:
               - object
               - "null"
@@ -931,6 +936,9 @@ definitions:
                   - string
                   - "null"
           expected_cash_money:
+            description:
+              The expected amount of money in the cash drawer based on
+              transactions
             type:
               - object
               - "null"
@@ -946,6 +954,9 @@ definitions:
                   - string
                   - "null"
           closed_cash_money:
+            description:
+              The amount of money in the cash drawer at the time it was
+              closed
             type:
               - object
               - "null"
@@ -1006,6 +1017,7 @@ definitions:
               - "null"
               - boolean
           category_data:
+            description: Data related to the categories available
             type:
               - "null"
               - object
@@ -1581,6 +1593,7 @@ definitions:
               - "null"
               - boolean
           modifier_list_data:
+            description: Data related to modifier lists
             type:
               - "null"
               - object
@@ -1596,10 +1609,12 @@ definitions:
                   - "null"
                   - string
               modifiers:
+                description: Array of available modifiers
                 type:
                   - "null"
                   - array
                 items:
+                  description: Details of a specific modifier
                   type:
                     - "null"
                     - object
@@ -1635,6 +1650,7 @@ definitions:
                         - "null"
                         - boolean
                     modifier_data:
+                      description: Data related to the modifier
                       type:
                         - "null"
                         - object
@@ -1645,6 +1661,7 @@ definitions:
                             - "null"
                             - string
                         price_money:
+                          description: Information about the price of the modifier
                           type:
                             - "null"
                             - object
@@ -2143,6 +2160,7 @@ definitions:
               - string
               - "null"
           mapping:
+            description: Contains the loyalty mapping data.
             type:
               - object
               - "null"
@@ -2249,6 +2267,7 @@ definitions:
               - "null"
               - string
           line_items:
+            description: Detailed information about individual line items in the order
             type:
               - "null"
               - array
@@ -2278,6 +2297,9 @@ definitions:
                     - "null"
                     - string
                 base_price_money:
+                  description:
+                    The original price of the line item before discounts
+                    or taxes
                   type:
                     - "null"
                     - object
@@ -2291,6 +2313,7 @@ definitions:
                         - "null"
                         - string
                 gross_sales_money:
+                  description: The total sales amount for the line item before taxes
                   type:
                     - "null"
                     - object
@@ -2304,6 +2327,7 @@ definitions:
                         - "null"
                         - string
                 total_tax_money:
+                  description: The total tax amount applied to the line item
                   type:
                     - "null"
                     - object
@@ -2317,6 +2341,7 @@ definitions:
                         - "null"
                         - string
                 total_discount_money:
+                  description: The total discount amount applied to the line item
                   type:
                     - "null"
                     - object
@@ -2330,6 +2355,9 @@ definitions:
                         - "null"
                         - string
                 total_money:
+                  description:
+                    The total amount for the line item including discounts
+                    and taxes
                   type:
                     - "null"
                     - object
@@ -2343,6 +2371,7 @@ definitions:
                         - "null"
                         - string
                 variation_total_price_money:
+                  description: The total price of the line item including variations
                   type:
                     - "null"
                     - object
@@ -2360,6 +2389,7 @@ definitions:
                     - "null"
                     - string
                 modifiers:
+                  description: Additional modifiers applied to the line item
                   type:
                     - "null"
                     - array
@@ -2373,6 +2403,9 @@ definitions:
                           - "null"
                           - string
                       base_price_money:
+                        description:
+                          The price of the modifier before discounts or
+                          taxes
                         type:
                           - "null"
                           - object
@@ -2386,6 +2419,9 @@ definitions:
                               - "null"
                               - string
                       total_price_money:
+                        description:
+                          The total price of the modifier including discounts
+                          and taxes
                         type:
                           - "null"
                           - object
@@ -2407,6 +2443,7 @@ definitions:
                           - "null"
                           - string
                 applied_discounts:
+                  description: Details of any discounts applied to the line item
                   type:
                     - "null"
                     - array
@@ -2424,6 +2461,9 @@ definitions:
                           - "null"
                           - string
                       applied_money:
+                        description:
+                          The total discount amount applied to the line
+                          item
                         type:
                           - "null"
                           - object
@@ -2437,6 +2477,7 @@ definitions:
                               - "null"
                               - string
                 applied_taxes:
+                  description: Details of any taxes applied to the line item
                   type:
                     - "null"
                     - array
@@ -2454,6 +2495,7 @@ definitions:
                           - "null"
                           - string
                       applied_money:
+                        description: The total tax amount applied to the line item
                         type:
                           - "null"
                           - object
@@ -2471,6 +2513,7 @@ definitions:
                     - "null"
                     - string
           fulfillments:
+            description: Details regarding the order fulfillment process
             type:
               - "null"
               - array
@@ -2492,6 +2535,7 @@ definitions:
                     - "null"
                     - string
                 pickup_details:
+                  description: Details specific to a pickup fulfillment
                   type:
                     - "null"
                     - object
@@ -2525,6 +2569,7 @@ definitions:
                         - "null"
                         - string
                     recipient:
+                      description: Information about the recipient for pickup
                       type:
                         - "null"
                         - object
@@ -2546,11 +2591,13 @@ definitions:
                         - "null"
                         - string
                 shipment_details:
+                  description: Details specific to a shipment fulfillment
                   type:
                     - "null"
                     - object
                   properties:
                     recipient:
+                      description: Information about the recipient for shipment
                       type:
                         - "null"
                         - object
@@ -2564,6 +2611,7 @@ definitions:
                             - "null"
                             - string
                         address:
+                          description: Address details of the recipient
                           type:
                             - "null"
                             - object
@@ -2633,6 +2681,7 @@ definitions:
               - "null"
               - integer
           total_tax_money:
+            description: The total tax amount applied to the order
             type:
               - "null"
               - object
@@ -2646,6 +2695,7 @@ definitions:
                   - "null"
                   - string
           total_discount_money:
+            description: The total discount amount applied to the order
             type:
               - "null"
               - object
@@ -2661,6 +2711,7 @@ definitions:
                   - "null"
                   - string
           total_tip_money:
+            description: The total tip amount for the order
             type:
               - "null"
               - object
@@ -2674,6 +2725,7 @@ definitions:
                   - "null"
                   - string
           total_money:
+            description: The total amount for the order including all calculations
             type:
               - "null"
               - object
@@ -2694,6 +2746,7 @@ definitions:
               - "null"
               - string
           tenders:
+            description: Information about the tenders used for payment
             type:
               - "null"
               - array
@@ -2719,6 +2772,7 @@ definitions:
                     - "null"
                     - string
                 amount_money:
+                  description: The total amount of the tender
                   type:
                     - "null"
                     - object
@@ -2736,6 +2790,7 @@ definitions:
                     - "null"
                     - string
                 card_details:
+                  description: Details specific to payment by card
                   type:
                     - "null"
                     - object
@@ -2770,11 +2825,13 @@ definitions:
                     - "null"
                     - string
                 cash_details:
+                  description: Details specific to payment by cash
                   type:
                     - "null"
                     - object
                   properties:
                     buyer_tendered_money:
+                      description: The amount of cash tendered by the buyer
                       type:
                         - "null"
                         - object
@@ -2788,6 +2845,7 @@ definitions:
                             - "null"
                             - string
                     change_back_money:
+                      description: The change back amount to the buyer
                       type:
                         - "null"
                         - object
@@ -2805,6 +2863,7 @@ definitions:
                     - "null"
                     - string
           total_service_charge_money:
+            description: The total service charge amount for the order
             type:
               - "null"
               - object
@@ -2818,11 +2877,15 @@ definitions:
                   - "null"
                   - string
           net_amounts:
+            description:
+              Net amounts including discounts, service charges, taxes,
+              tip, and total amount
             type:
               - "null"
               - object
             properties:
               total_money:
+                description: Total amount for the order after all calculations
                 type:
                   - "null"
                   - object
@@ -2836,6 +2899,7 @@ definitions:
                       - "null"
                       - string
               tax_money:
+                description: Total tax amount for the order
                 type:
                   - "null"
                   - object
@@ -2849,6 +2913,7 @@ definitions:
                       - "null"
                       - string
               discount_money:
+                description: Total discount amount for the order
                 type:
                   - "null"
                   - object
@@ -2862,6 +2927,7 @@ definitions:
                       - "null"
                       - string
               tip_money:
+                description: Total tip amount for the order
                 type:
                   - "null"
                   - object
@@ -2875,6 +2941,7 @@ definitions:
                       - "null"
                       - string
               service_charge_money:
+                description: Total service charge amount for the order
                 type:
                   - "null"
                   - object
@@ -2888,6 +2955,7 @@ definitions:
                       - "null"
                       - string
           source:
+            description: The source related to the order
             type:
               - "null"
               - object
@@ -2897,6 +2965,7 @@ definitions:
                   - "null"
                   - string
           returns:
+            description: Details about return orders
             type:
               - "null"
               - array
@@ -2914,6 +2983,7 @@ definitions:
                     - "null"
                     - string
                 return_line_items:
+                  description: Details of individual line items in the return order
                   type:
                     - "null"
                     - array
@@ -2935,6 +3005,7 @@ definitions:
                           - "null"
                           - string
                       base_price_money:
+                        description: The base price of the returned item
                         type:
                           - "null"
                           - object
@@ -2948,6 +3019,9 @@ definitions:
                               - "null"
                               - string
                       variation_total_price_money:
+                        description:
+                          The total price of the item including variations
+                          in the return order
                         type:
                           - "null"
                           - object
@@ -2961,6 +3035,7 @@ definitions:
                               - "null"
                               - string
                       gross_return_money:
+                        description: The total return amount for the item before tax
                         type:
                           - "null"
                           - object
@@ -2974,6 +3049,7 @@ definitions:
                               - "null"
                               - string
                       total_tax_money:
+                        description: The total tax amount for the returned item
                         type:
                           - "null"
                           - object
@@ -2987,6 +3063,7 @@ definitions:
                               - "null"
                               - string
                       total_discount_money:
+                        description: The total discount amount for the returned item
                         type:
                           - "null"
                           - object
@@ -3000,6 +3077,7 @@ definitions:
                               - "null"
                               - string
                       total_money:
+                        description: The total return amount for the item
                         type:
                           - "null"
                           - object
@@ -3013,11 +3091,13 @@ definitions:
                               - "null"
                               - string
           return_amounts:
+            description: Amounts related to return orders
             type:
               - "null"
               - object
             properties:
               total_money:
+                description: Total amount for the return order after all calculations
                 type:
                   - "null"
                   - object
@@ -3031,6 +3111,7 @@ definitions:
                       - "null"
                       - string
               tax_money:
+                description: Total tax amount for the return order
                 type:
                   - "null"
                   - object
@@ -3044,6 +3125,7 @@ definitions:
                       - "null"
                       - string
               discount_money:
+                description: Total discount amount for the return order
                 type:
                   - "null"
                   - object
@@ -3057,6 +3139,7 @@ definitions:
                       - "null"
                       - string
               tip_money:
+                description: Total tip amount for the return order
                 type:
                   - "null"
                   - object
@@ -3070,6 +3153,7 @@ definitions:
                       - "null"
                       - string
               service_charge_money:
+                description: Total service charge amount for the return order
                 type:
                   - "null"
                   - object
@@ -3083,6 +3167,7 @@ definitions:
                       - "null"
                       - string
           refunds:
+            description: Details about refunds associated with the order
             type:
               - "null"
               - array
@@ -3116,6 +3201,7 @@ definitions:
                     - "null"
                     - string
                 amount_money:
+                  description: The refunded amount
                   type:
                     - "null"
                     - object
@@ -3133,6 +3219,7 @@ definitions:
                     - "null"
                     - string
           service_charges:
+            description: Details of service charges applied to the order
             type:
               - "null"
               - array
@@ -3150,6 +3237,7 @@ definitions:
                     - "null"
                     - string
                 amount_money:
+                  description: The total amount of the service charge
                   type:
                     - "null"
                     - object
@@ -3163,6 +3251,7 @@ definitions:
                         - "null"
                         - string
                 applied_money:
+                  description: The actual service charge applied to the order
                   type:
                     - "null"
                     - object
@@ -3184,6 +3273,7 @@ definitions:
                     - "null"
                     - boolean
                 total_money:
+                  description: The total amount of the service charge including tax
                   type:
                     - "null"
                     - object
@@ -3197,6 +3287,7 @@ definitions:
                         - "null"
                         - string
                 total_tax_money:
+                  description: The total tax amount for the service charge
                   type:
                     - "null"
                     - object
@@ -3210,6 +3301,7 @@ definitions:
                         - "null"
                         - string
           discounts:
+            description: Information about any discounts applied to the order
             type:
               - "null"
               - array
@@ -3234,6 +3326,7 @@ definitions:
                     - "null"
                     - string
                 applied_money:
+                  description: The total discount amount applied to the order
                   type:
                     - "null"
                     - object
@@ -3259,6 +3352,7 @@ definitions:
                     - "null"
                     - string
           taxes:
+            description: Details about taxes applied to the order
             type:
               - "null"
               - array
@@ -3288,6 +3382,7 @@ definitions:
                     - "null"
                     - string
                 applied_money:
+                  description: The total tax amount applied to the order
                   type:
                     - "null"
                     - object

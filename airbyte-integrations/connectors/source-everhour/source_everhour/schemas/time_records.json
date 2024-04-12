@@ -24,6 +24,7 @@
       "type": ["null", "integer"]
     },
     "task": {
+      "description": "Represents the task information for the time record.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -51,6 +52,7 @@
           "type": ["null", "string"]
         },
         "projects": {
+          "description": "List of projects the task belongs to.",
           "type": ["null", "array"],
           "items": {
             "description": "List of projects the task is associated with"
@@ -61,12 +63,14 @@
           "type": ["null", "string"]
         },
         "labels": {
+          "description": "List of labels associated with the task.",
           "type": ["null", "array"],
           "items": {
             "description": "List of labels associated with the task"
           }
         },
         "time": {
+          "description": "Time related information for the task.",
           "type": ["null", "object"],
           "properties": {
             "total": {
@@ -74,6 +78,7 @@
               "type": ["null", "integer"]
             },
             "users": {
+              "description": "List of users who have recorded time for the task.",
               "type": ["null", "object"],
               "properties": {
                 "1029023": {
@@ -97,6 +102,7 @@
           "type": ["null", "boolean"]
         },
         "assignees": {
+          "description": "List of users assigned to the task.",
           "type": ["null", "array"],
           "items": {
             "description": "List of assignees for the task"

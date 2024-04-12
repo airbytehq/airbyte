@@ -30,6 +30,7 @@ streams:
             description: Flag indicating if this launch data is automatically updated
             type: boolean
           capsules:
+            description: Information about capsules used in the launch.
             items:
               description: List of capsules related to this launch
               type:
@@ -39,6 +40,7 @@ streams:
           cores:
             items:
               properties:
+                description: Information about the booster cores used in the launch.
                 core:
                   description: Core information of the rocket used in the launch
                   type:
@@ -75,6 +77,7 @@ streams:
               type: object
             type: array
           crew:
+            description: Information about the crew involved in the launch.
             items:
               description: List of crew members for this launch
               type:
@@ -118,6 +121,7 @@ streams:
             description: Details about the launch
             type: string
           fairings:
+            description: Information about the fairings used in the launch.
             properties:
               recovered:
                 description: Flag indicating if the fairings were recovered
@@ -131,6 +135,7 @@ streams:
                 description: Flag indicating if the fairings were reused
                 type: boolean
               ships:
+                description: List of ships associated with the fairings.
                 items:
                   description: List of ships involved in fairings recovery
                   type:
@@ -160,10 +165,13 @@ streams:
               - "null"
               - string
           links:
+            description: Various links related to the launch.
             properties:
               flickr:
+                description: Flickr links related to the launch.
                 properties:
                   original:
+                    description: Original Flickr link related to the launch.
                     items:
                       description: List of original resolution images from Flickr
                       type:
@@ -175,6 +183,7 @@ streams:
                     type: array
                 type: object
               patch:
+                description: Patch link related to the launch.
                 properties:
                   large:
                     description: Link to a large size patch image
@@ -188,6 +197,7 @@ streams:
                       - string
                 type: object
               reddit:
+                description: Reddit links related to the launch.
                 properties:
                   launch:
                     description: Link to the Reddit thread about this launch
@@ -225,6 +235,7 @@ streams:
             description: NET (No Earlier Than) date and time of the launch
             type: boolean
           payloads:
+            description: Information about payloads carried in the launch.
             items:
               description: List of payloads carried on this launch
               type:
@@ -648,6 +659,7 @@ streams:
               - "null"
               - string
           diameter:
+            description: Diameter of the spacecraft.
             properties:
               feet:
                 description: Diameter of the dragon spacecraft in feet.
@@ -668,6 +680,7 @@ streams:
               - "null"
               - string
           flickr_images:
+            description: An array of Flickr image URLs related to the spacecraft.
             items:
               description: Array of URLs to flickr images showcasing the dragon spacecraft.
               type:
@@ -675,6 +688,7 @@ streams:
                 - string
             type: array
           heat_shield:
+            description: Information about the spacecraft's heat shield.
             properties:
               dev_partner:
                 description: Development partner responsible for the heat shield.
@@ -694,6 +708,7 @@ streams:
                 type: number
             type: object
           height_w_trunk:
+            description: Total height of the spacecraft with trunk included.
             properties:
               feet:
                 description: Total height of the dragon spacecraft with trunk in feet.
@@ -708,6 +723,7 @@ streams:
               - "null"
               - string
           launch_payload_mass:
+            description: Mass of the payload launched by the spacecraft.
             properties:
               kg:
                 description: Mass of the payload for launch in kilograms.
@@ -717,6 +733,7 @@ streams:
                 type: number
             type: object
           launch_payload_vol:
+            description: Volume of the payload launched by the spacecraft.
             properties:
               cubic_feet:
                 description: Volume of the payload for launch in cubic feet.
@@ -736,8 +753,10 @@ streams:
               in years.
             type: number
           pressurized_capsule:
+            description: Details about the pressurized capsule of the spacecraft.
             properties:
               payload_volume:
+                description: Volume capacity of the pressurized capsule.
                 properties:
                   cubic_feet:
                     description:
@@ -752,6 +771,7 @@ streams:
                 type: object
             type: object
           return_payload_mass:
+            description: Mass of the payload returned by the spacecraft.
             properties:
               kg:
                 description: Mass of the payload for return in kilograms.
@@ -761,6 +781,7 @@ streams:
                 type: number
             type: object
           return_payload_vol:
+            description: Volume of the payload returned by the spacecraft.
             properties:
               cubic_feet:
                 description: Volume of the payload for return in cubic feet.
@@ -773,6 +794,7 @@ streams:
             description: Angle of the sidewall of the dragon spacecraft in degrees.
             type: number
           thrusters:
+            description: Information about the thrusters used by the spacecraft.
             items:
               properties:
                 amount:
@@ -797,6 +819,7 @@ streams:
                   description: Number of pods containing the thrusters.
                   type: number
                 thrust:
+                  description: Thrust produced by the thruster.
                   properties:
                     kN:
                       description: Thrust of the thrusters in kilonewtons.
@@ -813,8 +836,10 @@ streams:
               type: object
             type: array
           trunk:
+            description: Details about the trunk of the spacecraft.
             properties:
               cargo:
+                description: Cargo capacity of the trunk.
                 properties:
                   solar_array:
                     description: Presence of solar array in the trunk cargo space.
@@ -824,6 +849,7 @@ streams:
                     type: boolean
                 type: object
               trunk_volume:
+                description: Volume of the trunk.
                 properties:
                   cubic_feet:
                     description: Total volume of the trunk in cubic feet.
@@ -888,6 +914,7 @@ streams:
               - "null"
               - string
           images:
+            description: Contains data related to images for the landpad.
             properties:
               large:
                 description: An array containing URLs of large images of the landpad.
@@ -1211,6 +1238,7 @@ streams:
               - "null"
               - string
           links:
+            description: Contains links associated with the history data.
             properties:
               article:
                 description: Link to the article providing more details about the event.
@@ -1772,6 +1800,7 @@ streams:
               - "null"
               - number
           launches:
+            description: Data regarding the launch history and details for the ship.
             items:
               description: List of launch IDs associated with the ship
               type:
@@ -1819,6 +1848,7 @@ streams:
               - "null"
               - string
           roles:
+            description: Roles and responsibilities of the ship within SpaceX operations.
             items:
               description: List of roles or responsibilities associated with the ship
               type:
@@ -1895,6 +1925,9 @@ streams:
               - "null"
               - number
           spaceTrack:
+            description:
+              Data related to the Space Track service for monitoring Starlink
+              satellites.
             properties:
               APOAPSIS:
                 description: The highest point of the orbit of the satellite.
