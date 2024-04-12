@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.1.1
+  dockerImageTag: 2.1.2
   dockerRepository: airbyte/source-apify-dataset
   githubIssueLabel: source-apify-dataset
   icon: apify.svg
@@ -29,7 +29,10 @@ data:
         message: "Update spec to use token and ingest all 3 streams correctly"
       2.0.0:
         upgradeDeadline: 2023-09-18
-        message: "This version introduces a new Item Collection (WCC) stream as a substitute of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler datasets."
+        message:
+          "This version introduces a new Item Collection (WCC) stream as a
+          substitute of the now-removed Item Collection stream in order to retain
+          data for Web-Content-Crawler datasets."
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:
