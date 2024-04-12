@@ -59,5 +59,6 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
+| 0.1.2 | 2024-04-12 | [36629](https://github.com/airbytehq/airbyte/pull/36629) | schema descriptions |
 | 0.1.1   | 2022-12-16 | [20564](https://github.com/airbytehq/airbyte/pull/20564) | add quote stream to alpha-vantage |
 | 0.1.0   | 2022-10-21 | [18320](https://github.com/airbytehq/airbyte/pull/18320) | New source |
