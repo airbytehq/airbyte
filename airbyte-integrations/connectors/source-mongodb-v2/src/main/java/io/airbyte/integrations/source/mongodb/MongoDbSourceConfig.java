@@ -19,6 +19,12 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CON
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_SSL_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_SSL_MODE_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CA_CERTIFICATE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_CERTIFICATE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.PARAM_CLIENT_KEY_PASSWORD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.OptionalInt;
@@ -47,6 +53,30 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   public String getAuthSource() {
     return getDatabaseConfig().has(AUTH_SOURCE_CONFIGURATION_KEY) ? getDatabaseConfig().get(AUTH_SOURCE_CONFIGURATION_KEY).asText(DEFAULT_AUTH_SOURCE)
         : DEFAULT_AUTH_SOURCE;
+  }
+
+  public JsonNode getSSLConfig() {
+    return getDatabaseConfig().get(PARAM_SSL_KEY);
+  }
+
+  public String getSslMode() {
+    return getSSLConfig().has(PARAM_SSL_MODE_KEY) ? getSSLConfig().get(PARAM_SSL_MODE_KEY).asText() : null;
+  }
+
+  public String getCACertificate() {
+    return getSSLConfig().has(PARAM_CA_CERTIFICATE) ? getSSLConfig().get(PARAM_CA_CERTIFICATE).asText() : null;
+  }
+  
+  public String getClientCertificate() {
+    return getSSLConfig().has(PARAM_CLIENT_CERTIFICATE) ? getSSLConfig().get(PARAM_CLIENT_CERTIFICATE).asText() : null;
+  }
+  
+  public String getClientKey() {
+    return getSSLConfig().has(PARAM_CLIENT_KEY) ? getSSLConfig().get(PARAM_CLIENT_KEY).asText() : null;
+  }
+  
+  public String getClientKeyPassword() {
+    return getSSLConfig().has(PARAM_CLIENT_KEY_PASSWORD) ? getSSLConfig().get(PARAM_CLIENT_KEY_PASSWORD).asText() : null;
   }
 
   public Integer getCheckpointInterval() {

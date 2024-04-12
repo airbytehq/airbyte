@@ -41,6 +41,23 @@ public class MongoConstants {
   public static final String FAIL_SYNC_OPTION = "Fail sync";
   public static final String RESYNC_DATA_OPTION = "Re-sync data";
 
+  public static final String PARAM_CA_CERTIFICATE = "ca_certificate";
+  public static final String PARAM_CLIENT_CERTIFICATE = "client_certificate";
+  public static final String PARAM_CLIENT_KEY = "client_key";  
+  public static final String PARAM_CLIENT_KEY_PASSWORD = "client_key_password";
+  public static final String PARAM_SSL_KEY = "ssl_mode";
+  public static final String PARAM_SSL_MODE_KEY = "mode";
+  public static final String PARAM_SSL_MODE_CCV = "CCV";
+
+  public static final String CLIENT_CERTIFICATE = "client.crt";
+  public static final String CLIENT_CA_CERTIFICATE = "client-ca.crt";
+  public static final String CLIENT_KEY = "client.key";
+  public static final String CLIENT_KEY_STORE = "client_key_store.p12";
+  public static final String KEY_STORE_TYPE = "PKCS12";
+  public static final String TRUST_STORE = "truststore.jks";
+  public static final String TRUST_PASSWORD = "truststore_pwd";
+  public static final String TRUST_TYPE = "JKS";
+
   private MongoConstants() {}
 
 }
