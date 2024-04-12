@@ -10,10 +10,10 @@ A workspace in Airbyte allows you to collaborate with other users and manage con
 
 1. To add a user to your workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General** and click **+ New member**.
 
-2. On the **Add new member** dialog, enter the email address of the user you want to invite to your workspace. Click **SAdd new member**.
+2. On the **Add new member** dialog, enter the email address of the user you want to invite to your workspace. Click **Add new member**.
 
 :::info
-The user will have access to only the workspace you invited them to. They will be added as a workspace admin by default. A workspace admin has the ability to add or delete other users and make changes to connections and connectors in the workspace. 
+The user will have access to only the workspace you invited them to. They will be added with a role of `Workspace Admin`, which has the ability to add or delete other users and make changes to connections and connectors in the workspace. 
 :::
 
 ## Remove users from your workspace​
@@ -22,7 +22,7 @@ The user will have access to only the workspace you invited them to. They will b
 
 2. Complete removal by clicking **Remove** in the confirmation modal.
 
-:::info
+:::tip
 Organization admins cannot be removed from a workspace. Reach out to Airbyte Support if you need assistance removing an organization admin.:::
 
 ## Rename a workspace
