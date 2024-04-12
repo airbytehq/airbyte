@@ -762,6 +762,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
 
+    def job_size_reduce_next_slice(self) -> None:
+        # revert the flag
+        self.job_manager.job_should_revert_slice = False
+        # re-adjust Job Size
+        self.job_manager.reduce_job_size()
+
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.filter_field:
@@ -769,6 +775,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:
+                # When the Job is CANCELED intentionally,
+                # we will revert the slice start for the period, and retry with the smaller job size
+                if self.job_manager.is_long_running_job:
+                    start = start.subtract(days=self.slice_interval_in_days)
+                    self.job_size_reduce_next_slice()
+
                 slice_end = start.add(days=self.slice_interval_in_days)
                 # check end period is less than now() or now() is applied otherwise.
                 slice_end = slice_end if slice_end < end else end

@@ -339,7 +339,7 @@ def test_adjust_stream_slices_job_size(
     stream.job_manager.job_size = previous_slice_size
     # fake the threshold
     if fake_threshold:
-        stream.job_manager.job_elapsed_time_threshold_sec = fake_threshold
+        stream.job_manager.job_max_elapsed_time_sec = fake_threshold
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
         stream.job_manager.job_last_elapsed_time = last_job_elapsed_time

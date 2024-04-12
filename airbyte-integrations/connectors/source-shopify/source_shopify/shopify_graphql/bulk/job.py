@@ -8,6 +8,7 @@ from enum import Enum
 from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional, Union
 
+import pendulum as pdm
 import requests
 from airbyte_cdk import AirbyteLogger
 from requests.exceptions import JSONDecodeError
@@ -22,6 +23,7 @@ from .tools import END_OF_FILE, BulkTools
 class ShopifyBulkStatus(Enum):
     CREATED = "CREATED"
     CANCELED = "CANCELED"
+    CANCELING = "CANCELING"
     COMPLETED = "COMPLETED"
     RUNNING = "RUNNING"
     FAILED = "FAILED"
@@ -54,19 +56,21 @@ class ShopifyBulkManager:
     # Each job ideally should be executed within the specified time (in sec),
     # to maximize the performance for multi-connection syncs and control the bulk job size within +- 7 mins (420 sec),
     # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
-    job_elapsed_time_threshold_sec: Final[float] = 420.0
+    job_max_elapsed_time_sec: Final[float] = 420.0
     # 0.1 ~= P2H, default value, lower boundary for slice size
     job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
     job_size_max: Final[float] = 365.0
     # running job logger constrain
-    log_running_job_msg_frequency: Final[int] = 5
+    log_job_state_msg_frequency: Final[int] = 3
     # attempt limit indicator
     concurrent_max_attempt_reached: bool = field(init=False, default=False)
     # attempt counter
     concurrent_attempt: int = field(init=False, default=0)
-    # currents: job_id, job_state
+    # currents: job_id, job_state, job_created_at, job_self_canceled
     job_id: Optional[str] = field(init=False, default=None)
+    job_created_at: Optional[str] = field(init=False, default=None)
+    job_self_canceled: bool = field(init=False, default=False)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     job_last_elapsed_time: float = field(init=False, default=2.0)
@@ -76,8 +80,10 @@ class ShopifyBulkManager:
     job_size_expand_factor: int = field(init=False, default=2)
     # reduce slice factor
     job_size_reduce_factor: int = field(init=False, default=2)
+    # whether or not the slicer should revert the previous start value
+    job_should_revert_slice: bool = field(init=False, default=False)
     # running job log counter
-    log_running_job_msg_count: int = field(init=False, default=0)
+    log_job_state_msg_count: int = field(init=False, default=0)
 
     @property
     def tools(self) -> BulkTools:
@@ -87,6 +93,7 @@ class ShopifyBulkManager:
     def job_state_to_fn_map(self) -> Mapping[str, Any]:
         return {
             ShopifyBulkStatus.CREATED.value: self.on_created_job,
+            ShopifyBulkStatus.CANCELING.value: self.on_canceling_job,
             ShopifyBulkStatus.CANCELED.value: self.on_canceled_job,
             ShopifyBulkStatus.COMPLETED.value: self.on_completed_job,
             ShopifyBulkStatus.RUNNING.value: self.on_running_job,
@@ -115,46 +122,91 @@ class ShopifyBulkManager:
 
         return self.job_size_reduce_factor
 
+    @property
+    def job_elapsed_time_in_state(self) -> int:
+        """
+        Returns the elapsed time taken while Job is in certain status/state.
+        """
+        return (pdm.now() - pdm.parse(self.job_created_at)).in_seconds() if self.job_created_at else 0
+
+    @property
+    def is_long_running_job(self) -> bool:
+        if self.job_elapsed_time_in_state:
+            if self.job_elapsed_time_in_state > self.job_max_elapsed_time_sec:
+                # set the slicer to revert mode
+                self.job_should_revert_slice = True
+                return True
+        else:
+            # reset slicer to normal mode
+            self.job_should_revert_slice = False
+            return False
+
+    def expand_job_size(self) -> None:
+        self.job_size += self.job_size_adjusted_expand_factor
+
+    def reduce_job_size(self) -> None:
+        self.job_size /= self.job_size_adjusted_reduce_factor
+
     def __adjust_job_size(self, job_current_elapsed_time: float) -> None:
-        if job_current_elapsed_time > self.job_elapsed_time_threshold_sec:
-            self.job_size /= self.job_size_adjusted_reduce_factor
-        elif job_current_elapsed_time < 1 or job_current_elapsed_time < self.job_last_elapsed_time:
-            self.job_size += self.job_size_adjusted_expand_factor
-        elif job_current_elapsed_time > self.job_last_elapsed_time < self.job_elapsed_time_threshold_sec:
+        if not self.job_should_revert_slice:
+            if job_current_elapsed_time > self.job_max_elapsed_time_sec:
+                self.reduce_job_size()
+            elif job_current_elapsed_time < 1 or job_current_elapsed_time < self.job_last_elapsed_time:
+                self.expand_job_size()
+            elif job_current_elapsed_time > self.job_last_elapsed_time < self.job_max_elapsed_time_sec:
+                pass
+
+            # set the last job time
+            self.job_last_elapsed_time = job_current_elapsed_time
+            # check the job size slice interval are acceptable
+            self.job_size = max(self.job_size_min, min(self.job_size, self.job_size_max))
+        else:
             pass
 
-        # set the last job time
-        self.job_last_elapsed_time = job_current_elapsed_time
-        # check the job size slice interval are acceptable
-        self.job_size = max(self.job_size_min, min(self.job_size, self.job_size_max))
-
     def __reset_state(self) -> None:
-        # set current job state to default value
-        self.job_state, self.job_id = None, None
+        # set current job state to default values
+        self.job_state, self.job_id, self.job_self_canceled = None, None, False
         # set the running job message counter to default
-        self.log_running_job_msg_count = 0
+        self.log_job_state_msg_count = 0
 
     def job_completed(self) -> bool:
         return self.job_state == ShopifyBulkStatus.COMPLETED.value
 
-    def log_running_job_state(self) -> None:
+    def job_canceled(self) -> bool:
+        return self.job_state == ShopifyBulkStatus.CANCELED.value
+
+    def job_cancel(self) -> requests.Response:
+        # re-use of `self._session(*, **)` to make BULK Job cancel request
+        cancel_args = self.job_get_request_args(ShopifyBulkTemplates.cancel)
+        with self.session as cancel_job:
+            canceled_response = cancel_job.request(**cancel_args)
+            # mark the job was self-canceled
+            self.job_self_canceled = True
+            return self.job_healthcheck(canceled_response)
+
+    def log_job_state_with_count(self) -> None:
         """
-        Print the `RUNNING` Job info message every 3 request, to minimize the noise in the logs.
+        Print the status/state Job info message every N request, to minimize the noise in the logs.
         """
-        if self.log_running_job_msg_count < self.log_running_job_msg_frequency:
-            self.log_running_job_msg_count += 1
+        if self.log_job_state_msg_count < self.log_job_state_msg_frequency:
+            self.log_job_state_msg_count += 1
         else:
-            self.log_state()
-            self.log_running_job_msg_count = 0
+            message = f"Elapsed time: {self.job_elapsed_time_in_state} sec"
+            self.log_state(message)
+            self.log_job_state_msg_count = 0
 
-    def log_state(self) -> None:
-        self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` is {self.job_state}.")
+    def log_state(self, message: Optional[str] = None) -> None:
+        pattern = f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` is {self.job_state}."
+        if message:
+            self.logger.info(f"{pattern}. {message}.")
+        else:
+            self.logger.info(pattern)
 
-    def job_get_state_args(self) -> Mapping[str, Any]:
+    def job_get_request_args(self, template: ShopifyBulkTemplates) -> Mapping[str, Any]:
         return {
             "method": "POST",
             "url": self.base_url,
-            "data": ShopifyBulkTemplates.status(self.job_id),
+            "data": template(self.job_id),
             "headers": {"Content-Type": "application/graphql"},
         }
 
@@ -175,21 +227,33 @@ class ShopifyBulkManager:
     def job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
             self.job_state = response.json().get("data", {}).get("node", {}).get("status")
-            if self.job_state == ShopifyBulkStatus.RUNNING.value:
-                self.log_running_job_state()
+            if self.job_state in [ShopifyBulkStatus.RUNNING.value, ShopifyBulkStatus.CANCELING.value]:
+                self.log_job_state_with_count()
             else:
                 self.log_state()
 
     def on_created_job(self, **kwargs) -> None:
         pass
 
-    def on_canceled_job(self, response: requests.Response) -> AirbyteTracedException:
-        raise ShopifyBulkExceptions.BulkJobCanceled(
-            f"The BULK Job: `{self.job_id}` exited with {self.job_state}, details: {response.text}",
-        )
+    def on_canceled_job(self, response: requests.Response) -> None:
+        if not self.job_self_canceled:
+            raise ShopifyBulkExceptions.BulkJobCanceled(
+                f"The BULK Job: `{self.job_id}` exited with {self.job_state}, details: {response.text}",
+            )
+        else:
+            pass
+
+    def on_canceling_job(self, **kwargs) -> None:
+        sleep(self.job_check_interval_sec)
 
     def on_running_job(self, **kwargs) -> None:
-        sleep(self.job_check_interval_sec)
+        if self.is_long_running_job:
+            self.logger.info(
+                f"Stream: `{self.stream_name}` the BULK Job: {self.job_id} runs longer than expected. The job will be canceled and retried with the smaller Slice Size."
+            )
+            self.job_cancel()
+        else:
+            sleep(self.job_check_interval_sec)
 
     def on_completed_job(self, **kwargs) -> None:
         pass
@@ -222,7 +286,7 @@ class ShopifyBulkManager:
 
     def job_track_running(self) -> Union[AirbyteTracedException, requests.Response]:
         # format Job state check args
-        status_args = self.job_get_state_args()
+        status_args = self.job_get_request_args(ShopifyBulkTemplates.status)
         # re-use of `self._session(*, **)` to make BULK Job status checks
         with self.session as track_running_job:
             response = track_running_job.request(**status_args)
@@ -239,6 +303,8 @@ class ShopifyBulkManager:
     def job_check_state(self) -> Optional[str]:
         while not self.job_completed():
             response = self.job_track_running()
+            if self.job_canceled():
+                return None
         # return `job_result_url` when status is `COMPLETED`
         return self.job_get_result(response)
 
@@ -285,6 +351,7 @@ class ShopifyBulkManager:
         bulk_response = response_data.get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
         if bulk_response and bulk_response.get("status") == ShopifyBulkStatus.CREATED.value:
             job_id = bulk_response.get("id")
+            self.job_created_at = bulk_response.get("createdAt")
             self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
             return job_id
         else:
