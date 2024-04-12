@@ -32,6 +32,7 @@ csv.field_size_limit(sys.maxsize)
 
 DATE_FORMAT = "%Y-%m-%d"
 
+
 # Basic full refresh stream
 class AppmetricaLogsApiStream(HttpStream, ABC):
 
@@ -56,7 +57,8 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         client_name: str = "",
         product_name: str = "",
         custom_json: Optional[Mapping[str, str]] = {},
-        iter_content_chunk_size: int = 8192
+        iter_content_chunk_size: int = 8192,
+        field_name_map: dict[str, any] | None = None,
     ):
         super().__init__(authenticator)
         self.application_id = application_id
@@ -79,6 +81,7 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         self.custom_json = custom_json
         self._is_report_ready_to_load: bool = False
         self.iter_content_chunk_size = iter_content_chunk_size
+        self.field_name_map = field_name_map if field_name_map is not None else {}
 
     def path(self, *args, **kwargs) -> str:
         return f"logs/v1/export/{self.source}.csv"
@@ -124,15 +127,25 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         extra_properties.extend(self.custom_json.keys())
         for key in extra_properties:
             schema["properties"][key] = {"type": ["null", "string"]}
+
+        for key, value in self.field_name_map.items():
+            if key in schema["properties"]:
+                schema["properties"][value] = schema["properties"].pop(key)
+
         return schema
 
-    def add_constants_to_record(self, record):
+    def postprocess_record(self, record):
         constants = {
             "__productName": self.product_name,
             "__clientName": self.client_name,
         }
         constants.update(self.custom_json)
         record.update(constants)
+
+        for key, value in self.field_name_map.items():
+            if key in record:
+                record[value] = record.pop(key)
+
         return record
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
@@ -168,12 +181,12 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
                 )
                 os.rename(while_download_filename, succesfully_downloaded_filename)
 
-                with open(succesfully_downloaded_filename, errors='replace') as f:
+                with open(succesfully_downloaded_filename, errors="replace") as f:
                     logger.info(f"Start reading from {succesfully_downloaded_filename}")
                     reader = csv.DictReader(f)
                     for record in reader:
                         records_counter += 1
-                        yield self.add_constants_to_record(record)
+                        yield self.postprocess_record(record)
                     logger.info(f"Total records count loaded for slice {stream_slice_formatted}: {records_counter}")
                 logger.info(f"Remove {succesfully_downloaded_filename}")
             except Exception as e:
@@ -329,6 +342,15 @@ class SourceAppmetricaLogsApi(AbstractSource):
         return config
 
     @staticmethod
+    def get_field_name_map(config: Mapping[str, any]) -> dict[str, str]:
+        """Get values that needs to be replaced and their replacements"""
+        field_name_map: list[dict[str, str]] | None
+        if not (field_name_map := config.get("field_name_map")):
+            return {}
+        else:
+            return {item["old_value"]: item["new_value"] for item in field_name_map}
+
+    @staticmethod
     def get_auth(config: Mapping[str, Any]) -> TokenAuthenticator:
         if config["credentials"]["auth_type"] == "access_token_auth":
             return TokenAuthenticator(config["credentials"]["access_token"])
@@ -344,6 +366,7 @@ class SourceAppmetricaLogsApi(AbstractSource):
     @staticmethod
     def prepare_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
         config = SourceAppmetricaLogsApi.prepare_config_dates(config)
+        config = SourceAppmetricaLogsApi.get_field_name_map(config)
         return config
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -363,6 +386,7 @@ class SourceAppmetricaLogsApi(AbstractSource):
             client_name=config.get("client_name", ""),
             custom_json=json.loads(config.get("custom_json", "{}")),
             event_name_list=config.get("event_name_list"),
-            iter_content_chunk_size=config.get('iter_content_chunk_size', 8192)
+            iter_content_chunk_size=config.get("iter_content_chunk_size", 8192),
+            field_name_map=config["field_name_map"],
         )
         return [stream]

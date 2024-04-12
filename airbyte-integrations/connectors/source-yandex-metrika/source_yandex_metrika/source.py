@@ -44,7 +44,7 @@ CONFIG_DATE_FORMAT = "%Y-%m-%d"
 # Source
 class SourceYandexMetrika(AbstractSource):
     def __init__(self):
-        self.key_map: dict[str, str] | None = None
+        self.field_name_map: dict[str, str] | None = None
 
     def preprocess_raw_stream_slice(
         self,
@@ -207,7 +207,7 @@ class SourceYandexMetrika(AbstractSource):
                         multithreading_threads_count=stream_instance_kwargs["multithreading_threads_count"],
                         timer=timer,
                         completed_chunks_observer=completed_chunks_observer,
-                        key_map=self.key_map,
+                        field_name_map=self.field_name_map,
                     )
                     logger.info("Threads controller created")
                     logger.info("Run threads process, get into main loop")
@@ -323,7 +323,7 @@ class SourceYandexMetrika(AbstractSource):
         transformed_config.update(self.transform_date_range(raw_config))
         raw_config.update(transformed_config)
 
-        self.key_map = self.get_key_map(config=raw_config)
+        self.field_name_map = self.get_field_name_map(config=raw_config)
         return raw_config
 
     def transform_date_range(self, config: Mapping[str, any]) -> dict[str, any]:
@@ -372,13 +372,13 @@ class SourceYandexMetrika(AbstractSource):
             raise Exception("Неверный типа авторизации. Доступные: access_token_auth и credentials_craft_auth")
 
     @staticmethod
-    def get_key_map(config: Mapping[str, any]) -> dict[str, str]:
+    def get_field_name_map(config: Mapping[str, any]) -> dict[str, str]:
         """Get values that needs to be replaced and their replacements"""
-        key_map: list[dict[str, str]] | None
-        if not (key_map := config.get("key_map")):
+        field_name_map: list[dict[str, str]] | None
+        if not (field_name_map := config.get("field_name_map")):
             return {}
         else:
-            return {item["old_value"]: item["new_value"] for item in key_map}
+            return {item["old_value"]: item["new_value"] for item in field_name_map}
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         spec = super().spec(logger)
@@ -456,13 +456,15 @@ class SourceYandexMetrika(AbstractSource):
                         self,
                         source_to_stream_config["kwargs_field_name"],
                     ),
-                    key_map=self.key_map,
+                    field_name_map=self.field_name_map,
                 )
                 raw_data_streams.append(stream)
                 setattr(self, source_to_stream_config["preprocessor_field_name"], stream.preprocessor)
 
         agg_data_streams = [
-            AggregateDataYandexMetrikaReport(authenticator=auth, global_config=config, report_config=stream_config, key_map=self.key_map)
+            AggregateDataYandexMetrikaReport(
+                authenticator=auth, global_config=config, report_config=stream_config, field_name_map=self.field_name_map
+            )
             for stream_config in config.get("aggregated_reports", [])
         ]
         return [*raw_data_streams, *agg_data_streams]

@@ -38,6 +38,8 @@ from pendulum.tz.timezone import Timezone
 from . import fields
 from .utils import memoized_method
 
+from .auth import CredentialsCraftAuthenticator, AppsflyerAuthenticator
+
 
 # Simple transformer
 def parse_date(date: Any, timezone: Timezone) -> datetime:
@@ -52,14 +54,12 @@ class AppsflyerStream(HttpStream, ABC):
     main_fields = ()
     additional_fields = ()
     maximum_rows = 1_000_000
-    transformer: TypeTransformer = TypeTransformer(
-        TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
-    )
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
     slices_by_date: bool = False
 
     def __init__(
         self,
-        authenticator: TokenAuthenticator,
+        authenticator: AppsflyerAuthenticator,
         app_id: str,
         backward_dates_campatibility_mode: bool,
         timezone: str,
@@ -207,9 +207,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.chunked_reports_config["split_mode_type"] == "do_not_split_mode":
-            slices = [
-                {self.cursor_field: self.start_date, f"{self.cursor_field}_end": self.end_date}
-            ]
+            slices = [{self.cursor_field: self.start_date, f"{self.cursor_field}_end": self.end_date}]
         elif self.chunked_reports_config["split_mode_type"] == "split_date_mode":
             if self.slices_by_date:
                 if self.chunked_reports_config["unit"] == "Days":
@@ -230,9 +228,7 @@ class AppsflyerStream(HttpStream, ABC):
                 elif self.chunked_reports_config["unit"] == "Days":
                     delta_hours = 24 * int(self.chunked_reports_config["split_range_units_count"])
                 else:
-                    raise Exception(
-                        f'Invalid split date range unit: \'{self.chunked_reports_config["unit"]}\''
-                    )
+                    raise Exception(f'Invalid split date range unit: \'{self.chunked_reports_config["unit"]}\'')
                 slices = self.chunk_date_range_by_hours(
                     start_date=self.start_date,
                     end_date=self.end_date,
@@ -240,8 +236,7 @@ class AppsflyerStream(HttpStream, ABC):
                 )
         else:
             raise Exception(
-                "Invalid split date range split_mode_type: "
-                f'\'{self.chunked_reports_config["split_mode_type"]}\'',
+                "Invalid split date range split_mode_type: " f'\'{self.chunked_reports_config["split_mode_type"]}\'',
             )
 
         slices = list(slices)
@@ -673,9 +668,7 @@ class SourceAppsflyer(AbstractSource):
                 record = next(
                     test_stream.read_records(
                         sync_mode=SyncMode.full_refresh,
-                        stream_slice=next(
-                            test_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-                        ),
+                        stream_slice=next(test_stream.stream_slices(sync_mode=SyncMode.full_refresh)),
                     )
                 )
                 is_any_stream_succeded = True
@@ -694,17 +687,20 @@ class SourceAppsflyer(AbstractSource):
         return True, None
 
     def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
-        return TokenAuthenticator(token=config["access_token"])
+        if config["credentials"]["auth_type"] == "access_token_auth":
+            return TokenAuthenticator(token=config["credentials"]["access_token"])
+        elif config["credentials"]["auth_type"] == "credentials_craft_auth":
+            return CredentialsCraftAuthenticator(
+                credentials_craft_host=config["credentials"]["credentials_craft_host"],
+                credentials_craft_token=config["credentials"]["credentials_craft_token"],
+                credentials_craft_token_id=config["credentials"]["credentials_craft_token_id"],
+            )
 
     def spec(self, logger: logging.Logger):
         spec = super().spec(logger)
         properties: Dict[str, Any] = spec.connectionSpecification["properties"]
-        for property_order, raw_data_stream in enumerate(
-            self.raw_data_streams_classes, len(properties)
-        ):
-            stream_additional_fields = (
-                getattr(raw_data_stream, "additional_fields") or fields.raw_data.additional_fields
-            )
+        for property_order, raw_data_stream in enumerate(self.raw_data_streams_classes, len(properties)):
+            stream_additional_fields = getattr(raw_data_stream, "additional_fields") or fields.raw_data.additional_fields
             properties.update(
                 {
                     raw_data_stream.additional_fields_property(): {
@@ -724,43 +720,40 @@ class SourceAppsflyer(AbstractSource):
         return spec
 
     def transform_config_dates(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        date_range: Mapping[str, Any] = config.get("date_range", {})
+        date_range_type: str = date_range.get("date_range_type")
+
+        time_from: Optional[pendulum.datetime] = None
+        time_to: Optional[pendulum.datetime] = None
+
         config["timezone"] = config.get("timezone", "UTC")
+        config["backward_dates_campatibility_mode"] = False  # No idea what this thing does
         timezone = pendulum.timezone(config["timezone"])
-        config["backward_dates_campatibility_mode"] = False
-        now_date = pendulum.now().replace(tzinfo=timezone)
-        load_today = config.get("load_today", False)
+        today_date: pendulum.datetime = pendulum.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-        if config.get("start_date") and config.get("end_date"):
-            config["start_date"] = pendulum.parse(config["start_date"]).replace(tzinfo=timezone)
-            config["end_date"] = pendulum.parse(config["end_date"]).replace(tzinfo=timezone)
-        elif config.get("start_date") and not config.get("end_date"):
+        if date_range_type == "custom_date":
+            time_from = pendulum.parse(date_range["date_from"])
+            time_to = pendulum.parse(date_range["date_to"])
+        elif date_range_type == "from_start_date_to_today":
             config["backward_dates_campatibility_mode"] = True
-            config["start_date"] = pendulum.parse(config["start_date"]).replace(tzinfo=timezone)
-            config["end_date"] = now_date
-        elif config.get("last_days"):
-            config["start_date"] = (
-                pendulum.now()
-                .subtract(days=config["last_days"])
-                .replace(tzinfo=timezone, hour=0, minute=0, second=0, microsecond=0)
-            )
-            config["end_date"] = now_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            if not load_today:
-                config["end_date"] = config["end_date"].subtract(days=1)
-        elif (
-            not config.get("start_date")
-            and not config.get("end_date")
-            and not config.get("last_days")
-        ):
-            config["start_date"] = pendulum.now().subtract(days=5).replace(tzinfo=timezone)
-            config["end_date"] = now_date
-            if not load_today:
-                config["end_date"] = config["end_date"].subtract(days=1)
-        else:
-            raise Exception("Invalid dates format or options")
+            time_from = pendulum.parse(date_range["date_from"])
+            if date_range.get("should_load_today"):
+                time_to = today_date
+            else:
+                time_to = today_date.subtract(days=1)
+        elif date_range_type == "last_n_days":
+            time_from = today_date.subtract(days=date_range.get("last_days_count"))
+            if date_range.get("should_load_today"):
 
-        config["end_date"] = config["end_date"].replace(
-            hour=23, minute=59, second=59, microsecond=999999
-        )
+                time_to = today_date
+            else:
+                time_to = today_date.subtract(days=1)
+
+        time_from = time_from.replace(tzinfo=timezone)
+        time_to = time_to.replace(tzinfo=timezone).replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        config["start_date"] = time_from
+        config["end_date"] = time_to
 
         return config
 
@@ -782,9 +775,7 @@ class SourceAppsflyer(AbstractSource):
             shared_args.pop("media_source_filter_config")
         except:
             pass
-        media_source_filter_config = config.get(
-            "media_source_filter_config", {"media_source_type": "no_filter"}
-        )
+        media_source_filter_config = config.get("media_source_filter_config", {"media_source_type": "no_filter"})
         AirbyteLogger().log(
             "INFO",
             f"Using start_date: {config['start_date']}, end_date: {config['end_date']}",

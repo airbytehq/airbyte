@@ -12,18 +12,18 @@ class YandexMetrikaStream(HttpStream, ABC):
     Contains some base functions
     """
 
-    def __init__(self, key_map: dict[str, str]):
+    def __init__(self, field_name_map: dict[str, str]):
         super().__init__(authenticator=None)
-        self.key_map: dict[str, str] = key_map
+        self.field_name_map: dict[str, str] = field_name_map
 
     def postprocess_data(self, data: dict[str, any]):
         """Replace keys in data"""
-        for old_v, new_v in self.key_map.items():
+        for old_v, new_v in self.field_name_map.items():
             if old_v in data:
                 data[new_v] = data.pop(old_v)
 
     def replace_keys(self, data: dict[str, any]) -> None:
-        """Replace all keys by key_map in given dict"""
-        for key, value in self.key_map.items():
+        """Replace all keys by field_name_map in given dict"""
+        for key, value in self.field_name_map.items():
             if key in data:
                 data[value] = data.pop(key)

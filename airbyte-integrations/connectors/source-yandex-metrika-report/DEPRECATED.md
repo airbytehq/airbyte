@@ -1,0 +1,1 @@
+# This connector is deprecated, use source-yandex-metrika instead

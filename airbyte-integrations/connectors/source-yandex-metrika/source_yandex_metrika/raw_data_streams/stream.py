@@ -61,9 +61,9 @@ class YandexMetrikaRawDataStream(YandexMetrikaStream, ABC):
         check_log_requests_ability: bool = False,
         multithreading_threads_count: int = 1,
         created_for_test: bool = False,
-        key_map: dict[str, any] | None = None,
+        field_name_map: dict[str, any] | None = None,
     ):
-        super().__init__(key_map)
+        super().__init__(field_name_map)
         self.counter_id = counter_id
         self._authenticator = authenticator
         self.date_from = date_from

@@ -318,6 +318,35 @@
         "type": "boolean",
         "default": true,
         "order": 11
+      },
+      "field_name_map": {
+        "title": "Field name replace",
+        "description": "Use this if you want to replace some field names. If you want to replace \"ym:s:watchIDs\" with \"watch_ids\", set map as  \"Old key\" - \"ym:s:watchIDs\", \"New key\" - \"watch_ids\".",
+        "type": "array",
+        "group": "replace",
+        "order": 12,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "old_value",
+            "new_value"
+          ],
+          "title": "Field replace",
+          "description": "Pair: old name - new name",
+          "properties": {
+            "old_value": {
+              "type": "string",
+              "title": "Old name",
+              "order": 0
+            },
+            "new_value": {
+              "type": "string",
+              "title": "New name",
+              "order": 1
+            }
+          }
+        }
       }
     }
   }

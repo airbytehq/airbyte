@@ -6,11 +6,10 @@
 import logging
 from abc import ABC
 from enum import Enum
-from typing import Iterable, Mapping, MutableMapping, NamedTuple, Any
+from typing import Iterable, Mapping, MutableMapping, NamedTuple
 
 import requests
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -69,9 +68,9 @@ class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
         authenticator: TokenAuthenticator,
         global_config: dict[str, any],
         report_config: ReportConfig,
-        key_map: dict[str, any] | None = None,
+        field_name_map: dict[str, any] | None = None,
     ):
-        super().__init__(key_map)
+        super().__init__(field_name_map)
         self._authenticator = authenticator
         self.global_config = global_config
         self.report_config = report_config
@@ -188,7 +187,7 @@ class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
         keys = query["dimensions"] + query["metrics"]
 
         for i in range(len(keys)):
-            keys[i] = self.key_map.get(keys[i], keys[i])
+            keys[i] = self.field_name_map.get(keys[i], keys[i])
 
         for row in data:
             row_values = []
