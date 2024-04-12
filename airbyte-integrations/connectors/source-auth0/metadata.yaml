@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.5.1
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-auth0
   documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
   githubIssueLabel: source-auth0
