@@ -69,6 +69,195 @@ streams:
         datetime: "{{ config['date_created_to'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the call.
+            maxLength: 32
+            type: string
+          parentId:
+            description: The identifier of the parent call, if any.
+            maxLength: 32
+            type:
+              - string
+              - "null"
+          sessionId:
+            description: The identifier of the session related to the call.
+            maxLength: 32
+            type: string
+          conversationId:
+            description: The identifier of the conversation related to the call.
+            maxLength: 32
+            type: string
+          dateCreated:
+            description: The datetime when the call was created.
+            type: string
+            format: date-time
+          dateEstablished:
+            description: The datetime when the call was established.
+            format: date-time
+            type:
+              - string
+              - "null"
+          dateFinished:
+            description: The datetime when the call was finished.
+            format: date-time
+            type:
+              - string
+              - "null"
+          lastUpdated:
+            description: The datetime of the last update related to the call.
+            type: string
+            format: date-time
+          state:
+            description: The current state of the call.
+            maxLength: 256
+            type: string
+          finishReason:
+            description: The reason for call termination.
+            maxLength: 256
+            type: string
+          from:
+            description: The phone number the call is from.
+            type:
+              - string
+              - "null"
+          to:
+            description: The phone number the call is directed to.
+            type:
+              - string
+              - "null"
+          type:
+            description: The type of call.
+            maxLength: 256
+            type: string
+          source:
+            description: The source of the call.
+            maxLength: 256
+            type: string
+          domain:
+            description: The domain of the call.
+            maxLength: 256
+            type: string
+          duration:
+            description: The duration of the call in seconds.
+            type:
+              - integer
+              - "null"
+          anonymous:
+            description: Indicates if the call is anonymous (true) or not (false).
+            type:
+              - boolean
+              - "null"
+          recordings:
+            description: List of recordings for the call
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  description: The unique identifier of the recording.
+                  maxLength: 32
+                  type: string
+                dateCreated:
+                  description: The datetime when the recording was created.
+                  type: string
+                  format: date-time
+                lastUpdated:
+                  description: The datetime of the last update related to the recording.
+                  type: string
+                  format: date-time
+                duration:
+                  description: The duration of the recording in seconds.
+                  type: integer
+                url:
+                  description: The URL to access the recording.
+                  type: string
+                tags:
+                  description: Tags associated with the recording.
+                  type: array
+                  items:
+                    type: string
+                file:
+                  description: Information about the recorded file
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      description: The unique identifier of the recording file.
+                      maxLength: 32
+                      type: string
+                    state:
+                      description: The state of the recording file.
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      description: The name of the recording file.
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      description: The size of the recording file in bytes.
+                      type:
+                        - integer
+                        - "null"
+                    contentType:
+                      description: The type of content in the recording file.
+                      type:
+                        - string
+                        - "null"
+                state:
+                  description: The state of the recording.
+                  maxLength: 256
+                  type: string
+                agent:
+                  description: Details of the agent who made the recording
+                  type: object
+                  properties:
+                    id:
+                      description: The unique identifier of the agent.
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      description: The name of the agent.
+                      type:
+                        - string
+                        - "null"
+                    number:
+                      description: The phone number of the agent.
+                      type:
+                        - string
+                        - "null"
+          bridged:
+            description: Data related to the bridged calls
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: The unique identifier of the bridged call.
+                type:
+                  - string
+                  - "null"
+              name:
+                description: The name associated with the bridged call.
+                type:
+                  - string
+                  - "null"
+              number:
+                description: The phone number associated with the bridged call.
+                type:
+                  - string
+                  - "null"
 spec:
   documentation_url: https://example.org
   type: Spec
