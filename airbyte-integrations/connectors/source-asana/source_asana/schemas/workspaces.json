@@ -2,21 +2,26 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the workspace",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of resource, in this case, it's a workspace",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the workspace",
       "type": ["null", "string"]
     },
     "email_domains": {
+      "description": "List of email domains associated with the workspace",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "is_organization": {
+      "description": "Indicates if the workspace is an organization or not",
       "type": ["null", "boolean"]
     }
   }

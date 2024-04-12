@@ -2,49 +2,63 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the user.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of the resource, in this case, 'user'.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the user.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the user.",
       "type": ["null", "string"]
     },
     "photo": {
+      "description": "User's profile photos in different sizes.",
       "type": ["null", "object"],
       "properties": {
         "image_128x128": {
+          "description": "128x128 dimensions profile image.",
           "type": ["null", "string"]
         },
         "image_21x21": {
+          "description": "21x21 dimensions profile image.",
           "type": ["null", "string"]
         },
         "image_27x27": {
+          "description": "27x27 dimensions profile image.",
           "type": ["null", "string"]
         },
         "image_36x36": {
+          "description": "36x36 dimensions profile image.",
           "type": ["null", "string"]
         },
         "image_60x60": {
+          "description": "60x60 dimensions profile image.",
           "type": ["null", "string"]
         }
       }
     },
     "workspaces": {
+      "description": "List of workspaces associated with the user.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the workspace.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of the resource, in this case, 'workspace'.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the workspace.",
             "type": ["null", "string"]
           }
         }

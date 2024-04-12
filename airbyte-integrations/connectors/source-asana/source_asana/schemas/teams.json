@@ -2,35 +2,45 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "The unique identifier of the team.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "The type of resource representing the team.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the team.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the team.",
       "type": ["null", "string"]
     },
     "html_description": {
+      "description": "The HTML-formatted description of the team.",
       "type": ["null", "string"]
     },
     "organization": {
+      "description": "Details about the organization including name, contact information, etc.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "The unique identifier of the organization to which the team belongs.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "The type of resource representing the organization.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the organization to which the team belongs.",
           "type": ["null", "string"]
         }
       }
     },
     "permalink_url": {
+      "description": "The permalink URL of the team.",
       "type": ["null", "string"]
     }
   }

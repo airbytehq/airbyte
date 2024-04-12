@@ -2,56 +2,121 @@
   "type": ["null", "object"],
   "properties": {
     "user": {
+      "description": "User associated with the event",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "Unique identifier of the user associated with the event",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "Type of the user resource",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Name of the user associated with the event",
+          "type": ["null", "string"]
+        }
       }
     },
     "resource": {
+      "description": "Resource affected by the event",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] }
+        "gid": {
+          "description": "Unique identifier of the resource associated with the event",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "Type of the resource associated with the event",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Name of the resource associated with the event",
+          "type": ["null", "string"]
+        }
       }
     },
-    "type": { "type": ["null", "string"] },
-    "action": { "type": ["null", "string"] },
+    "type": {
+      "description": "The type of event that occurred",
+      "type": ["null", "string"]
+    },
+    "action": {
+      "description": "The action taken in the event, such as create, update, or delete.",
+      "type": ["null", "string"]
+    },
     "parent": {
+      "description": "Parent entity related to the event",
       "type": ["null", "object"],
       "properties": {
-        "gid": { "type": ["null", "string"] },
-        "resource_type": { "type": ["null", "string"] },
+        "gid": {
+          "description": "Unique identifier of the parent resource",
+          "type": ["null", "string"]
+        },
+        "resource_type": {
+          "description": "Type of the parent resource",
+          "type": ["null", "string"]
+        },
         "name": "Bug Task"
       }
     },
-    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "created_at": {
+      "description": "The timestamp when the event was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "change": {
+      "description": "Details of the changes made in the event",
       "type": ["null", "object"],
       "properties": {
-        "field": { "type": ["null", "string"] },
-        "action": { "type": ["null", "string"] },
+        "field": {
+          "description": "The field that was changed",
+          "type": ["null", "string"]
+        },
+        "action": {
+          "description": "The specific action within the change.",
+          "type": ["null", "string"]
+        },
         "new_value": {
+          "description": "The new value after the change",
           "type": ["null", "object"],
           "properties": {
-            "gid": { "type": ["null", "string"] },
-            "resource_type": { "type": ["null", "string"] }
+            "gid": {
+              "description": "Unique identifier for the new value",
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "description": "Type of the new value resource",
+              "type": ["null", "string"]
+            }
           }
         },
         "added_value": {
+          "description": "Value that was added during the change",
           "type": ["null", "object"],
           "properties": {
-            "gid": { "type": ["null", "string"] },
-            "resource_type": { "type": ["null", "string"] }
+            "gid": {
+              "description": "Unique identifier for the added value",
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "description": "Type of the added value resource",
+              "type": ["null", "string"]
+            }
           }
         },
         "removed_value": {
+          "description": "Value that was removed during the change",
           "type": ["null", "object"],
           "properties": {
-            "gid": { "type": ["null", "string"] },
-            "resource_type": { "type": ["null", "string"] }
+            "gid": {
+              "description": "Unique identifier for the removed value",
+              "type": ["null", "string"]
+            },
+            "resource_type": {
+              "description": "Type of the removed value resource",
+              "type": ["null", "string"]
+            }
           }
         }
       }

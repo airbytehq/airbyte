@@ -2,110 +2,139 @@
   "type": ["null", "object"],
   "properties": {
     "gid": {
+      "description": "Globally unique identifier for the task.",
       "type": ["null", "string"]
     },
     "resource_type": {
+      "description": "Type of resource.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the task.",
       "type": ["null", "string"]
     },
     "approval_status": {
+      "description": "The approval status of the task.",
       "type": ["null", "string"]
     },
     "completed": {
+      "description": "Indicates if the task has been completed.",
       "type": ["null", "boolean"]
     },
     "completed_at": {
+      "description": "The timestamp when the task was completed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "completed_by": {
+      "description": "The user who completed the task.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the user.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the user who completed the task.",
           "type": ["null", "string"]
         }
       }
     },
     "created_at": {
+      "description": "The timestamp when the task was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dependencies": {
+      "description": "Dependencies of the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the dependency.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "dependents": {
+      "description": "Tasks that are dependent on this task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the dependent task.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "due_at": {
+      "description": "The timestamp when the task is due.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "due_on": {
+      "description": "The date when the task is due.",
       "type": ["null", "string"],
       "format": "date"
     },
     "external": {
+      "description": "External data related to the task.",
       "type": ["null", "object"],
       "properties": {
         "data": {
+          "description": "External data associated with the task.",
           "type": ["null", "string"]
         },
         "gid": {
+          "description": "Globally unique identifier for the external data.",
           "type": ["null", "string"]
         }
       }
     },
     "hearted": {
+      "description": "Indicates if the task is hearted.",
       "type": ["null", "boolean"]
     },
     "hearts": {
+      "description": "Users who have hearted the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the heart action.",
             "type": ["null", "string"]
           },
           "user": {
+            "description": "User who hearted the task.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the user.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the user who hearted the task.",
                 "type": ["null", "string"]
               }
             }
@@ -114,32 +143,41 @@
       }
     },
     "html_notes": {
+      "description": "HTML content of the task notes.",
       "type": ["null", "string"]
     },
     "is_rendered_as_separator": {
+      "description": "Indicates if the task is rendered as a separator.",
       "type": ["null", "boolean"]
     },
     "liked": {
+      "description": "Indicates if the task is liked.",
       "type": ["null", "boolean"]
     },
     "likes": {
+      "description": "Users who have liked the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the like action.",
             "type": ["null", "string"]
           },
           "user": {
+            "description": "User who liked the task.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the user.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the user who liked the task.",
                 "type": ["null", "string"]
               }
             }
@@ -148,34 +186,43 @@
       }
     },
     "memberships": {
+      "description": "Projects and sections the task is a part of.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "project": {
+            "description": "Project the task belongs to.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the project.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the project.",
                 "type": ["null", "string"]
               }
             }
           },
           "section": {
+            "description": "Section the task belongs to within a project.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the section.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the section.",
                 "type": ["null", "string"]
               }
             }
@@ -184,233 +231,298 @@
       }
     },
     "modified_at": {
+      "description": "The timestamp when the task was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "notes": {
+      "description": "Text content of the task notes.",
       "type": ["null", "string"]
     },
     "num_hearts": {
+      "description": "Number of hearts received on the task.",
       "type": ["null", "integer"]
     },
     "num_likes": {
+      "description": "Number of likes received on the task.",
       "type": ["null", "integer"]
     },
     "num_subtasks": {
+      "description": "Number of subtasks under the task.",
       "type": ["null", "integer"]
     },
     "resource_subtype": {
+      "description": "Subtype of the task resource.",
       "type": ["null", "string"]
     },
     "start_on": {
+      "description": "The start date of the task.",
       "type": ["null", "string"],
       "format": "date"
     },
     "assignee": {
+      "description": "The user assigned to the task.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the assignee.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the assignee.",
           "type": ["null", "string"]
         }
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the custom field.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource.",
             "type": ["null", "string"]
           },
           "created_by": {
+            "description": "The user who created the custom field.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the user.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "Name of the user who created the custom field.",
                 "type": ["null", "string"]
               }
             }
           },
           "currency_code": {
+            "description": "The currency code for the custom field value.",
             "type": ["null", "string"]
           },
           "custom_label": {
+            "description": "The custom label for the field.",
             "type": ["null", "string"]
           },
           "custom_label_position": {
+            "description": "Position of the custom label.",
             "type": ["null", "string"]
           },
           "description": {
+            "description": "Description of the custom field.",
             "type": ["null", "string"]
           },
           "display_value": {
+            "description": "Displayed value of the custom field.",
             "type": ["null", "string"]
           },
           "enabled": {
+            "description": "Indicates if the custom field is enabled.",
             "type": ["null", "boolean"]
           },
           "enum_options": {
+            "description": "Options for an enumerated custom field.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "gid": {
+                  "description": "Globally unique identifier for the option.",
                   "type": ["null", "string"]
                 },
                 "resource_type": {
+                  "description": "Type of resource.",
                   "type": ["null", "string"]
                 },
                 "color": {
+                  "description": "Color associated with the option.",
                   "type": ["null", "string"]
                 },
                 "enabled": {
+                  "description": "Indicates if the option is enabled.",
                   "type": ["null", "boolean"]
                 },
                 "name": {
+                  "description": "Name of the option.",
                   "type": ["null", "string"]
                 }
               }
             }
           },
           "enum_value": {
+            "description": "Selected option for an enumerated custom field.",
             "type": ["null", "object"],
             "properties": {
               "gid": {
+                "description": "Globally unique identifier for the option.",
                 "type": ["null", "string"]
               },
               "resource_type": {
+                "description": "Type of resource.",
                 "type": ["null", "string"]
               },
               "color": {
+                "description": "Color associated with the option.",
                 "type": ["null", "string"]
               },
               "enabled": {
+                "description": "Indicates if the option is enabled.",
                 "type": ["null", "boolean"]
               },
               "name": {
+                "description": "Name of the option.",
                 "type": ["null", "string"]
               }
             }
           },
           "format": {
+            "description": "Format of the custom field.",
             "type": ["null", "string"]
           },
           "has_notifications_enabled": {
+            "description": "Indicates if notifications are enabled for the field.",
             "type": ["null", "boolean"]
           },
           "is_global_to_workspace": {
+            "description": "Indicates if the custom field is global to the workspace.",
             "type": ["null", "boolean"]
           },
           "name": {
+            "description": "Name of the custom field.",
             "type": ["null", "string"]
           },
           "number_value": {
+            "description": "Numerical value of the custom field.",
             "type": ["null", "number"]
           },
           "precision": {
+            "description": "Precision of numerical value.",
             "type": ["null", "integer"]
           },
           "resource_subtype": {
+            "description": "Subtype of the custom field resource.",
             "type": ["null", "string"]
           },
           "text_value": {
+            "description": "Text value of the custom field.",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of custom field.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "followers": {
+      "description": "Users following the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the follower.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Name of the follower.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "parent": {
+      "description": "Parent task or object that this task is associated with.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the parent task or object.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the parent task or object.",
           "type": ["null", "string"]
         }
       }
     },
     "permalink_url": {
+      "description": "URL link to access the task details.",
       "type": ["null", "string"]
     },
     "projects": {
+      "description": "Projects the task is associated with.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the project.",
             "type": ["null", "string"]
           },
           "resource_type": {
+            "description": "Type of resource.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Name of the project.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "tags": {
+      "description": "Tags associated with the task.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "gid": {
+            "description": "Globally unique identifier for the tag.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Name of the tag.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "workspace": {
+      "description": "Workspace where the task belongs.",
       "type": ["null", "object"],
       "properties": {
         "gid": {
+          "description": "Globally unique identifier for the workspace.",
           "type": ["null", "string"]
         },
         "resource_type": {
+          "description": "Type of resource.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the workspace.",
           "type": ["null", "string"]
         }
       }
