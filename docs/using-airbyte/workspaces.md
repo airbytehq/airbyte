@@ -23,7 +23,8 @@ The user will have access to only the workspace you invited them to. They will b
 2. Complete removal by clicking **Remove** in the confirmation modal.
 
 :::tip
-Organization admins cannot be removed from a workspace. Reach out to Airbyte Support if you need assistance removing an organization admin.:::
+Organization admins cannot be removed from a workspace. Reach out to Airbyte Support if you need assistance removing an organization admin.
+:::
 
 ## Rename a workspace
 
@@ -41,7 +42,7 @@ You can use one or multiple workspaces with Airbyte Cloud, which gives you flexi
 Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features
 :::
  
- ### Managing billing across multiple workspaces
+ ### Billing across multiple workspaces
 
 Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces.
 
@@ -51,9 +52,9 @@ Airbyte offers multiple user roles to enable teams to securely access workskpace
 
 | Role | OSS | Cloud | Cloud Teams | Enterprise | 
 |---|------|------|------|------|
-|**Organization Admin:** Administer the whole organization; create workspaces in it; manage Organization permissions| | |✅|✅|
-|**Workspace Admin:** Administer the workspace; create workspace permissions| |✅| | |
-|**Workspace Reader:** View information within a workspace; don’t modify anything within a workspace| | |✅|✅|
+|**Organization Admin:** Administer the whole organization, create workspaces in it, and manage Organization permissions| | |✅|✅|
+|**Workspace Admin:** Administer the workspace, create workspace permissions|✅|✅| | |
+|**Workspace Reader:** View information within a workspace, cannot modify anything within a workspace| | |✅|✅|
 
 ## Switch between multiple workspaces
 
