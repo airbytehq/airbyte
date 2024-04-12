@@ -23,6 +23,9 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 
+PYAIRBYTE_VERSION = "0.9.0"
+
+
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
@@ -230,7 +233,7 @@ class PyAirbyteValidation(Step):
             [
                 "pip",
                 "install",
-                "airbyte",
+                f"airbyte=={PYAIRBYTE_VERSION}",
             ]
         )
 
