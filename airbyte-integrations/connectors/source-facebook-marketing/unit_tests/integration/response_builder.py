@@ -5,11 +5,14 @@
 
 import json
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
 
 from .config import ACCOUNT_ID
+
+PATH = Path(__file__).parent.parent / "resource/http/response"
 
 
 def build_response(
@@ -31,3 +34,19 @@ def error_reduce_amount_of_data_response() -> HttpResponse:
         "error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"},
     }
     return build_response(body=response, status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def get_ads_response() -> HttpResponse:
+    with open(PATH / "ads.json") as f:
+        return build_response(body=json.load(f), status_code=HTTPStatus.OK)
+
+
+def get_campaigns_response() -> HttpResponse:
+    with open(PATH / "campaigns.json") as f:
+        return build_response(body=json.load(f), status_code=HTTPStatus.OK)
+
+
+def get_ad_sets_response() -> HttpResponse:
+    with open(PATH / "ad_sets.json") as f:
+        return build_response(body=json.load(f), status_code=HTTPStatus.OK)
+

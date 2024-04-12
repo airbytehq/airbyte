@@ -16,7 +16,30 @@ def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilde
     return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
+def get_ads_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_ad_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+
+
+def get_campaigns_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_campaign_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+
+
+def get_ad_sets_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_ad_sets_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+
+
 class RequestBuilder:
+    @classmethod
+    def get_ad_endpoint(cls, access_token: str, account_id: str) -> RequestBuilder:
+        return cls(access_token=access_token, resource="ads").with_account_id(account_id)
+
+    @classmethod
+    def get_campaign_endpoint(cls, access_token: str, account_id: str) -> RequestBuilder:
+        return cls(access_token=access_token, resource="campaigns").with_account_id(account_id)
+    
+    @classmethod
+    def get_ad_sets_endpoint(cls, access_token: str, account_id: str) -> RequestBuilder:
+        return cls(access_token=access_token, resource="adsets").with_account_id(account_id)
 
     @classmethod
     def get_account_endpoint(cls, access_token: str, account_id: str) -> RequestBuilder:
@@ -66,6 +89,10 @@ class RequestBuilder:
 
     def with_body(self, body: Union[str, bytes, Mapping[str, Any]]) -> RequestBuilder:
         self._body = body
+        return self
+
+    def with_filtering(self, filters: str):
+        self._query_params["filtering"] = filters
         return self
 
     def build(self) -> HttpRequest:
