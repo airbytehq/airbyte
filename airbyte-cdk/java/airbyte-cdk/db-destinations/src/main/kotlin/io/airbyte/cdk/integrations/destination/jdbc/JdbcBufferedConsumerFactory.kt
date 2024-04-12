@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory
 object JdbcBufferedConsumerFactory {
     private val LOGGER: Logger = LoggerFactory.getLogger(JdbcBufferedConsumerFactory::class.java)
 
-    @JvmOverloads
+    const val DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 25 * 1024 * 1024L
+
     fun createAsync(
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
@@ -62,7 +63,8 @@ object JdbcBufferedConsumerFactory {
         catalog: ConfiguredAirbyteCatalog,
         defaultNamespace: String?,
         typerDeduper: TyperDeduper,
-        dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer()
+        dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
+        optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
             createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
@@ -71,7 +73,8 @@ object JdbcBufferedConsumerFactory {
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
             onCloseFunction(typerDeduper),
             JdbcInsertFlushFunction(
-                recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
+                recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
+                optimalBatchSizeBytes
             ),
             catalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),

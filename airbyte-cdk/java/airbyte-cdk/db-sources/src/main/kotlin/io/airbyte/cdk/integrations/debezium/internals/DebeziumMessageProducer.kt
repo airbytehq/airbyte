@@ -96,8 +96,6 @@ class DebeziumMessageProducer<T>(
         if (checkpointOffsetToSend.size == 1 && !message!!.isSnapshotEvent) {
             if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
                 shouldEmitStateMessage = true
-            } else {
-                LOGGER.info("Encountered records with the same event offset.")
             }
         }
 
