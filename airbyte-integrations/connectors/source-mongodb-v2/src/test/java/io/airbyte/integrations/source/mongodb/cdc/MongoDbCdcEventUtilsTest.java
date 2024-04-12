@@ -70,17 +70,18 @@ class MongoDbCdcEventUtilsTest {
   @Test
   void testNormalizeObjectId() {
     final JsonNode data = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(
-        Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
+        Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID)))).rawRowData();
     assertEquals(OBJECT_ID, data.get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
     final JsonNode dataWithoutObjectId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(
-        Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of())));
+        Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of()))).rawRowData();
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
-    final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of()));
+    final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of())).rawRowData();
     assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
 
-    final JsonNode stringId = MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, "abcd")));
+    final JsonNode stringId =
+        MongoDbCdcEventUtils.normalizeObjectId((ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, "abcd"))).rawRowData();
     assertEquals("abcd", stringId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
   }
 
@@ -90,17 +91,17 @@ class MongoDbCdcEventUtilsTest {
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD,
         Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of(OBJECT_ID_FIELD, OBJECT_ID))));
 
-    final JsonNode data = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
+    final JsonNode data = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode).rawRowData();
     assertEquals(OBJECT_ID, data.get(DOCUMENT_OBJECT_ID_FIELD).asText());
     assertEquals(OBJECT_ID, data.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
     objectNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of()));
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, Map.of())));
-    final JsonNode dataWithoutObjectId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode);
+    final JsonNode dataWithoutObjectId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema(objectNode).rawRowData();
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(DOCUMENT_OBJECT_ID_FIELD).asText());
     assertNotEquals(OBJECT_ID, dataWithoutObjectId.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD).asText());
 
-    final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema((ObjectNode) Jsons.jsonNode(Map.of()));
+    final JsonNode dataWithoutId = MongoDbCdcEventUtils.normalizeObjectIdNoSchema((ObjectNode) Jsons.jsonNode(Map.of())).rawRowData();
     assertNull(dataWithoutId.get(DOCUMENT_OBJECT_ID_FIELD));
   }
 
@@ -131,7 +132,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field18", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
+    final ObjectNode transformed = (ObjectNode) MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet()).rawRowData();
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -183,7 +184,8 @@ class MongoDbCdcEventUtilsTest {
         .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"));
+    final ObjectNode transformed =
+        (ObjectNode) MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3")).rawRowData();
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -228,7 +230,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypesNoSchema(documentAsJson);
+    final ObjectNode transformed = (ObjectNode) MongoDbCdcEventUtils.transformDataTypesNoSchema(documentAsJson).rawRowData();
 
     assertNotNull(transformed);
     final var abDataNode = transformed.get(SCHEMALESS_MODE_DATA_FIELD);

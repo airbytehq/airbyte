@@ -17,8 +17,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -105,20 +107,20 @@ public class MongoDbCdcEventUtils {
    * @param data The {@link ObjectNode} that contains the record data extracted from the change event.
    * @return The updated record data with the document object ID normalized.
    */
-  public static ObjectNode normalizeObjectId(final ObjectNode data) {
+  public static AirbyteRecordData normalizeObjectId(final ObjectNode data) {
     if (data.has(DOCUMENT_OBJECT_ID_FIELD) && data.get(DOCUMENT_OBJECT_ID_FIELD).has(OBJECT_ID_FIELD)) {
       final String objectId = data.get(DOCUMENT_OBJECT_ID_FIELD).get(OBJECT_ID_FIELD).asText();
       data.put(DOCUMENT_OBJECT_ID_FIELD, objectId);
     }
-    return data;
+    return new AirbyteRecordData(data, new AirbyteRecordMessageMeta());
   }
 
-  public static ObjectNode normalizeObjectIdNoSchema(final ObjectNode data) {
+  public static AirbyteRecordData normalizeObjectIdNoSchema(final ObjectNode data) {
     normalizeObjectId(data);
     // normalize _id in "data" if key exists
     final Optional<JsonNode> maybeDataField = Optional.ofNullable(data.get(SCHEMALESS_MODE_DATA_FIELD));
     maybeDataField.ifPresent(d -> normalizeObjectId((ObjectNode) d));
-    return data;
+    return new AirbyteRecordData(data, new AirbyteRecordMessageMeta());
   }
 
   /**
@@ -128,33 +130,38 @@ public class MongoDbCdcEventUtils {
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON.
    */
-  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields) {
+  public static AirbyteRecordData transformDataTypes(final String json, final Set<String> configuredFields) {
+    // Method called to make a record in CDC
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocument(document, objectNode, configuredFields);
     return normalizeObjectId(objectNode);
   }
 
-  public static ObjectNode transformDataTypesNoSchema(final String json) {
+  public static AirbyteRecordData transformDataTypesNoSchema(final String json) {
+    // Method called to make a record in CDC
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocumentNoSchema(document, objectNode);
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {
+  public static AirbyteRecordData toJsonNode(final Document document, final Set<String> columnNames) {
+    // Method called to make a record in initial snapshot
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNames);
     return normalizeObjectId(objectNode);
   }
 
-  public static JsonNode toJsonNodeNoSchema(final Document document) {
+  public static AirbyteRecordData toJsonNodeNoSchema(final Document document) {
+    // Method called to make a record in initial snapshot
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocumentNoSchema(document, objectNode);
     return normalizeObjectIdNoSchema(objectNode);
   }
 
   private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
+    // (TODO) : Method for which to change the interface
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames, false);
@@ -165,6 +172,7 @@ public class MongoDbCdcEventUtils {
   }
 
   private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode) {
+    // (TODO) : Method for which to change the interface
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {

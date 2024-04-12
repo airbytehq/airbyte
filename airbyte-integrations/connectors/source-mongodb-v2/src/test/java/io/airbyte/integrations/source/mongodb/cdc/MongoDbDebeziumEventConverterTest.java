@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -31,29 +32,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class MongoDbDebeziumEventConverterTest {
-
-  @Test
-  void testConvertRelationalDbChangeEvent() throws IOException {
-    final String stream = "names";
-    final Instant emittedAt = Instant.now();
-    final CdcMetadataInjector<Long> cdcMetadataInjector = new DummyMetadataInjector();
-    final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("insert_change_event.json", "");
-    final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json", "");
-    final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json", "");
-    final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
-
-    final AirbyteMessage actualInsert = eventConverter.toAirbyteMessage(insertChangeEvent);
-    final AirbyteMessage actualUpdate = eventConverter.toAirbyteMessage(updateChangeEvent);
-    final AirbyteMessage actualDelete = eventConverter.toAirbyteMessage(deleteChangeEvent);
-
-    final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
-    final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
-    final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "delete_message.json");
-
-    deepCompare(expectedInsert, actualInsert);
-    deepCompare(expectedUpdate, actualUpdate);
-    deepCompare(expectedDelete, actualDelete);
-  }
 
   @Test
   void testConvertMongoDbChangeEvent() throws IOException {
@@ -174,6 +152,7 @@ class MongoDbDebeziumEventConverterTest {
         .withStream(stream)
         .withNamespace("public")
         .withData(Jsons.deserialize(data))
+        .withMeta(new AirbyteRecordMessageMeta())
         .withEmittedAt(emittedAt.toEpochMilli());
 
     return new AirbyteMessage()

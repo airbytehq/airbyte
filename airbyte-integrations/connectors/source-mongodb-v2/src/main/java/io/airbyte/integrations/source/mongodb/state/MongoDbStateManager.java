@@ -262,7 +262,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
     final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
 
-    final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
+    final var airbyteRecordData = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
     final var lastId = document.get(MongoConstants.ID_FIELD);
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
@@ -274,7 +274,8 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
-            .withData((stream.getSyncMode() == INCREMENTAL) ? injectMetadata(jsonNode) : jsonNode));
+            .withData((stream.getSyncMode() == INCREMENTAL) ? injectMetadata(airbyteRecordData.rawRowData()) : airbyteRecordData.rawRowData())
+            .withMeta(airbyteRecordData.meta()));
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {

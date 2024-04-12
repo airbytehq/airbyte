@@ -5,10 +5,14 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
@@ -51,23 +55,23 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
      * of the MongoDB server, the contents Debezium event data will be different. See
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
-    final JsonNode data = switch (operation) {
+    final AirbyteRecordData data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
           before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
       case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
-    return DebeziumEventConverter.buildAirbyteMessage(source, cdcMetadataInjector, emittedAt, data);
+    return buildAirbyteMessage(source, cdcMetadataInjector, emittedAt, data);
   }
 
-  private static JsonNode formatMongoDbDebeziumData(final JsonNode before,
-                                                    final JsonNode after,
-                                                    final JsonNode source,
-                                                    final JsonNode debeziumEventKey,
-                                                    final CdcMetadataInjector cdcMetadataInjector,
-                                                    final Set<String> configuredFields,
-                                                    final boolean isEnforceSchema) {
+  private static AirbyteRecordData formatMongoDbDebeziumData(final JsonNode before,
+                                                             final JsonNode after,
+                                                             final JsonNode source,
+                                                             final JsonNode debeziumEventKey,
+                                                             final CdcMetadataInjector cdcMetadataInjector,
+                                                             final Set<String> configuredFields,
+                                                             final boolean isEnforceSchema) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
       // In case a mongodb document was updated and then deleted, the update change event will not have
@@ -76,20 +80,21 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
       return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
-      return DebeziumEventConverter.addCdcMetadata(
-          isEnforceSchema
-              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-              : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
-          source, cdcMetadataInjector, false);
+      final AirbyteRecordData airbyteRecordData = isEnforceSchema
+          ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+          : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson);
+      final JsonNode rowDataWithCdcMetadata = DebeziumEventConverter.addCdcMetadata(
+          (ObjectNode) airbyteRecordData.rawRowData(), source, cdcMetadataInjector, false);
+      return new AirbyteRecordData(rowDataWithCdcMetadata, airbyteRecordData.meta());
     }
   }
 
-  private static JsonNode formatMongoDbDeleteDebeziumData(final JsonNode before,
-                                                          final JsonNode debeziumEventKey,
-                                                          final JsonNode source,
-                                                          final CdcMetadataInjector cdcMetadataInjector,
-                                                          final Set<String> configuredFields,
-                                                          final boolean isEnforceSchema) {
+  private static AirbyteRecordData formatMongoDbDeleteDebeziumData(final JsonNode before,
+                                                                   final JsonNode debeziumEventKey,
+                                                                   final JsonNode source,
+                                                                   final CdcMetadataInjector cdcMetadataInjector,
+                                                                   final Set<String> configuredFields,
+                                                                   final boolean isEnforceSchema) {
     final String eventJson;
 
     /*
@@ -109,11 +114,12 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
       eventJson = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     }
 
-    return DebeziumEventConverter.addCdcMetadata(
-        isEnforceSchema
-            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
-            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
-        source, cdcMetadataInjector, true);
+    final AirbyteRecordData airbyteRecordData = isEnforceSchema
+        ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+        : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson);
+    final JsonNode rowDataWithCdcMetadata = DebeziumEventConverter.addCdcMetadata(
+        (ObjectNode) airbyteRecordData.rawRowData(), source, cdcMetadataInjector, true);
+    return new AirbyteRecordData(rowDataWithCdcMetadata, airbyteRecordData.meta());
   }
 
   private static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
@@ -126,6 +132,24 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
         .map(CatalogHelpers::getTopLevelFieldNames)
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
+  }
+
+  private static AirbyteMessage buildAirbyteMessage(
+                                                    JsonNode source,
+                                                    CdcMetadataInjector cdcMetadataInjector,
+                                                    Instant emittedAt,
+                                                    AirbyteRecordData data) {
+    final String streamNamespace = cdcMetadataInjector.namespace(source);
+    final String streamName = cdcMetadataInjector.name(source);
+
+    final AirbyteRecordMessage airbyteRecordMessage =
+        new AirbyteRecordMessage().withStream(streamName)
+            .withNamespace(streamNamespace)
+            .withEmittedAt(emittedAt.toEpochMilli())
+            .withData(data.rawRowData())
+            .withMeta(data.meta());
+
+    return new AirbyteMessage().withType(Type.RECORD).withRecord(airbyteRecordMessage);
   }
 
 }
