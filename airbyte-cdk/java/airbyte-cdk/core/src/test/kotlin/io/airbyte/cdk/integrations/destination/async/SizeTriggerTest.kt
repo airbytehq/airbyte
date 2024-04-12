@@ -10,17 +10,18 @@ import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFu
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicBoolean
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 @SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class SizeTriggerTest {
-    private val SIZE_10MB = (10 * 1024 * 1024).toLong()
-    private val SIZE_200MB = (200 * 1024 * 1024).toLong()
-
-    private val DESC1: StreamDescriptor = StreamDescriptor().withName("test1")
+    companion object {
+        private const val SIZE_10MB = (10 * 1024 * 1024).toLong()
+        private const val SIZE_200MB = (200 * 1024 * 1024).toLong()
+        private val DESC1: StreamDescriptor = StreamDescriptor().withName("test1")
+    }
 
     private lateinit var flusher: DestinationFlushFunction
 
@@ -44,7 +45,7 @@ class SizeTriggerTest {
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).getLeft())
+        assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).first)
     }
 
     @Test
@@ -62,9 +63,9 @@ class SizeTriggerTest {
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         // if above threshold, triggers
-        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft())
+        assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
         // if below threshold, no trigger
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).getLeft())
+        assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).first)
     }
 
     @Test
@@ -84,7 +85,7 @@ class SizeTriggerTest {
             .thenReturn(listOf(Optional.of(SIZE_10MB)))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
-        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft())
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, 0).getLeft())
+        assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
+        assertEquals(false, detect.isSizeTriggered(DESC1, 0).first)
     }
 }

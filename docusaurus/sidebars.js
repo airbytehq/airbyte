@@ -17,7 +17,8 @@ function getFilenamesInDir(prefix, dir, excludes) {
         !(
           fileName.endsWith(".inapp.md") ||
           fileName.endsWith("-migrations.md") ||
-          fileName.endsWith(".js")
+          fileName.endsWith(".js") ||
+          fileName === "low-code.md"
         )
     )
     .map((fileName) => fileName.replace(".md", ""))
@@ -234,20 +235,19 @@ const buildAConnector = {
         "connector-development/tutorials/cdk-speedrun",
         {
           type: "category",
-          label: "Python CDK: Creating a HTTP API Source",
+          label: "Python CDK: Creating a Python Source",
           items: [
-            "connector-development/tutorials/cdk-tutorial-python-http/getting-started",
-            "connector-development/tutorials/cdk-tutorial-python-http/creating-the-source",
-            "connector-development/tutorials/cdk-tutorial-python-http/install-dependencies",
-            "connector-development/tutorials/cdk-tutorial-python-http/define-inputs",
-            "connector-development/tutorials/cdk-tutorial-python-http/connection-checking",
-            "connector-development/tutorials/cdk-tutorial-python-http/declare-schema",
-            "connector-development/tutorials/cdk-tutorial-python-http/read-data",
-            "connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte",
-            "connector-development/tutorials/cdk-tutorial-python-http/test-your-connector",
+            "connector-development/tutorials/custom-python-connector/getting-started",
+            "connector-development/tutorials/custom-python-connector/environment-setup",
+            "connector-development/tutorials/custom-python-connector/reading-a-page",
+            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+            "connector-development/tutorials/custom-python-connector/discover",
+            "connector-development/tutorials/custom-python-connector/incremental-reads",
+            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+            "connector-development/tutorials/custom-python-connector/concurrency",
           ],
         },
-        "connector-development/tutorials/building-a-python-source",
         "connector-development/tutorials/building-a-java-destination",
       ],
     },
@@ -478,11 +478,6 @@ module.exports = {
       ],
     },
     {
-      type: "doc",
-      label: "Using PyAirbyte",
-      id: "using-airbyte/pyairbyte/getting-started",
-    },
-    {
       type: "category",
       label: "Workspace Management",
       items: [
@@ -568,6 +563,11 @@ module.exports = {
     {
       type: "doc",
       id: "terraform-documentation",
+    },
+    {
+      type: "doc",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
     contributeToAirbyte,
