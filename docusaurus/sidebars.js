@@ -332,6 +332,11 @@ const deployAirbyte = {
     },
     {
       type: "doc",
+      label: "Using docker compose",
+      id: "deploying-airbyte/docker-compose",
+    },
+    {
+      type: "doc",
       label: "On AWS EC2",
       id: "deploying-airbyte/on-aws-ec2",
     },
