@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.4
+Update LangChain version to latest
+
 ## 0.81.3
 Republish print buffer after previous pypi attempt timed out
 
