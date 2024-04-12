@@ -4,12 +4,35 @@ from unittest import TestCase
 
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
 from airbyte_protocol.models import SyncMode
 
 from .config import ACCOUNT_ID, ConfigBuilder
 from .request_builder import get_account_request, get_ad_sets_request, get_ads_request, get_campaigns_request
-from .response_builder import get_account_response, get_ad_sets_response, get_ads_response, get_campaigns_response
+from .response_builder import get_account_response
 from .utils import config, read_output
+
+
+def _stream_record(stream: str, cursor_field: str = "updated_time") -> RecordBuilder:
+    return create_record_builder(
+        response_template=find_template(stream, __file__),
+        records_path=FieldPath("data"),
+        record_cursor_path=FieldPath(cursor_field),
+    )
+
+
+def _stream_response(stream: str) -> HttpResponseBuilder:
+    return create_response_builder(
+        response_template=find_template(stream, __file__),
+        records_path=FieldPath("data"),
+    )
 
 
 class TestIncludeDeleted(TestCase):
@@ -61,7 +84,7 @@ class TestIncludeDeleted(TestCase):
 
         http_mocker.get(
             get_ads_request().with_limit(100).with_filtering(filters).with_fields(fields).with_summary().build(),
-            get_ads_response(),
+            _stream_response("ads").with_record(_stream_record("ads")).build(),
         )
 
         output = self._read(config().with_ad_statuses(self.statuses), "ads")
@@ -111,7 +134,7 @@ class TestIncludeDeleted(TestCase):
 
         http_mocker.get(
             get_campaigns_request().with_limit(100).with_filtering(filters).with_fields(fields).with_summary().build(),
-            get_campaigns_response(),
+            _stream_response("campaigns").with_record(_stream_record("campaigns")).build(),
         )
         output = self._read(config().with_campaign_statuses(self.statuses), "campaigns")
         assert len(output.records) == 1
@@ -155,7 +178,7 @@ class TestIncludeDeleted(TestCase):
 
         http_mocker.get(
             get_ad_sets_request().with_limit(100).with_filtering(filters).with_fields(fields).with_summary().build(),
-            get_ad_sets_response(),
+            _stream_response("ad_sets").with_record(_stream_record("ad_sets")).build(),
         )
         output = self._read(config().with_ad_set_statuses(self.statuses), "ad_sets")
         assert len(output.records) == 1
