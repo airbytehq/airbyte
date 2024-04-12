@@ -8,22 +8,20 @@ from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
-from integration.utils import given_authentication, given_stream, read
+from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
 from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
-_API_VERSION = "v57.0"
 _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
 _CURSOR_FIELD = "SystemModstamp"
 _INSTANCE_URL = "https://instance.salesforce.com"
-_BASE_URL = f"{_INSTANCE_URL}/services/data/{_API_VERSION}"
+_BASE_URL = create_base_url(_INSTANCE_URL)
 _LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
@@ -59,7 +57,7 @@ class FullRefreshTest(TestCase):
         given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
         given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME}+FROM+{_STREAM_NAME}+"),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME}+FROM+{_STREAM_NAME}+"),
             [
                 HttpResponse("", status_code=406),
                 HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
@@ -92,7 +90,7 @@ class IncrementalTest(TestCase):
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 
@@ -105,7 +103,7 @@ class IncrementalTest(TestCase):
         start = _calculate_start_time(_NOW - timedelta(days=10))
         self._config.stream_slice_step("P30D").start_date(start)
         self._http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 
@@ -130,11 +128,11 @@ class IncrementalTest(TestCase):
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
         self._http_mocker.get(
-            HttpRequest(f"{_INSTANCE_URL}/services/data/{_API_VERSION}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 

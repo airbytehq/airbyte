@@ -10,14 +10,12 @@ import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
-from integration.utils import given_authentication, given_stream, read
+from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
 
-
 _A_FIELD_NAME = "a_field"
 _ACCESS_TOKEN = "an_access_token"
-_API_VERSION = "v57.0"
 _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
 _CURSOR_FIELD = "SystemModstamp"
@@ -28,7 +26,7 @@ _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
 _STREAM_NAME = "a_stream_name"
 
-_BASE_URL = f"{_INSTANCE_URL}/services/data/{_API_VERSION}"
+_BASE_URL = create_base_url(_INSTANCE_URL)
 
 
 def _create_field(name: str, _type: Optional[str] = None) -> Dict[str, Any]:
