@@ -42,7 +42,7 @@ You can use one or multiple workspaces with Airbyte Cloud, which gives you flexi
 Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features
 :::
  
- ### Billing across multiple workspaces
+### Billing across multiple workspaces
 
 Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces.
 
