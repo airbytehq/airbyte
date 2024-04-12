@@ -22,7 +22,7 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
-PYAIRBYTE_VERSION = "0.9.0"
+PYAIRBYTE_VERSION = "0.10.2"
 
 
 class PytestStep(Step, ABC):
