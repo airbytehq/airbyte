@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
