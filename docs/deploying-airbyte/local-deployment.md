@@ -1,7 +1,7 @@
 # Local Deployment
 
 :::info
-These instructions have been tested on MacOS, Windows, and Ubuntu and Fedora.
+These instructions have been tested on MacOS, Windows, Ubuntu and Fedora.
 
 :::
 
