@@ -38,7 +38,7 @@ data:
           To ensure a smooth migration, please reset your data for this stream upon updating. This will facilitate a fresh first sync.
           If you are not syncing the `Comments` stream, you can upgrade without any further action.
           For more information, see our migration documentation for source Notion.
-        upgradeDeadline: "2024-04-15"
+        upgradeDeadline: "2024-04-29"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["comments"]
