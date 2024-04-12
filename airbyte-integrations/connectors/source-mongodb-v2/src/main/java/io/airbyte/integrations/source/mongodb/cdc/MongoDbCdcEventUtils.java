@@ -131,7 +131,6 @@ public class MongoDbCdcEventUtils {
    * @return The transformed Debezium event data as JSON.
    */
   public static AirbyteRecordData transformDataTypes(final String json, final Set<String> configuredFields) {
-    // Method called to make a record in CDC
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocument(document, objectNode, configuredFields);
@@ -139,7 +138,6 @@ public class MongoDbCdcEventUtils {
   }
 
   public static AirbyteRecordData transformDataTypesNoSchema(final String json) {
-    // Method called to make a record in CDC
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocumentNoSchema(document, objectNode);
@@ -147,21 +145,18 @@ public class MongoDbCdcEventUtils {
   }
 
   public static AirbyteRecordData toJsonNode(final Document document, final Set<String> columnNames) {
-    // Method called to make a record in initial snapshot
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNames);
     return normalizeObjectId(objectNode);
   }
 
   public static AirbyteRecordData toJsonNodeNoSchema(final Document document) {
-    // Method called to make a record in initial snapshot
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocumentNoSchema(document, objectNode);
     return normalizeObjectIdNoSchema(objectNode);
   }
 
   private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
-    // (TODO) : Method for which to change the interface
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames, false);
@@ -172,7 +167,6 @@ public class MongoDbCdcEventUtils {
   }
 
   private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode) {
-    // (TODO) : Method for which to change the interface
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
