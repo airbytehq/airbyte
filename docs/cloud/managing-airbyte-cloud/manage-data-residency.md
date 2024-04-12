@@ -20,13 +20,7 @@ When you set the default data residency, it applies your preference to new conne
 
 To choose your default data residency:
 
-1. In the Airbyte UI, click **Settings**.
-
-2. Click **Data Residency**.
-
-3. Click the dropdown and choose the location for your default data residency.
-
-4. Click **Save changes**. 
+1. In the Airbyte UI, click **Settings**. Navigate to **Workspace** > **Data Residency**. Use the dropdown to choose the location for your default data residency and save your changes.
 
 :::info 
 
@@ -39,13 +33,7 @@ You can additionally choose the data residency for your connection in the connec
 
 To choose a custom data residency for your connection: 
 
-1. In the Airbyte UI, click **Connections** and then click the connection that you want to change. 
-
-2. Click the **Settings** tab. 
-
-3. Click the **Data residency** dropdown and choose the location for your default data residency.
-
-4. Click **Save changes**
+1. In the Airbyte UI, click **Connections** and then select the connection that you want to configure. Navigate to the **Settings** tab, open the **Advanced Settings**, and select the **Data residency** for the connection.
 
 :::note 
 

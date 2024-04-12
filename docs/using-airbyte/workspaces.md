@@ -39,7 +39,7 @@ To delete a workspace, go to the **Settings** via the side navigation in Airbyte
 You can have access to one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing. Workspaces can also be linked through an organization, which allows you to collaborate with team members and share workspaces across your team.
 
 :::info
-Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features
+Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features.
 :::
  
 ### Billing across multiple workspaces
