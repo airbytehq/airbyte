@@ -29,7 +29,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
   private Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  private String lastCtid;
+  protected String lastCtid;
   private FileNodeHandler fileNodeHandler;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
@@ -65,16 +65,20 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
         stream.getStream().getNamespace());
+    final CtidStatus ctidStatus = generateCtidStatusForState(pair);
+    LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
+    return createCtidStateMessage(pair, ctidStatus);
+  }
+
+  protected CtidStatus generateCtidStatusForState(final AirbyteStreamNameNamespacePair pair) {
     final Long fileNode = fileNodeHandler.getFileNode(pair);
     assert fileNode != null;
-    final CtidStatus ctidStatus = new CtidStatus()
+    return new CtidStatus()
         .withVersion(CTID_STATUS_VERSION)
         .withStateType(StateType.CTID)
         .withCtid(lastCtid)
         .withIncrementalState(getStreamState(pair))
         .withRelationFilenode(fileNode);
-    LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
-    return createCtidStateMessage(pair, ctidStatus);
   }
 
   /**

@@ -200,6 +200,7 @@ public class PostgresQueryUtils {
                                                    final List<ConfiguredAirbyteStream> streams,
                                                    final String quoteString) {
     final FileNodeHandler fileNodeHandler = new FileNodeHandler();
+    LOGGER.info("initialising file node handler...");
     streams.forEach(stream -> {
       try {
         final AirbyteStreamNameNamespacePair namespacePair =

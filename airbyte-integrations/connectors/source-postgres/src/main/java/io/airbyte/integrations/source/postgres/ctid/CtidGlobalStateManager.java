@@ -33,7 +33,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidGlobalStateManager.class);
 
-  private final CdcState cdcState;
+  protected final CdcState cdcState;
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
@@ -112,7 +112,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
         .withGlobal(globalState);
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  protected AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());
