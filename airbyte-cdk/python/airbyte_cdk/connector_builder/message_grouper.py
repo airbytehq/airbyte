@@ -164,7 +164,7 @@ class MessageGrouper:
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
-        latest_state_message = Optional = None
+        latest_state_message: Optional[Dict[str, Any]] = None
 
         while records_count < limit and (message := next(messages, None)):
             json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None

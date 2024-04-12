@@ -15,7 +15,6 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStreamState,
     Level,
@@ -704,6 +703,7 @@ def response_log_message(response: Mapping[str, Any]) -> AirbyteMessage:
 
 def record_message(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
+
 
 def state_message(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(stream=AirbyteStreamState(
