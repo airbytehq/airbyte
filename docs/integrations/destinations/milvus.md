@@ -109,6 +109,7 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.13 | 2024-3-22  | [35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests |
 | 0.0.12 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
 | 0.0.11 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
 | 0.0.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
