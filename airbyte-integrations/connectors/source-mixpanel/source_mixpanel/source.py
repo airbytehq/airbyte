@@ -174,6 +174,13 @@ class SourceMixpanel(YamlDeclarativeSource):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        credentials = config.get("credentials")
+        if not credentials.get('option_title'):
+            if credentials.get('api_secret'):
+                credentials['option_title'] = "Project Secret"
+            else:
+                credentials['option_title'] = "Service Account"
+
         config_transformed = copy.deepcopy(config)
         config_transformed = self._validate_and_transform(config_transformed)
         auth = self.get_authenticator(config)
