@@ -78,7 +78,7 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
         .withStream(getAirbyteStreamState(pair, Jsons.jsonNode(pkStatus)));
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  protected AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     LOGGER.info("STATE DATA FOR {}: {}", pair.getNamespace().concat("_").concat(pair.getName()), stateData);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());

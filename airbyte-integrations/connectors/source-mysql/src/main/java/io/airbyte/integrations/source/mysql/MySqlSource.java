@@ -53,7 +53,9 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadFullRefreshStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.CursorBasedStreams;
@@ -187,7 +189,25 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                              final TableInfo<CommonField<MysqlType>> table,
                                                              final StateManager stateManager) {
 
-    return getMySqlFullRefreshInitialLoadHandler(database, catalog, table, stateManager, Instant.now(), getQuoteString()).get();
+    var sourceConfig = database.getSourceConfig();
+
+    if (isCdc(sourceConfig)) {
+      return getMySqlFullRefreshInitialLoadHandler(database, catalog, table, stateManager, Instant.now(), getQuoteString()).get();
+    } else {
+      final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+      final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
+
+      final MySqlInitialLoadStateManager initialLoadStateManager =
+          new MySqlInitialLoadFullRefreshStreamStateManager(catalog, initialLoadStreams,
+              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, table, getQuoteString()));
+
+      final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
+          getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
+
+      return new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
+          namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+          getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
+    }
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
