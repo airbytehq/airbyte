@@ -46,6 +46,30 @@ definitions:
       name: "contactslist"
       primary_key: "ID"
       path: "/contactslist"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          Address:
+            description: Email address of the contact
+            type: string
+          CreatedAt:
+            description: Date and time when the contact was created
+            type: string
+          ID:
+            description: Unique identifier for the contact
+            type: integer
+          IsDeleted:
+            description: Flag indicating whether the contact has been deleted
+            type: boolean
+          Name:
+            description: Name associated with the contact
+            type: string
+          SubscriberCount:
+            description: Number of subscribers associated with the contact
+            type: integer
   contacts_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -59,18 +83,251 @@ definitions:
       name: "contacts"
       primary_key: "ID"
       path: "/contact"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          CreatedAt:
+            description: The date and time when the contact was created.
+            type: string
+          DeliveredCount:
+            description:
+              The number of times emails have been successfully delivered
+              to this contact.
+            type: integer
+          Email:
+            description: The email address of the contact.
+            type: string
+          ID:
+            description: The unique identifier for the contact.
+            type: integer
+          IsOptInPending:
+            description: Indicates if the contact's opt-in process is still pending.
+            type: boolean
+          IsSpamComplaining:
+            description: Indicates if the contact has a history of spam complaints.
+            type: boolean
+          LastActivityAt:
+            description: The date and time of the contact's last activity.
+            type: string
+          LastUpdateAt:
+            description: The date and time of the last update to the contact's information.
+            type: string
+          Name:
+            description: The name of the contact.
+            type: string
+          UnsubscribedAt:
+            description: The date and time when the contact unsubscribed.
+            type: string
+          UnsubscribedBy:
+            description: The entity that initiated the contact's unsubscription.
+            type: string
+          IsExcludedFromCampaigns:
+            description: Indicates if the contact is excluded from future campaigns.
+            type: boolean
+          ExclusionFromCampaignsUpdatedAt:
+            description:
+              The date and time when the contact's exclusion from campaigns
+              was last updated.
+            type: string
   stats_api_lifetime_message_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "stats_api_lifetime_message"
       primary_key: "APIKeyID"
       path: "/statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          APIKeyID:
+            description: The unique identifier for the API key used to fetch the data.
+            type: integer
+          EventClickDelay:
+            description:
+              The delay in milliseconds between the email being sent and
+              the recipient clicking on any link in the email.
+            type: integer
+          EventClickedCount:
+            description:
+              The total count of email recipients who have clicked on any
+              link in the email.
+            type: integer
+          EventOpenDelay:
+            description:
+              The delay in milliseconds between the email being sent and
+              the recipient opening the email.
+            type: integer
+          EventOpenedCount:
+            description: The total count of email recipients who have opened the email.
+            type: integer
+          EventUnsubscribedCount:
+            description:
+              The total count of email recipients who have unsubscribed
+              from the email list.
+            type: integer
+          EventWorkflowExitedCount:
+            description:
+              The total count of email recipients who exited the workflow
+              triggered by the email.
+            type: integer
+          MessageBlockedCount:
+            description:
+              The total count of email messages that were blocked from
+              being delivered.
+            type: integer
+          MessageClickedCount:
+            description:
+              The total count of email messages that were clicked by the
+              recipients.
+            type: integer
+          MessageDeferredCount:
+            description:
+              The total count of email messages that were temporarily delayed
+              from being delivered.
+            type: integer
+          MessageHardBouncedCount:
+            description:
+              The total count of email messages that were hard bounced,
+              indicating permanent delivery failure.
+            type: integer
+          MessageOpenedCount:
+            description:
+              The total count of email messages that were opened by the
+              recipients.
+            type: integer
+          MessageQueuedCount:
+            description:
+              The total count of email messages that are currently in the
+              queue awaiting delivery.
+            type: integer
+          MessageSentCount:
+            description:
+              The total count of email messages that have been successfully
+              sent to the recipients.
+            type: integer
+          MessageSoftBouncedCount:
+            description:
+              The total count of email messages that were soft bounced,
+              indicating temporary delivery failure.
+            type: integer
+          MessageSpamCount:
+            description:
+              The total count of email messages that were marked as spam
+              by the recipients.
+            type: integer
+          MessageUnsubscribedCount:
+            description:
+              The total count of email messages that led the recipients
+              to unsubscribe from the email list.
+            type: integer
+          MessageWorkFlowExitedCount:
+            description:
+              The total count of email messages that caused recipients
+              to exit the workflow triggered by the email.
+            type: integer
+          SourceID:
+            description:
+              The unique identifier for the data source from which the
+              statistics were collected.
+            type: integer
+          Timeslice:
+            description:
+              The time slice for which the statistics are aggregated, typically
+              in increments such as hours or days.
+            type: string
+          Total:
+            description:
+              The total count or sum of all relevant statistics for the
+              lifetime of the message data.
+            type: integer
+          EventSpamCount:
+            description:
+              The total count of email recipients who marked the email
+              as spam.
+            type: integer
   campaign_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "campaign"
       primary_key: "ID"
       path: "/campaign"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          CampaignType:
+            description: Type of campaign (e.g. marketing, transactional, promotional)
+            type: integer
+          ClickTracked:
+            description: Flag indicating if clicks are tracked for the campaign
+            type: integer
+          CreatedAt:
+            description: Timestamp indicating when the campaign was created
+            type: string
+          CustomValue:
+            description: Custom value associated with the campaign
+            type: string
+          FirstMessageID:
+            description: ID of the first message in the campaign
+            type: integer
+          FromEmail:
+            description: Email address of the sender
+            type: string
+          FromID:
+            description: ID of the sender
+            type: number
+          FromName:
+            description: Name of the sender
+            type: string
+          HasHtmlCount:
+            description: Count of HTML content in the campaign
+            type: number
+          HasTxtCount:
+            description: Count of text content in the campaign
+            type: number
+          ID:
+            description: Unique identifier for the campaign
+            type: integer
+          IsDeleted:
+            description: Flag indicating if the campaign is deleted
+            type: boolean
+          IsStarred:
+            description: Flag indicating if the campaign is starred
+            type: boolean
+          ListID:
+            description: ID of the list associated with the campaign
+            type: integer
+          NewsLetterID:
+            description: ID of the newsletter associated with the campaign
+            type: integer
+          OpenTracked:
+            description: Flag indicating if opens are tracked for the campaign
+            type: number
+          SendEndAt:
+            description: Timestamp indicating when the campaign sending ends
+            type: string
+          SendStartAt:
+            description: Timestamp indicating when the campaign sending starts
+            type: string
+          SpamassScore:
+            description: SpamAssassin score for the campaign
+            type: integer
+          Status:
+            description: Status of the campaign (e.g. draft, sent, scheduled)
+            type: integer
+          Subject:
+            description: Subject line of the campaign
+            type: string
+          UnsubscribeTrackedCount:
+            description: Count of unsubscribe events tracked for the campaign
+            type: integer
   message_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -84,6 +341,81 @@ definitions:
       name: "message"
       primary_key: "ID"
       path: "/message?ShowSubject=true"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ArrivedAt:
+            description: Timestamp indicating when the message arrived
+            type: string
+          AttachmentCount:
+            description: Total number of attachments included in the message
+            type: integer
+          AttemptCount:
+            description: Number of attempts made to deliver the message
+            type: integer
+          ContactAlt:
+            description: Alternate contact information if available
+            type: string
+          ContactID:
+            description: Unique identifier for the contact associated with the message
+            type: integer
+          Delay:
+            description: Delay in delivery of the message if any
+            type: integer
+          DestinationID:
+            description: ID representing the destination of the message
+            type: integer
+          FilterTime:
+            description: Time spent on mail filtering for the message
+            type: integer
+          ID:
+            description: Unique identifier for the message
+            type: integer
+          IsClickTracked:
+            description: Indicator whether clicks on links in the message are tracked
+            type: boolean
+          IsHTMLPartIncluded:
+            description: Indicator whether the HTML part is included in the message
+            type: boolean
+          IsOpenTracked:
+            description: Indicator whether message open events are tracked
+            type: boolean
+          IsTextPartIncluded:
+            description: Indicator whether the text part is included in the message
+            type: boolean
+          IsUnsubTracked:
+            description: Indicator whether message unsubscribe events are tracked
+            type: boolean
+          MessageSize:
+            description: Size of the message in bytes
+            type: integer
+          SenderID:
+            description: ID of the sender associated with the message
+            type: integer
+          SpamassassinScore:
+            description: Spamassassin score assigned to the message
+            type: integer
+          SpamassRules:
+            description: Spamassassin rules applied to the message
+            type: string
+          StatePermanent:
+            description: Indicator whether the message state is permanent
+            type: boolean
+          Status:
+            description: Status of the message
+            type: string
+          Subject:
+            description: Subject line of the message
+            type: string
+          UUID:
+            description: Universally unique identifier for the message
+            type: string
+          CampaignID:
+            description: ID associated with the campaign the message belongs to
+            type: integer
   listrecipient_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -98,6 +430,42 @@ definitions:
       primary_key: "ID"
       path: "/listrecipient"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ContactID:
+            description: Unique identifier for the contact associated with the recipient
+            type: integer
+          ID:
+            description: Unique identifier for the recipient entry
+            type: integer
+          IsActive:
+            description: Indicates whether the recipient is currently active
+            type: boolean
+          IsUnsubscribed:
+            description:
+              Indicates whether the recipient has unsubscribed from the
+              list
+            type: boolean
+          ListID:
+            description: Unique identifier for the list to which the recipient belongs
+            type: integer
+          ListName:
+            description: Name of the list to which the recipient belongs
+            type: string
+          SubscribedAt:
+            description:
+              Timestamp indicating when the recipient subscribed to the
+              list
+            type: string
+          UnsubscribedAt:
+            description:
+              Timestamp indicating when the recipient unsubscribed from
+              the list
+            type: string
 streams:
   - "#/definitions/contactslist_stream"
   - "#/definitions/contacts_stream"
