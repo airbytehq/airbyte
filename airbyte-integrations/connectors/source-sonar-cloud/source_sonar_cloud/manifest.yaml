@@ -43,12 +43,101 @@ definitions:
       name: "components"
       primary_key: "key"
       path: "/components/search"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          organization:
+            description: Name of the organization to which the component belongs
+            type: string
+          key:
+            description: Unique identifier for the component
+            type: string
+          name:
+            description: Name of the component
+            type: string
+          qualifier:
+            description: Type of the component (e.g., 'TRK' for a project)
+            type: string
+          project:
+            description: Name of the project to which the component is associated
+            type: string
   issues_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "issues"
       primary_key: "key"
-      path: "/issues/search?componentKeys={{ ','.join(config.get('component_keys', [])) }}"
+      path:
+        "/issues/search?componentKeys={{ ','.join(config.get('component_keys',
+        [])) }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          key:
+            description: The unique key or identifier of the issue
+            type: string
+          rule:
+            description: The rule identifier associated with the issue
+            type: string
+          severity:
+            description: The severity level of the issue
+            type: string
+          component:
+            description: The project component associated with the issue
+            type: string
+          project:
+            description: The name of the project where the issue exists
+            type: string
+          resolution:
+            description: The resolution status of the issue
+            type: string
+          status:
+            description: The current status of the issue
+            type: string
+          message:
+            description: The message or description of the issue
+            type: string
+          effort:
+            description: The estimated effort required to resolve the issue
+            type: string
+          debt:
+            description: The debt value associated with resolving the issue
+            type: string
+          author:
+            description: The author or creator of the issue
+            type: string
+          creationDate:
+            description: The date and time when the issue was created
+            type: string
+          updateDate:
+            description: The date and time when the issue was last updated
+            type: string
+          type:
+            description: The type or category of the issue
+            type: string
+          organization:
+            description: The organization to which the project belongs
+            type: string
+          textRange:
+            description: The range of text in the source code where the issue occurs
+            type: object
+          tags:
+            description: Tags or labels associated with the issue
+            type: array
+          line:
+            description: The line number in the source code where the issue occurs
+            type: integer
+          hash:
+            description: The unique hash identifier of the issue
+            type: string
+          flows:
+            description: Information about the code flow related to the issue
+            type: array
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -56,6 +145,47 @@ definitions:
       primary_key: "id"
       path: "/metrics/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the metric data
+            type: string
+          key:
+            description: The key associated with the metric data (e.g., 'code_quality')
+            type: string
+          name:
+            description: The name or title of the metric data
+            type: string
+          type:
+            description:
+              The type or format of the metric data (e.g., 'integer', 'float',
+              'string')
+            type: string
+          description:
+            description: A brief summary or explanation of the metric data
+            type: string
+          domain:
+            description: The domain or category to which the metric data belongs
+            type: string
+          qualitative:
+            description:
+              Indicates if the metric data is qualitative in nature (e.g.,
+              'yes' or 'no')
+            type: boolean
+          hidden:
+            description:
+              Indicates if the metric data is hidden from normal view (e.g.,
+              for internal use)
+            type: boolean
+          direction:
+            description:
+              The direction of the metric data (e.g., 'higher is better'
+              or 'lower is better')
+            type: number
 streams:
   - "#/definitions/components_stream"
   - "#/definitions/issues_stream"
