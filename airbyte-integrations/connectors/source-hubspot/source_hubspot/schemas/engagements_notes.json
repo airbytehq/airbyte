@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Represents the properties associated with the engagement note",
       "type": "object",
       "properties": {
         "hs_all_assigned_business_unit_ids": {

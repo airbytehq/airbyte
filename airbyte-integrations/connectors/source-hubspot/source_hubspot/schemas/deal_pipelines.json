@@ -15,6 +15,7 @@
       "type": ["null", "boolean"]
     },
     "stages": {
+      "description": "List of deal stages within the pipeline.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -28,6 +29,7 @@
             "type": ["null", "integer"]
           },
           "metadata": {
+            "description": "Additional information related to the deal stage.",
             "type": ["null", "object"],
             "properties": {
               "isClosed": {

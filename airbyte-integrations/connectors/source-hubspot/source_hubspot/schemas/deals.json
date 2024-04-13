@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Deal properties",
       "type": ["null", "object"],
       "properties": {
         "amount": {
@@ -125,9 +126,11 @@
           "format": "date-time"
         },
         "hs_date_entered_9567448": {
+          "description": "Date when the deal was entered into the system",
           "type": ["null", "string"]
         },
         "hs_date_entered_9567449": {
+          "description": "Another date when the deal was entered",
           "type": ["null", "string"]
         },
         "hs_date_entered_appointmentscheduled": {
@@ -171,9 +174,11 @@
           "format": "date-time"
         },
         "hs_date_exited_9567448": {
+          "description": "Date when the deal exited the system",
           "type": ["null", "string"]
         },
         "hs_date_exited_9567449": {
+          "description": "Another date when the deal exited",
           "type": ["null", "string"]
         },
         "hs_date_exited_appointmentscheduled": {
@@ -405,15 +410,19 @@
       }
     },
     "properties_amount": {
+      "description": "Total amount of the deal",
       "type": ["null", "string"]
     },
     "properties_amount_in_home_currency": {
+      "description": "Total amount of the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_closed_lost_reason": {
+      "description": "Reason for closing the deal as lost",
       "type": ["null", "string"]
     },
     "properties_closed_won_reason": {
+      "description": "Reason for closing the deal as won",
       "type": ["null", "string"]
     },
     "properties_closedate": {
@@ -427,66 +436,87 @@
       "format": "date-time"
     },
     "properties_days_to_close": {
+      "description": "Number of days taken to close the deal",
       "type": ["null", "string"]
     },
     "properties_dealname": {
+      "description": "Name or title of the deal",
       "type": ["null", "string"]
     },
     "properties_dealstage": {
+      "description": "Current stage of the deal",
       "type": ["null", "string"]
     },
     "properties_dealtype": {
+      "description": "Type or category of the deal",
       "type": ["null", "string"]
     },
     "properties_description": {
+      "description": "Description of the deal",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked": {
+      "description": "Information about the last meeting booked for engagement",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_campaign": {
+      "description": "Campaign related to the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_medium": {
+      "description": "Medium used for the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_engagements_last_meeting_booked_source": {
+      "description": "Source of the last booked meeting",
       "type": ["null", "string"]
     },
     "properties_hs_acv": {
+      "description": "Annual Contract Value for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_accessible_team_ids": {
+      "description": "IDs of all teams with access to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_assigned_business_unit_ids": {
+      "description": "IDs of all assigned business units for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_owner_ids": {
+      "description": "IDs of all owners of the deal",
       "type": ["null", "string"]
     },
     "properties_hs_all_team_ids": {
+      "description": "IDs of all teams associated with the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source": {
+      "description": "Analytics source for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source_data_1": {
+      "description": "Additional analytics data for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_analytics_source_data_2": {
+      "description": "More analytics data for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_arr": {
+      "description": "ARR (Annual Recurring Revenue) for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_closed_amount": {
+      "description": "Amount closed for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_closed_amount_in_home_currency": {
+      "description": "Amount closed for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_created_by_user_id": {
+      "description": "User ID who created the deal",
       "type": ["null", "string"]
     },
     "properties_hs_createdate": {
@@ -495,9 +525,11 @@
       "format": "date-time"
     },
     "properties_hs_date_entered_9567448": {
+      "description": "Date when the deal was created",
       "type": ["null", "string"]
     },
     "properties_hs_date_entered_9567449": {
+      "description": "Another date when the deal was created",
       "type": ["null", "string"]
     },
     "properties_hs_date_entered_appointmentscheduled": {
@@ -541,9 +573,11 @@
       "format": "date-time"
     },
     "properties_hs_date_exited_9567448": {
+      "description": "Date when the deal was exited",
       "type": ["null", "string"]
     },
     "properties_hs_date_exited_9567449": {
+      "description": "Another date when the deal was exited",
       "type": ["null", "string"]
     },
     "properties_hs_date_exited_appointmentscheduled": {
@@ -587,24 +621,31 @@
       "format": "date-time"
     },
     "properties_hs_deal_amount_calculation_preference": {
+      "description": "Calculation preference for deal amount",
       "type": ["null", "string"]
     },
     "properties_hs_deal_stage_probability": {
+      "description": "Probability of winning the deal at current stage",
       "type": ["null", "string"]
     },
     "properties_hs_deal_stage_probability_shadow": {
+      "description": "Shadow probability of winning the deal at current stage",
       "type": ["null", "string"]
     },
     "properties_hs_forecast_amount": {
+      "description": "Forecasted amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_forecast_probability": {
+      "description": "Forecasted probability of closing the deal",
       "type": ["null", "string"]
     },
     "properties_hs_is_closed": {
+      "description": "Flag indicating if the deal is closed",
       "type": ["null", "boolean"]
     },
     "properties_hs_is_closed_won": {
+      "description": "Flag indicating if the deal is closed and won",
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
@@ -613,87 +654,115 @@
       "format": "date-time"
     },
     "properties_hs_latest_meeting_activity": {
+      "description": "Information about the latest meeting activity related to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_likelihood_to_close": {
+      "description": "Likelihood of closing the deal",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_discount_percentage": {
+      "description": "Global discount percentage for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_discount_percentage_enabled": {
+      "description": "Flag indicating if global discount percentage for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_period": {
+      "description": "Recurring billing period for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_period_enabled": {
+      "description": "Flag indicating if recurring billing period for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_start_date": {
+      "description": "Start date for recurring billing of line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
+      "description": "Flag indicating if recurring billing start date for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_line_item_global_term_recurringbillingfrequency": {
+      "description": "Recurring billing frequency for line items",
       "type": ["null", "string"]
     },
     "properties_hs_line_item_global_term_recurringbillingfrequency_enabled": {
+      "description": "Flag indicating if recurring billing frequency for line items is enabled",
       "type": ["null", "boolean"]
     },
     "properties_hs_manual_forecast_category": {
+      "description": "Manual forecast category for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_merged_object_ids": {
+      "description": "IDs of merged objects related to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_mrr": {
+      "description": "MRR (Monthly Recurring Revenue) for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_next_step": {
+      "description": "Next step planned for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_num_target_accounts": {
+      "description": "Number of target accounts associated with the deal",
       "type": ["null", "string"]
     },
     "properties_hs_object_id": {
+      "description": "Unique object ID for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_predicted_amount": {
+      "description": "Predicted amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_predicted_amount_in_home_currency": {
+      "description": "Predicted amount for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_priority": {
+      "description": "Priority level assigned to the deal",
       "type": ["null", "string"]
     },
     "properties_hs_projected_amount": {
+      "description": "Projected amount for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_projected_amount_in_home_currency": {
+      "description": "Projected amount for the deal in home currency",
       "type": ["null", "string"]
     },
     "properties_hs_sales_email_last_replied": {
+      "description": "Last date the sales email was replied to",
       "type": ["null", "string"]
     },
     "properties_hs_tcv": {
+      "description": "Total Contract Value for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_unique_creation_key": {
+      "description": "Unique key for creation of the deal",
       "type": ["null", "string"]
     },
     "properties_hs_updated_by_user_id": {
+      "description": "User ID who last updated the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "User IDs of all notification followers for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "User IDs of all notification unfollowers for the deal",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_owners": {
+      "description": "User IDs of all owners of the deal",
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
@@ -702,30 +771,39 @@
       "format": "date-time"
     },
     "properties_hubspot_owner_id": {
+      "description": "Owner ID of the deal in HubSpot",
       "type": ["null", "string"]
     },
     "properties_hubspot_team_id": {
+      "description": "Team ID associated with the deal in HubSpot",
       "type": ["null", "string"]
     },
     "properties_notes_last_contacted": {
+      "description": "Date when the last contact was made",
       "type": ["null", "string"]
     },
     "properties_notes_last_updated": {
+      "description": "Date when the notes were last updated",
       "type": ["null", "string"]
     },
     "properties_notes_next_activity_date": {
+      "description": "Next planned activity date from notes",
       "type": ["null", "string"]
     },
     "properties_num_associated_contacts": {
+      "description": "Number of contacts associated with the deal",
       "type": ["null", "string"]
     },
     "properties_num_contacted_notes": {
+      "description": "Number of notes related to contacted activities",
       "type": ["null", "string"]
     },
     "properties_num_notes": {
+      "description": "Total number of notes attached to the deal",
       "type": ["null", "string"]
     },
     "properties_pipeline": {
+      "description": "Pipeline information the deal belongs to",
       "type": ["null", "string"]
     },
     "createdAt": {
@@ -743,18 +821,21 @@
       "type": ["null", "boolean"]
     },
     "companies": {
+      "description": "Information about companies associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "contacts": {
+      "description": "Information about contacts associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "line_items": {
+      "description": "Details of line items associated with the deal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

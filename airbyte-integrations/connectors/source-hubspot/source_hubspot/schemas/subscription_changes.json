@@ -19,8 +19,10 @@
       "type": ["null", "string"]
     },
     "changes": {
+      "description": "List of all subscription changes",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each subscription change",
         "type": ["null", "object"],
         "properties": {
           "change": {
@@ -48,6 +50,7 @@
             "type": ["null", "string"]
           },
           "causedByEvent": {
+            "description": "Event that triggered the subscription change",
             "type": ["null", "object"],
             "properties": {
               "id": {
