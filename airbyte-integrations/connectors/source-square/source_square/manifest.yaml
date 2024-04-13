@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_square/schemas/{{ parameters['name'] }}.json"
   oauth_authenticator:
     type: OAuthAuthenticator
     token_refresh_endpoint: https://connect.squareup.com/oauth2/token
@@ -20,7 +17,9 @@ definitions:
       field_path: ["{{ parameters['name'] }}"]
 
   requester:
-    url_base: "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else 'https://connect.squareup.com/v2' }}"
+    url_base:
+      "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox']
+      else 'https://connect.squareup.com/v2' }}"
     http_method: "GET"
     authenticator:
       class_name: source_square.components.AuthenticatorSquare
@@ -62,7 +61,9 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime:
+          "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       end_datetime:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
@@ -106,7 +107,9 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime:
+          "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       end_datetime:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
@@ -168,6 +171,186 @@ definitions:
           sort_order: ASC
           sort_field: CREATED_AT
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier of the customer.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp indicating when the customer record was created.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp indicating when the customer record was last updated.
+            type:
+              - "null"
+              - string
+          cards:
+            description: Customer's payment cards.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier of the card.
+                  type:
+                    - "null"
+                    - string
+                card_brand:
+                  description: Brand of the card (e.g., Visa, Mastercard).
+                  type:
+                    - "null"
+                    - string
+                last_4:
+                  description: Last four digits of the card number.
+                  type:
+                    - "null"
+                    - string
+                exp_month:
+                  description: Expiry month of the card.
+                  type:
+                    - "null"
+                    - integer
+                exp_year:
+                  description: Expiry year of the card.
+                  type:
+                    - "null"
+                    - integer
+                cardholder_name:
+                  description: Name of the cardholder.
+                  type:
+                    - "null"
+                    - string
+                billing_address:
+                  description: Billing address associated with the card.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    postal_code:
+                      description: Postal or ZIP code of the billing address.
+                      type:
+                        - "null"
+                        - string
+          given_name:
+            description: Customer's given name or first name.
+            type:
+              - "null"
+              - string
+          family_name:
+            description: Customer's family name or surname.
+            type:
+              - "null"
+              - string
+          email_address:
+            description: Customer's email address.
+            type:
+              - "null"
+              - string
+          address:
+            description: Customer's address information.
+            type:
+              - "null"
+              - object
+            properties:
+              address_line_1:
+                description: First line of the address.
+                type:
+                  - "null"
+                  - string
+              address_line_2:
+                description: Second line of the address, if applicable.
+                type:
+                  - "null"
+                  - string
+              locality:
+                description: City or locality.
+                type:
+                  - "null"
+                  - string
+              administrative_district_level_1:
+                description: State, province, or region.
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                description: Postal or ZIP code.
+                type:
+                  - "null"
+                  - string
+          phone_number:
+            description: Customer's phone number.
+            type:
+              - "null"
+              - string
+          reference_id:
+            description: Reference ID associated with the customer.
+            type:
+              - "null"
+              - string
+          company_name:
+            description: Name of the company associated with the customer.
+            type:
+              - "null"
+              - string
+          preferences:
+            description: Customer's preferences settings.
+            type:
+              - "null"
+              - object
+            properties:
+              email_unsubscribed:
+                description:
+                  Flag to indicate if the customer has unsubscribed from
+                  email communications.
+                type: boolean
+          creation_source:
+            description: Source through which the customer account was created.
+            type:
+              - "null"
+              - string
+          birthday:
+            description: Customer's date of birth.
+            type:
+              - "null"
+              - string
+          segment_ids:
+            description: IDs of segments to which the customer belongs.
+            type:
+              - "null"
+              - array
+            items:
+              description: Identifier of a segment.
+              type:
+                - "null"
+                - string
+          group_ids:
+            description: IDs of groups to which the customer belongs.
+            type:
+              - "null"
+              - array
+            items:
+              description: Identifier of a group.
+              type:
+                - "null"
+                - string
+          version:
+            description: Version number of the customer record.
+            type:
+              - "null"
+              - integer
   shifts_stream:
     $ref: "#/definitions/base_stream_page_json_limit"
     $parameters:
@@ -183,6 +366,140 @@ definitions:
           inject_into: "body_json"
           field_name: "limit"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the shift
+            type:
+              - "null"
+              - string
+          employee_id:
+            description: Identifier of the employee assigned to the shift
+            type:
+              - "null"
+              - string
+          location_id:
+            description: Identifier of the location where the shift took place
+            type:
+              - "null"
+              - string
+          timezone:
+            description: Timezone of the shift's location
+            type:
+              - "null"
+              - string
+          start_at:
+            description: Start time of the shift
+            type:
+              - "null"
+              - string
+          end_at:
+            description: End time of the shift
+            type:
+              - "null"
+              - string
+          wage:
+            description: Details about the wage associated with the shift
+            type:
+              - "null"
+              - object
+            properties:
+              title:
+                description: Title of the wage (e.g., regular, overtime)
+                type:
+                  - "null"
+                  - string
+              hourly_rate:
+                description: Hourly rate information for the wage
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    description: Amount of the hourly rate
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    description: Currency in which the hourly rate is denominated
+                    type:
+                      - "null"
+                      - string
+          breaks:
+            description: List of breaks taken during the shift
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the break
+                  type:
+                    - "null"
+                    - string
+                start_at:
+                  description: Start time of the break
+                  type:
+                    - "null"
+                    - string
+                end_at:
+                  description: End time of the break
+                  type:
+                    - "null"
+                    - string
+                break_type_id:
+                  description: Identifier for the type of break
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name or description of the break
+                  type:
+                    - "null"
+                    - string
+                expected_duration:
+                  description: Expected duration of the break
+                  type:
+                    - "null"
+                    - string
+                is_paid:
+                  description: Indicates if the break is paid
+                  type:
+                    - "null"
+                    - boolean
+          status:
+            description: Current status of the shift (e.g., scheduled, completed)
+            type:
+              - "null"
+              - string
+          version:
+            description: Version number of the shift data
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: Timestamp when the shift was created
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp when the shift was last updated
+            type:
+              - "null"
+              - string
+          team_member_id:
+            description: Identifier of the team member managing the shift
+            type:
+              - "null"
+              - string
   team_members_stream:
     $ref: "#/definitions/base_stream_page_json_limit"
     $parameters:
@@ -190,6 +507,76 @@ definitions:
       primary_key: "id"
       path: "/team-members/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the team member
+            type:
+              - "null"
+              - string
+          is_owner:
+            description: Flag indicating if the team member is an owner
+            type:
+              - "null"
+              - boolean
+          status:
+            description: Current status of the team member
+            type:
+              - "null"
+              - string
+          given_name:
+            description: Given or first name of the team member
+            type:
+              - "null"
+              - string
+          family_name:
+            description: Family or last name of the team member
+            type:
+              - "null"
+              - string
+          email_address:
+            description: Email address of the team member
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp indicating when the team member record was created
+            type:
+              - "null"
+              - string
+          updated_at:
+            description:
+              Timestamp indicating when the team member record was last
+              updated
+            type:
+              - "null"
+              - string
+          assigned_locations:
+            description: Details about the locations assigned to the team member
+            type:
+              - "null"
+              - object
+            properties:
+              assignment_type:
+                description: Type of assignment for the location
+                type:
+                  - "null"
+                  - string
+          reference_id:
+            description: Reference ID associated with the team member
+            type:
+              - "null"
+              - string
+          phone_number:
+            description: Phone number of the team member
+            type:
+              - "null"
+              - string
   inventory_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -207,6 +594,50 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           field_path: ["counts"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Inventory Schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          catalog_object_id:
+            description: The unique identifier of the catalog object in the inventory.
+            type:
+              - string
+              - "null"
+          catalog_object_type:
+            description: The type of the catalog object in the inventory.
+            type:
+              - string
+              - "null"
+          state:
+            description:
+              The current state of the inventory item, e.g., available,
+              sold, reserved.
+            type:
+              - string
+              - "null"
+          location_id:
+            description:
+              The identifier of the location where the inventory is being
+              tracked.
+            type:
+              - string
+              - "null"
+          quantity:
+            description: The quantity of the inventory available at the location.
+            type:
+              - string
+              - "null"
+          calculated_at:
+            description: The timestamp when the inventory data was calculated.
+            type:
+              - string
+              - "null"
 
   team_member_wages_stream:
     $ref: "#/definitions/base_stream"
@@ -224,6 +655,46 @@ definitions:
       paginator:
         pagination_strategy:
           page_size: 200
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the team member wage entry.
+            type:
+              - "null"
+              - string
+          team_member_id:
+            description:
+              The unique identifier for the team member associated with
+              this wage.
+            type:
+              - "null"
+              - string
+          title:
+            description: The job title or role of the team member.
+            type:
+              - "null"
+              - string
+          hourly_rate:
+            description: The hourly wage rate of the team member.
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The amount of hourly wage in the specified currency.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency in which the hourly wage is denominated.
+                type:
+                  - "null"
+                  - string
   locations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -231,6 +702,156 @@ definitions:
       primary_key: "id"
       path: "/locations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the location/business.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the location or business.
+            type:
+              - "null"
+              - string
+          address:
+            description: The address details for a specific location
+            type:
+              - "null"
+              - object
+            properties:
+              address_line_1:
+                description: The first line of the physical address.
+                type:
+                  - "null"
+                  - string
+              locality:
+                description: The locality or city of the location.
+                type:
+                  - "null"
+                  - string
+              administrative_district_level_1:
+                description:
+                  The first-level administrative district (e.g., state,
+                  province).
+                type:
+                  - "null"
+                  - string
+              postal_code:
+                description: The postal code of the location.
+                type:
+                  - "null"
+                  - string
+              country:
+                description: The country where the location is situated.
+                type:
+                  - "null"
+                  - string
+          timezone:
+            description: The time zone setting for the location.
+            type:
+              - "null"
+              - string
+          capabilities:
+            description: The capabilities or services offered by the business.
+            type:
+              - "null"
+              - array
+            items:
+              description: A specific capability or service provided by the business.
+              type:
+                - "null"
+                - string
+          status:
+            description: The status of the location/business (e.g., active, inactive).
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp indicating when the record was created.
+            type:
+              - "null"
+              - string
+          merchant_id:
+            description: The identifier for the merchant or business.
+            type:
+              - "null"
+              - string
+          country:
+            description: The country where the location is situated.
+            type:
+              - "null"
+              - string
+          language_code:
+            description: The language code used for communication at the location.
+            type:
+              - "null"
+              - string
+          currency:
+            description: The currency used for transactions at the location.
+            type:
+              - "null"
+              - string
+          phone_number:
+            description: The contact phone number of the location.
+            type:
+              - "null"
+              - string
+          business_name:
+            description: The name of the business or location.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the location/business.
+            type:
+              - "null"
+              - string
+          website_url:
+            description: The URL to the business website.
+            type:
+              - "null"
+              - string
+          business_hours:
+            description: The operating hours of the business.
+            type:
+              - "null"
+              - object
+          business_email:
+            description: The email address associated with the business.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description or summary of the location/business.
+            type:
+              - "null"
+              - string
+          twitter_username:
+            description: The Twitter username associated with the business.
+            type:
+              - "null"
+              - string
+          instagram_username:
+            description: The Instagram username associated with the business.
+            type:
+              - "null"
+              - string
+          facebook_url:
+            description: The URL to the Facebook page of the business.
+            type:
+              - "null"
+              - string
+          mcc:
+            description: The merchant category code associated with the business.
+            type:
+              - "null"
+              - string
   locations_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -256,6 +877,100 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           field_path: ["cash_drawer_shifts"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Cash Drawer Shifts Schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            description: Unique identifier for the cash drawer.
+            type:
+              - string
+              - "null"
+          state:
+            description: The current state of the cash drawer (e.g., open, closed).
+            type:
+              - string
+              - "null"
+          opened_at:
+            description: The date and time when the cash drawer was opened.
+            type:
+              - string
+              - "null"
+          ended_at:
+            description: The date and time when the cash drawer activity ended.
+            type:
+              - string
+              - "null"
+          closed_at:
+            description: The date and time when the cash drawer was closed.
+            type:
+              - string
+              - "null"
+          description:
+            description: A brief description or note about the cash drawer.
+            type:
+              - string
+              - "null"
+          opened_cash_money:
+            description:
+              The amount of money in the cash drawer at the time it was
+              opened
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                description: The amount of cash in the drawer when it was opened.
+                type:
+                  - number
+                  - "null"
+              currency:
+                description: The currency of the cash amount.
+                type:
+                  - string
+                  - "null"
+          expected_cash_money:
+            description:
+              The expected amount of money in the cash drawer based on
+              transactions
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                description: The expected amount of cash in the drawer based on calculations.
+                type:
+                  - number
+                  - "null"
+              currency:
+                description: The currency of the expected cash amount.
+                type:
+                  - string
+                  - "null"
+          closed_cash_money:
+            description:
+              The amount of money in the cash drawer at the time it was
+              closed
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                description: The amount of cash in the drawer when it was closed.
+                type:
+                  - number
+                  - "null"
+              currency:
+                description: The currency of the cash amount.
+                type:
+                  - string
+                  - "null"
 
   categories_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
@@ -264,6 +979,54 @@ definitions:
       object_type: "CATEGORY"
       path: "/catalog/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: The type of category data.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the category.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the category data was last updated.
+            type:
+              - "null"
+              - string
+          version:
+            description: The version of the category data.
+            type:
+              - "null"
+              - integer
+          is_deleted:
+            description: Indicates whether the category has been deleted or not.
+            type:
+              - "null"
+              - boolean
+          present_at_all_locations:
+            description: Specifies if the category is available at all locations.
+            type:
+              - "null"
+              - boolean
+          category_data:
+            description: Data related to the categories available
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: The name of the category.
+                type:
+                  - "null"
+                  - string
   items_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
     $parameters:
@@ -271,6 +1034,311 @@ definitions:
       object_type: "ITEM"
       path: "/catalog/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: Type of the item
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the item
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp of when the item was last updated
+            type:
+              - "null"
+              - string
+          version:
+            description: Version of the item
+            type:
+              - "null"
+              - integer
+          is_deleted:
+            description: Flag indicating whether the item is deleted or not
+            type:
+              - "null"
+              - boolean
+          custom_attribute_values:
+            description: Custom attribute values associated with the item
+            type:
+              - "null"
+              - object
+          present_at_all_locations:
+            description: Flag indicating if the item is available at all locations
+            type:
+              - "null"
+              - boolean
+          item_data:
+            description: Detailed information about the item
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the item
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the item
+                type:
+                  - "null"
+                  - string
+              visibility:
+                description: Visibility status of the item
+                type:
+                  - "null"
+                  - string
+              category_id:
+                description: Category identifier for the item
+                type:
+                  - "null"
+                  - string
+              modifier_list_info:
+                description:
+                  Information about modifier lists associated with the
+                  item
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    modifier_list_id:
+                      description: Identifier of the modifier list
+                      type:
+                        - "null"
+                        - string
+                    visibility:
+                      description: Visibility status of the modifier list
+                      type:
+                        - "null"
+                        - string
+                    min_selected_modifiers:
+                      description: Minimum number of modifiers that must be selected
+                      type:
+                        - "null"
+                        - integer
+                    max_selected_modifiers:
+                      description: Maximum number of modifiers that can be selected
+                      type:
+                        - "null"
+                        - integer
+                    enabled:
+                      description: Flag indicating whether the modifier list is enabled
+                      type:
+                        - "null"
+                        - boolean
+              variations:
+                description: Variations available for the item
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of the variation
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: Unique identifier for the variation
+                      type:
+                        - "null"
+                        - string
+                    updated_at:
+                      description: Timestamp of when the variation was last updated
+                      type:
+                        - "null"
+                        - string
+                    version:
+                      description: Version of the variation
+                      type:
+                        - "null"
+                        - integer
+                    is_deleted:
+                      description:
+                        Flag indicating whether the variation is deleted
+                        or not
+                      type:
+                        - "null"
+                        - boolean
+                    present_at_all_locations:
+                      description:
+                        Flag indicating if the variation is available at
+                        all locations
+                      type:
+                        - "null"
+                        - boolean
+                    item_variation_data:
+                      description: Detailed information about the variation
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        item_id:
+                          description: Identifier of the base item
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          description: Name of the variation
+                          type:
+                            - "null"
+                            - string
+                        sku:
+                          description: Stock Keeping Unit for the variation
+                          type:
+                            - "null"
+                            - string
+                        ordinal:
+                          description: Order of the variation
+                          type:
+                            - "null"
+                            - integer
+                        pricing_type:
+                          description: Type of pricing for the variation
+                          type:
+                            - "null"
+                            - string
+                        price_money:
+                          description: Price details of the variation
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            amount:
+                              description: Price amount
+                              type:
+                                - "null"
+                                - integer
+                            currency:
+                              description: Currency of the price
+                              type:
+                                - "null"
+                                - string
+                        location_overrides:
+                          description: Overrides for specific locations
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              location_id:
+                                description: Identifier of the location
+                                type:
+                                  - "null"
+                                  - string
+                              track_inventory:
+                                description:
+                                  Flag indicating whether to track inventory
+                                  for this location
+                                type:
+                                  - "null"
+                                  - boolean
+                        item_option_values:
+                          description: Option values associated with the variation
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              item_option_id:
+                                description: Identifier of the option
+                                type:
+                                  - "null"
+                                  - string
+                              item_option_value_id:
+                                description: Identifier of the option value
+                                type:
+                                  - "null"
+                                  - string
+                    present_at_location_ids:
+                      description: Location IDs where the variation is available
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        description: Location ID
+                        type:
+                          - "null"
+                          - string
+              product_type:
+                description: Type of product the item belongs to
+                type:
+                  - "null"
+                  - string
+              skip_modifier_screen:
+                description:
+                  Flag indicating whether to skip the modifier selection
+                  screen
+                type:
+                  - "null"
+                  - boolean
+              item_options:
+                description: Options available for the item
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    item_option_id:
+                      description: Identifier for the option
+                      type:
+                        - "null"
+                        - string
+              ecom_visibility:
+                description: E-commerce visibility status of the item
+                type:
+                  - "null"
+                  - string
+              tax_ids:
+                description: Identifiers of taxes applicable to the item
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Tax ID
+                  type:
+                    - "null"
+                    - string
+          image_id:
+            description: Unique identifier for the item image
+            type:
+              - "null"
+              - string
+          present_at_location_ids:
+            description: Location IDs where the item is available
+            type:
+              - "null"
+              - array
+            items:
+              description: Location ID
+              type:
+                - "null"
+                - string
   discounts_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
     $parameters:
@@ -278,6 +1346,109 @@ definitions:
       object_type: "DISCOUNT"
       path: "/catalog/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: Type of discount data
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the discount
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp for when the discount data was last updated
+            type:
+              - "null"
+              - string
+          version:
+            description: Version number of the discount data
+            type:
+              - "null"
+              - integer
+          is_deleted:
+            description: Indicates if the discount has been deleted
+            type:
+              - "null"
+              - boolean
+          present_at_all_locations:
+            description: Indicates if the discount is applicable at all locations
+            type:
+              - "null"
+              - boolean
+          present_at_location_ids:
+            description: List of location IDs where the discount is applicable
+            type:
+              - "null"
+              - array
+            items:
+              description: Location ID where the discount is applicable
+              type:
+                - "null"
+                - string
+          discount_data:
+            description: Details of the discount including amount, type, name, etc.
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: A name or title for the discount
+                type:
+                  - "null"
+                  - string
+              discount_type:
+                description: Type of discount (e.g., fixed discount, percentage discount)
+                type:
+                  - "null"
+                  - string
+              percentage:
+                description: The percentage value of the discount, if applicable
+                type:
+                  - "null"
+                  - string
+              application_method:
+                description:
+                  Specifies how the discount is applied (e.g., fixed amount,
+                  percentage)
+                type:
+                  - "null"
+                  - string
+              modify_tax_basis:
+                description:
+                  Indicates whether the tax basis should be modified by
+                  the discount amount
+                type:
+                  - "null"
+                  - string
+              amount_money:
+                description: The amount of the discount
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    description: The numerical value of the discount amount
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    description: The currency in which the discount amount is specified
+                    type:
+                      - "null"
+                      - string
+              pin_required:
+                description: Indicates if a PIN is required to apply the discount
+                type:
+                  - "null"
+                  - boolean
   taxes_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
     $parameters:
@@ -285,6 +1456,98 @@ definitions:
       object_type: "TAX"
       path: "/catalog/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: Type of tax data entry.
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the tax data entry.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Date and time when the tax data was last updated.
+            type:
+              - "null"
+              - string
+          version:
+            description: Version of the tax data entry.
+            type:
+              - "null"
+              - integer
+          is_deleted:
+            description: Indicates if the tax data has been deleted.
+            type:
+              - "null"
+              - boolean
+          present_at_all_locations:
+            description: Specifies if the tax is applicable to all locations.
+            type:
+              - "null"
+              - boolean
+          tax_data:
+            description: Details of the tax applied.
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the tax.
+                type:
+                  - "null"
+                  - string
+              calculation_phase:
+                description: Phase when the tax is calculated (e.g., before discount).
+                type:
+                  - "null"
+                  - string
+              inclusion_type:
+                description: Type of inclusion (e.g., additive or inclusive).
+                type:
+                  - "null"
+                  - string
+              percentage:
+                description: Percentage value of the tax.
+                type:
+                  - "null"
+                  - string
+              applies_to_custom_amounts:
+                description: Specifies if the tax applies to custom amounts.
+                type:
+                  - "null"
+                  - boolean
+              enabled:
+                description: Indicates if the tax is enabled for use.
+                type:
+                  - "null"
+                  - boolean
+              tax_type_id:
+                description: Unique identifier for the tax type.
+                type:
+                  - "null"
+                  - string
+              tax_type_name:
+                description: Name of the tax type.
+                type:
+                  - "null"
+                  - string
+          absent_at_location_ids:
+            description: IDs of locations where the tax is not applicable.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   modifier_list_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
     $parameters:
@@ -292,6 +1555,146 @@ definitions:
       object_type: "MODIFIER_LIST"
       path: "/catalog/search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: The type of the modifier list.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the modifier list.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the modifier list was last updated.
+            type:
+              - "null"
+              - string
+          version:
+            description: The version of the modifier list.
+            type:
+              - "null"
+              - integer
+          is_deleted:
+            description: Indicates if the modifier list has been deleted.
+            type:
+              - "null"
+              - boolean
+          present_at_all_locations:
+            description: Indicates if the modifier list is available at all locations.
+            type:
+              - "null"
+              - boolean
+          modifier_list_data:
+            description: Data related to modifier lists
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: The name of the modifier list.
+                type:
+                  - "null"
+                  - string
+              selection_type:
+                description: The type of selection for the modifiers in the list.
+                type:
+                  - "null"
+                  - string
+              modifiers:
+                description: Array of available modifiers
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Details of a specific modifier
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of the modifier.
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: The unique identifier of the modifier.
+                      type:
+                        - "null"
+                        - string
+                    updated_at:
+                      description: The timestamp when the modifier was last updated.
+                      type:
+                        - "null"
+                        - string
+                    version:
+                      description: The version of the modifier.
+                      type:
+                        - "null"
+                        - integer
+                    is_deleted:
+                      description: Indicates if the modifier has been deleted.
+                      type:
+                        - "null"
+                        - boolean
+                    present_at_all_locations:
+                      description: Indicates if the modifier is available at all locations.
+                      type:
+                        - "null"
+                        - boolean
+                    modifier_data:
+                      description: Data related to the modifier
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        name:
+                          description: The name of the modifier.
+                          type:
+                            - "null"
+                            - string
+                        price_money:
+                          description: Information about the price of the modifier
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            amount:
+                              description: The amount of money for the modifier.
+                              type:
+                                - "null"
+                                - integer
+                            currency:
+                              description: The currency code for the money amount.
+                              type:
+                                - "null"
+                                - string
+                        on_by_default:
+                          description: Indicates if the modifier is enabled by default.
+                          type:
+                            - "null"
+                            - boolean
+                        ordinal:
+                          description:
+                            The order in which the modifier appears in
+                            the list.
+                          type:
+                            - "null"
+                            - integer
+                        modifier_list_id:
+                          description:
+                            The identifier of the modifier list this modifier
+                            belongs to.
+                          type:
+                            - "null"
+                            - string
   refunds_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -301,6 +1704,108 @@ definitions:
     retriever:
       $ref: "#/definitions/base_incremental_stream/retriever"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier of the refund
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the refund
+            type:
+              - "null"
+              - string
+          amount_money:
+            description: The amount of money associated with the refund
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The numerical value of the amount
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the amount
+                type:
+                  - "null"
+                  - string
+            required:
+              - amount
+              - currency
+          payment_id:
+            description: The identifier of the payment being refunded
+            type:
+              - "null"
+              - string
+          order_id:
+            description: The identifier of the order associated with the refund
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the refund was created
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the refund was last updated
+            type:
+              - "null"
+              - string
+          location_id:
+            description: The identifier of the location where the refund was made
+            type:
+              - "null"
+              - string
+          reason:
+            description: The reason for the refund
+            type:
+              - "null"
+              - string
+          processing_fee:
+            description: Details of any processing fees associated with the refund
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                effective_at:
+                  description: The timestamp when the processing fee was effective
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: The type of processing fee
+                  type:
+                    - "null"
+                    - string
+                amount_money:
+                  description: The amount of money for the processing fee
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      description: The numerical value of the amount
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      description: The currency of the amount
+                      type:
+                        - "null"
+                        - string
   payments_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -310,6 +1815,318 @@ definitions:
     retriever:
       $ref: "#/definitions/base_incremental_stream/retriever"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the payment.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp when the payment was created.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp when the payment was last updated.
+            type:
+              - "null"
+              - string
+          amount_money:
+            description: The total amount of the payment.
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The numerical value of the amount.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency in which the amount is denominated.
+                type:
+                  - "null"
+                  - string
+          customer_id:
+            description: Identifier for the customer associated with the payment.
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the payment.
+            type:
+              - "null"
+              - string
+          delay_duration:
+            description: Duration of the payment delay.
+            type:
+              - "null"
+              - string
+          source_type:
+            description: Type of payment source.
+            type:
+              - "null"
+              - string
+          card_details:
+            description: Details about the card used for the payment.
+            type:
+              - "null"
+              - object
+            properties:
+              status:
+                description: Status of the card payment.
+                type:
+                  - "null"
+                  - string
+              card:
+                description: Information about the card itself.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  card_brand:
+                    description: The brand of the card.
+                    type:
+                      - "null"
+                      - string
+                  last_4:
+                    description: The last 4 digits of the card number.
+                    type:
+                      - "null"
+                      - string
+                  exp_month:
+                    description: The expiration month of the card.
+                    type:
+                      - "null"
+                      - integer
+                  exp_year:
+                    description: The expiration year of the card.
+                    type:
+                      - "null"
+                      - integer
+                  fingerprint:
+                    description: A unique identifier for the card.
+                    type:
+                      - "null"
+                      - string
+                  card_type:
+                    description: The type of the card.
+                    type:
+                      - "null"
+                      - string
+                  prepaid_type:
+                    description: Type of prepaid card, if applicable.
+                    type:
+                      - "null"
+                      - string
+                  bin:
+                    description: The Bank Identification Number of the card.
+                    type:
+                      - "null"
+                      - string
+              entry_method:
+                description: Method used for entering card details.
+                type:
+                  - "null"
+                  - string
+              cvv_status:
+                description: CVV verification status.
+                type:
+                  - "null"
+                  - string
+              avs_status:
+                description: Address Verification Service status.
+                type:
+                  - "null"
+                  - string
+              statement_description:
+                description: Description on the cardholder's statement.
+                type:
+                  - "null"
+                  - string
+              card_payment_timeline:
+                description: Timeline of card payment events.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  authorized_at:
+                    description: Timestamp when the payment was authorized.
+                    type:
+                      - "null"
+                      - string
+                  captured_at:
+                    description: Timestamp when the payment was captured.
+                    type:
+                      - "null"
+                      - string
+                  voided_at:
+                    description: Timestamp when the payment was voided.
+                    type:
+                      - "null"
+                      - string
+          location_id:
+            description: Identifier for the location where the payment was made.
+            type:
+              - "null"
+              - string
+          order_id:
+            description: Identifier for the order associated with the payment.
+            type:
+              - "null"
+              - string
+          risk_evaluation:
+            description: Risk evaluation details for the payment.
+            type:
+              - "null"
+              - object
+            properties:
+              created_at:
+                description: Timestamp when the risk evaluation was conducted.
+                type:
+                  - "null"
+                  - string
+              risk_level:
+                description: Level of risk associated with the payment.
+                type:
+                  - "null"
+                  - string
+          processing_fee:
+            description: Fees associated with processing the payment.
+            type:
+              - "null"
+              - array
+            items:
+              description: Details of individual processing fee items.
+              type:
+                - "null"
+                - object
+              properties:
+                effective_at:
+                  description: Timestamp when the processing fee becomes effective.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of processing fee.
+                  type:
+                    - "null"
+                    - string
+                amount_money:
+                  description: The amount of the processing fee.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      description: The numerical value of the fee amount.
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      description: The currency of the fee amount.
+                      type:
+                        - "null"
+                        - string
+          total_money:
+            description: Total amount of money including all related fees and adjustments.
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The numerical value of the total amount.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the total amount.
+                type:
+                  - "null"
+                  - string
+          approved_money:
+            description: The amount of money that was approved for the payment.
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The numerical value of the approved amount.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the approved amount.
+                type:
+                  - "null"
+                  - string
+          receipt_number:
+            description: Number associated with the payment receipt.
+            type:
+              - "null"
+              - string
+          receipt_url:
+            description: URL to access the payment receipt.
+            type:
+              - "null"
+              - string
+          delay_action:
+            description: Action to be taken for delayed payment.
+            type:
+              - "null"
+              - string
+          delayed_until:
+            description: Timestamp until when the payment is delayed.
+            type:
+              - "null"
+              - string
+          version_token:
+            description: Token to track the version of the payment data.
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes or comments related to the payment.
+            type:
+              - "null"
+              - string
+          employee_id:
+            description: Identifier for the employee associated with the payment.
+            type:
+              - "null"
+              - string
+          refunded_money:
+            description: Amount of money that was refunded.
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The numerical value of the refunded amount.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the refunded amount.
+                type:
+                  - "null"
+                  - string
+          refund_ids:
+            description: Identifiers for refunds associated with the payment.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual refund identifiers.
+              type:
+                - "null"
+                - string
   loyalty_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -327,6 +2144,74 @@ definitions:
         $ref: "#/definitions/selector"
         extractor:
           field_path: ["loyalty_accounts"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Loyalty schema
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the loyalty record.
+            type:
+              - string
+              - "null"
+          mapping:
+            description: Contains the loyalty mapping data.
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: The unique identifier of the mapping record.
+                type:
+                  - string
+                  - "null"
+              phone_number:
+                description: The phone number associated with the customer.
+                type:
+                  - string
+                  - "null"
+              created_at:
+                description: The date and time when the mapping record was created.
+                type:
+                  - string
+                  - "null"
+          program_id:
+            description: The unique identifier of the loyalty program.
+            type:
+              - string
+              - "null"
+          balance:
+            description: The current loyalty points balance for the customer.
+            type:
+              - number
+              - "null"
+          lifetime_points:
+            description: The total lifetime points accumulated by the customer.
+            type:
+              - number
+              - "null"
+          customer_id:
+            description:
+              The unique identifier of the customer associated with the
+              loyalty data.
+            type:
+              - string
+              - "null"
+          created_at:
+            description: The date and time when the loyalty record was created.
+            type:
+              - string
+              - "null"
+          updated_at:
+            description: The date and time when the loyalty record was last updated.
+            type:
+              - string
+              - "null"
 
   orders_stream:
     $ref: "#/definitions/base_stream_page_json_limit"
@@ -338,7 +2223,9 @@ definitions:
       type: CustomIncrementalSync
       class_name: source_square.components.SquareSubstreamIncrementalSync
       start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime:
+          "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       end_datetime:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
@@ -357,6 +2244,1161 @@ definitions:
         request_body_json:
           limit: "{{ 500 }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier of the order.
+            type:
+              - "null"
+              - string
+          location_id:
+            description: The ID of the location where the order was placed.
+            type:
+              - "null"
+              - string
+          customer_id:
+            description: The ID of the customer who placed the order.
+            type:
+              - "null"
+              - string
+          line_items:
+            description: Detailed information about individual line items in the order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  type:
+                    - "null"
+                    - string
+                catalog_object_id:
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                variation_name:
+                  type:
+                    - "null"
+                    - string
+                base_price_money:
+                  description:
+                    The original price of the line item before discounts
+                    or taxes
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                gross_sales_money:
+                  description: The total sales amount for the line item before taxes
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                total_tax_money:
+                  description: The total tax amount applied to the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                total_discount_money:
+                  description: The total discount amount applied to the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                total_money:
+                  description:
+                    The total amount for the line item including discounts
+                    and taxes
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                variation_total_price_money:
+                  description: The total price of the line item including variations
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                item_type:
+                  type:
+                    - "null"
+                    - string
+                modifiers:
+                  description: Additional modifiers applied to the line item
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      uid:
+                        type:
+                          - "null"
+                          - string
+                      base_price_money:
+                        description:
+                          The price of the modifier before discounts or
+                          taxes
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      total_price_money:
+                        description:
+                          The total price of the modifier including discounts
+                          and taxes
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      catalog_object_id:
+                        type:
+                          - "null"
+                          - string
+                applied_discounts:
+                  description: Details of any discounts applied to the line item
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      uid:
+                        type:
+                          - "null"
+                          - string
+                      discount_uid:
+                        type:
+                          - "null"
+                          - string
+                      applied_money:
+                        description:
+                          The total discount amount applied to the line
+                          item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                applied_taxes:
+                  description: Details of any taxes applied to the line item
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      uid:
+                        type:
+                          - "null"
+                          - string
+                      tax_uid:
+                        type:
+                          - "null"
+                          - string
+                      applied_money:
+                        description: The total tax amount applied to the line item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                note:
+                  type:
+                    - "null"
+                    - string
+          fulfillments:
+            description: Details regarding the order fulfillment process
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+                pickup_details:
+                  description: Details specific to a pickup fulfillment
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    expires_at:
+                      type:
+                        - "null"
+                        - string
+                    pickup_at:
+                      type:
+                        - "null"
+                        - string
+                    note:
+                      type:
+                        - "null"
+                        - string
+                    placed_at:
+                      type:
+                        - "null"
+                        - string
+                    accepted_at:
+                      type:
+                        - "null"
+                        - string
+                    ready_at:
+                      type:
+                        - "null"
+                        - string
+                    schedule_type:
+                      type:
+                        - "null"
+                        - string
+                    recipient:
+                      description: Information about the recipient for pickup
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        display_name:
+                          type:
+                            - "null"
+                            - string
+                        phone_number:
+                          type:
+                            - "null"
+                            - string
+                    auto_complete_duration:
+                      type:
+                        - "null"
+                        - string
+                    picked_up_at:
+                      type:
+                        - "null"
+                        - string
+                shipment_details:
+                  description: Details specific to a shipment fulfillment
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    recipient:
+                      description: Information about the recipient for shipment
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        display_name:
+                          type:
+                            - "null"
+                            - string
+                        phone_number:
+                          type:
+                            - "null"
+                            - string
+                        address:
+                          description: Address details of the recipient
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            address_line_1:
+                              type:
+                                - "null"
+                                - string
+                            locality:
+                              type:
+                                - "null"
+                                - string
+                            administrative_district_level_1:
+                              type:
+                                - "null"
+                                - string
+                            postal_code:
+                              type:
+                                - "null"
+                                - string
+                    carrier:
+                      type:
+                        - "null"
+                        - string
+                    tracking_number:
+                      type:
+                        - "null"
+                        - string
+                    placed_at:
+                      type:
+                        - "null"
+                        - string
+                    packaged_at:
+                      type:
+                        - "null"
+                        - string
+                    shipped_at:
+                      type:
+                        - "null"
+                        - string
+                    expected_shipped_at:
+                      type:
+                        - "null"
+                        - string
+                    in_progress_at:
+                      type:
+                        - "null"
+                        - string
+          created_at:
+            description: The date and time when the order was created.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time when the order was last updated.
+            type:
+              - "null"
+              - string
+          state:
+            description: The current state of the order.
+            type:
+              - "null"
+              - string
+          version:
+            description: The version of the order.
+            type:
+              - "null"
+              - integer
+          total_tax_money:
+            description: The total tax amount applied to the order
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          total_discount_money:
+            description: The total discount amount applied to the order
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The total amount of discounts applied.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the total discount amount.
+                type:
+                  - "null"
+                  - string
+          total_tip_money:
+            description: The total tip amount for the order
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          total_money:
+            description: The total amount for the order including all calculations
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The total amount of the order.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency of the total order amount.
+                type:
+                  - "null"
+                  - string
+          closed_at:
+            description: The date and time when the order was closed.
+            type:
+              - "null"
+              - string
+          tenders:
+            description: Information about the tenders used for payment
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                location_id:
+                  type:
+                    - "null"
+                    - string
+                transaction_id:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                amount_money:
+                  description: The total amount of the tender
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                card_details:
+                  description: Details specific to payment by card
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    status:
+                      type:
+                        - "null"
+                        - string
+                    card:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        card_brand:
+                          type:
+                            - "null"
+                            - string
+                        last_4:
+                          type:
+                            - "null"
+                            - string
+                        fingerprint:
+                          type:
+                            - "null"
+                            - string
+                    entry_method:
+                      type:
+                        - "null"
+                        - string
+                payment_id:
+                  type:
+                    - "null"
+                    - string
+                cash_details:
+                  description: Details specific to payment by cash
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    buyer_tendered_money:
+                      description: The amount of cash tendered by the buyer
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                    change_back_money:
+                      description: The change back amount to the buyer
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                note:
+                  type:
+                    - "null"
+                    - string
+          total_service_charge_money:
+            description: The total service charge amount for the order
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+          net_amounts:
+            description:
+              Net amounts including discounts, service charges, taxes,
+              tip, and total amount
+            type:
+              - "null"
+              - object
+            properties:
+              total_money:
+                description: Total amount for the order after all calculations
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              tax_money:
+                description: Total tax amount for the order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              discount_money:
+                description: Total discount amount for the order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              tip_money:
+                description: Total tip amount for the order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              service_charge_money:
+                description: Total service charge amount for the order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+          source:
+            description: The source related to the order
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+          returns:
+            description: Details about return orders
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  type:
+                    - "null"
+                    - string
+                source_order_id:
+                  type:
+                    - "null"
+                    - string
+                return_line_items:
+                  description: Details of individual line items in the return order
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      uid:
+                        type:
+                          - "null"
+                          - string
+                      quantity:
+                        type:
+                          - "null"
+                          - string
+                      item_type:
+                        type:
+                          - "null"
+                          - string
+                      base_price_money:
+                        description: The base price of the returned item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      variation_total_price_money:
+                        description:
+                          The total price of the item including variations
+                          in the return order
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      gross_return_money:
+                        description: The total return amount for the item before tax
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      total_tax_money:
+                        description: The total tax amount for the returned item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      total_discount_money:
+                        description: The total discount amount for the returned item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                      total_money:
+                        description: The total return amount for the item
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - integer
+                          currency:
+                            type:
+                              - "null"
+                              - string
+          return_amounts:
+            description: Amounts related to return orders
+            type:
+              - "null"
+              - object
+            properties:
+              total_money:
+                description: Total amount for the return order after all calculations
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              tax_money:
+                description: Total tax amount for the return order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              discount_money:
+                description: Total discount amount for the return order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              tip_money:
+                description: Total tip amount for the return order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+              service_charge_money:
+                description: Total service charge amount for the return order
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+          refunds:
+            description: Details about refunds associated with the order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                location_id:
+                  type:
+                    - "null"
+                    - string
+                transaction_id:
+                  type:
+                    - "null"
+                    - string
+                tender_id:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                reason:
+                  type:
+                    - "null"
+                    - string
+                amount_money:
+                  description: The refunded amount
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                status:
+                  type:
+                    - "null"
+                    - string
+          service_charges:
+            description: Details of service charges applied to the order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                amount_money:
+                  description: The total amount of the service charge
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                applied_money:
+                  description: The actual service charge applied to the order
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                calculation_phase:
+                  type:
+                    - "null"
+                    - string
+                taxable:
+                  type:
+                    - "null"
+                    - boolean
+                total_money:
+                  description: The total amount of the service charge including tax
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                total_tax_money:
+                  description: The total tax amount for the service charge
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+          discounts:
+            description: Information about any discounts applied to the order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  description: The unique identifier of the discount.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the discount.
+                  type:
+                    - "null"
+                    - string
+                percentage:
+                  description: The percentage of the discount.
+                  type:
+                    - "null"
+                    - string
+                applied_money:
+                  description: The total discount amount applied to the order
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      description: The amount of discount applied.
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      description: The currency of the discount amount.
+                      type:
+                        - "null"
+                        - string
+                type:
+                  description: The type of discount.
+                  type:
+                    - "null"
+                    - string
+                scope:
+                  description: The scope of the discount's applicability.
+                  type:
+                    - "null"
+                    - string
+          taxes:
+            description: Details about taxes applied to the order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                uid:
+                  type:
+                    - "null"
+                    - string
+                catalog_object_id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                percentage:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                applied_money:
+                  description: The total tax amount applied to the order
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - integer
+                    currency:
+                      type:
+                        - "null"
+                        - string
+                scope:
+                  type:
+                    - "null"
+                    - string
   bank_accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -364,6 +3406,78 @@ definitions:
       primary_key: "id"
       path: "/bank-accounts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the bank account
+            type:
+              - "null"
+              - string
+          account_number_suffix:
+            description: The suffix or digits at the end of the bank account number
+            type:
+              - "null"
+              - string
+          country:
+            description: Country where the bank account is located
+            type:
+              - "null"
+              - string
+          currency:
+            description: Currency used in the bank account
+            type:
+              - "null"
+              - string
+          account_type:
+            description: Type of bank account such as savings or checking
+            type:
+              - "null"
+              - string
+          holder_name:
+            description: Name of the account holder
+            type:
+              - "null"
+              - string
+          primary_bank_identification_number:
+            description: Primary identification number of the bank
+            type:
+              - "null"
+              - string
+          location_id:
+            description: Identifier for the location associated with the bank account
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the bank account (active, closed, etc.)
+            type:
+              - "null"
+              - string
+          creditable:
+            description: Whether the account can receive money
+            type:
+              - "null"
+              - boolean
+          debitable:
+            description: Whether the account can send money or make withdrawals
+            type:
+              - "null"
+              - boolean
+          version:
+            description: Version of the bank account data
+            type:
+              - "null"
+              - integer
+          bank_name:
+            description: Name of the bank where the account is held
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/locations_stream"
