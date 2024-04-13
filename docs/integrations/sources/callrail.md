@@ -35,4 +35,5 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
+| 0.1.1 | 2024-04-12 | [37129](https://github.com/airbytehq/airbyte/pull/37129) | schema descriptions |
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
