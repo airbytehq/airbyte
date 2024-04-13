@@ -69,7 +69,7 @@
       "type": ["null", "number"]
     },
     "end_advertiser": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "end_advertiser_name": {
       "type": ["null", "string"]
@@ -118,10 +118,10 @@
       }
     },
     "fb_entity": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "funding_source": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "funding_source_details": {
       "type": ["null", "object"],
@@ -186,7 +186,7 @@
       "type": ["null", "boolean"]
     },
     "owner": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "partner": {
       "type": ["null", "number"]
