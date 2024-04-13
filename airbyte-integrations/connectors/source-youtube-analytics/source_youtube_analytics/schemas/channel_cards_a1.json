@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date corresponding to the data entry.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the video where the card is displayed.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video was streamed live or on-demand at the time of card display.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether viewers were subscribed or unsubscribed to the channel.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The ISO 3166-1 alpha-2 country code where the data is collected.",
       "type": ["null", "string"]
     },
     "card_type": {
+      "description": "The type of card displayed on the video (e.g., playlist, associated website).",
       "type": ["null", "string"]
     },
     "card_id": {
+      "description": "The unique identifier for the card displayed on the video.",
       "type": ["null", "string"]
     },
     "card_teaser_impressions": {
+      "description": "The total number of times the teaser of the card was shown to viewers.",
       "type": ["null", "string"]
     },
     "card_teaser_clicks": {
+      "description": "The total number of clicks on the teaser of the card.",
       "type": ["null", "string"]
     },
     "card_teaser_click_rate": {
+      "description": "The rate at which viewers clicked on the teaser of the card among those who saw the teaser impressions.",
       "type": ["null", "string"]
     },
     "card_impressions": {
+      "description": "The total number of times the card was shown to viewers.",
       "type": ["null", "string"]
     },
     "card_clicks": {
+      "description": "The total number of clicks on the card within the specified time frame.",
       "type": ["null", "string"]
     },
     "card_click_rate": {
+      "description": "The rate at which viewers clicked on the card among those who saw the card impressions.",
       "type": ["null", "string"]
     }
   }

@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date on which the data is collected or reported.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the channel associated with the playlist data.",
       "type": ["null", "string"]
     },
     "playlist_id": {
+      "description": "The unique identifier for the playlist for which the traffic source data is recorded.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the videos in the playlist that generated the views.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the views are from live-streamed or on-demand videos in the playlist.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewer was subscribed to the channel when interacting with the playlist.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code representing the location of the viewers who interacted with the playlist.",
       "type": ["null", "string"]
     },
     "traffic_source_type": {
+      "description": "The type of traffic source through which the views were generated (e.g., YouTube search, external etc.).",
       "type": ["null", "integer"]
     },
     "traffic_source_detail": {
+      "description": "Additional details about the traffic source from which the views originated.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views received by the videos in the playlist.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time, in minutes, accumulated by viewers for the videos in the playlist.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration, in seconds, for which viewers watched the videos in the playlist.",
       "type": ["null", "number"]
     },
     "playlist_starts": {
+      "description": "The total number of times the playlist was started by viewers.",
       "type": ["null", "integer"]
     },
     "playlist_saves_added": {
+      "description": "The number of times the playlist was added to a user's saved playlists.",
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "description": "The number of times the playlist was removed from a user's saved playlists.",
       "type": ["null", "integer"]
     }
   }

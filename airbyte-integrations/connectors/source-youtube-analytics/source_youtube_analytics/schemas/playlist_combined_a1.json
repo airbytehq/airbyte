@@ -3,54 +3,71 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the analytics data is recorded",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the channel associated with the data",
       "type": ["null", "string"]
     },
     "playlist_id": {
+      "description": "The unique identifier of the playlist for which the analytics data is collected",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the video within the playlist",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the views were from live streams or on-demand videos",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewers were subscribed or unsubscribed to the channel",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code of the viewers who watched the playlist videos",
       "type": ["null", "string"]
     },
     "playback_location_type": {
+      "description": "The type of location where the videos were played (e.g., embedded player, YouTube site)",
       "type": ["null", "integer"]
     },
     "traffic_source_type": {
+      "description": "The source from which the traffic to the playlist originated (e.g., YouTube search, external websites)",
       "type": ["null", "integer"]
     },
     "device_type": {
+      "description": "The type of device (e.g., mobile, desktop) on which the video was watched",
       "type": ["null", "integer"]
     },
     "operating_system": {
+      "description": "The operating system used by viewers to access the playlist videos",
       "type": ["null", "integer"]
     },
     "views": {
+      "description": "The total number of views for the videos in the playlist",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time of the playlist videos in minutes",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration in seconds that viewers watch a video in the playlist",
       "type": ["null", "number"]
     },
     "playlist_starts": {
+      "description": "The number of times the playlist was started by viewers",
       "type": ["null", "integer"]
     },
     "playlist_saves_added": {
+      "description": "The number of times the playlist was saved or added by viewers",
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "description": "The number of times the playlist was removed or unsubscribed by viewers",
       "type": ["null", "integer"]
     }
   }

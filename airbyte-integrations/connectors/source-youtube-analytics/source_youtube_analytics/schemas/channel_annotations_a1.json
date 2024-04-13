@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date when the data was collected.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the YouTube video.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates if the video content is live or on-demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates if the viewer is subscribed to the channel.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code where the data was collected.",
       "type": ["null", "string"]
     },
     "annotation_type": {
+      "description": "The type of annotation used.",
       "type": ["null", "string"]
     },
     "annotation_id": {
+      "description": "The unique identifier for the annotation.",
       "type": ["null", "string"]
     },
     "annotation_impressions": {
+      "description": "The total number of times annotations were displayed to viewers.",
       "type": ["null", "string"]
     },
     "annotation_clickable_impressions": {
+      "description": "The number of impressions where annotations are clickable.",
       "type": ["null", "string"]
     },
     "annotation_clicks": {
+      "description": "The total number of clicks on annotations.",
       "type": ["null", "string"]
     },
     "annotation_click_through_rate": {
+      "description": "The percentage of impressions that resulted in clicks on the annotations.",
       "type": ["null", "string"]
     },
     "annotation_closable_impressions": {
+      "description": "The number of impressions where annotations are closable.",
       "type": ["null", "string"]
     },
     "annotation_closes": {
+      "description": "The total number of times viewers closed the annotations.",
       "type": ["null", "string"]
     },
     "annotation_close_rate": {
+      "description": "The percentage of impressions that resulted in closing the annotations.",
       "type": ["null", "string"]
     }
   }

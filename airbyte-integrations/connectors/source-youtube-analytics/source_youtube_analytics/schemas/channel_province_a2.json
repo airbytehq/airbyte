@@ -3,81 +3,107 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "Date for which the analytics data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "Unique identifier for the YouTube channel.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "Unique identifier for the YouTube video.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates if the video was watched live or on demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates if the viewer is subscribed to the channel or not.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "Two-letter country code where the data was collected.",
       "type": ["null", "string"]
     },
     "province_code": {
+      "description": "Code representing the province or region where the data is collected.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "Total number of views for the video.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "Total watch time in minutes for the video.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "Average duration of time spent watching the video in seconds.",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "Average percentage of video watched by viewers.",
       "type": ["null", "number"]
     },
     "annotation_click_through_rate": {
+      "description": "Percentage of viewers who clicked on annotations while watching the video.",
       "type": ["null", "integer"]
     },
     "annotation_close_rate": {
+      "description": "Percentage of times viewers closed annotations after they were shown.",
       "type": ["null", "integer"]
     },
     "annotation_impressions": {
+      "description": "Total number of times annotations were shown to viewers.",
       "type": ["null", "integer"]
     },
     "annotation_clickable_impressions": {
+      "description": "Number of times annotations were shown to viewers and were clickable.",
       "type": ["null", "integer"]
     },
     "annotation_closable_impressions": {
+      "description": "Number of times annotations were shown to viewers and were closable.",
       "type": ["null", "integer"]
     },
     "annotation_clicks": {
+      "description": "Total number of clicks on annotations during video playback.",
       "type": ["null", "integer"]
     },
     "annotation_closes": {
+      "description": "Total number of times viewers closed annotations during video playback.",
       "type": ["null", "integer"]
     },
     "card_click_rate": {
+      "description": "Percentage of viewers who clicked on cards while watching the video.",
       "type": ["null", "integer"]
     },
     "card_teaser_click_rate": {
+      "description": "Percentage of viewers who clicked on card teasers.",
       "type": ["null", "integer"]
     },
     "card_impressions": {
+      "description": "Total number of times cards were shown to viewers.",
       "type": ["null", "integer"]
     },
     "card_teaser_impressions": {
+      "description": "Total number of times card teasers were shown to viewers.",
       "type": ["null", "integer"]
     },
     "card_clicks": {
+      "description": "Total number of clicks on cards during video playback.",
       "type": ["null", "integer"]
     },
     "card_teaser_clicks": {
+      "description": "Total number of clicks on card teasers.",
       "type": ["null", "integer"]
     },
     "red_views": {
+      "description": "Number of views from viewers who are considered returning viewers.",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "Total watch time in minutes from returning viewers.",
       "type": ["null", "number"]
     }
   }

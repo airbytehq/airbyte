@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the analytics data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier for the channel that the data pertains to.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier for the video watched on the channel.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicates whether the video was watched live or on-demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewer is subscribed to the channel or not.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code of the viewers watching videos on the channel.",
       "type": ["null", "string"]
     },
     "device_type": {
+      "description": "The type of device used by viewers to access the channel, such as mobile, desktop, or tablet.",
       "type": ["null", "integer"]
     },
     "operating_system": {
+      "description": "The operating system of the device used by viewers to watch videos on the channel.",
       "type": ["null", "integer"]
     },
     "views": {
+      "description": "The total number of views on a video or channel during a specific period.",
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes for videos watched on the channel, reflecting user engagement.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration in seconds that users watched videos on a channel, indicating user engagement.",
       "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
+      "description": "The average percentage of video viewed by users on a channel, representative of engagement level.",
       "type": ["null", "number"]
     },
     "red_views": {
+      "description": "The number of views recognized as 'red views', possibly indicating unusual or invalid viewing activity.",
       "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
+      "description": "The total watch time in minutes attributed to views classified as 'red views'.",
       "type": ["null", "number"]
     }
   }

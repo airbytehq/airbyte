@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the playlist data is recorded.",
       "type": "integer"
     },
     "channel_id": {
+      "description": "The unique identifier of the YouTube channel associated with the playlist data.",
       "type": ["null", "string"]
     },
     "playlist_id": {
+      "description": "The unique identifier of the playlist for which the data is collected.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "The unique identifier of the video within the playlist for which the data is recorded.",
       "type": ["null", "string"]
     },
     "live_or_on_demand": {
+      "description": "Indicator whether the playlist was watched live or on demand.",
       "type": ["null", "string"]
     },
     "subscribed_status": {
+      "description": "Indicates whether the viewers who watched this playlist within the specified province were subscribed to the channel.",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "The country code representing the region where the data is collected.",
       "type": ["null", "string"]
     },
     "province_code": {
+      "description": "The code representing the province within the country where the data is collected.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The total number of views this playlist received within the specified province.",
       "type": ["null", "string"]
     },
     "watch_time_minutes": {
+      "description": "The total watch time in minutes of this playlist within the specified province.",
       "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
+      "description": "The average duration in seconds that viewers watched this playlist within the specified province.",
       "type": ["null", "number"]
     },
     "playlist_starts": {
+      "description": "The total number of times this playlist was started by viewers within the specified province.",
       "type": ["null", "string"]
     },
     "playlist_saves_added": {
+      "description": "The number of times this playlist was saved by users within the specified region during the reporting period.",
       "type": ["null", "string"]
     },
     "playlist_saves_removed": {
+      "description": "The number of times this playlist was removed from saved playlists by users within the specified region during the reporting period.",
       "type": ["null", "string"]
     }
   }
