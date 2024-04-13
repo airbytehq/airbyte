@@ -52,6 +52,137 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/emailCampaigns"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier assigned to the campaign
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name or title of the campaign
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of campaign (e.g., transactional, promotional)
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the campaign (e.g., draft, sent, scheduled)
+            type:
+              - "null"
+              - string
+          testSent:
+            description: Indicates if a test email has been sent for the campaign
+            type:
+              - "null"
+              - boolean
+          header:
+            description: Text content for the header of the email campaign
+            type:
+              - "null"
+              - string
+          footer:
+            description: Text content for the footer of the email campaign
+            type:
+              - "null"
+              - string
+          sender:
+            description: Details of the sender from whom the campaign is being sent
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          replyTo:
+            description: Email address used for replies to the campaign
+            type:
+              - "null"
+              - string
+          toField:
+            description: Field representing the recipients' email addresses
+            type:
+              - "null"
+              - string
+          htmlContent:
+            description: HTML content of the email campaign
+            type:
+              - "null"
+              - string
+          tag:
+            description: Tag or label associated with the campaign for categorization
+            type:
+              - "null"
+              - string
+          inlineImageActivation:
+            description: Indicates if inline images are activated for the campaign
+            type:
+              - "null"
+              - boolean
+          mirrorActive:
+            description: Indicates if mirroring is active for the campaign
+            type:
+              - "null"
+              - boolean
+          recipients:
+            description: Details of the recipients targeted by the campaign
+            type:
+              - "null"
+              - object
+          statistics:
+            description: Statistics and performance data related to the campaign
+            type:
+              - "null"
+              - object
+          subject:
+            description: Subject line of the email campaign
+            type:
+              - "null"
+              - string
+          scheduledAt:
+            description: Timestamp indicating the scheduled time for sending the campaign
+            type:
+              - "null"
+              - string
+          createdAt:
+            description: Timestamp indicating when the campaign was created
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            description: Timestamp indicating when the campaign was last modified
+            type:
+              - "null"
+              - string
+          previewText:
+            description: Preview text used to provide a glimpse of the email content
+            type:
+              - "null"
+              - string
+          shareLink:
+            description: Link to share the campaign with others
+            type:
+              - "null"
+              - string
+          sendAtBestTime:
+            description: Indicates if the campaign should be sent at the best time
+            type:
+              - "null"
+              - boolean
+          abTesting:
+            description:
+              Stores information about A/B testing configuration for the
+              campaign
+            type:
+              - "null"
+              - boolean
   campaign_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -64,6 +195,82 @@ definitions:
       name: templates
       primary_key: id
       path: "/smtp/templates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the email template.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name given to the email template for easy identification.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the email template.
+            type:
+              - "null"
+              - string
+          testSent:
+            description: Indicates whether a test email has been sent using this template.
+            type:
+              - "null"
+              - boolean
+          isActive:
+            description: Indicates whether the email template is currently active.
+            type:
+              - "null"
+              - boolean
+          sender:
+            description: Information about the sender of the email template.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          subject:
+            description: The subject line of the email template.
+            type:
+              - "null"
+              - string
+          replyTo:
+            description: The email address where replies to the template will be sent.
+            type:
+              - "null"
+              - string
+          toField:
+            description: The field where email recipients are specified.
+            type:
+              - "null"
+              - string
+          htmlContent:
+            description: The HTML content of the email template.
+            type:
+              - "null"
+              - string
+          tag:
+            description:
+              A tag associated with the email template for organizational
+              purposes.
+            type:
+              - "null"
+              - string
+          createdAt:
+            description: The date and time when the template was created.
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            description: The date and time when the template was last modified.
+            type:
+              - "null"
+              - string
   contacts_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -73,6 +280,59 @@ definitions:
       primary_key: id
       path: "/contacts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the contact.
+            type:
+              - "null"
+              - integer
+          email:
+            description: Email address of the contact.
+            type:
+              - "null"
+              - string
+          emailBlacklisted:
+            description:
+              A boolean value indicating if the contact's email is blacklisted
+              or not.
+            type:
+              - "null"
+              - boolean
+          smsBlacklisted:
+            description:
+              A boolean value indicating if the contact's SMS is blacklisted
+              or not.
+            type:
+              - "null"
+              - boolean
+          listIds:
+            description: List identifiers to which the contact belongs.
+            type:
+              - "null"
+              - array
+          createdAt:
+            description: The date and time when the contact was created.
+            type:
+              - "null"
+              - string
+          modifiedAt:
+            description: The date and time when the contact was last modified.
+            type:
+              - "null"
+              - string
+          attributes:
+            description: Additional attributes associated with the contact data.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/templates_stream"
