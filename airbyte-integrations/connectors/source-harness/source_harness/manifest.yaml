@@ -37,6 +37,65 @@ definitions:
     $parameters:
       path: "/ng/api/organizations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Organizations schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          organization:
+            description: Represents an organization entity
+            type:
+              - object
+              - "null"
+            properties:
+              identifier:
+                description: Unique identifier for the organization
+                type:
+                  - string
+                  - "null"
+              name:
+                description: The name of the organization
+                type:
+                  - string
+                  - "null"
+              description:
+                description: A brief description of the organization
+                type:
+                  - string
+                  - "null"
+              tags:
+                description: Collection of tags associated with the organization
+                type:
+                  - object
+                  - "null"
+                properties:
+                  identifier:
+                    description:
+                      Unique identifier for the tag associated with the
+                      organization
+                    type:
+                      - string
+                      - "null"
+          createdAt:
+            description: The date and time when the organization was created
+            type:
+              - number
+              - "null"
+          lastModifiedAt:
+            description: The date and time when the organization was last modified
+            type:
+              - number
+              - "null"
+          harnessManaged:
+            description: Whether the organization is managed by Harness or not
+            type:
+              - boolean
+              - "null"
 streams:
   - "#/definitions/organizations_stream"
 
