@@ -3,60 +3,79 @@
   "type": "object",
   "properties": {
     "email": {
+      "description": "The email associated with the page.",
       "type": ["null", "string"]
     },
     "meta_title": {
+      "description": "The meta title for SEO purposes.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The content or body of the page.",
       "type": ["null", "string"]
     },
     "feed": {
+      "description": "The feed associated with the page.",
       "type": ["null", "string"]
     },
     "link": {
+      "description": "The external link associated with the page.",
       "type": ["null", "string"]
     },
     "contact_fields": {
+      "description": "Fields related to contact information on the page.",
       "type": ["null", "string"]
     },
     "meta_keywords": {
+      "description": "The meta keywords for SEO purposes.",
       "type": ["null", "string"]
     },
     "meta_description": {
+      "description": "The meta description for SEO purposes.",
       "type": ["null", "string"]
     },
     "search_keywords": {
+      "description": "The keywords associated with the page for search purposes.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL or path of the page.",
       "type": ["null", "string"]
     },
     "channel_id": {
+      "description": "The ID of the channel associated with the page.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the page.",
       "type": ["null", "string"]
     },
     "is_visible": {
+      "description": "Indicates if the page is visible on the storefront.",
       "type": ["null", "boolean"]
     },
     "parent_id": {
+      "description": "The ID of the parent page if this page is a subpage.",
       "type": ["null", "integer"]
     },
     "sort_order": {
+      "description": "The order in which the page should be displayed.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type or category of the page.",
       "type": ["null", "string"]
     },
     "is_homepage": {
+      "description": "Indicates if the page is set as the homepage.",
       "type": ["null", "boolean"]
     },
     "is_customers_only": {
+      "description": "Indicates if the page is accessible to customers only.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "The unique identifier of the page.",
       "type": ["null", "integer"]
     }
   }

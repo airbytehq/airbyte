@@ -3,75 +3,99 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the store",
       "type": ["null", "string"]
     },
     "account_uuid": {
+      "description": "Unique identifier for the account",
       "type": ["null", "string"]
     },
     "domain": {
+      "description": "Domain of the store",
       "type": ["null", "string"]
     },
     "secure_url": {
+      "description": "Secure URL for the store",
       "type": ["null", "string"]
     },
     "control_panel_base_url": {
+      "description": "Base URL for the control panel",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the store",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the store",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "First name of the store representative",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the store representative",
       "type": ["null", "string"]
     },
     "address": {
+      "description": "Store address information",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "Country where the store is located",
       "type": ["null", "string"]
     },
     "country_code": {
+      "description": "Country code for the store",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number of the store",
       "type": ["null", "string"]
     },
     "admin_email": {
+      "description": "Email of the store admin",
       "type": ["null", "string"]
     },
     "order_email": {
+      "description": "Email for receiving store orders",
       "type": ["null", "string"]
     },
     "favicon_url": {
+      "description": "URL for the store favicon",
       "type": ["null", "string"]
     },
     "timezone": {
+      "description": "Store timezone information",
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "Name of the timezone",
           "type": ["null", "string"]
         },
         "raw_offset": {
+          "description": "Raw offset of the timezone",
           "type": ["null", "integer"]
         },
         "dst_offset": {
+          "description": "Daylight Saving Time offset",
           "type": ["null", "integer"]
         },
         "date_format": {
+          "description": "Date formatting options for the store",
           "type": ["null", "object"],
           "properties": {
             "display": {
+              "description": "Date format for display",
               "type": ["null", "string"]
             },
             "export": {
+              "description": "Date format for export",
               "type": ["null", "string"]
             },
             "extended_display": {
+              "description": "Extended date format for display",
               "type": ["null", "string"]
             }
           }
@@ -79,104 +103,136 @@
       }
     },
     "language": {
+      "description": "Language used in the store",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency used in the store",
       "type": ["null", "string"]
     },
     "currency_symbol": {
+      "description": "Symbol used for the currency",
       "type": ["null", "string"]
     },
     "decimal_separator": {
+      "description": "Separator used for decimals",
       "type": ["null", "string"]
     },
     "thousands_separator": {
+      "description": "Separator used for thousands",
       "type": ["null", "string"]
     },
     "decimal_places": {
+      "description": "Number of decimal places for currency",
       "type": ["null", "integer"]
     },
     "currency_symbol_location": {
+      "description": "Location of the currency symbol",
       "type": ["null", "string"]
     },
     "weight_units": {
+      "description": "Units used for weight",
       "type": ["null", "string"]
     },
     "dimension_units": {
+      "description": "Units used for dimensions",
       "type": ["null", "string"]
     },
     "dimension_decimal_places": {
+      "description": "Number of decimal places for dimensions",
       "type": ["null", "integer"]
     },
     "dimension_decimal_token": {
+      "description": "Token for decimal in dimensions",
       "type": ["null", "string"]
     },
     "dimension_thousands_token": {
+      "description": "Token for thousands separator in dimensions",
       "type": ["null", "string"]
     },
     "plan_name": {
+      "description": "Name of the plan",
       "type": ["null", "string"]
     },
     "plan_level": {
+      "description": "Level of the plan",
       "type": ["null", "string"]
     },
     "plan_is_trial": {
+      "description": "Flag indicating if the plan is a trial",
       "type": ["null", "boolean"]
     },
     "industry": {
+      "description": "Industry type of the store",
       "type": ["null", "string"]
     },
     "logo": {
+      "description": "Store logo details",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "url": {
+            "description": "URL of the store logo",
             "type": ["null", "string"]
           }
         }
       }
     },
     "is_price_entered_with_tax": {
+      "description": "Flag indicating if price is entered with tax included",
       "type": ["null", "boolean"]
     },
     "store_id": {
+      "description": "ID of the store",
       "type": ["null", "integer"]
     },
     "default_site_id": {
+      "description": "Default site ID",
       "type": ["null", "integer"]
     },
     "default_channel_id": {
+      "description": "Default channel ID",
       "type": ["null", "integer"]
     },
     "active_comparison_modules": {
+      "description": "List of active comparison modules",
       "type": ["null", "array"]
     },
     "features": {
+      "description": "Features available in the store",
       "type": ["null", "object"],
       "properties": {
         "stencil_enabled": {
+          "description": "Flag indicating if stencil is enabled",
           "type": ["null", "boolean"]
         },
         "sitewidehttps_enabled": {
+          "description": "Flag indicating if sitewide HTTPS is enabled",
           "type": ["null", "boolean"]
         },
         "facebook_catalog_id": {
+          "description": "ID for Facebook catalog integration",
           "type": ["null", "string"]
         },
         "checkout_type": {
+          "description": "Type of checkout process",
           "type": ["null", "string"]
         },
         "wishlists_enabled": {
+          "description": "Flag indicating if wishlists are enabled",
           "type": ["null", "boolean"]
         },
         "graphql_storefront_api_enabled": {
+          "description": "Flag indicating if GraphQL storefront API is enabled",
           "type": ["null", "boolean"]
         },
         "shopper_consent_tracking_enabled": {
+          "description": "Flag indicating if shopper consent tracking is enabled",
           "type": ["null", "boolean"]
         },
         "multi_storefront_enabled": {
+          "description": "Flag indicating if multi-storefront is enabled",
           "type": ["null", "boolean"]
         }
       }

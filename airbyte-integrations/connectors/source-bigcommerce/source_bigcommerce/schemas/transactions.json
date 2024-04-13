@@ -3,138 +3,179 @@
   "type": "object",
   "properties": {
     "event": {
+      "description": "The event associated with the transaction.",
       "type": ["null", "string"]
     },
     "method": {
+      "description": "The payment method used in the transaction.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The transaction amount.",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency used in the transaction.",
       "type": ["null", "string"]
     },
     "gateway": {
+      "description": "The gateway used for the transaction.",
       "type": ["null", "string"]
     },
     "gateway_transaction_id": {
+      "description": "The transaction ID from the gateway.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date when the transaction was created.",
       "type": ["null", "string"]
     },
     "test": {
+      "description": "Indicates if the transaction is done in a test environment.",
       "type": ["null", "boolean"]
     },
     "status": {
+      "description": "The status of the transaction.",
       "type": ["null", "string"]
     },
     "fraud_review": {
+      "description": "Indicates if the transaction is under fraud review.",
       "type": ["null", "boolean"]
     },
     "reference_transaction_id": {
+      "description": "The reference ID of the transaction.",
       "type": ["null", "integer"]
     },
     "offline": {
+      "description": "Offline payment details for the transaction",
       "type": ["null", "object"],
       "properties": {
         "display_name": {
+          "description": "The display name of the offline payment method.",
           "type": ["null", "string"]
         }
       }
     },
     "custom": {
+      "description": "Custom data related to the transaction",
       "type": ["null", "object"],
       "properties": {
         "payment_method": {
+          "description": "The custom payment method used.",
           "type": ["null", "string"]
         }
       }
     },
     "payment_method_id": {
+      "description": "The ID of the payment method used.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the transaction.",
       "type": ["null", "integer"]
     },
     "order_id": {
+      "description": "The ID of the order associated with the transaction.",
       "type": ["null", "string"]
     },
     "payment_instrument_token": {
+      "description": "The token for the payment instrument.",
       "type": ["null", "string"]
     },
     "avs_result": {
+      "description": "Address Verification System (AVS) result for the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The AVS (Address Verification System) code.",
           "type": ["null", "string"]
         },
         "message": {
+          "description": "A message related to the AVS result.",
           "type": ["null", "string"]
         },
         "street_match": {
+          "description": "Indicates if the street address matches.",
           "type": ["null", "string"]
         },
         "postal_match": {
+          "description": "Indicates if the postal code matches.",
           "type": ["null", "string"]
         }
       }
     },
     "cvv_result": {
+      "description": "Card Verification Value (CVV) result for the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The CVV (Card Verification Value) code.",
           "type": ["null", "string"]
         },
         "message": {
+          "description": "A message related to the CVV result.",
           "type": ["null", "string"]
         }
       }
     },
     "credit_card": {
+      "description": "Credit card details used for the transaction",
       "type": ["null", "object"],
       "properties": {
         "card_type": {
+          "description": "The type of credit card.",
           "type": ["null", "string"]
         },
         "card_iin": {
+          "description": "The issuer identification number of the credit card.",
           "type": ["null", "string"]
         },
         "card_last4": {
+          "description": "The last 4 digits of the credit card.",
           "type": ["null", "string"]
         },
         "card_expiry_month": {
+          "description": "The expiry month of the credit card.",
           "type": ["null", "integer"]
         },
         "card_expiry_year": {
+          "description": "The expiry year of the credit card.",
           "type": ["null", "integer"]
         }
       }
     },
     "gift_certificate": {
+      "description": "Information about any gift certificates used in the transaction",
       "type": ["null", "object"],
       "properties": {
         "code": {
+          "description": "The code of the gift certificate.",
           "type": ["null", "string"]
         },
         "original_balance": {
+          "description": "The original balance of the gift certificate.",
           "type": ["null", "integer"]
         },
         "starting_balance": {
+          "description": "The starting balance of the gift certificate.",
           "type": ["null", "integer"]
         },
         "remaining_balance": {
+          "description": "The remaining balance of the gift certificate.",
           "type": ["null", "integer"]
         },
         "status": {
+          "description": "The status of the gift certificate.",
           "type": ["null", "string"]
         }
       }
     },
     "store_credit": {
+      "description": "Store credit applied to the transaction",
       "type": ["null", "object"],
       "properties": {
         "remaining_balance": {
+          "description": "The remaining balance of the store credit.",
           "type": ["null", "integer"]
         }
       }

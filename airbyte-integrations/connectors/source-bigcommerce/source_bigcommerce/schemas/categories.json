@@ -4,57 +4,75 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the category.",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "The identifier of the parent category, if any.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the category.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the category.",
       "type": ["null", "string"]
     },
     "views": {
+      "description": "The number of views the category has received.",
       "type": ["null", "integer"]
     },
     "sort_order": {
+      "description": "The order in which the category is displayed.",
       "type": ["null", "integer"]
     },
     "page_title": {
+      "description": "The title of the category page.",
       "type": ["null", "string"]
     },
     "meta_keywords": {
+      "description": "Keywords associated with the category.",
       "type": ["null", "array"],
       "items": {
+        "description": "A keyword related to the category.",
         "type": ["null", "string"]
       }
     },
     "meta_description": {
+      "description": "The meta description for the category.",
       "type": ["null", "string"]
     },
     "layout_file": {
+      "description": "The layout file used for displaying the category.",
       "type": ["null", "string"]
     },
     "image_url": {
+      "description": "The URL of the category image.",
       "type": ["null", "string"]
     },
     "is_visible": {
+      "description": "Indicates whether the category is visible on the storefront.",
       "type": ["null", "boolean"]
     },
     "search_keywords": {
+      "description": "Keywords used for searching the category.",
       "type": ["null", "string"]
     },
     "default_product_sort": {
+      "description": "The default sorting option for products within the category.",
       "type": ["null", "string"]
     },
     "custom_url": {
+      "description": "Contains information about custom URLs associated with this category.",
       "type": ["null", "object"],
       "properties": {
         "path": {
+          "description": "The URL path for the category.",
           "type": ["null", "string"]
         },
         "is_customized": {
+          "description": "Indicates whether the category URL is customized.",
           "type": ["null", "boolean"]
         }
       }

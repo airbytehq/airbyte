@@ -3,174 +3,227 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the order product.",
       "type": ["null", "integer"]
     },
     "order_id": {
+      "description": "ID of the order to which the product belongs.",
       "type": ["null", "integer"]
     },
     "product_id": {
+      "description": "ID of the product associated with the order product.",
       "type": ["null", "integer"]
     },
     "variant_id": {
+      "description": "ID of the variant associated with the order product.",
       "type": ["null", "integer"]
     },
     "order_address_id": {
+      "description": "ID of the order address associated with the order product.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the product.",
       "type": ["null", "string"]
     },
     "name_customer": {
+      "description": "Name of the customer who purchased the product.",
       "type": ["null", "string"]
     },
     "name_merchant": {
+      "description": "Name of the merchant selling the product.",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "Stock Keeping Unit (SKU) of the product.",
       "type": ["null", "string"]
     },
     "upc": {
+      "description": "Universal Product Code (UPC) of the product.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the product.",
       "type": ["null", "string"]
     },
     "base_price": {
+      "description": "Base price of the order product.",
       "type": ["null", "string"]
     },
     "price_ex_tax": {
+      "description": "Price of the product excluding tax.",
       "type": ["null", "string"]
     },
     "price_inc_tax": {
+      "description": "Price of the product including tax.",
       "type": ["null", "string"]
     },
     "price_tax": {
+      "description": "Tax amount on the product price.",
       "type": ["null", "string"]
     },
     "base_total": {
+      "description": "Total cost of the order product.",
       "type": ["null", "string"]
     },
     "total_ex_tax": {
+      "description": "Total price excluding tax.",
       "type": ["null", "string"]
     },
     "total_inc_tax": {
+      "description": "Total price including tax.",
       "type": ["null", "string"]
     },
     "total_tax": {
+      "description": "Total tax amount.",
       "type": ["null", "string"]
     },
     "weight": {
+      "description": "Weight of the order product.",
       "type": ["null", "string"]
     },
     "width": {
+      "description": "Width of the order product.",
       "type": ["null", "string"]
     },
     "height": {
+      "description": "Height of the order product.",
       "type": ["null", "string"]
     },
     "depth": {
+      "description": "Depth of the order product.",
       "type": ["null", "string"]
     },
     "quantity": {
+      "description": "Quantity of the product purchased.",
       "type": ["null", "number"]
     },
     "base_cost_price": {
+      "description": "Base cost price of the order product.",
       "type": ["null", "string"]
     },
     "cost_price_inc_tax": {
+      "description": "Cost price including tax.",
       "type": ["null", "string"]
     },
     "cost_price_ex_tax": {
+      "description": "Cost price excluding tax.",
       "type": ["null", "string"]
     },
     "cost_price_tax": {
+      "description": "Tax amount on the cost price.",
       "type": ["null", "string"]
     },
     "is_refunded": {
+      "description": "Indicates if the order product has been refunded.",
       "type": ["null", "boolean"]
     },
     "quantity_refunded": {
+      "description": "Quantity of the product that has been refunded.",
       "type": ["null", "number"]
     },
     "refund_amount": {
+      "description": "Amount refunded for the product.",
       "type": ["null", "string"]
     },
     "return_id": {
+      "description": "ID of the return associated with the order product.",
       "type": ["null", "number"]
     },
     "wrapping_id": {
+      "description": "ID of the wrapping associated with the order product.",
       "type": ["null", "string"]
     },
     "wrapping_name": {
+      "description": "Name of the wrapping.",
       "type": ["null", "string"]
     },
     "base_wrapping_cost": {
+      "description": "Base wrapping cost of the order product.",
       "type": ["null", "string"]
     },
     "wrapping_cost_ex_tax": {
+      "description": "Wrapping cost excluding tax.",
       "type": ["null", "string"]
     },
     "wrapping_cost_inc_tax": {
+      "description": "Wrapping cost including tax.",
       "type": ["null", "string"]
     },
     "wrapping_cost_tax": {
+      "description": "Tax amount on the wrapping cost.",
       "type": ["null", "string"]
     },
     "wrapping_message": {
+      "description": "Message included in the wrapping.",
       "type": ["null", "string"]
     },
     "quantity_shipped": {
+      "description": "Quantity of the product that has been shipped.",
       "type": ["null", "number"]
     },
     "event_name": {
+      "description": "Name of the event associated with the order product.",
       "type": ["null", "string"]
     },
     "event_date": {
+      "description": "Date of the event associated with the order product.",
       "type": ["null", "string"]
     },
     "fixed_shipping_cost": {
+      "description": "Fixed shipping cost of the order product.",
       "type": ["null", "string"]
     },
     "ebay_item_id": {
+      "description": "eBay item ID associated with the order product.",
       "type": ["null", "string"]
     },
     "ebay_transaction_id": {
+      "description": "eBay transaction ID associated with the order product.",
       "type": ["null", "string"]
     },
     "option_set_id": {
+      "description": "ID of the option set associated with the order product.",
       "type": ["null", "integer"]
     },
     "parent_order_product_id": {
+      "description": "ID of the parent order product if this is a child product.",
       "type": ["null", "integer"]
     },
     "is_bundled_product": {
+      "description": "Indicates if the product is a part of a bundle.",
       "type": ["null", "boolean"]
     },
     "bin_picking_number": {
+      "description": "Bin picking number associated with the order product.",
       "type": ["null", "string"]
     },
     "external_id": {
+      "description": "External ID associated with the order product.",
       "type": ["null", "string"]
     },
     "fulfillment_source": {
+      "description": "Source responsible for order fulfillment.",
       "type": ["null", "string"]
     },
     "brand": {
+      "description": "Brand of the product.",
       "type": ["null", "string"]
     },
     "gift_certificate_id": {
+      "description": "ID of the gift certificate associated with the order product.",
       "type": ["null", "integer"]
     },
     "applied_discounts": {
-      "type": ["null", "array"]
-    },
-    "applied_discounts": {
+      "description": "Discounts applied to the order product.",
       "type": ["null", "array"]
     },
     "product_options": {
+      "description": "Options selected for the product.",
       "type": ["null", "array"]
     },
     "configurable_fields": {
+      "description": "Configurable fields of the order product.",
       "type": ["null", "array"]
     }
   }

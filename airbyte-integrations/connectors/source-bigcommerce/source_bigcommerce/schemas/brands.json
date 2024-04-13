@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the brand",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the brand",
       "type": ["null", "string"]
     },
     "page_title": {
+      "description": "The title of the brand's page",
       "type": ["null", "string"]
     },
     "meta_keywords": {
+      "description": "Keywords associated with the brand for SEO purposes",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual keyword related to the brand",
         "type": ["null", "string"]
       }
     },
     "meta_description": {
+      "description": "The meta description for the brand",
       "type": ["null", "string"]
     },
     "search_keywords": {
+      "description": "Keywords associated with the brand for search optimization",
       "type": ["null", "string"]
     },
     "image_url": {
+      "description": "The URL of the brand's image",
       "type": ["null", "string"]
     },
     "custom_url": {
+      "description": "The custom URL for the brand, which can be used to access the brand's specific page.",
       "type": ["null", "object"],
       "properties": {
         "url": {
+          "description": "The custom URL for the brand",
           "type": ["null", "string"]
         },
         "is_customized": {
+          "description": "Specifies if the brand URL is customized by the user",
           "type": ["null", "boolean"]
         }
       }

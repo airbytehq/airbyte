@@ -3,169 +3,218 @@
   "title": "Product Response",
   "properties": {
     "name": {
+      "description": "Name of the product",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the product",
       "type": ["null", "string"]
     },
     "sku": {
+      "description": "Stock Keeping Unit code of the product",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the product",
       "type": ["null", "string"]
     },
     "weight": {
+      "description": "Weight of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "width": {
+      "description": "Width dimension of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "depth": {
+      "description": "Depth dimension of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "height": {
+      "description": "Height dimension of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "price": {
+      "description": "Price of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "cost_price": {
+      "description": "Cost price of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "retail_price": {
+      "description": "Retail price of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "sale_price": {
+      "description": "Sale price of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "map_price": {
+      "description": "Manufacturer's Advertised Price of the product",
       "type": ["null", "number"]
     },
     "tax_class_id": {
+      "description": "Tax class ID for tax calculations",
       "type": ["null", "integer"]
     },
     "product_tax_code": {
+      "description": "Tax code for the product",
       "type": ["null", "string"]
     },
     "categories": {
       "type": ["null", "array"],
       "items": {
+        "description": "Categories the product belongs to",
         "type": ["null", "integer"]
       }
     },
     "brand_id": {
+      "description": "ID of the brand associated with the product",
       "type": ["null", "integer"]
     },
     "inventory_level": {
+      "description": "Current inventory level of the product",
       "type": ["null", "integer"]
     },
     "inventory_warning_level": {
+      "description": "Threshold for low inventory warning",
       "type": ["null", "integer"]
     },
     "inventory_tracking": {
+      "description": "Indicates if inventory tracking is enabled",
       "type": ["null", "string"]
     },
     "fixed_cost_shipping_price": {
+      "description": "Fixed cost for shipping the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "is_free_shipping": {
+      "description": "Flag indicating if the product qualifies for free shipping",
       "type": ["null", "boolean"]
     },
     "is_visible": {
+      "description": "Flag indicating if the product is visible",
       "type": ["null", "boolean"]
     },
     "is_featured": {
+      "description": "Flag indicating if the product is featured",
       "type": ["null", "boolean"]
     },
     "related_products": {
       "type": ["null", "array"],
       "items": {
+        "description": "List of related products",
         "type": ["null", "integer"]
       }
     },
     "warranty": {
+      "description": "Warranty information for the product",
       "type": ["null", "string"]
     },
     "bin_picking_number": {
+      "description": "Bin picking number for warehouse organization",
       "type": ["null", "string"]
     },
     "layout_file": {
+      "description": "File for custom layout design",
       "type": ["null", "string"]
     },
     "upc": {
+      "description": "Universal Product Code of the product",
       "type": ["null", "string"]
     },
     "search_keywords": {
+      "description": "Keywords for product search optimization",
       "type": ["null", "string"]
     },
     "availability": {
+      "description": "Indicates the availability status of the product",
       "type": ["null", "string"]
     },
     "availability_description": {
+      "description": "Additional description regarding the availability status",
       "type": ["null", "string"]
     },
     "gift_wrapping_options_type": {
+      "description": "Type of gift wrapping options available",
       "type": ["null", "string"]
     },
     "gift_wrapping_options_list": {
       "type": ["null", "array"],
       "items": {
+        "description": "List of available gift wrapping options",
         "type": ["null", "integer"]
       }
     },
     "sort_order": {
+      "description": "Order to display the product in a list",
       "type": ["null", "integer"]
     },
     "condition": {
+      "description": "Condition of the product",
       "type": ["null", "string"]
     },
     "is_condition_shown": {
+      "description": "Flag indicating if the condition is displayed",
       "type": ["null", "boolean"]
     },
     "order_quantity_minimum": {
+      "description": "Minimum order quantity requirement",
       "type": ["null", "integer"]
     },
     "order_quantity_maximum": {
+      "description": "Maximum order quantity limit",
       "type": ["null", "integer"]
     },
     "page_title": {
+      "description": "Page title for SEO optimization",
       "type": ["null", "string"]
     },
     "meta_keywords": {
+      "description": "Keywords associated with the product for SEO purposes.",
       "type": ["null", "array"],
       "items": {
+        "description": "Keywords for SEO optimization",
         "type": ["null", "string"]
       }
     },
     "meta_description": {
+      "description": "Meta description for SEO purposes",
       "type": ["null", "string"]
     },
     "view_count": {
+      "description": "Total count of views for the product",
       "type": ["null", "integer"]
     },
     "preorder_release_date": {
+      "description": "Release date for pre-order products",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "preorder_message": {
+      "description": "Message for pre-order availability",
       "type": ["null", "string"]
     },
     "is_preorder_only": {
+      "description": "Flag indicating if the product is available for pre-order only",
       "type": ["null", "boolean"]
     },
     "is_price_hidden": {
+      "description": "Flag indicating if the price is hidden",
       "type": ["null", "boolean"]
     },
     "price_hidden_label": {
+      "description": "Label for hidden price indication",
       "type": ["null", "string"]
     },
     "custom_url": {
@@ -173,47 +222,61 @@
       "title": "customUrl_Full",
       "properties": {
         "url": {
+          "description": "Custom URL for the product",
           "type": ["null", "string"]
         },
         "is_customized": {
+          "description": "Flag indicating if the URL is customized",
           "type": ["null", "boolean"]
         }
       }
     },
     "open_graph_type": {
+      "description": "Type for Open Graph protocol",
       "type": ["null", "string"]
     },
     "open_graph_title": {
+      "description": "Title for Open Graph protocol",
       "type": ["null", "string"]
     },
     "open_graph_description": {
+      "description": "Description for Open Graph protocol",
       "type": ["null", "string"]
     },
     "open_graph_use_meta_description": {
+      "description": "Flag indicating if meta description is used in Open Graph",
       "type": ["null", "boolean"]
     },
     "open_graph_use_product_name": {
+      "description": "Flag indicating if product name is used in Open Graph",
       "type": ["null", "boolean"]
     },
     "open_graph_use_image": {
+      "description": "Flag indicating if image is used in Open Graph",
       "type": ["null", "boolean"]
     },
     "brand_name or brand_id": {
+      "description": "Name or ID of the brand associated with the product",
       "type": ["null", "string"]
     },
     "gtin": {
+      "description": "Global Trade Item Number of the product",
       "type": ["null", "string"]
     },
     "mpn": {
+      "description": "Manufacturer Part Number of the product",
       "type": ["null", "string"]
     },
     "reviews_rating_sum": {
+      "description": "Sum of ratings for the product reviews",
       "type": ["null", "integer"]
     },
     "reviews_count": {
+      "description": "Total count of reviews for the product",
       "type": ["null", "integer"]
     },
     "total_sold": {
+      "description": "Total quantity of the product sold",
       "type": ["null", "integer"]
     },
     "custom_fields": {
@@ -224,12 +287,15 @@
         "required": ["name", "value"],
         "properties": {
           "id": {
+            "description": "ID of the custom field",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Name of the custom field",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "Value of the custom field",
             "type": ["null", "string"]
           }
         }
@@ -243,63 +309,81 @@
         "required": ["quantity_min", "quantity_max", "type", "amount"],
         "properties": {
           "id": {
+            "description": "ID of the bulk pricing rule",
             "type": ["null", "integer"]
           },
           "quantity_min": {
+            "description": "Minimum quantity for bulk pricing",
             "type": ["null", "integer"]
           },
           "quantity_max": {
+            "description": "Maximum quantity for bulk pricing",
             "type": ["null", "integer"]
           },
           "type": {
+            "description": "Type of bulk pricing rule",
             "type": ["null", "string"]
           },
           "amount": {
+            "description": "Pricing amount for bulk purchase",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "images": {
+      "description": "Information about images associated with the product.",
       "type": ["null", "array"],
       "items": {
         "title": "productImage_Full",
         "type": ["null", "object"],
         "properties": {
           "image_file": {
+            "description": "File name of the image.",
             "type": ["null", "string"]
           },
           "is_thumbnail": {
+            "description": "Flag indicating if the image is a thumbnail image.",
             "type": ["null", "boolean"]
           },
           "sort_order": {
+            "description": "Order in which the images should be displayed.",
             "type": ["null", "integer"]
           },
           "description": {
+            "description": "Description of the image.",
             "type": ["null", "string"]
           },
           "image_url": {
+            "description": "URL of the image.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "Unique identifier for the image.",
             "type": ["null", "integer"]
           },
           "product_id": {
+            "description": "Unique identifier of the product the image is associated with.",
             "type": ["null", "integer"]
           },
           "url_zoom": {
+            "description": "Zoomed-in URL of the image.",
             "type": ["null", "string"]
           },
           "url_standard": {
+            "description": "Standard URL of the image.",
             "type": ["null", "string"]
           },
           "url_thumbnail": {
+            "description": "Thumbnail URL of the image.",
             "type": ["null", "string"]
           },
           "url_tiny": {
+            "description": "Tiny URL of the image.",
             "type": ["null", "string"]
           },
           "date_modified": {
+            "description": "The date and time the image was last modified.",
             "format": "date-time",
             "type": ["null", "string"]
           }
@@ -307,181 +391,232 @@
       }
     },
     "videos": {
+      "description": "Information about videos related to the product.",
       "type": ["null", "array"],
       "items": {
         "title": "productVideo_Full",
         "type": ["null", "object"],
         "properties": {
           "title": {
+            "description": "Title of the video.",
             "type": ["null", "string"]
           },
           "description": {
+            "description": "Description of the video.",
             "type": ["null", "string"]
           },
           "sort_order": {
+            "description": "Order in which the videos should be displayed.",
             "type": ["null", "integer"]
           },
           "type": {
+            "description": "Type of the video.",
             "type": ["null", "string"]
           },
           "video_id": {
+            "description": "Identifier for the video.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "Unique identifier for the video.",
             "type": ["null", "integer"]
           },
           "product_id": {
+            "description": "Unique identifier of the product the video is associated with.",
             "type": ["null", "integer"]
           },
           "length": {
+            "description": "Length of the video.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "date_created": {
+      "description": "Date and time when the product was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "Date and time when the product was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "id": {
+      "description": "Unique ID of the product",
       "type": ["null", "integer"]
     },
     "base_variant_id": {
+      "description": "ID of the base variant of the product",
       "type": ["null", "integer"]
     },
     "calculated_price": {
+      "description": "Calculated price of the product",
       "type": ["null", "number"],
       "format": "float"
     },
     "options": {
+      "description": "Product options that can be configured by customers.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "title": "productOption_Base",
         "properties": {
           "id": {
+            "description": "Unique identifier for the option.",
             "type": ["null", "integer"]
           },
           "product_id": {
+            "description": "Unique identifier of the product the option is associated with.",
             "type": ["null", "integer"]
           },
           "display_name": {
+            "description": "Display name of the option.",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of the option.",
             "type": ["null", "string"]
           },
           "config": {
+            "description": "Configuration settings for the option.",
             "type": ["null", "object"],
             "title": "productOptionConfig_Full",
             "properties": {
               "default_value": {
+                "description": "Default value for the option.",
                 "type": ["null", "string"]
               },
               "checked_by_default": {
+                "description": "Flag indicating if the option is checked by default.",
                 "type": ["null", "boolean"]
               },
               "checkbox_label": {
+                "description": "Label for checkbox option.",
                 "type": ["null", "string"]
               },
               "date_limited": {
+                "description": "Flag indicating if the date is limited.",
                 "type": ["null", "boolean"]
               },
               "date_limit_mode": {
+                "description": "Mode for date limits.",
                 "type": ["null", "string"]
               },
               "date_earliest_value": {
+                "description": "Earliest date value for the option.",
                 "type": ["null", "string"],
                 "format": "date"
               },
               "date_latest_value": {
+                "description": "Latest date value for the option.",
                 "type": ["null", "string"],
                 "format": "date"
               },
               "file_types_mode": {
+                "description": "Mode for file types.",
                 "type": ["null", "string"]
               },
               "file_types_supported": {
+                "description": "Supported file types.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "file_types_other": {
+                "description": "Other file types supported.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "file_max_size": {
+                "description": "Maximum file size for file upload option.",
                 "type": ["null", "integer"]
               },
               "text_characters_limited": {
+                "description": "Flag indicating if text characters are limited.",
                 "type": ["null", "boolean"]
               },
               "text_min_length": {
+                "description": "Minimum length for text input.",
                 "type": ["null", "integer"]
               },
               "text_max_length": {
+                "description": "Maximum length for text input.",
                 "type": ["null", "integer"]
               },
               "text_lines_limited": {
+                "description": "Flag indicating if text lines are limited.",
                 "type": ["null", "boolean"]
               },
               "text_max_lines": {
+                "description": "Maximum number of lines for text input.",
                 "type": ["null", "integer"]
               },
               "number_limited": {
+                "description": "Flag indicating if the number is limited.",
                 "type": ["null", "boolean"]
               },
               "number_limit_mode": {
+                "description": "Mode for number limits.",
                 "type": ["null", "string"]
               },
               "number_lowest_value": {
+                "description": "Lowest numerical value allowed.",
                 "type": ["null", "number"]
               },
               "number_highest_value": {
+                "description": "Highest numerical value allowed.",
                 "type": ["null", "number"]
               },
               "number_integers_only": {
+                "description": "Flag indicating only integers are allowed.",
                 "type": ["null", "boolean"]
               },
               "product_list_adjusts_inventory": {
+                "description": "Flag indicating if product list adjusts inventory.",
                 "type": ["null", "boolean"]
               },
               "product_list_adjusts_pricing": {
+                "description": "Flag indicating if product list adjusts pricing.",
                 "type": ["null", "boolean"]
               },
               "product_list_shipping_calc": {
+                "description": "Flag indicating if shipping calculation is enabled.",
                 "type": ["null", "string"]
               }
             }
           },
           "sort_order": {
+            "description": "Order in which the options should be displayed.",
             "type": ["null", "integer"]
           },
           "option_values": {
+            "description": "Possible values for the option.",
             "title": "productOptionOptionValue_Full",
             "type": ["null", "object"],
             "required": ["label", "sort_order"],
             "properties": {
               "is_default": {
+                "description": "Flag indicating if the value is the default option.",
                 "type": ["null", "boolean"]
               },
               "label": {
+                "description": "Label for the option value.",
                 "type": ["null", "string"]
               },
               "sort_order": {
+                "description": "Order in which the values should be displayed.",
                 "type": ["null", "integer"]
               },
               "value_data": {
+                "description": "Additional data associated with the value.",
                 "type": ["object", "null"]
               },
               "id": {
+                "description": "Unique identifier for the option value.",
                 "type": ["null", "integer"]
               }
             }
@@ -679,9 +814,11 @@
       }
     },
     "option_set_id": {
+      "description": "ID of the option set associated with the product",
       "type": ["null", "integer"]
     },
     "option_set_display": {
+      "description": "Display format for option sets",
       "type": ["null", "string"]
     },
     "variants": {
