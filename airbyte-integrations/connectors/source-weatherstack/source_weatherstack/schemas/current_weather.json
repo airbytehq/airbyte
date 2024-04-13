@@ -3,100 +3,131 @@
   "type": "object",
   "properties": {
     "request": {
+      "description": "Contains information about the request made to fetch the weather data.",
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "Type of request made.",
           "type": "string"
         },
         "query": {
+          "description": "Location query for which weather data is requested.",
           "type": "string"
         },
         "language": {
+          "description": "Requested language for data localization.",
           "type": "string"
         },
         "unit": {
+          "description": "Unit of measurement for temperature and other metrics.",
           "type": "string"
         }
       }
     },
     "location": {
+      "description": "Contains information about the geographical location for which the weather data is provided.",
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "Location name.",
           "type": "string"
         },
         "country": {
+          "description": "Country name.",
           "type": "string"
         },
         "region": {
+          "description": "Region name.",
           "type": "string"
         },
         "lat": {
+          "description": "Latitude coordinates.",
           "type": "string"
         },
         "lon": {
+          "description": "Longitude coordinates.",
           "type": "string"
         },
         "timezone_id": {
+          "description": "Timezone identifier.",
           "type": "string"
         },
         "localtime": {
+          "description": "Local time at the location.",
           "type": "string"
         },
         "localtime_epoch": {
+          "description": "Local time in epoch format.",
           "type": "number"
         },
         "utc_offset": {
+          "description": "UTC offset in hours.",
           "type": "string"
         }
       }
     },
     "current": {
+      "description": "Contains data related to the current weather conditions at the specified location.",
       "type": ["null", "object"],
       "properties": {
         "observation_time": {
+          "description": "Time when the weather observation was recorded.",
           "type": "string"
         },
         "temperature": {
+          "description": "Current temperature in degrees Celsius.",
           "type": "number"
         },
         "weather_code": {
+          "description": "Numerical code representing current weather conditions.",
           "type": "number"
         },
         "weather_icons": {
+          "description": "URLs of weather icons.",
           "type": "array"
         },
         "weather_descriptions": {
+          "description": "Textual descriptions of current weather conditions.",
           "type": "array"
         },
         "wind_speed": {
+          "description": "Wind speed in kilometers per hour.",
           "type": "number"
         },
         "wind_degree": {
+          "description": "Wind direction in degrees.",
           "type": "number"
         },
         "wind_dir": {
+          "description": "Abbreviation of the wind direction.",
           "type": "string"
         },
         "pressure": {
+          "description": "Atmospheric pressure in mb.",
           "type": "number"
         },
         "precip": {
+          "description": "Amount of precipitation in mm.",
           "type": "number"
         },
         "humidity": {
+          "description": "Relative humidity in percentage.",
           "type": "number"
         },
         "cloudcover": {
+          "description": "Percentage of cloud cover.",
           "type": "number"
         },
         "feelslike": {
+          "description": "Temperature that it feels like in degrees Celsius.",
           "type": "number"
         },
         "uv_index": {
+          "description": "UV index rating.",
           "type": "number"
         },
         "visibility": {
+          "description": "Visibility in kilometers.",
           "type": "number"
         }
       }
