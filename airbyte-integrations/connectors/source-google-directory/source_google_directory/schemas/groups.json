@@ -3,36 +3,46 @@
   "type": "object",
   "properties": {
     "kind": {
+      "description": "Identifies the type of resource, in this case, a group.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the group.",
       "type": ["null", "string"]
     },
     "etag": {
+      "description": "ETag of the group resource.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address of the group.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the group.",
       "type": ["null", "string"]
     },
     "directMembersCount": {
+      "description": "Total count of direct members in the group.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the group.",
       "type": ["null", "string"]
     },
     "adminCreated": {
+      "description": "Indicates if the group was created by an admin.",
       "type": ["null", "boolean"]
     },
     "aliases": {
+      "description": "List of email aliases associated with the group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "nonEditableAliases": {
+      "description": "List of non-editable email aliases associated with the group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
