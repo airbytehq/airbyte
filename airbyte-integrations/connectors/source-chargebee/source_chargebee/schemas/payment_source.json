@@ -64,6 +64,7 @@
       "type": ["string", "null"]
     },
     "card": {
+      "description": "Data related to card payment source",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
@@ -137,6 +138,7 @@
       }
     },
     "bank_account": {
+      "description": "Data related to bank account payment source",
       "type": ["object", "null"],
       "properties": {
         "last4": {
@@ -182,6 +184,7 @@
       }
     },
     "amazon_payment": {
+      "description": "Data related to Amazon Pay payment source",
       "type": ["object", "null"],
       "properties": {
         "email": {
@@ -195,6 +198,7 @@
       }
     },
     "upi": {
+      "description": "Data related to UPI payment source",
       "type": ["object", "null"],
       "properties": {
         "vpa": {
@@ -204,6 +208,7 @@
       }
     },
     "paypal": {
+      "description": "Data related to PayPal payment source",
       "type": ["object", "null"],
       "properties": {
         "email": {
@@ -217,6 +222,7 @@
       }
     },
     "mandates": {
+      "description": "Data related to mandates for payments",
       "type": ["object", "null"],
       "properties": {
         "id": {

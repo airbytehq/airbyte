@@ -68,6 +68,7 @@
       "type": ["string", "null"]
     },
     "exemption_details": {
+      "description": "Details about any exemptions applicable to the customer's account.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -217,6 +218,7 @@
       "type": ["array", "null"]
     },
     "billing_address": {
+      "description": "Customer's billing address details.",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
@@ -282,6 +284,7 @@
       }
     },
     "referral_urls": {
+      "description": "List of referral URLs associated with the customer.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -322,6 +325,7 @@
       }
     },
     "contacts": {
+      "description": "List of contact details associated with the customer.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -370,6 +374,7 @@
       }
     },
     "payment_method": {
+      "description": "Customer's preferred payment method details.",
       "type": ["object", "null"],
       "properties": {
         "type": {
@@ -399,6 +404,7 @@
       }
     },
     "balances": {
+      "description": "Customer's balance information related to their account.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -435,6 +441,7 @@
       }
     },
     "relationship": {
+      "description": "Details about the relationship of the customer to other entities, if any.",
       "type": ["object", "null"],
       "properties": {
         "parent_id": {
@@ -452,6 +459,7 @@
       }
     },
     "parent_account_access": {
+      "description": "Information regarding the access rights of the parent account, if applicable.",
       "type": ["object", "null"],
       "properties": {
         "portal_edit_child_subscriptions": {
@@ -477,6 +485,7 @@
       }
     },
     "child_account_access": {
+      "description": "Information regarding the access rights of child accounts linked to the customer's account.",
       "type": ["object", "null"],
       "properties": {
         "portal_edit_child_subscriptions": {
@@ -506,6 +515,7 @@
       "type": ["string", "null"]
     },
     "meta_data": {
+      "description": "Additional metadata associated with the customer.",
       "type": ["object", "null"],
       "properties": {
         "description": "Additional metadata associated with the customer."

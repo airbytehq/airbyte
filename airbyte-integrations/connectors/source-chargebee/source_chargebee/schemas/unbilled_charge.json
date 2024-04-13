@@ -92,6 +92,7 @@
       "type": ["boolean", "null"]
     },
     "tiers": {
+      "description": "Details about different tiers of unbilled charges",
       "type": ["object", "null"],
       "properties": {
         "starting_unit": {

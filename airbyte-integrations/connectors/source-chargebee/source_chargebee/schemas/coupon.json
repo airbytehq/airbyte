@@ -96,6 +96,7 @@
       "type": ["string", "null"]
     },
     "item_constraints": {
+      "description": "Constraints related to the items",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -109,6 +110,7 @@
             "type": ["string", "null"]
           },
           "item_price_ids": {
+            "description": "IDs of the items with pricing constraints",
             "type": ["array", "null"],
             "items": {}
           }
@@ -116,6 +118,7 @@
       }
     },
     "item_constraint_criteria": {
+      "description": "Criteria for item constraints",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -125,14 +128,17 @@
             "type": ["string", "null"]
           },
           "currencies": {
+            "description": "Supported currencies for the item",
             "type": ["array", "null"],
             "items": {}
           },
           "item_family_ids": {
+            "description": "Allowed item family IDs",
             "type": ["array", "null"],
             "items": {}
           },
           "item_price_periods": {
+            "description": "Valid price periods for the item",
             "type": ["array", "null"],
             "items": {}
           }
@@ -140,6 +146,7 @@
       }
     },
     "coupon_constraints": {
+      "description": "Represents the constraints associated with the coupon",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
