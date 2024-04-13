@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_gocardless/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -23,7 +20,9 @@ definitions:
   retriever:
     type: SimpleRetriever
     $parameters:
-      url_base: "{{ 'https://api.gocardless.com' if config['gocardless_environment'] == 'live' else 'https://api-sandbox.gocardless.com' }}"
+      url_base:
+        "{{ 'https://api.gocardless.com' if config['gocardless_environment']
+        == 'live' else 'https://api-sandbox.gocardless.com' }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -48,46 +47,424 @@ streams:
     $parameters:
       name: "payments"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/payments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the payment
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the payment record was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          charge_date:
+            description: The date when the payment was charged
+            type:
+              - "null"
+              - string
+          amount:
+            description: The amount of the payment
+            type:
+              - "null"
+              - integer
+          description:
+            description: A description of the payment
+            type:
+              - "null"
+              - string
+          currency:
+            description: The currency used for the payment
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the payment
+            type:
+              - "null"
+              - string
+          reference:
+            description: A reference associated with the payment
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional metadata and information about this payment.
+            type:
+              - "null"
+              - object
+            properties:
+              order_dispatch_date:
+                description: The date when the order was dispatched
+                type:
+                  - "null"
+                  - string
+          amount_refunded:
+            description: The amount that has been refunded for this payment
+            type:
+              - "null"
+              - integer
+          fx:
+            description:
+              Information related to foreign exchange conversion for this
+              payment.
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                description: The foreign exchange currency
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                description: The foreign exchange amount
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                description: The actual exchange rate used for foreign exchange conversion
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                description: The estimated exchange rate used for foreign exchange conversion
+                type:
+                  - "null"
+                  - string
+          links:
+            description: Related URLs and links associated with this payment entry.
+            type:
+              - "null"
+              - object
+            properties:
+              mandate:
+                description: Details of the mandate used for the payment
+                type:
+                  - "null"
+                  - string
+              creditor:
+                description: Details of the creditor associated with the payment
+                type:
+                  - "null"
+                  - string
+          retry_if_possible:
+            description: Indicates if the payment can be retried if failed initially
+            type:
+              - "null"
+              - boolean
   - type: DeclarativeStream
     $parameters:
       name: "refunds"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/refunds"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier assigned to the refund.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the refund was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          amount:
+            description: The amount of the refund in the specified currency.
+            type:
+              - "null"
+              - integer
+          currency:
+            description: The currency of the amount specified for the refund.
+            type:
+              - "null"
+              - string
+          reference:
+            description: A custom reference set for the refund to easily identify it.
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional information or metadata related to the refund
+            type:
+              - "null"
+              - object
+            properties:
+              reason:
+                description: Additional information or reason for the refund.
+                type:
+                  - "null"
+                  - string
+          fx:
+            description:
+              Data related to foreign exchange conversion for the refund
+              if applicable
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                description: The currency after currency conversion.
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                description: The amount of the refund after currency conversion.
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                description: The actual exchange rate used for currency conversion.
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                description: The estimated exchange rate used for currency conversion.
+                type:
+                  - "null"
+                  - string
+          links:
+            description:
+              Links to related resources such as the refund details or payment
+              information
+            type:
+              - "null"
+              - object
+            properties:
+              payment:
+                description: The link to the payment associated with the refund.
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "mandates"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/mandates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the mandate
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the mandate was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          reference:
+            description: A reference identifier for the mandate
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the mandate
+            type:
+              - "null"
+              - string
+          scheme:
+            description: The payment scheme used for the mandate
+            type:
+              - "null"
+              - string
+          next_possible_charge_date:
+            description: The date when the next charge can be initiated for the mandate
+            type:
+              - "null"
+              - string
+            format: date
+          metadata:
+            description: Additional information related to the mandate
+            type:
+              - "null"
+              - object
+            properties:
+              contract:
+                description: Details of the contract associated with the mandate
+                type:
+                  - "null"
+                  - string
+          links:
+            description: Object containing relevant links related to the mandate
+            type:
+              - "null"
+              - object
+            properties:
+              customer_bank_account:
+                description:
+                  Link to the customer's bank account associated with the
+                  mandate
+                type:
+                  - "null"
+                  - string
+              creditor:
+                description: Link to the creditor associated with the mandate
+                type:
+                  - "null"
+                  - string
+              customer:
+                description: Link to the customer associated with the mandate
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "payouts"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
         path: "/payouts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the payout
+            type:
+              - "null"
+              - string
+          amount:
+            description: The total amount being paid out
+            type:
+              - "null"
+              - integer
+          arrival_date:
+            description: The date when the payout is expected to arrive
+            type:
+              - "null"
+              - string
+            format: date
+          deducted_fees:
+            description: The fees deducted from the payout amount
+            type:
+              - "null"
+              - integer
+          currency:
+            description: The currency in which the payout is made
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the payout was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          payout_type:
+            description: The type of payout (e.g., regular payout, express payout)
+            type:
+              - "null"
+              - string
+          reference:
+            description: A reference number associated with the payout
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the payout (e.g., pending, paid)
+            type:
+              - "null"
+              - string
+          fx:
+            description: The foreign exchange information related to the payout.
+            type:
+              - "null"
+              - object
+            properties:
+              fx_currency:
+                description: The currency in which the foreign exchange amount is received
+                type:
+                  - "null"
+                  - string
+              fx_amount:
+                description: The foreign exchange amount in the payout currency
+                type:
+                  - "null"
+                  - integer
+              exchange_rate:
+                description:
+                  The actual exchange rate used for the foreign exchange
+                  transaction
+                type:
+                  - "null"
+                  - string
+              estimated_exchange_rate:
+                description:
+                  The estimated exchange rate used for calculating foreign
+                  exchange amount
+                type:
+                  - "null"
+                  - string
+          tax_currency:
+            description: The currency in which taxes are calculated and paid
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Any additional information associated with the payout
+            type:
+              - "null"
+              - object
+          amount_refunded:
+            description: The amount refunded from the total payout amount
+            type:
+              - "null"
+              - integer
+          links:
+            description: URL links related to the payout data.
+            type:
+              - "null"
+              - object
+            properties:
+              creditor_bank_account:
+                description: Bank account details of the creditor
+                type:
+                  - "null"
+                  - string
+              creditor:
+                description: Information about the creditor receiving the payout
+                type:
+                  - "null"
+                  - string
 check:
   type: CheckStream
   stream_names:
