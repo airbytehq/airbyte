@@ -499,7 +499,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
         updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
         return updated_state
 
-    def add_parent_id(self, record: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def populate_with_parent_id(self, record: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
         """
         Adds new field to the record with name `key` based on the `value` key from record.
         """
@@ -510,6 +510,16 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
         else:
             return record
 
+    def track_parent_stream_state(self, parent_record: Optional[Mapping[str, Any]] = None):
+        # updating the `stream_state` with the state of it's parent stream
+        # to have the child stream sync independently from the parent stream
+        stream_state_cache.cached_state[self.parent_stream.name] = self.parent_stream.get_updated_state(
+            # present state
+            stream_state_cache.cached_state.get(self.parent_stream.name, {}),
+            # most recent record
+            parent_record if parent_record else {},
+        )
+
     # the stream_state caching is required to avoid the STATE collisions for Substreams
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -518,31 +528,30 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
         # for the `nested streams` with List[object], but doesn't handle List[{}] (list of one) case,
         # thus sometimes, we've got duplicated STATE with 0 records,
         # since we emit the STATE for every slice.
-        sub_records_buffer = []
-        for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
-            # updating the `stream_state` with the state of it's parent stream
-            # to have the child stream sync independently from the parent stream
-            stream_state_cache.cached_state[self.parent_stream.name] = self.parent_stream.get_updated_state({}, record)
+        nested_substream_records_buffer = []
+
+        for parent_record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+            self.track_parent_stream_state(parent_record)
             # to limit the number of API Calls and reduce the time of data fetch,
             # we can pull the ready data for child_substream, if nested data is present,
             # and corresponds to the data of child_substream we need.
-            if self.nested_entity in record.keys():
+            if self.nested_entity in parent_record.keys():
                 # add parent_id key, value from mutation_map, if passed.
-                self.add_parent_id(record)
+                self.populate_with_parent_id(parent_record)
                 # unpack the nested list to the sub_set buffer
-                nested_records = [sub_record for sub_record in record.get(self.nested_entity, [])]
+                nested_records = [sub_record for sub_record in parent_record.get(self.nested_entity, [])]
                 # add nested_records to the buffer, with no summarization.
-                sub_records_buffer += nested_records
+                nested_substream_records_buffer += nested_records
                 # emit slice when there is a resonable amount of data collected,
                 # to reduce the amount of STATE messages after each slice.
-                if len(sub_records_buffer) >= self.state_checkpoint_interval:
-                    yield {self.nested_entity: sub_records_buffer}
+                if len(nested_substream_records_buffer) >= self.state_checkpoint_interval:
+                    yield {self.nested_entity: nested_substream_records_buffer}
                     # clean the buffer for the next records batch
-                    sub_records_buffer.clear()
+                    nested_substream_records_buffer.clear()
 
         # emit leftovers
-        if len(sub_records_buffer) > 0:
-            yield {self.nested_entity: sub_records_buffer}
+        if len(nested_substream_records_buffer) > 0:
+            yield {self.nested_entity: nested_substream_records_buffer}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
