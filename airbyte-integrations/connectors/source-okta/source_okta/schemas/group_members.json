@@ -3,74 +3,94 @@
   "additionalProperties": true,
   "properties": {
     "_links": {
+      "description": "Links related to the group member resource",
       "type": ["null", "object"]
     },
     "activated": {
+      "description": "Date and time when the account was activated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Date and time when the account was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "credentials": {
+      "description": "User credentials related information",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "password": {
+          "description": "User password details",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "hash": {
+              "description": "Hashed password information",
               "type": ["null", "object"],
               "properties": {
                 "algorithm": {
+                  "description": "Hash algorithm used for password hashing",
                   "type": ["null", "string"]
                 },
                 "salt": {
+                  "description": "Salt used for password hashing",
                   "type": ["null", "string"]
                 },
                 "saltOrder": {
+                  "description": "Order in which salt is applied during hashing",
                   "type": ["null", "string"]
                 },
                 "value": {
+                  "description": "Hashed password value",
                   "type": ["null", "string"]
                 },
                 "workFactor": {
+                  "description": "Work factor for password hashing",
                   "type": ["null", "integer"]
                 }
               }
             },
             "hook": {
+              "description": "Password hook configuration",
               "type": ["null", "object"],
               "properties": {
                 "type": {
+                  "description": "Type of hook associated with the password",
                   "type": ["null", "string"]
                 }
               }
             },
             "value": {
+              "description": "Encrypted password value",
               "type": ["null", "string"]
             }
           }
         },
         "provider": {
+          "description": "Identity provider details",
           "properties": {
             "name": {
+              "description": "Name of the provider associated with the credentials",
               "type": ["null", "string"]
             },
             "type": {
+              "description": "Type of provider associated with the credentials",
               "type": ["null", "string"]
             }
           },
           "type": ["null", "object"]
         },
         "recovery_question": {
+          "description": "Recovery question details",
           "properties": {
             "answer": {
+              "description": "Answer to the recovery question",
               "type": ["null", "string"]
             },
             "question": {
+              "description": "Recovery question set for the account",
               "type": ["null", "string"]
             }
           },
@@ -79,133 +99,174 @@
       }
     },
     "groupId": {
+      "description": "ID of the group to which the member belongs",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique ID of the group member",
       "type": ["null", "string"]
     },
     "lastLogin": {
+      "description": "Date and time of the member's last login",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "lastUpdated": {
+      "description": "Date and time when the member's information was last updated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "passwordChanged": {
+      "description": "Date and time when the member's password was last changed",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "profile": {
+      "description": "Profile information of the group member",
       "additionalProperties": true,
       "properties": {
         "city": {
+          "description": "City of the member",
           "type": ["null", "string"]
         },
         "costCenter": {
+          "description": "Cost center associated with the member",
           "type": ["null", "string"]
         },
         "countryCode": {
+          "description": "Country code of the member's location",
           "type": ["null", "string"]
         },
         "department": {
+          "description": "Department to which the member belongs",
           "type": ["null", "string"]
         },
         "displayName": {
+          "description": "Display name of the member",
           "type": ["null", "string"]
         },
         "division": {
+          "description": "Division in which the member works",
           "type": ["null", "string"]
         },
         "email": {
+          "description": "Email address of the member",
           "type": ["null", "string"]
         },
         "employeeNumber": {
+          "description": "Employee number of the member",
           "type": ["null", "string"]
         },
         "firstName": {
+          "description": "First name of the member",
           "type": ["null", "string"]
         },
         "honorificPrefix": {
+          "description": "Honorific prefix of the member's name",
           "type": ["null", "string"]
         },
         "honorificSuffix": {
+          "description": "Honorific suffix of the member's name",
           "type": ["null", "string"]
         },
         "lastName": {
+          "description": "Last name of the member",
           "type": ["null", "string"]
         },
         "locale": {
+          "description": "Locale settings for the member",
           "type": ["null", "string"]
         },
         "login": {
+          "description": "Login name of the member",
           "type": ["null", "string"]
         },
         "manager": {
+          "description": "Name of the member's manager",
           "type": ["null", "string"]
         },
         "managerId": {
+          "description": "ID of the member's manager",
           "type": ["null", "string"]
         },
         "middleName": {
+          "description": "Middle name of the member",
           "type": ["null", "string"]
         },
         "mobilePhone": {
+          "description": "Mobile phone number of the member",
           "type": ["null", "string"]
         },
         "nickName": {
+          "description": "Nick name or alias of the member",
           "type": ["null", "string"]
         },
         "organization": {
+          "description": "Organization to which the member belongs",
           "type": ["null", "string"]
         },
         "postalAddress": {
+          "description": "Postal address of the member",
           "type": ["null", "string"]
         },
         "preferredLanguage": {
+          "description": "Preferred language of the member",
           "type": ["null", "string"]
         },
         "primaryPhone": {
+          "description": "Primary phone number of the member",
           "type": ["null", "string"]
         },
         "profileUrl": {
+          "description": "URL to the member's profile",
           "type": ["null", "string"]
         },
         "secondEmail": {
+          "description": "Secondary email address of the member",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State or region of the member's location",
           "type": ["null", "string"]
         },
         "streetAddress": {
+          "description": "Street address of the member",
           "type": ["null", "string"]
         },
         "timezone": {
+          "description": "Timezone setting for the member",
           "type": ["null", "string"]
         },
         "title": {
+          "description": "Title or position of the member",
           "type": ["null", "string"]
         },
         "userType": {
+          "description": "Type of user (e.g., employee, contractor) ",
           "type": ["null", "string"]
         },
         "zipCode": {
+          "description": "Zip code of the member's location",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "status": {
+      "description": "Status of the group member's account",
       "type": ["null", "string"]
     },
     "statusChanged": {
+      "description": "Date and time when the member's status was last changed",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type information of the group member",
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Type ID associated with the member",
           "type": ["null", "string"]
         }
       },

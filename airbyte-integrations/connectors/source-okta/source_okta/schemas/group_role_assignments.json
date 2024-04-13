@@ -2,79 +2,101 @@
   "type": ["null", "object"],
   "properties": {
     "groupId": {
+      "description": "ID of the group",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier of the assignment",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "Label for the assignment",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the assignment",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the assignment",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Date and time of creation",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "lastUpdated": {
+      "description": "Date and time of the last update",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "assignmentType": {
+      "description": "Type of assignment",
       "type": ["null", "string"]
     },
     "resource-set": {
+      "description": "Resource set of the assignment",
       "type": ["string", "null"]
     },
     "role": {
+      "description": "Role assigned to the assignee",
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Hypermedia links related to the group role assignments resource.",
       "type": ["object", "null"],
       "properties": {
         "assignee": {
+          "description": "The entity that has been assigned the group role.",
           "type": ["object", "null"],
           "properties": {
             "assignee": {
+              "description": "Details of the entity assigned the role.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "Link to the assignee",
                   "type": ["null", "string"]
                 }
               }
             },
             "role": {
+              "description": "The role assigned to the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "Link to the role",
                   "type": ["null", "string"]
                 }
               }
             },
             "resource-set": {
+              "description": "Details of the resource set associated with the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "Link to the resource set",
                   "type": ["null", "string"]
                 }
               }
             },
             "permissions": {
+              "description": "Permissions granted to the assignee.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "Link to the permissions",
                   "type": ["null", "string"]
                 }
               }
             },
             "member": {
+              "description": "Details of the group member.",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "Link to the member",
                   "type": ["null", "string"]
                 }
               }

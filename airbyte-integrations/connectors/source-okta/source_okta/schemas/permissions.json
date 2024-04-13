@@ -40,48 +40,61 @@
       "description": "Type of permissions"
     },
     "conditions": {
+      "description": "Conditions for the permission",
       "type": ["null", "object"],
       "properties": {
         "included": {
+          "description": "List of included conditions",
           "type": "array",
           "items": {
+            "description": "Individual condition included in permission",
             "type": "object"
           }
         },
         "excluded": {
+          "description": "List of excluded conditions",
           "type": "array",
           "items": {
+            "description": "Individual condition excluded from permission",
             "type": "object"
           }
         }
       }
     },
     "created": {
+      "description": "Date and time when the permission was created",
       "format": "date-time",
       "type": "string"
     },
     "lastUpdated": {
+      "description": "Date and time when the permission was last updated",
       "format": "date-time",
       "type": "string"
     },
     "_links": {
+      "description": "HATEOAS links related to the permission assignee",
       "properties": {
         "assignee": {
+          "description": "The user assigned the permission",
           "properties": {
             "self": {
+              "description": "Self link for the assignee",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "href": {
+                  "description": "URL to the assignee resource itself",
                   "type": ["null", "string"]
                 }
               }
             },
             "role": {
+              "description": "Link to the role of the assignee",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "href": {
+                  "description": "URL to the role resource",
                   "type": ["null", "string"]
                 }
               }

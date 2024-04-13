@@ -2,79 +2,101 @@
   "type": ["null", "object"],
   "properties": {
     "userId": {
+      "description": "The unique identifier of the user assigned the role",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the role assignment",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "The label associated with the role assignment",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of assignment (e.g., user_role_assignment)",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the role assignment (e.g., active, inactive)",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The date and time when the role assignment was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "lastUpdated": {
+      "description": "The date and time when the role assignment was last updated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "assignmentType": {
+      "description": "The type of role assignment (e.g., direct, indirect)",
       "type": ["null", "string"]
     },
     "resource-set": {
+      "description": "The resource set associated with the role assignment",
       "type": ["string", "null"]
     },
     "role": {
+      "description": "The role assigned to the user",
       "type": ["string", "null"]
     },
     "_links": {
+      "description": "Contains hypermedia links related to user role assignments.",
       "type": ["object", "null"],
       "properties": {
         "assignee": {
+          "description": "Represents the entity to which the role is assigned.",
           "type": ["object", "null"],
           "properties": {
             "assignee": {
+              "description": "The link to the user's profile who is assigned the role",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "The URL to access the assignee's profile",
                   "type": ["null", "string"]
                 }
               }
             },
             "role": {
+              "description": "The link to the role assigned to the user",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "The URL to access the role details",
                   "type": ["null", "string"]
                 }
               }
             },
             "resource-set": {
+              "description": "The link to the resource set associated with the role assignment",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "The URL to access the resource set",
                   "type": ["null", "string"]
                 }
               }
             },
             "permissions": {
+              "description": "The link to the permissions associated with the role assignment",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "The URL to access the permissions",
                   "type": ["null", "string"]
                 }
               }
             },
             "member": {
+              "description": "The link to the member's profile who is assigned the role",
               "type": ["object", "null"],
               "properties": {
                 "herf": {
+                  "description": "The URL to access the member's profile",
                   "type": ["null", "string"]
                 }
               }

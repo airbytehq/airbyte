@@ -4,43 +4,54 @@
   "description": "Gets a paginated list of Custom Roles",
   "properties": {
     "id": {
+      "description": "Unique identifier of the custom role",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Detailed description of the custom role",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "Label or name of the custom role",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp of when the custom role was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "lastUpdated": {
+      "description": "Timestamp of the last update to the custom role",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Links related to the custom role assignee",
       "type": ["null", "object"],
       "properties": {
         "assignee": {
+          "description": "Information about the assignee of the custom role",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "self": {
+              "description": "Details about the assignee itself",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "href": {
+                  "description": "The URL of the assignee",
                   "type": ["null", "string"]
                 }
               }
             },
             "permissions": {
+              "description": "Permissions related to the assignee",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "href": {
+                  "description": "The URL of the permissions",
                   "type": ["null", "string"]
                 }
               }

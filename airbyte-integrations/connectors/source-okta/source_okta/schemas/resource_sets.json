@@ -1,25 +1,32 @@
 {
   "properties": {
     "id": {
+      "description": "Unique identifier for the resource set.",
       "type": "string"
     },
     "label": {
+      "description": "Label or name assigned to the resource set.",
       "type": "string"
     },
     "description": {
+      "description": "Description of the resource set.",
       "type": "string"
     },
     "created": {
+      "description": "Timestamp indicating the creation date of the resource set.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "lastUpdated": {
+      "description": "Timestamp indicating the last update date of the resource set.",
       "format": "date-time",
       "type": ["string", "null"]
     },
     "_links": {
+      "description": "Contains links to related resources.",
       "properties": {
         "assignee": {
+          "description": "Related assignee information for the resource set.",
           "properties": {
             "self": {
               "type": ["null", "object"],
