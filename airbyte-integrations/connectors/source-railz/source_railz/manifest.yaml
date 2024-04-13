@@ -46,6 +46,68 @@ definitions:
       name: "businesses"
       path: "/businesses"
     primary_key: "businessName"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          businessName:
+            description: The name of the business.
+            type: string
+          status:
+            description: Current status of the business.
+            type: string
+          createdAt:
+            description: Date and time when the business data was created.
+            type: string
+            format: date-time
+          updatedAt:
+            description: Date and time when the business data was last updated.
+            type: string
+            format: date-time
+          metadata:
+            description: Additional information about the businesses data
+            type:
+              - "null"
+              - array
+            items:
+              description: Additional metadata associated with the business.
+              type: string
+          connections:
+            description: Represents the list of connections between businesses
+            type: array
+            items:
+              description: Details of each individual connection between businesses
+              type: object
+              properties:
+                businessName:
+                  description: The name of the connected business.
+                  type: string
+                connectionId:
+                  description: Unique identifier for the connection.
+                  type: string
+                serviceName:
+                  description: Name of the service used for the connection.
+                  type: string
+                firstRecordDate:
+                  description: Date and time of the first recorded data between businesses.
+                  type: string
+                  format: date-time
+                description:
+                  description: Description of the connection.
+                  type: string
+                status:
+                  description: Current status of the connection.
+                  type: string
+                createdAt:
+                  description: Date and time when the connection was created.
+                  type: string
+                  format: date-time
+                updatedAt:
+                  description: Date and time when the connection was last updated.
+                  type: string
+                  format: date-time
   connections_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -53,7 +115,40 @@ definitions:
       path: "/connections"
     primary_key: "connectionId"
 
-  # Internal stream for slicing
+    # Internal stream for slicing
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          businessName:
+            description: The name of the business associated with the connection
+            type: string
+          connectionId:
+            description: Unique identifier for the connection
+            type: string
+          serviceName:
+            description: The name of the service associated with the connection
+            type: string
+          firstRecordDate:
+            description: The date and time of the first record related to the connection
+            type: string
+            format: date-time
+          description:
+            description: A brief description or summary of the connection
+            type: string
+          status:
+            description: The current status of the connection
+            type: string
+          createdAt:
+            description: The date and time when the connection was created
+            type: string
+            format: date-time
+          updatedAt:
+            description: The date and time when the connection was last updated
+            type: string
+            format: date-time
   connections_slice_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -62,7 +157,9 @@ definitions:
         $ref: "#/definitions/selector"
         record_filter:
           # every stream defines in parameters which services it is needed
-          condition: "{{ record.status in ['active', 'expired'] and record.serviceName in parameters.serviceNames }}"
+          condition:
+            "{{ record.status in ['active', 'expired'] and record.serviceName
+            in parameters.serviceNames }}"
     $parameters:
       name: "connections_slice"
       path: "/connections"
@@ -110,6 +207,232 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Customer ID
+            type:
+              - string
+              - integer
+          businessName:
+            description: Name of the customer's business
+            type: string
+          serviceName:
+            description: Name of the service associated with the customer
+            type: string
+          customerName:
+            description: Name of the customer
+            type: string
+          contactName:
+            description: Name of the primary contact person
+            type:
+              - "null"
+              - string
+          emailAddress:
+            description: Email address of the customer
+            type:
+              - "null"
+              - string
+          website:
+            description: Website URL of the customer
+            type:
+              - "null"
+              - string
+          defaultCurrency:
+            description: Default currency used by the customer
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Currency ID
+                type:
+                  - string
+                  - integer
+              name:
+                description: Currency name
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: Currency symbol
+                type:
+                  - "null"
+                  - string
+          phone:
+            description: Phone number of the customer
+            type:
+              - "null"
+              - string
+          addresses:
+            description: List of addresses associated with the customer
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                line1:
+                  description: First line of the address
+                  type:
+                    - "null"
+                    - string
+                line2:
+                  description: Second line of the address
+                  type:
+                    - "null"
+                    - string
+                city:
+                  description: City name of the address
+                  type:
+                    - "null"
+                    - string
+                region:
+                  description: Region/state of the address
+                  type:
+                    - "null"
+                    - string
+                country:
+                  description: Country name of the address
+                  type:
+                    - "null"
+                    - string
+                postalCode:
+                  description: Postal code of the address
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of address (e.g., Home, Office)
+                  type: string
+          contacts:
+            description: List of contacts associated with the customer
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: Name of the contact
+                  type:
+                    - "null"
+                    - string
+                email:
+                  description: Email address of the contact
+                  type:
+                    - "null"
+                    - string
+                phone:
+                  description: Phone number of the contact
+                  type:
+                    - "null"
+                    - string
+                addresses:
+                  description: List of addresses for the contact
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    line1:
+                      description: First line of the address
+                      type:
+                        - "null"
+                        - string
+                    line2:
+                      description: Second line of the address
+                      type:
+                        - "null"
+                        - string
+                    city:
+                      description: City name of the address
+                      type:
+                        - "null"
+                        - string
+                    region:
+                      description: Region/state of the address
+                      type:
+                        - "null"
+                        - string
+                    country:
+                      description: Country name of the address
+                      type:
+                        - "null"
+                        - string
+                    postalCode:
+                      description: Postal code of the address
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: Type of address (e.g., Home, Office)
+                      type: string
+                status:
+                  description: Status of the contact
+                  type: string
+                modifiedDate:
+                  description:
+                    Date and time when the contact information was last
+                    modified
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          taxNumber:
+            description: Tax number associated with the customer
+            type:
+              - "null"
+              - string
+          balance:
+            description: Customer's current balance
+            type:
+              - "null"
+              - number
+          status:
+            description: Status of the customer
+            type: string
+          subsidiaryRefs:
+            description: List of subsidiary references for the customer
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Subsidiary ID
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: Name of the subsidiary
+                  type:
+                    - "null"
+                    - string
+                modifiedDate:
+                  description:
+                    Date and time when the subsidiary information was last
+                    modified
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          sourceModifiedDate:
+            description: Date and time when the customer information was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
   accounts_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -129,6 +452,166 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the account.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the account.
+            type: string
+          serviceName:
+            description: The service name associated with the account.
+            type: string
+          nominalCode:
+            description: The nominal code or reference number of the account.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the account.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description or summary of the account.
+            type:
+              - "null"
+              - string
+          section:
+            description: The section or segment the account belongs to.
+            type:
+              - "null"
+              - string
+          subSection:
+            description: The subsection the account belongs to.
+            type:
+              - "null"
+              - string
+          group:
+            description: The group or category the account belongs to.
+            type:
+              - "null"
+              - string
+          subGroup:
+            description: The subgroup the account belongs to.
+            type:
+              - "null"
+              - string
+          classification:
+            description: The classification or category of the account.
+            type:
+              - "null"
+              - string
+          fullyQualifiedName:
+            description: The fully qualified name or path of the account.
+            type:
+              - "null"
+              - string
+          depth:
+            description: The depth or level of the account in the hierarchy.
+            type:
+              - "null"
+              - integer
+          currencyRef:
+            description: Reference to the currency associated with the account.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol or abbreviation of the currency.
+                type:
+                  - "null"
+                  - string
+          currentBalance:
+            description: The current balance of the account.
+            type:
+              - "null"
+              - number
+          type:
+            description: The type or nature of the account.
+            type: string
+          subType:
+            description: The subtype or specific type of the account.
+            type:
+              - "null"
+              - string
+          isBankAccount:
+            description: Indicates if the account is a bank account.
+            type:
+              - "null"
+              - boolean
+          isSubAccount:
+            description: Indicates if the account is a sub account.
+            type:
+              - "null"
+              - boolean
+          isActive:
+            description: Indicates if the account is currently active or not.
+            type: boolean
+          subsidiaryRefs:
+            description:
+              List of references to any subsidiary accounts linked to this
+              account.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the subsidiary reference.
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: The name of the subsidiary reference.
+                  type:
+                    - "null"
+                    - string
+          parentRef:
+            description: Reference to the parent account of this account.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the parent account.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the parent account.
+                type:
+                  - "null"
+                  - string
+          sourceModifiedDate:
+            description: The date and time when the account information was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   inventory_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -148,6 +631,220 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the inventory item
+            type:
+              - string
+              - integer
+          businessName:
+            description: Name of the business associated with the inventory data
+            type: string
+          serviceName:
+            description: Name of the service associated with the inventory data
+            type: string
+          name:
+            description: Name of the inventory item
+            type: string
+          code:
+            description: Unique code for the inventory item
+            type:
+              - "null"
+              - string
+          sourceModifiedDate:
+            description: Date and time when the data was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
+          itemStatus:
+            description: Status of the inventory item
+            type:
+              - "null"
+              - string
+          isBillItem:
+            description: Flag indicating if the item is intended for billing
+            type:
+              - "null"
+              - boolean
+          billItem:
+            description: Details of the item being billed
+            type:
+              - "null"
+              - object
+            properties:
+              description:
+                description: Description of the item
+                type:
+                  - "null"
+                  - string
+              unitPrice:
+                description: Price per unit of the item
+                type:
+                  - "null"
+                  - number
+              accountRef:
+                description: Reference to the account for the item
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier for the account
+                    type: string
+                  name:
+                    description: Name of the account
+                    type:
+                      - "null"
+                      - string
+              taxRateRef:
+                description: Reference to the tax rate for the item
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier for the tax rate
+                    type: string
+                  name:
+                    description: Name of the tax rate
+                    type:
+                      - "null"
+                      - string
+                  effectiveTaxRate:
+                    description: Effective tax rate for the item
+                    type:
+                      - "null"
+                      - number
+          isInvoiceItem:
+            description: Flag indicating if the item is intended for invoicing
+            type:
+              - "null"
+              - boolean
+          taxRateRef:
+            description: Reference to the tax rate for the item
+            type:
+              - "null"
+              - object
+            properties:
+              description:
+                description: Description of the tax rate
+                type:
+                  - "null"
+                  - string
+              unitPrice:
+                description: Price per unit for the tax rate
+                type:
+                  - "null"
+                  - number
+              accountRef:
+                description: Reference to the account for the tax rate
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier for the account
+                    type: string
+                  name:
+                    description: Name of the account
+                    type:
+                      - "null"
+                      - string
+              taxRateRef:
+                description: Reference to another tax rate
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier for the tax rate
+                    type: string
+                  name:
+                    description: Name of the tax rate
+                    type:
+                      - "null"
+                      - string
+                  effectiveTaxRate:
+                    description: Effective tax rate for the item
+                    type:
+                      - "null"
+                      - number
+          subsidiaryRefs:
+            description: References to subsidiary entities
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the subsidiary
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the subsidiary
+                  type:
+                    - "null"
+                    - string
+          quantityOnHandPerLocation:
+            description: Quantity of the item on hand per location
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                locationRef:
+                  description: Reference to the location of the item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the location
+                      type: string
+                    name:
+                      description: Name of the location
+                      type:
+                        - "null"
+                        - string
+                quantity:
+                  description: Quantity of the item at the location
+                  type: number
+          quantityOnHand:
+            description: Quantity of the item on hand
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                locationRef:
+                  description: Reference to the location of the item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the location
+                      type: string
+                    name:
+                      description: Name of the location
+                      type:
+                        - "null"
+                        - string
+                quantity:
+                  description: Quantity of the item at the location
+                  type: number
   tax_rates_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -166,6 +863,85 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the tax rate data.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the tax rates.
+            type: string
+          serviceName:
+            description: The name of the service associated with the tax rate.
+            type: string
+          name:
+            description: The name of the tax rate.
+            type: string
+          code:
+            description: The unique code assigned to the tax rates.
+            type:
+              - "null"
+              - string
+          effectiveTaxRate:
+            description: The effective tax rate calculated based on all tax components.
+            type:
+              - "null"
+              - number
+          totalTaxRate:
+            description: The total tax rate including all tax components.
+            type:
+              - "null"
+              - number
+          components:
+            description: An array of tax rates components.
+            type:
+              - "null"
+              - array
+            items:
+              description: Details of each tax rate component.
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: The name of the tax component.
+                  type:
+                    - "null"
+                    - string
+                rate:
+                  description: The percentage rate of the tax component.
+                  type:
+                    - "null"
+                    - number
+                isCompound:
+                  description:
+                    Indicates if the tax rate is compound (applied on top
+                    of other taxes).
+                  type:
+                    - "null"
+                    - boolean
+                isPurchasesTax:
+                  description: Indicates if the tax rate is applicable on purchases.
+                  type:
+                    - "null"
+                    - boolean
+                isSalesTax:
+                  description: Indicates if the tax rate is applicable on sales.
+                  type:
+                    - "null"
+                    - boolean
+          sourceModifiedDate:
+            description: The date and time when the tax rate data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   tracking_categories_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -182,6 +958,52 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the tracking category.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the tracking category.
+            type: string
+          serviceName:
+            description: The name of the service associated with the tracking category.
+            type: string
+          name:
+            description: The name of the tracking category.
+            type: string
+          isEditable:
+            description: Indicates whether the tracking category is editable or not.
+            type: boolean
+          parentRef:
+            description: The reference to the parent category, if applicable.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the parent category.
+                type: string
+              name:
+                description: The name of the parent category.
+                type:
+                  - "null"
+                  - string
+          status:
+            description: The status of the tracking category.
+            type: string
+          sourceModifiedDate:
+            description: The timestamp when the tracking category was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   vendors_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -201,6 +1023,220 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the vendor.
+            type:
+              - string
+              - integer
+          businessName:
+            description: Legal business name of the vendor.
+            type: string
+          serviceName:
+            description: Name of the vendor service.
+            type: string
+          vendorName:
+            description: Name of the vendor.
+            type: string
+          contactName:
+            description: Name of the primary contact person for the vendor.
+            type:
+              - "null"
+              - string
+          emailAddress:
+            description: Email address of the vendor.
+            type:
+              - "null"
+              - string
+          website:
+            description: Website URL of the vendor.
+            type:
+              - "null"
+              - string
+          defaultCurrency:
+            description: Default currency used by the vendor.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the currency.
+                type: string
+              name:
+                description: Name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: Symbol representing the currency.
+                type:
+                  - "null"
+                  - string
+          phone:
+            description: Phone number of the vendor.
+            type:
+              - "null"
+              - string
+          addresses:
+            description: List of addresses associated with the vendor.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                line1:
+                  description: First line of the address.
+                  type:
+                    - "null"
+                    - string
+                line2:
+                  description: Second line of the address.
+                  type:
+                    - "null"
+                    - string
+                city:
+                  description: City of the address.
+                  type:
+                    - "null"
+                    - string
+                region:
+                  description: Region of the address.
+                  type:
+                    - "null"
+                    - string
+                country:
+                  description: Country of the address.
+                  type:
+                    - "null"
+                    - string
+                postalCode:
+                  description: Postal code of the address.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of address (e.g., billing, shipping).
+                  type: string
+          contacts:
+            description: List of contacts associated with the vendor.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: Name of the contact person.
+                  type:
+                    - "null"
+                    - string
+                email:
+                  description: Email address of the contact person.
+                  type:
+                    - "null"
+                    - string
+                phone:
+                  description: Phone number of the contact person.
+                  type:
+                    - "null"
+                    - string
+                addresses:
+                  description: List of addresses associated with the contact.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    line1:
+                      description: First line of the address.
+                      type:
+                        - "null"
+                        - string
+                    line2:
+                      description: Second line of the address.
+                      type:
+                        - "null"
+                        - string
+                    city:
+                      description: City of the address.
+                      type:
+                        - "null"
+                        - string
+                    region:
+                      description: Region of the address.
+                      type:
+                        - "null"
+                        - string
+                    country:
+                      description: Country of the address.
+                      type:
+                        - "null"
+                        - string
+                    postalCode:
+                      description: Postal code of the address.
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: Type of address (e.g., billing, shipping).
+                      type: string
+                status:
+                  description: Status of the contact person.
+                  type: string
+                modifiedDate:
+                  description:
+                    Date and time when the contact information was last
+                    modified.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          taxNumber:
+            description: Tax number associated with the vendor.
+            type:
+              - "null"
+              - string
+          balance:
+            description: Balance or financial status of the vendor.
+            type:
+              - "null"
+              - number
+          status:
+            description: Status of the vendor.
+            type: string
+          subsidiaryRefs:
+            description: List of subsidiary references associated with the vendor.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: ID of the subsidiary.
+                  type: string
+                name:
+                  description: Name of the subsidiary.
+                  type:
+                    - "null"
+                    - string
+          sourceModifiedDate:
+            description: Date and time when the vendor data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   bank_accounts_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
@@ -209,7 +1245,72 @@ definitions:
       serviceNames: ["plaid"]
     primary_key: "accountId"
 
-  # Incremental Service
+    # Incremental Service
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          businessName:
+            description: Name of the business associated with the account
+            type: string
+          serviceName:
+            description: Service or product associated with the account
+            type: string
+          institutionName:
+            description: Name of the institution where the account is held
+            type: string
+          accountId:
+            description: Unique identifier for the bank account
+            type:
+              - string
+              - integer
+          currentBalance:
+            description: Current balance in the account
+            type:
+              - "null"
+              - number
+          availableBalance:
+            description: Current available balance in the account
+            type:
+              - "null"
+              - number
+          limit:
+            description: Any limit associated with the account
+            type:
+              - "null"
+              - number
+          currency:
+            description: Currency of the account balance
+            type: string
+          maskedAccountNumber:
+            description: Masked account number for security purposes
+            type:
+              - "null"
+              - string
+          accountName:
+            description: Name associated with the bank account
+            type: string
+          officialAccountName:
+            description: Official name of the account
+            type:
+              - "null"
+              - string
+          accountType:
+            description: Type of the bank account
+            type: string
+          accountSubType:
+            description: Subtype of the bank account
+            type:
+              - "null"
+              - string
+          sourceModifiedDate:
+            description: Date and time when the account data was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
   base_incremental_service_stream:
     $ref: "#/definitions/base_service_stream"
     retriever:
@@ -217,7 +1318,11 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ not stream_state.get(stream_slice.connection.businessName, {}).get(stream_slice.connection.serviceName) or record[parameters.cursor_field] >= stream_state[stream_slice.connection.businessName][stream_slice.connection.serviceName][parameters.cursor_field] }}"
+          condition:
+            "{{ not stream_state.get(stream_slice.connection.businessName,
+            {}).get(stream_slice.connection.serviceName) or record[parameters.cursor_field]
+            >= stream_state[stream_slice.connection.businessName][stream_slice.connection.serviceName][parameters.cursor_field]
+            }}"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
@@ -265,6 +1370,146 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the accounting transaction
+            type:
+              - string
+              - integer
+          businessName:
+            description: Name of the business associated with the transaction
+            type: string
+          serviceName:
+            description: Name of the service or product associated with the transaction
+            type: string
+          transactionNumber:
+            description: Unique number assigned to the transaction
+            type:
+              - "null"
+              - string
+          postedDate:
+            description: Date and time when the transaction was posted
+            type: string
+            format: date-time
+          entityRef:
+            description: Reference to the entity related to the transaction
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the entity
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: Name of the entity
+                type:
+                  - "null"
+                  - string
+          type:
+            description: Type of the accounting transaction
+            type: string
+          isPosting:
+            description: Indicator whether the transaction has been posted
+            type: boolean
+          isReconciled:
+            description: Indicator whether the transaction has been reconciled
+            type:
+              - "null"
+              - boolean
+          accountRef:
+            description: Reference to the account associated with the transaction
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the account
+                type:
+                  - string
+                  - integer
+              name:
+                description: Name of the account
+                type: string
+              section:
+                description: Section within the group where the account belongs
+                type:
+                  - "null"
+                  - string
+              subSection:
+                description: Subsection within the subgroup where the account belongs
+                type:
+                  - "null"
+                  - string
+              group:
+                description: Group to which the account belongs
+                type:
+                  - "null"
+                  - string
+              subGroup:
+                description: Subgroup to which the account belongs
+                type:
+                  - "null"
+                  - string
+          currencyRef:
+            description: Reference to the currency used in the transaction
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the currency
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: Name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: Symbol representing the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: Exchange rate of the transaction currency to the base currency
+            type:
+              - "null"
+              - number
+          isSplitTransaction:
+            description: Indicator whether the transaction is a split transaction
+            type:
+              - "null"
+              - boolean
+          parentTransactionId:
+            description: Identifier of the parent transaction in case of a split transaction
+            type:
+              - "null"
+              - string
+          subTotal:
+            description: Subtotal amount of the transaction
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: Amount of tax included in the transaction
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: Total amount of the transaction
+            type:
+              - number
+              - string
   bank_transfers_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -273,6 +1518,106 @@ definitions:
       cursor_field: "date"
       serviceNames: ["xero"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the bank transfer.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the bank transfer.
+            type: string
+          serviceName:
+            description: The name of the service used for the transfer.
+            type: string
+          date:
+            description: The date and time when the bank transfer occurred.
+            type: string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency used in the bank transfer
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier for the currency.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol representing the currency.
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The currency exchange rate used for the transaction.
+            type: number
+          totalAmount:
+            description: The total amount of money transferred in the bank transaction.
+            type:
+              - "null"
+              - number
+              - string
+          fromAccountRef:
+            description: Reference to the account from which the transfer was made
+            type: object
+            properties:
+              id:
+                description:
+                  The unique identifier of the account the transfer is
+                  from.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the account the transfer is from.
+                type:
+                  - "null"
+                  - string
+          toAccountRef:
+            description: Reference to the account to which the transfer was sent
+            type: object
+            properties:
+              id:
+                description:
+                  The unique identifier of the account the transfer is
+                  going to.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the account the transfer is going to.
+                type:
+                  - "null"
+                  - string
+          fromBankTransactionId:
+            description: The ID of the bank transaction from which the money was transferred.
+            type: string
+          toBankTransactionId:
+            description: The ID of the bank transaction to which the money was transferred.
+            type: string
+          memo:
+            description: Additional notes or information related to the bank transfer.
+            type:
+              - "null"
+              - string
+          sourceModifiedDate:
+            description: The date and time when the bank transfer data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   bills_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -292,6 +1637,350 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the bill.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the bill.
+            type: string
+          serviceName:
+            description: The name of the service associated with the bill.
+            type: string
+          vendorRef:
+            description: Reference to the vendor associated with the bill.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the vendor.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the vendor.
+                type:
+                  - "null"
+                  - string
+          purchaseOrderRef:
+            description: Reference to the purchase order associated with the bill.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the purchase order.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              purchaseOrderNumber:
+                description: The number of the purchase order.
+                type:
+                  - "null"
+                  - string
+          purchaseOrderRefs:
+            description: Additional purchase order references related to the bill.
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: The unique identifier of the purchase order.
+                  type:
+                    - "null"
+                    - string
+                    - integer
+                purchaseOrderNumber:
+                  description: The number of the purchase order.
+                  type:
+                    - "null"
+                    - string
+          postedDate:
+            description: The date the bill was posted.
+            type: string
+            format: date-time
+          dueDate:
+            description: The due date of the bill.
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency used for the bill.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol of the currency.
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The currency exchange rate used for the bill.
+            type:
+              - "null"
+              - number
+          vendorInvoiceNumber:
+            description: The vendor's invoice number associated with the bill.
+            type:
+              - "null"
+              - string
+          lines:
+            description: Detailed line items included in the bill.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: Description of the line item.
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the line item.
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The discounted amount for the line item.
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The sub-total amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount for the line item.
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount for the line item.
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The discount percentage applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description: Reference to the tax rate applied to the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tax rate.
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate.
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description:
+                    Reference to the inventory associated with the line
+                    item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the inventory.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the inventory.
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    Reference to the tracking category associated with
+                    the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tracking category.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description: The option selected for the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description: The unique identifier of the selected option.
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the line item.
+                  type:
+                    - string
+                    - integer
+                accountRef:
+                  description: Reference to the account associated with the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the account.
+                      type:
+                        - "null"
+                        - string
+          status:
+            description: The status of the bill.
+            type: string
+          subTotal:
+            description: The sub-total amount of the bill.
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount for the bill.
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: The total amount of the bill including taxes and discounts.
+            type:
+              - number
+              - string
+          amountDue:
+            description: The amount due on the bill.
+            type:
+              - "null"
+              - number
+          memo:
+            description: Any additional notes or memo for the bill.
+            type:
+              - "null"
+              - string
+          payments:
+            description: Payments made against the bill.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: The amount of the payment.
+                  type:
+                    - "null"
+                    - number
+                paymentId:
+                  description: The unique identifier of the payment.
+                  type:
+                    - "null"
+                    - string
+                date:
+                  description: The date of the payment.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          subsidiaryRefs:
+            description: References to the subsidiaries associated with the bill.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the subsidiary.
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: The name of the subsidiary.
+                  type:
+                    - "null"
+                    - string
+          locationRef:
+            description: Reference to the location associated with the bill.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the location.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the location.
+                type:
+                  - "null"
+                  - string
+          sourceModifiedDate:
+            description: The date the bill data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   bills_credit_notes_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -301,6 +1990,299 @@ definitions:
       serviceNames:
         ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the credit note
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the credit note
+            type: string
+          serviceName:
+            description: The name of the service related to the credit note
+            type: string
+          postedDate:
+            description: The date when the credit note was posted
+            type: string
+            format: date-time
+          allocatedOnDate:
+            description: The date when the credit note was allocated
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency used for the credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol of the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The currency exchange rate at the time of the credit note
+            type:
+              - "null"
+              - number
+          lines:
+            description: List of items included in the credit note
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: Description of the item
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount of the item
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the item
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The amount of discount applied on the item
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount of the item
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount of the item
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount of the item including tax and discounts
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The percentage of discount applied on the item
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description: Reference to the tax rate applied on the item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tax rate
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate applied
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description: Reference to the inventory associated with the item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the inventory
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the inventory
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    Reference to the tracking category associated with
+                    the item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tracking category
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tracking category
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description: The tracking option selected
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description: The unique identifier of the tracking option
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the item
+                  type:
+                    - string
+                    - integer
+                accountRef:
+                  description: Reference to the account associated with the item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the account
+                      type:
+                        - "null"
+                        - string
+          totalDiscount:
+            description: The total discount amount on the credit note
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description: The percentage of discount applied on the credit note
+            type:
+              - "null"
+              - number
+          subTotal:
+            description: The total amount before applying taxes and discounts
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount on the credit note
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: The total amount including taxes and discounts
+            type:
+              - number
+              - string
+          remainingCredit:
+            description: The remaining credit amount after deductions and payments
+            type:
+              - "null"
+              - number
+          status:
+            description: The current status of the credit note
+            type: string
+          memo:
+            description: Any additional notes or comments related to the credit note
+            type: string
+          payments:
+            description: List of payments made towards the credit note
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: The amount of payment made
+                  type:
+                    - "null"
+                    - number
+                paymentId:
+                  description: The unique identifier of the payment
+                  type:
+                    - "null"
+                    - string
+                date:
+                  description: The date of the payment
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          sourceModifiedDate:
+            description:
+              The date when the credit note data was last modified at the
+              source
+            type:
+              - "null"
+              - string
+            format: date-time
+          locationRef:
+            description: Reference to the location associated with the credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the location
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the location
+                type:
+                  - "null"
+                  - string
+          vendorRef:
+            description: Reference to the vendor associated with the credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the vendor
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the vendor
+                type:
+                  - "null"
+                  - string
   bills_payments_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -320,6 +2302,178 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the bill payment
+            type:
+              - string
+              - integer
+          businessName:
+            description: Name of the business associated with the bill payment
+            type: string
+          serviceName:
+            description: Name of the service for which the bill payment is made
+            type: string
+          vendorRef:
+            description: Reference to the vendor for whom the bill payment is made
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the vendor
+                type:
+                  - string
+                  - integer
+              name:
+                description: Name of the vendor
+                type:
+                  - "null"
+                  - string
+          accountRef:
+            description: Reference to the account associated with the bill payment
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the account
+                type:
+                  - string
+                  - integer
+              name:
+                description: Name of the account
+                type:
+                  - "null"
+                  - string
+          totalAmount:
+            description: Total amount of the bill payment
+            type:
+              - number
+              - string
+          currencyRef:
+            description: Reference to the currency used for the payment
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the currency
+                type:
+                  - string
+                  - integer
+              name:
+                description: Name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: Symbol used for the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: Exchange rate of the currency used for the payment
+            type:
+              - "null"
+              - number
+          date:
+            description: Date and time of the bill payment
+            type: string
+            format: date-time
+          memo:
+            description: Additional notes or comments related to the bill payment
+            type:
+              - "null"
+              - string
+          lines:
+            description: Details of individual bill payment lines
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: Amount of the bill payment line
+                  type: number
+                link:
+                  description: Link associated with the bill payment line
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of the linked item
+                      type: string
+                    id:
+                      description: Unique identifier for the linked item
+                      type:
+                        - "null"
+                        - string
+                        - integer
+                    amount:
+                      description: Amount of the linked item
+                      type:
+                        - "null"
+                        - number
+                links:
+                  description: List of links associated with the bill payment line
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      type:
+                        description: Type of the linked item
+                        type: string
+                      id:
+                        description: Unique identifier for the linked item
+                        type:
+                          - string
+                          - integer
+                allocatedOnDate:
+                  description: Date and time when the amount was allocated
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          subsidiaryRefs:
+            description: References to any subsidiaries associated with the bill payment
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the subsidiary
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: Name of the subsidiary
+                  type:
+                    - "null"
+                    - string
+          sourceModifiedDate:
+            description: Date and time when the source information was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
   deposits_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -328,6 +2482,222 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the deposit record
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the deposit record
+            type: string
+          serviceName:
+            description: The name of the service associated with the deposit
+            type: string
+          postedDate:
+            description: The date and time when the deposit was posted
+            type: string
+            format: date-time
+          currencyRef:
+            description: Reference details of the currency used in the deposit
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol of the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The exchange rate of the currency used in the deposit
+            type:
+              - "null"
+              - number
+          lines:
+            description: Array of line items within the deposit
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: The description of the line item
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount for the item
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the item
+                  type:
+                    - "null"
+                    - integer
+                subTotal:
+                  description: The subtotal amount for the line item
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount for the line item
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount for the line item
+                  type:
+                    - number
+                    - string
+                accountRef:
+                  description:
+                    Reference details of the account associated with the
+                    line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the account
+                      type:
+                        - "null"
+                        - string
+                taxRateRef:
+                  description:
+                    Reference details of the tax rate associated with the
+                    line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tax rate
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate
+                      type:
+                        - "null"
+                        - number
+                entityRef:
+                  description:
+                    Reference details of the entity associated with the
+                    line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the entity
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the entity
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: The type of the entity
+                      type:
+                        - "null"
+                        - string
+                link:
+                  description:
+                    Reference details of the link associated with the line
+                    item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the link
+                      type: string
+                    type:
+                      description: The type of the link
+                      type:
+                        - "null"
+                        - string
+                links:
+                  description:
+                    Array of additional links associated with the line
+                    item
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      id:
+                        description: The unique identifier of the additional link
+                        type: string
+                      type:
+                        description: The type of the additional link
+                        type:
+                          - "null"
+                          - string
+          subTotal:
+            description: The subtotal amount of the deposit
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount of the deposit
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: The total amount of the deposit
+            type:
+              - number
+              - string
+          status:
+            description: The status of the deposit
+            type: string
+          memo:
+            description: Additional notes or comments
+            type:
+              - "null"
+              - string
+          sourceModifiedDate:
+            description: The date and time when the deposit data was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
   estimates_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -336,6 +2706,286 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "xero", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the estimate.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the estimate.
+            type: string
+          serviceName:
+            description: The name of the service offered in the estimate.
+            type: string
+          customerRef:
+            description: Reference to the customer associated with the estimate.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - string
+                  - integer
+              name:
+                type:
+                  - "null"
+                  - string
+          postedDate:
+            description: The date on which the estimate was posted.
+            type: string
+            format: date-time
+          dueDate:
+            description: The due date for payment of the estimate.
+            type:
+              - "null"
+              - string
+            format: date-time
+          acceptedDate:
+            description: The date on which the estimate was accepted.
+            type:
+              - "null"
+              - string
+            format: date-time
+          expiryDate:
+            description: The expiry date of the estimate.
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency used in the estimate.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - string
+                  - integer
+              name:
+                type:
+                  - "null"
+                  - string
+              symbol:
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The exchange rate for the currency used in the estimate.
+            type:
+              - "null"
+              - number
+          lines:
+            description: List of individual line items included in the estimate.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: Description of the line item.
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit price of the item in the line item.
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of items in the line item.
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The amount of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The amount of tax applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description:
+                    The total amount of the line item including tax and
+                    discounts.
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The percentage of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description: Reference to the tax rate applied to the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description:
+                    Reference to the inventory item associated with the
+                    line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    Reference to the tracking category associated with
+                    the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the line item.
+                  type:
+                    - "null"
+                    - string
+                    - integer
+                accountRef:
+                  description: Reference to the account associated with the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - integer
+                    name:
+                      type:
+                        - "null"
+                        - string
+          totalDiscount:
+            description: The total amount of discount applied to the estimate.
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description: The percentage of discount applied to the estimate.
+            type:
+              - "null"
+              - number
+          subTotal:
+            description:
+              The subtotal amount of the estimate before any discounts
+              or taxes.
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total amount of tax applied to the estimate.
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description:
+              The total amount of the estimate including all items, taxes,
+              and discounts.
+            type:
+              - number
+              - string
+          status:
+            description: The current status of the estimate.
+            type: string
+          memo:
+            description: Any additional notes or comments related to the estimate.
+            type:
+              - "null"
+              - string
+          shippingAddress:
+            description:
+              The address where the goods associated with the estimate
+              will be shipped.
+            type: object
+            properties:
+              line1:
+                type:
+                  - string
+                  - "null"
+              line2:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              region:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                type:
+                  - string
+                  - "null"
+          sourceModifiedDate:
+            description: The date of the last modification made to the source data.
+            type:
+              - "null"
+              - string
+            format: date-time
   invoices_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -356,6 +3006,327 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the invoice.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the invoice.
+            type: string
+          serviceName:
+            description: The name of the service associated with the invoice.
+            type: string
+          invoiceNumber:
+            description: The unique number assigned to the invoice.
+            type:
+              - "null"
+              - string
+          customerRef:
+            description: Reference to the customer associated with the invoice.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the customer.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the customer.
+                type:
+                  - "null"
+                  - string
+          postedDate:
+            description: The date when the invoice was posted.
+            type: string
+            format: date-time
+          dueDate:
+            description: The date by which the payment is due.
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency being used in the invoice.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol representing the currency.
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The currency exchange rate used for the invoice.
+            type:
+              - "null"
+              - number
+          lines:
+            description: The line items included in the invoice.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: The description of the line item.
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the line item.
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The amount of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The amount of tax applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount of the line item.
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The percentage of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description:
+                    Reference to the tax rate associated with the line
+                    item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tax rate.
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate applied.
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description:
+                    Reference to the inventory associated with the line
+                    item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the inventory item.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the inventory item.
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    Reference to the tracking category associated with
+                    the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tracking category.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description: The option selected for the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description: The unique identifier of the selected option.
+                      type:
+                        - "null"
+                        - string
+                accountRef:
+                  description: Reference to the account associated with the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account.
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the account.
+                      type:
+                        - "null"
+                        - string
+                locationRef:
+                  description:
+                    Reference to the location associated with the line
+                    item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the location.
+                      type:
+                        - "null"
+                        - string
+                        - integer
+                    name:
+                      description: The name of the location.
+                      type:
+                        - "null"
+                        - string
+          status:
+            description: The status of the invoice (e.g., pending, paid, overdue).
+            type: string
+          totalDiscount:
+            description: The total discount amount applied to the invoice.
+            type:
+              - "null"
+              - number
+          subTotal:
+            description:
+              The subtotal amount of the invoice before applying discounts
+              and taxes.
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total amount of tax applied to the invoice.
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: The total amount to be paid including all taxes and discounts.
+            type:
+              - number
+              - string
+          amountDue:
+            description: The total amount that is due on the invoice.
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description: The percentage of discount applied to the invoice.
+            type:
+              - "null"
+              - number
+          sourceModifiedDate:
+            description: The date when the invoice data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
+          memo:
+            description: Additional notes or comments associated with the invoice.
+            type:
+              - "null"
+              - string
+          payments:
+            description: Payments made towards the invoice.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: The amount of the payment.
+                  type:
+                    - "null"
+                    - number
+                paymentId:
+                  description: The unique identifier of the payment.
+                  type:
+                    - "null"
+                    - string
+                date:
+                  description: The date of the payment.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          subsidiaryRefs:
+            description: References to the subsidiaries associated with the invoice.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the subsidiary.
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: The name of the subsidiary.
+                  type:
+                    - "null"
+                    - string
   invoices_credit_notes_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -373,6 +3344,298 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the invoice or credit note
+            type:
+              - string
+              - integer
+          businessName:
+            description:
+              The name of the business associated with the invoice or credit
+              note
+            type: string
+          serviceName:
+            description:
+              The name of the service associated with the invoice or credit
+              note
+            type: string
+          postedDate:
+            description: The date the invoice was posted
+            type: string
+            format: date-time
+          allocatedOnDate:
+            description: The date the credit note was allocated
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description:
+              Reference details for the currency used in the invoice or
+              credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                  - "null"
+                  - string
+              symbol:
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description:
+              The currency exchange rate at the time of invoice or credit
+              note creation
+            type:
+              - "null"
+              - number
+          lines:
+            description: Line items included in the invoice or credit note
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: Description of the line item
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount of the line item
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the line item
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The discount amount applied to the line item
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount of the line item
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount applied to the line item
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount including tax for the line item
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The discount percentage applied to the line item
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description:
+                    Reference details for the tax rate applied to the line
+                    item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description:
+                    Reference details for the inventory item associated
+                    with the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    Reference details for the tracking category associated
+                    with the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the line item
+                  type:
+                    - "null"
+                    - string
+                accountRef:
+                  description:
+                    Reference details for the account associated with the
+                    line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                        - "null"
+                        - string
+          totalDiscount:
+            description: The total discount applied to the invoice or credit note
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description:
+              The discount percentage applied to the invoice or credit
+              note
+            type:
+              - "null"
+              - number
+          subTotal:
+            description:
+              The subtotal amount of the invoice or credit note before
+              taxes and discounts
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount applied to the invoice or credit note
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description:
+              The total amount including taxes for the invoice or credit
+              note
+            type:
+              - number
+              - string
+          remainingCredit:
+            description: The remaining credit amount after deductions
+            type:
+              - "null"
+              - number
+          status:
+            description:
+              The status of the invoice or credit note (e.g., draft, pending,
+              paid)
+            type: string
+          memo:
+            description:
+              Any additional notes or comments related to the invoice or
+              credit note
+            type:
+              - "null"
+              - string
+          payments:
+            description: Payment details related to the invoice or credit note
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: The payment amount
+                  type:
+                    - "null"
+                    - number
+                paymentId:
+                  description: The unique identifier of the payment
+                  type:
+                    - "null"
+                    - string
+                date:
+                  description: The date of the payment
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          sourceModifiedDate:
+            description:
+              The date when the source data for the invoice or credit note
+              was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
+          locationRef:
+            description:
+              Reference details for the location associated with the invoice
+              or credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+          customerRef:
+            description:
+              Reference details for the customer associated with the invoice
+              or credit note
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                  - "null"
+                  - string
   invoices_payments_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -392,6 +3655,151 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the payment
+            type:
+              - string
+              - integer
+          businessName:
+            description: Name of the business
+            type: string
+          serviceName:
+            description: Name of the service
+            type: string
+          customerRef:
+            description: Reference to the customer making the payment
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the customer
+                type: string
+              name:
+                description: Name of the customer
+                type:
+                  - "null"
+                  - string
+          accountRef:
+            description: Reference to the account related to the payment
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the account
+                type: string
+              name:
+                description: Name of the account
+                type:
+                  - "null"
+                  - string
+          totalAmount:
+            description: Total amount of the payment
+            type:
+              - number
+              - string
+          currencyRef:
+            description: Reference to the currency used for the payment
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the currency
+                type: string
+              name:
+                description: Name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: Symbol of the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: Exchange rate for the currency
+            type:
+              - "null"
+              - number
+          date:
+            description: Date and time of the payment
+            type: string
+            format: date-time
+          memo:
+            description: Memo or notes related to the payment
+            type:
+              - "null"
+              - string
+          lines:
+            description: Details of the payment lines
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  description: Amount of the payment line
+                  type: number
+                lines:
+                  description: Additional details of the payment line
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of the line
+                      type: string
+                    id:
+                      description: ID of the line
+                      type:
+                        - "null"
+                        - string
+                    amount:
+                      description: Amount of the line
+                      type:
+                        - "null"
+                        - number
+                allocatedOnDate:
+                  description: Date and time the amount was allocated
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          subsidiaryRefs:
+            description: References to associated subsidiaries
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: ID of the subsidiary
+                  type: string
+                name:
+                  description: Name of the subsidiary
+                  type:
+                    - "null"
+                    - string
+          sourceModifiedDate:
+            description: Date and time when the payment was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
   journal_entries_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -410,6 +3818,213 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the journal entry.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the journal entry.
+            type: string
+          serviceName:
+            description: The name of the service associated with the journal entry.
+            type: string
+          postedDate:
+            description: The date and time when the journal entry was posted.
+            type: string
+            format: date-time
+          createdDate:
+            description: The date and time when the journal entry was created.
+            type: string
+            format: date-time
+          currencyRef:
+            description: Information about the currency reference.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency reference.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the currency reference.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol of the currency reference.
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The currency exchange rate used for the entry.
+            type:
+              - "null"
+              - number
+          subsidiaryRefs:
+            description: Information about the subsidiary references.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the subsidiary reference.
+                  type: string
+                name:
+                  description: The name of the subsidiary reference.
+                  type:
+                    - "null"
+                    - string
+          lines:
+            description: The individual line items within the journal entry.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: A description of the line item.
+                  type:
+                    - "null"
+                    - string
+                credit:
+                  description: The credit amount in the line item.
+                  type:
+                    - "null"
+                    - number
+                debit:
+                  description: The debit amount in the line item.
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount in the line item.
+                  type:
+                    - "null"
+                    - number
+                accountRef:
+                  description: Information about the account reference.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account reference.
+                      type: string
+                    name:
+                      description: The name of the account reference.
+                      type:
+                        - "null"
+                        - string
+                entityRef:
+                  description: Information about the entity reference.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the entity reference.
+                      type: string
+                    name:
+                      description: The name of the entity reference.
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: The type of the entity reference.
+                      type:
+                        - "null"
+                        - string
+                taxRateRef:
+                  description: Information about the tax rate reference.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate reference.
+                      type: string
+                    name:
+                      description: The name of the tax rate reference.
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate.
+                      type:
+                        - "null"
+                        - number
+                trackingCategoryRef:
+                  description: Information about the tracking category reference.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description:
+                        The unique identifier of the tracking category
+                        reference.
+                      type: string
+                    name:
+                      description: The name of the tracking category reference.
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description:
+                        The option associated with the tracking category
+                        reference.
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description:
+                        The ID of the option associated with the tracking
+                        category reference.
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the line item.
+                  type:
+                    - "null"
+                    - string
+          memo:
+            description: Additional notes or comments related to the journal entry.
+            type:
+              - "null"
+              - string
+          sourceModifiedDate:
+            description: The date and time when the source data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
+          totalCredit:
+            description: The total credit amount in the journal entry.
+            type:
+              - "null"
+              - number
+          totalDebit:
+            description: The total debit amount in the journal entry.
+            type:
+              - "null"
+              - number
   purchase_orders_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -426,6 +4041,317 @@ definitions:
           "myob",
         ]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the purchase order
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the purchase order
+            type: string
+          serviceName:
+            description: The name of the service associated with the purchase order
+            type: string
+          vendorRef:
+            description: Reference to the vendor from whom the items are being purchased
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the vendor
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the vendor
+                type:
+                  - "null"
+                  - string
+          postedDate:
+            description: The date when the purchase order was posted
+            type: string
+            format: date-time
+          deliveryDate:
+            description: The expected delivery date of the purchase order
+            type:
+              - "null"
+              - string
+            format: date-time
+          expectedArrivalDate:
+            description: The expected arrival date of the order shipment
+            type:
+              - "null"
+              - string
+            format: date-time
+          dueDate:
+            description: The due date for payment of the purchase order
+            type:
+              - "null"
+              - string
+            format: date-time
+          currencyRef:
+            description: Reference to the currency used in the purchase order
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency
+                type:
+                  - string
+                  - integer
+              name:
+                description: The name of the currency
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol representing the currency
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The exchange rate for the currency used in the purchase order
+            type:
+              - "null"
+              - number
+          lines:
+            description: List of line items included in the purchase order
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: The description of the item in the purchase order
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit price of the item
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the item ordered
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The amount of discount applied to the item
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount for the item
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount applied to the item
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount for the item
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The discount percentage applied to the item
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description: Reference to the tax rate applied to the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tax rate
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate for the item
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description: Reference to the inventory item being purchased
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the inventory item
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the inventory item
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description: Reference to the tracking category for the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tracking category
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the tracking category
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description: The tracking option selected
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description: The identifier of the selected tracking option
+                      type:
+                        - "null"
+                        - string
+                id:
+                  description: The unique identifier of the line item
+                  type:
+                    - "null"
+                    - string
+                    - integer
+                accountRef:
+                  description: Reference to the account associated with the line item
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the account
+                      type:
+                        - string
+                        - integer
+                    name:
+                      description: The name of the account
+                      type:
+                        - "null"
+                        - string
+          totalDiscount:
+            description: The total discount amount applied to the purchase order
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description: The discount percentage applied to the total amount
+            type:
+              - "null"
+              - number
+          subTotal:
+            description: The total amount before applying any discounts or taxes
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount for the purchase order
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: The total amount including all charges, discounts, and taxes
+            type:
+              - number
+              - string
+          status:
+            description: The current status of the purchase order
+            type: string
+          memo:
+            description: Additional notes or comments related to the purchase order
+            type:
+              - "null"
+              - string
+          shippingAddress:
+            description: Address where the purchase order will be shipped
+            type: object
+            properties:
+              line1:
+                description: The first line of the shipping address
+                type:
+                  - string
+                  - "null"
+              line2:
+                description: The second line of the shipping address
+                type:
+                  - string
+                  - "null"
+              city:
+                description: The city in the shipping address
+                type:
+                  - string
+                  - "null"
+              region:
+                description: The region or state in the shipping address
+                type:
+                  - string
+                  - "null"
+              country:
+                description: The country in the shipping address
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                description: The postal code in the shipping address
+                type:
+                  - string
+                  - "null"
+          contacts:
+            description:
+              Information about the contacts associated with the purchase
+              order
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: The name of the contact person
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email address of the contact person
+                type:
+                  - "null"
+                  - string
+              phone:
+                description: The phone number of the contact person
+                type:
+                  - "null"
+                  - string
+          sourceModifiedDate:
+            description: The date and time when the purchase order data was last modified
+            type:
+              - "null"
+              - string
+            format: date-time
   refunds_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -434,6 +4360,263 @@ definitions:
       cursor_field: "date"
       serviceNames: ["quickbooks", "xero", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the refund.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the refund.
+            type: string
+          serviceName:
+            description: The name of the service associated with the refund.
+            type: string
+          customerRef:
+            description: A reference to the customer associated with the refund.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the customer.
+                type: string
+              name:
+                description: The name of the customer.
+                type:
+                  - "null"
+                  - string
+          accountRef:
+            description: A reference to the account associated with the refund.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the account.
+                type: string
+              name:
+                description: The name of the account.
+                type:
+                  - "null"
+                  - string
+          date:
+            description: The date and time of the refund.
+            type: string
+            format: date-time
+          currencyRef:
+            description: A reference to the currency used for the refund.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type: string
+              name:
+                description: The name of the currency.
+                type:
+                  - "null"
+                  - string
+              symbol:
+                description: The symbol representing the currency.
+                type:
+                  - "null"
+                  - string
+          currencyRate:
+            description: The exchange rate of the currency used for the refund.
+            type:
+              - "null"
+              - number
+          lines:
+            description: The line items included in the refund.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                description:
+                  description: A description of the line item.
+                  type:
+                    - "null"
+                    - string
+                unitAmount:
+                  description: The unit amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                quantity:
+                  description: The quantity of the line item.
+                  type:
+                    - "null"
+                    - integer
+                discountAmount:
+                  description: The amount of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                subTotal:
+                  description: The subtotal amount of the line item.
+                  type:
+                    - "null"
+                    - number
+                taxAmount:
+                  description: The tax amount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                totalAmount:
+                  description: The total amount of the line item.
+                  type:
+                    - number
+                    - string
+                discountPercentage:
+                  description: The percentage of discount applied to the line item.
+                  type:
+                    - "null"
+                    - number
+                    - string
+                taxRateRef:
+                  description: A reference to the tax rate applied to the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tax rate.
+                      type: string
+                    name:
+                      description: The name of the tax rate.
+                      type:
+                        - "null"
+                        - string
+                    effectiveTaxRate:
+                      description: The effective tax rate applied.
+                      type:
+                        - "null"
+                        - number
+                inventoryRef:
+                  description:
+                    A reference to the inventory item associated with the
+                    line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the inventory item.
+                      type: string
+                    name:
+                      description: The name of the inventory item.
+                      type:
+                        - "null"
+                        - string
+                trackingCategoryRef:
+                  description:
+                    A reference to the tracking category associated with
+                    the line item.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the tracking category.
+                      type: string
+                    name:
+                      description: The name of the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      description: The option selected within the tracking category.
+                      type:
+                        - "null"
+                        - string
+                    optionId:
+                      description: The identifier of the selected option.
+                      type:
+                        - "null"
+                        - string
+          totalDiscount:
+            description: The total discount amount applied to the refund.
+            type:
+              - "null"
+              - number
+          discountPercentage:
+            description: The percentage of discount applied to the refund.
+            type:
+              - "null"
+              - number
+          subTotal:
+            description: The subtotal amount of the refund.
+            type:
+              - "null"
+              - number
+          taxAmount:
+            description: The total tax amount applied to the refund.
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description:
+              The total amount of the refund, including all line items
+              and taxes.
+            type:
+              - number
+              - string
+          memo:
+            description: Any additional notes or comments regarding the refund.
+            type:
+              - "null"
+              - string
+          shippingAddress:
+            description: The shipping address associated with the refund.
+            type: object
+            properties:
+              line1:
+                description: The first line of the shipping address.
+                type:
+                  - string
+                  - "null"
+              line2:
+                description: The second line of the shipping address.
+                type:
+                  - string
+                  - "null"
+              city:
+                description: The city of the shipping address.
+                type:
+                  - string
+                  - "null"
+              region:
+                description: The region of the shipping address.
+                type:
+                  - string
+                  - "null"
+              country:
+                description: The country of the shipping address.
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                description: The postal code of the shipping address.
+                type:
+                  - string
+                  - "null"
+          sourceModifiedDate:
+            description: The date and time when the refund data was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
   commerce_disputes_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -442,6 +4625,84 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the commerce dispute.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business related to the commerce dispute.
+            type: string
+          serviceName:
+            description: The name of the service or product involved in the dispute.
+            type: string
+          totalAmount:
+            description: The total amount in dispute.
+            type:
+              - number
+              - string
+          status:
+            description: The current status of the commerce dispute.
+            type: string
+          reason:
+            description: The reason for the commerce dispute.
+            type: string
+          dueDate:
+            description: The date and time by which the dispute should be resolved.
+            type: string
+            format: date-time
+          createdDate:
+            description: The date and time when the dispute was created.
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            description:
+              The date and time when the source data related to the dispute
+              was last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
+          orderRef:
+            description: Reference to the order associated with the dispute
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the order related to the dispute.
+                type:
+                  - string
+                  - integer
+              orderNumber:
+                description: The order number related to the dispute.
+                type:
+                  - "null"
+                  - string
+          currencyRef:
+            description: Reference to the currency used in the dispute transaction
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency used in the dispute.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the currency used in the dispute.
+                type: string
+              symbol:
+                description: The symbol representing the currency used in the dispute.
+                type: string
   commerce_orders_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -450,6 +4711,321 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the commerce order.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The business name associated with the commerce order.
+            type: string
+          serviceName:
+            description:
+              The name of the service or platform used to create the commerce
+              order.
+            type: string
+          orderNumber:
+            description: The unique order number of the commerce order.
+            type:
+              - "null"
+              - string
+          fulfillmentRefs:
+            description: References to the fulfillment details of the commerce order.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                carrier:
+                  description: The carrier or logistics company for fulfillment.
+                  type:
+                    - "null"
+                    - string
+                trackingNumber:
+                  description: The tracking number for the shipment.
+                  type:
+                    - "null"
+                    - string
+                service:
+                  description: The service or shipping method for fulfillment.
+                  type:
+                    - "null"
+                    - string
+                trackingUrl:
+                  description: The URL to track the shipment online.
+                  type:
+                    - "null"
+                    - string
+          lines:
+            description: The line items included in the commerce order.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the line item.
+                  type:
+                    - string
+                    - integer
+                productId:
+                  description: The identifier of the product.
+                  type:
+                    - "null"
+                    - string
+                variantId:
+                  description: The identifier of the product variant.
+                  type: string
+                name:
+                  description: The name or description of the product.
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  description: The quantity of the product in the order.
+                  type: integer
+                totalPrice:
+                  description: The total price of the line item.
+                  type: number
+                unitPrice:
+                  description: The unit price of the product.
+                  type:
+                    - "null"
+                    - number
+          refundRefs:
+            description: References to any refunds associated with the commerce order.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the refund.
+                  type:
+                    - string
+                    - integer
+                totalAmount:
+                  description: The total amount of the refund.
+                  type:
+                    - number
+                    - string
+          transactionSourceRefs:
+            description:
+              References to transaction sources associated with the commerce
+              order.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the transaction source.
+                  type:
+                    - string
+                    - integer
+                type:
+                  description: The type of transaction source.
+                  type: string
+                totalAmount:
+                  description: The total amount related to the transaction source.
+                  type:
+                    - number
+                    - string
+          shippingAddress:
+            description: The shipping address for delivering the commerce order.
+            type:
+              - "null"
+              - object
+            properties:
+              contactName:
+                description:
+                  The name associated with the contact at the shipping
+                  address.
+                type:
+                  - string
+                  - "null"
+              phone:
+                description: The phone number associated with the shipping address.
+                type:
+                  - string
+                  - "null"
+              line1:
+                description: The first line of the shipping address.
+                type:
+                  - string
+                  - "null"
+              line2:
+                description: The second line of the shipping address, if applicable.
+                type:
+                  - string
+                  - "null"
+              city:
+                description: The city in the shipping address.
+                type:
+                  - string
+                  - "null"
+              region:
+                description: The region or state of the shipping address.
+                type:
+                  - string
+                  - "null"
+              country:
+                description: The country in the shipping address.
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                description: The postal code of the shipping address.
+                type:
+                  - string
+                  - "null"
+          billingAddress:
+            description: The billing address associated with the commerce order.
+            type:
+              - "null"
+              - object
+            properties:
+              contactName:
+                description: The name associated with the contact at the billing address.
+                type:
+                  - string
+                  - "null"
+              phone:
+                description: The phone number associated with the billing address.
+                type:
+                  - string
+                  - "null"
+              line1:
+                description: The first line of the billing address.
+                type:
+                  - string
+                  - "null"
+              line2:
+                description: The second line of the billing address, if applicable.
+                type:
+                  - string
+                  - "null"
+              city:
+                description: The city in the billing address.
+                type:
+                  - string
+                  - "null"
+              region:
+                description: The region or state of the billing address.
+                type:
+                  - string
+                  - "null"
+              country:
+                description: The country in the billing address.
+                type:
+                  - string
+                  - "null"
+              postalCode:
+                description: The postal code of the billing address.
+                type:
+                  - string
+                  - "null"
+          customerRef:
+            description:
+              The reference to the customer associated with the commerce
+              order.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the customer.
+                type:
+                  - string
+                  - integer
+              customerName:
+                description: The name of the customer.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: The email address of the customer.
+                type:
+                  - "null"
+                  - string
+          currencyRef:
+            description: The reference to the currency used in the commerce order.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type: string
+              symbol:
+                description: The symbol or abbreviation of the currency.
+                type: string
+          totalShippingAmount:
+            description: The total shipping cost of the commerce order.
+            type:
+              - "null"
+              - number
+          totalGratuityAmount:
+            description:
+              The total gratuity or tip amount included in the commerce
+              order.
+            type:
+              - "null"
+              - number
+          totalDiscountAmount:
+            description: The total amount of discounts applied to the commerce order.
+            type:
+              - "null"
+              - number
+          totalTaxAmount:
+            description: The total tax amount included in the commerce order.
+            type: number
+          totalAmount:
+            description: The total amount of the commerce order.
+            type:
+              - number
+              - string
+          createdDate:
+            description: The date and time when the commerce order was created.
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            description: The date and time when the commerce order was last modified.
+            type: string
+            format: date-time
+          status:
+            description: The overall status of the commerce order.
+            type: string
+          paymentStatus:
+            description: The status of payment for the commerce order.
+            type: string
+          fulfillmentStatus:
+            description: The status of fulfillment for the commerce order.
+            type: string
   commerce_products_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -458,6 +5034,176 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the commerce product.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business offering the commerce product.
+            type: string
+          serviceName:
+            description:
+              The name of the service or platform associated with the commerce
+              product.
+            type: string
+          type:
+            description: The type or category of the commerce product.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the commerce product.
+            type: string
+          description:
+            description: The detailed description of the commerce product.
+            type:
+              - "null"
+              - string
+          createdDate:
+            description: The date and time when the commerce product was created.
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            description:
+              The date and time when the data for the commerce product
+              was last modified in the source system.
+            type: string
+            format: date-time
+          status:
+            description:
+              The current status of the commerce product (e.g., active,
+              inactive).
+            type: string
+          isGiftCard:
+            description: Flag indicating if the commerce product is a gift card.
+            type:
+              - "null"
+              - boolean
+          productVariants:
+            description:
+              List of variants (e.g., color, size) available for the commerce
+              product.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the product variant.
+                  type:
+                    - string
+                    - integer
+                name:
+                  description: The name of the product variant.
+                  type: string
+                isTaxEnabled:
+                  description: Flag indicating if tax is enabled for the product variant.
+                  type:
+                    - "null"
+                    - boolean
+                sku:
+                  description:
+                    The stock keeping unit (SKU) associated with the product
+                    variant.
+                  type:
+                    - "null"
+                    - string
+                barcode:
+                  description: The unique barcode associated with the product variant.
+                  type:
+                    - "null"
+                    - string
+                weight:
+                  description: Details about the weight of the product variant.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    value:
+                      description: The numerical value representing the weight.
+                      type:
+                        - "null"
+                        - number
+                    unitOfMeasure:
+                      description: The unit of measure for the weight.
+                      type:
+                        - "null"
+                        - string
+                unitPrice:
+                  description: The price at which the product variant is sold.
+                  type: number
+                inventory:
+                  description: Details about the inventory of the product variant.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    totalQuantity:
+                      description:
+                        The total quantity of the product variant available
+                        across all locations.
+                      type:
+                        - "null"
+                        - number
+                    quantityPerLocation:
+                      description:
+                        The quantity of the product variant available per
+                        location.
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          quantity:
+                            description:
+                              The available quantity of the product variant
+                              at the specified location.
+                            type:
+                              - "null"
+                              - number
+                          locationRef:
+                            description:
+                              Reference to the location where the product
+                              variant is available.
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              id:
+                                description: The unique identifier of the location.
+                                type:
+                                  - "null"
+                                  - string
+                                  - integer
+                              name:
+                                description: The name of the location.
+                                type:
+                                  - "null"
+                                  - string
+                isShippingRequired:
+                  description:
+                    Flag indicating if shipping is required for the product
+                    variant.
+                  type:
+                    - "null"
+                    - boolean
+                createdDate:
+                  description: The date and time when the product variant was created.
+                  type: string
+                  format: date-time
   commerce_transactions_stream:
     $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
@@ -467,6 +5213,98 @@ definitions:
       serviceNames: ["shopify", "square", "myob"]
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the commerce transaction.
+            type:
+              - string
+              - integer
+          businessName:
+            description: The name of the business associated with the transaction.
+            type: string
+          serviceName:
+            description: The name of the service related to the transaction.
+            type: string
+          orderId:
+            description: The identifier of the order associated with the transaction.
+            type:
+              - "null"
+              - string
+          paymentMethodType:
+            description: The type of payment method used for the transaction.
+            type:
+              - "null"
+              - string
+          totalAmount:
+            description: The total amount of the transaction.
+            type:
+              - "null"
+              - number
+              - string
+          currencyRef:
+            description: Reference to the currency used in the transaction
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the currency.
+                type:
+                  - "null"
+                  - string
+                  - integer
+              name:
+                description: The name of the currency.
+                type: string
+              symbol:
+                description: The symbol of the currency.
+                type: string
+          transactionSourceRefs:
+            description:
+              References to the sources of the transaction (e.g., online
+              store, POS terminal)
+            type:
+              - "null"
+              - array
+            items:
+              description: Specific details about each transaction source
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the transaction source reference.
+                  type:
+                    - string
+                    - integer
+                type:
+                  description: The type of the transaction source reference.
+                  type: string
+          transactionType:
+            description: The type of the commerce transaction.
+            type:
+              - string
+              - number
+          createdDate:
+            description: The date and time when the transaction was created.
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            description:
+              The date and time when the source of the transaction was
+              last modified.
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            description: The status of the commerce transaction.
+            type: string
 streams:
   - "#/definitions/businesses_stream"
   - "#/definitions/connections_stream"
