@@ -6,6 +6,7 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.3.1 | 2024-04-12 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | schema descriptions |
 | 0.3.0   | 2023-08-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | ✨ Source Clockify: Migrate to LowCode CDK                |
 | 0.2.1   | 2023-08-01 | [27881](https://github.com/airbytehq/airbyte/pull/27881) | 🐛 Source Clockify: Source Clockify: Fix pagination logic |
 | 0.2.0   | 2023-08-01 | [27689](https://github.com/airbytehq/airbyte/pull/27689) | ✨ Source Clockify: Add Optional API Url parameter        |
