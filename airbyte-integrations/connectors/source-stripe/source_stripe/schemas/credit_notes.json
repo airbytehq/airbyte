@@ -52,6 +52,7 @@
       "type": ["null", "string"]
     },
     "lines": {
+      "description": "An array of line items associated with the credit note",
       "type": ["null", "object"],
       "properties": {
         "object": {
@@ -59,6 +60,7 @@
           "type": ["null", "string"]
         },
         "data": {
+          "description": "An array of line item objects containing discount amounts, tax amounts, and tax rates",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -88,6 +90,7 @@
                 "type": ["null", "integer"]
               },
               "discount_amounts": {
+                "description": "An array of discount amounts applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
@@ -116,6 +119,7 @@
                 "type": ["null", "integer"]
               },
               "tax_amounts": {
+                "description": "An array of tax amounts applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
@@ -144,6 +148,7 @@
                 }
               },
               "tax_rates": {
+                "description": "An array of tax rates applied to the line item",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
@@ -273,6 +278,7 @@
       "type": ["null", "string"]
     },
     "shipping_cost": {
+      "description": "Shipping cost details associated with the credit note",
       "type": ["null", "object"],
       "properties": {
         "amount_subtotal": {
@@ -292,6 +298,7 @@
           "type": ["null", "string"]
         },
         "taxes": {
+          "description": "An array of tax objects applied to the shipping cost",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -301,6 +308,7 @@
                 "type": ["null", "integer"]
               },
               "rate": {
+                "description": "Tax rate applied to the shipping cost",
                 "type": ["null", "object"],
                 "properties": {
                   "id": {
@@ -391,6 +399,7 @@
       "type": ["null", "integer"]
     },
     "tax_amounts": {
+      "description": "An array of total tax amounts applied to the credit note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

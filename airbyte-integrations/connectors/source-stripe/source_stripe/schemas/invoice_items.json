@@ -6,12 +6,14 @@
       "type": ["null", "integer"]
     },
     "metadata": {
+      "description": "Custom metadata associated with the invoice item.",
       "type": ["null", "object"],
       "properties": {
         "description": "Additional metadata associated with the item"
       }
     },
     "plan": {
+      "description": "Information about the subscription plan associated with the invoice item.",
       "type": ["null", "object", "string"],
       "properties": {
         "nickname": {
@@ -19,6 +21,7 @@
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Tiers within the plan that affect the pricing of the invoice item.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
@@ -115,6 +118,7 @@
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Custom metadata associated with the plan.",
           "type": ["null", "object"],
           "properties": {
             "description": "Additional metadata associated with the plan"
@@ -131,6 +135,7 @@
       "type": ["null", "string"]
     },
     "period": {
+      "description": "Period during which the invoice item applies.",
       "type": ["null", "object"],
       "properties": {
         "end": {
@@ -208,6 +213,7 @@
       "type": ["null", "string"]
     },
     "discounts": {
+      "description": "Discount details applied to the invoice item.",
       "type": ["null", "array"],
       "items": {
         "description": "Discount items applied to the invoice item",

@@ -14,8 +14,10 @@
       "type": ["null", "integer"]
     },
     "balance_transactions": {
+      "description": "List of balance transactions associated with the dispute",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each balance transaction",
         "type": ["null", "object"],
         "properties": {
           "id": {

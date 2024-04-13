@@ -29,6 +29,7 @@
       "type": ["null", "string"]
     },
     "fixed_amount": {
+      "description": "Details about the fixed shipping amount associated with a shipping rate.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
@@ -46,6 +47,7 @@
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Any additional data related to the shipping rate that is not directly represented by other fields.",
       "type": ["null", "object"],
       "properties": {
         "amount": {

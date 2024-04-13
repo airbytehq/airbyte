@@ -37,6 +37,7 @@
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information or custom data associated with the application fee refunds.",
       "type": ["null", "object"],
       "properties": {
         "fee": {

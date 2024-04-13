@@ -61,6 +61,7 @@
       "type": "boolean"
     },
     "refunds": {
+      "description": "Contains information about any refunds associated with the application fees.",
       "type": ["null", "object"],
       "properties": {
         "object": {
@@ -83,6 +84,7 @@
       }
     },
     "source": {
+      "description": "Contains details about the source of the application fee payment.",
       "type": ["null", "object"],
       "properties": {
         "fee_type": {
@@ -90,6 +92,7 @@
           "type": ["null", "string"]
         },
         "resource": {
+          "description": "Contains information about the resource used for the payment of the application fee.",
           "type": ["null", "object"],
           "properties": {
             "charge": {
