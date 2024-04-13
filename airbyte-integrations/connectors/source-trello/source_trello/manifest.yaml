@@ -23,7 +23,9 @@ definitions:
     request_headers: {}
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: 'OAuth oauth_consumer_key="{{ config[''key''] }}", oauth_token="{{ config[''token''] }}"'
+      api_token:
+        'OAuth oauth_consumer_key="{{ config[''key''] }}", oauth_token="{{
+        config[''token''] }}"'
       inject_into:
         type: RequestOption
         field_name: Authorization
@@ -78,6 +80,364 @@ definitions:
           since: "{{ config['start_date'] }}"
       record_selector:
         $ref: "#/definitions/boards_selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            description: Name of the board
+            type:
+              - "null"
+              - string
+          desc:
+            description: Description of the board
+            type:
+              - "null"
+              - string
+          descData:
+            description: Additional data related to the board description
+            type:
+              - "null"
+              - string
+          closed:
+            description: Indicates if the board is closed or not
+            type:
+              - "null"
+              - boolean
+          idOrganization:
+            description: Identifier of the organization the board belongs to
+            type:
+              - "null"
+              - string
+          idEnterprise:
+            description: Identifier of the enterprise that owns the board
+            type:
+              - "null"
+              - string
+          limits:
+            description: Limits set for various board features
+            type:
+              - "null"
+              - object
+            properties:
+              attachments:
+                description: Limits related to attachments on the board
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perBoard:
+                    description: Limits per board for attachments
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        type:
+                          - "null"
+                          - integer
+          pinned:
+            description: Indicates if the board is pinned
+            type:
+              - "null"
+              - boolean
+          shortLink:
+            description: Short link for easy access to the board
+            type:
+              - "null"
+              - string
+          dateLastActivity:
+            description: Date and time of the last activity on the board
+            type:
+              - "null"
+              - string
+            format: date-time
+          datePluginDisable:
+            description: Date and time when plugins were disabled on the board
+            type:
+              - "null"
+              - string
+            format: date-time
+          creationMethod:
+            description: Method used for creating the board
+            type:
+              - "null"
+              - string
+          ixUpdate:
+            description: An internal index for update tracking
+            type:
+              - "null"
+              - string
+          enterpriseOwned:
+            description: Indicates if the board is owned by an enterprise or not
+            type:
+              - "null"
+              - boolean
+          idBoardSource:
+            description: Identifier of the source board if this is a copy
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the board
+            type: string
+          starred:
+            description: Indicates if the board is starred
+            type:
+              - "null"
+              - boolean
+          url:
+            description: URL of the board
+            type:
+              - "null"
+              - string
+          powerUps:
+            description: Power-ups enabled on the board
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          premiumFeatures:
+            description: Premium features available on the board
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idTags:
+            description: Identifiers for tags associated with the board
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          prefs:
+            description: Preferences set for the board
+            type:
+              - "null"
+              - object
+            properties:
+              permissionLevel:
+                type:
+                  - "null"
+                  - string
+              hideVotes:
+                type:
+                  - "null"
+                  - boolean
+              voting:
+                type:
+                  - "null"
+                  - string
+              comments:
+                type:
+                  - "null"
+                  - string
+              invitations:
+                type:
+                  - "null"
+                  - string
+              selfJoin:
+                type:
+                  - "null"
+                  - boolean
+              cardCovers:
+                type:
+                  - "null"
+                  - boolean
+              isTemplate:
+                type:
+                  - "null"
+                  - boolean
+              cardAging:
+                type:
+                  - "null"
+                  - string
+              calendarFeedEnabled:
+                type:
+                  - "null"
+                  - boolean
+              background:
+                type:
+                  - "null"
+                  - string
+              backgroundImage:
+                type:
+                  - "null"
+                  - string
+              backgroundImageScaled:
+                description: Scaled versions of the background image
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    width:
+                      type:
+                        - "null"
+                        - integer
+                    height:
+                      type:
+                        - "null"
+                        - integer
+                    url:
+                      type:
+                        - "null"
+                        - string
+              backgroundTile:
+                type:
+                  - "null"
+                  - boolean
+              backgroundBrightness:
+                type:
+                  - "null"
+                  - string
+              backgroundBottomColor:
+                type:
+                  - "null"
+                  - string
+              backgroundTopColor:
+                type:
+                  - "null"
+                  - string
+              canBePublic:
+                type:
+                  - "null"
+                  - boolean
+              canBeEnterprise:
+                type:
+                  - "null"
+                  - boolean
+              canBeOrg:
+                type:
+                  - "null"
+                  - boolean
+              canBePrivate:
+                type:
+                  - "null"
+                  - boolean
+              canInvite:
+                type:
+                  - "null"
+                  - boolean
+          subscribed:
+            description: Indicates if the user is subscribed to the board
+            type:
+              - "null"
+              - boolean
+          labelNames:
+            description: Names of the labels on the board
+            type:
+              - "null"
+              - object
+            properties:
+              green:
+                type:
+                  - "null"
+                  - string
+              yellow:
+                type:
+                  - "null"
+                  - string
+              orange:
+                type:
+                  - "null"
+                  - string
+              red:
+                type:
+                  - "null"
+                  - string
+              purple:
+                type:
+                  - "null"
+                  - string
+              blue:
+                type:
+                  - "null"
+                  - string
+              sky:
+                type:
+                  - "null"
+                  - string
+              lime:
+                type:
+                  - "null"
+                  - string
+              pink:
+                type:
+                  - "null"
+                  - string
+              black:
+                type:
+                  - "null"
+                  - string
+          dateLastView:
+            description: Date and time of the last view on the board
+            type:
+              - "null"
+              - string
+            format: date-time
+          shortUrl:
+            description: Short URL for quick sharing of the board
+            type:
+              - "null"
+              - string
+          templateGallery:
+            description: Indicates if the board is part of the template gallery
+            type:
+              - "null"
+              - string
+          memberships:
+            description: Information about board memberships
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  type:
+                    - "null"
+                    - boolean
   organizations_stream:
     type: DeclarativeStream
     name: organizations
@@ -91,6 +451,289 @@ definitions:
           since: "{{ config['start_date'] }}"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the organization
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the organization
+            type:
+              - "null"
+              - string
+          credits:
+            description: Information about the credits owned by the organization
+            type: array
+          displayName:
+            description: The display name of the organization
+            type:
+              - "null"
+              - string
+          desc:
+            description: The description of the organization
+            type:
+              - "null"
+              - string
+          descData:
+            description: Metadata related to the organization's description data.
+            type: object
+            properties:
+              emoji:
+                description: The emoji associated with the organization description
+                type: object
+          domainName:
+            description: The domain name of the organization
+            type:
+              - "null"
+              - string
+          idBoards:
+            description: An array of board IDs associated with the organization.
+            type: array
+            items:
+              description: List of board IDs associated with the organization
+              type:
+                - "null"
+                - string
+          idMemberCreator:
+            description: The ID of the member who created the organization
+            type:
+              - "null"
+              - string
+          invited:
+            description: Indicates if the organization has been invited to join Trello
+            type:
+              - "null"
+              - boolean
+          invitations:
+            description: Information about invitations sent by the organization
+            type: array
+          limits:
+            description: Limits set for the organization.
+            type: object
+            properties:
+              orgs:
+                description: Limits specific to the organization.
+                type: object
+                properties:
+                  totalMembersPerOrg:
+                    description: Total members allowed per organization.
+                    type: object
+                    properties:
+                      status:
+                        description: Status of total members per organization
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        description:
+                          The threshold at which total members for the
+                          organization are disabled
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        description: The warning threshold for total members per organization
+                        type:
+                          - "null"
+                          - integer
+                  freeBoardsPerOrg:
+                    description: Number of free boards allowed per organization.
+                    type: object
+                    properties:
+                      status:
+                        description: Status of free boards per organization
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        description:
+                          The threshold at which free boards for the organization
+                          are disabled
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        description: The warning threshold for free boards per organization
+                        type:
+                          - "null"
+                          - integer
+          memberships:
+            description: Memberships information for the organization.
+            type: array
+            items:
+              description: Details of each membership.
+              type: object
+              properties:
+                idMember:
+                  description: The ID of the member associated with the membership
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  description: The type of member
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  description: Indicates if the membership is unconfirmed
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  description: Indicates if the membership is deactivated
+                  type:
+                    - "null"
+                    - boolean
+                id:
+                  description: The unique identifier of the membership
+                  type:
+                    - "null"
+                    - string
+          membersCount:
+            description: The total count of members in the organization
+            type:
+              - "null"
+              - integer
+          prefs:
+            description: Preferences set for the organization.
+            type: object
+            properties:
+              permissionLevel:
+                description: Permission level set for the organization
+                type:
+                  - "null"
+                  - string
+              orgInviteRestrict:
+                description: Restrictions on organization invitations
+                type: array
+              boardInviteRestrict:
+                description: Restrictions on board invitations
+                type:
+                  - "null"
+                  - string
+              externalMembersDisabled:
+                description: Indicates if external members are disabled
+                type:
+                  - "null"
+                  - boolean
+              googleAppsVersion:
+                description:
+                  Version information of Google Apps associated with the
+                  organization
+                type:
+                  - "null"
+                  - integer
+              boardVisibilityRestrict:
+                description: Restrictions related to board visibility.
+                type: object
+                properties:
+                  private:
+                    description: Visibility restriction for private boards
+                    type:
+                      - "null"
+                      - string
+                  org:
+                    description: Visibility restriction for organization boards
+                    type:
+                      - "null"
+                      - string
+                  enterprise:
+                    description: Visibility restriction for enterprise boards
+                    type:
+                      - "null"
+                      - string
+                  public:
+                    description: Visibility restriction for public boards
+                    type:
+                      - "null"
+                      - string
+              boardDeleteRestrict:
+                description: Restrictions related to board deletion.
+                type: object
+                properties:
+                  private:
+                    description: Restriction on board deletion for private boards
+                    type:
+                      - "null"
+                      - string
+                  org:
+                    description: Restriction on board deletion for organization members
+                    type:
+                      - "null"
+                      - string
+                  enterprise:
+                    description: Restriction on board deletion for enterprise members
+                    type:
+                      - "null"
+                      - string
+                  public:
+                    description: Restriction on board deletion for public boards
+                    type:
+                      - "null"
+                      - string
+          powerUps:
+            description: Information about power-ups associated with the organization
+            type: array
+          products:
+            description: Information about products associated with the organization
+            type: array
+          billableMemberCount:
+            description: The total count of billable members in the organization
+            type:
+              - "null"
+              - integer
+          activeBillableMemberCount:
+            description: The number of active billable members within the organization
+            type:
+              - "null"
+              - integer
+          billableCollaboratorCount:
+            description:
+              The number of billable collaborators associated with the
+              organization
+            type:
+              - "null"
+              - integer
+          url:
+            description: URL of the organization
+            type:
+              - "null"
+              - string
+          premiumFeatures:
+            description: Information about premium features available for the organization.
+            type: array
+            items:
+              description: List of premium features available to the organization
+              type:
+                - "null"
+                - string
+          promotions:
+            description: Promotional information related to the organization
+            type: array
+          enterpriseJoinRequest:
+            description: Details about enterprise join requests for the organization
+            type: object
+          ixUpdate:
+            description: Information about the update index of the organization
+            type:
+              - "null"
+              - string
+          newLicenseInviteRestrict:
+            description: Restrictions on new license invitations
+            type:
+              - "null"
+              - string
+          newLicenseInviteRestrictUrl:
+            description: URL for restrictions on new license invitations
+            type:
+              - "null"
+              - string
   actions_stream:
     type: DeclarativeStream
     name: actions
@@ -124,6 +767,496 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier of the action event
+            type:
+              - "null"
+              - string
+          idMemberCreator:
+            description: Unique identifier of the member who created the action event
+            type:
+              - "null"
+              - string
+          data:
+            description: Contains various data related to the action event
+            type:
+              - "null"
+              - object
+            properties:
+              card:
+                description: Details related to the card involved in the action event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the card
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the card
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    description: Short identifier of the card
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    description: Short link for the card
+                    type:
+                      - "null"
+                      - string
+                  pos:
+                    description: Position of the card
+                    type:
+                      - "null"
+                      - number
+                  desc:
+                    description: Description of the card
+                    type:
+                      - "null"
+                      - string
+                  closed:
+                    description: Boolean indicating if the card is closed
+                    type:
+                      - "null"
+                      - boolean
+                  idList:
+                    description: Identifier of the list to which the card belongs
+                    type:
+                      - "null"
+                      - string
+                  idMembers:
+                    description: List of identifiers of members assigned to the card
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      description: Member ID
+                      type:
+                        - "null"
+                        - string
+              list:
+                description: Details related to the list involved in the action event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the list
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the list
+                    type:
+                      - "null"
+                      - string
+                  pos:
+                    description: Position of the list
+                    type:
+                      - "null"
+                      - number
+                  closed:
+                    description: Boolean indicating if the list is closed
+                    type:
+                      - "null"
+                      - boolean
+              board:
+                description: Details related to the board involved in the action event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the board
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the board
+                    type:
+                      - "null"
+                      - string
+                  shortLink:
+                    description: Short link for the board
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    description: Preferences settings of the board
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      background:
+                        description: Background color or image set for the board
+                        type:
+                          - "null"
+                          - string
+              old:
+                description:
+                  Previous data of the card or board involved in the action
+                  event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  pos:
+                    description: Previous position of the card
+                    type:
+                      - "null"
+                      - number
+                  desc:
+                    description: Previous description of the card
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Previous name of the card
+                    type:
+                      - "null"
+                      - string
+                  closed:
+                    description: Previous state of whether the card or board was closed
+                    type:
+                      - "null"
+                      - boolean
+                  idList:
+                    description:
+                      Previous identifier of the list to which the card
+                      belonged
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    description: Previous preferences settings of the board
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      background:
+                        description:
+                          Previous background color or image set for the
+                          board
+                        type:
+                          - "null"
+                          - string
+                  idMembers:
+                    description: Previous list of member IDs assigned to the card
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      description: Member ID
+                      type:
+                        - "null"
+                        - string
+              listBefore:
+                description: Details related to the list before the action event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the list before the action
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the list before the action
+                    type:
+                      - "null"
+                      - string
+              listAfter:
+                description: Details related to the list after the action event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the list after the action
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the list after the action
+                    type:
+                      - "null"
+                      - string
+              memberType:
+                description: Type of the member (e.g., normal, admin)
+                type:
+                  - "null"
+                  - string
+              idMemberAdded:
+                description: Unique identifier of the member added to a card
+                type:
+                  - "null"
+                  - string
+              cardSource:
+                description: Details related to the source card (if applicable)
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the source card
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the source card
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    description: Short identifier of the source card
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    description: Short link for the source card
+                    type:
+                      - "null"
+                      - string
+              idMemberInviter:
+                description: Unique identifier of the member who invited another member
+                type:
+                  - "null"
+                  - string
+              method:
+                description: HTTP method used for the action event
+                type:
+                  - "null"
+                  - string
+              idMember:
+                description: Unique identifier of the member involved
+                type:
+                  - "null"
+                  - string
+              member:
+                description:
+                  Details related to the member involved in the action
+                  event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the member
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the member
+                    type:
+                      - "null"
+                      - string
+              deactivated:
+                description: Boolean indicating if the action is deactivated
+                type:
+                  - "null"
+                  - boolean
+              text:
+                description: Text description of the action event
+                type:
+                  - "null"
+                  - string
+              organization:
+                description:
+                  Details related to the organization involved in the action
+                  event
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier of the organization
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the organization
+                    type:
+                      - "null"
+                      - string
+          type:
+            description: Type of the action event
+            type:
+              - "null"
+              - string
+          date:
+            description: Date and time of the action event
+            type:
+              - "null"
+              - string
+          memberCreator:
+            description: Details related to the member who created the action event
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the member
+                type:
+                  - "null"
+                  - string
+              username:
+                description: Username of the member
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                description: Boolean indicating if the member's activity is blocked
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                description: Hash value of the member's avatar
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                description: URL of the member's avatar
+                type:
+                  - "null"
+                  - string
+              fullName:
+                description: Full name of the member
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                description: Unique identifier of the referring member
+                type:
+                  - "null"
+                  - string
+              initials:
+                description: Initials of the member
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                description: Boolean indicating if non-public information is available
+                type:
+                  - "null"
+                  - boolean
+          member:
+            description: Details related to the member who performed the action
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the member
+                type:
+                  - "null"
+                  - string
+              username:
+                description: Username of the member
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                description: Boolean indicating if the member's activity is blocked
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                description: Hash value of the member's avatar
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                description: URL of the member's avatar
+                type:
+                  - "null"
+                  - string
+              fullName:
+                description: Full name of the member
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                description: Unique identifier of the referring member
+                type:
+                  - "null"
+                  - string
+              initials:
+                description: Initials of the member
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                description: Boolean indicating if non-public information is available
+                type:
+                  - "null"
+                  - boolean
+          limits:
+            description: Limits related to reactions on the action event
+            type:
+              - "null"
+              - object
+            properties:
+              reactions:
+                description: Reactions-related limits
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perAction:
+                    description: Limits for reactions per action
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        description: Status of reactions limit
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        description: Disable reactions at a certain count
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        description: Warn when reactions reach a certain count
+                        type:
+                          - "null"
+                          - integer
+                  uniquePerAction:
+                    description: Limits for unique reactions per action
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        description: Status of unique reactions limit
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        description: Disable unique reactions at a certain count
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        description: Warn when unique reactions reach a certain count
+                        type:
+                          - "null"
+                          - integer
   cards_stream:
     type: DeclarativeStream
     name: cards
@@ -147,6 +1280,384 @@ definitions:
         $ref: "#/definitions/paginator"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier of the card
+            type:
+              - "null"
+              - string
+          start:
+            description: Start date of the card
+            type:
+              - "null"
+              - string
+          customFieldItems:
+            description: Items of custom fields associated with the card
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idValue:
+                  type:
+                    - "null"
+                    - string
+                idCustomField:
+                  type:
+                    - "null"
+                    - string
+                idModel:
+                  type:
+                    - "null"
+                    - string
+                modelType:
+                  type:
+                    - "null"
+                    - string
+                value:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    checked:
+                      type:
+                        - "null"
+                        - string
+                    date:
+                      type:
+                        - "null"
+                        - string
+                    number:
+                      type:
+                        - "null"
+                        - string
+                    text:
+                      type:
+                        - "null"
+                        - string
+                    option:
+                      type:
+                        - "null"
+                        - string
+          idMembersVoted:
+            description: List of member IDs who have voted on the card
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          checkItemStates:
+            description: States of check items on the card
+            type:
+              - "null"
+              - array
+            items: {}
+          closed:
+            description: Flag indicating if the card is closed
+            type:
+              - "null"
+              - boolean
+          dateLastActivity:
+            description: Date of the last activity on the card
+            type:
+              - "null"
+              - string
+            format: date-time
+          desc:
+            description: Short description of the card
+            type:
+              - "null"
+              - string
+          descData:
+            description: Additional data related to the card description
+            type:
+              - "null"
+              - object
+            properties:
+              emoji:
+                description: Emoji data within the description
+                type:
+                  - "null"
+                  - object
+                properties: {}
+          dueReminder:
+            description: Reminder set for the due date of the card
+            type:
+              - "null"
+              - string
+          idBoard:
+            description: ID of the board to which the card belongs
+            type:
+              - "null"
+              - string
+          idList:
+            description: ID of the list in which the card is located
+            type:
+              - "null"
+              - string
+          idShort:
+            description: Shortened unique identifier of the card
+            type:
+              - "null"
+              - integer
+          idAttachmentCover:
+            description: ID of the attachment used as the cover of the card
+            type:
+              - "null"
+              - string
+          manualCoverAttachment:
+            description: Flag indicating if the cover attachment is manually set
+            type:
+              - "null"
+              - boolean
+          name:
+            description: Name/title of the card
+            type:
+              - "null"
+              - string
+          pos:
+            description: Position of the card in the list
+            type:
+              - "null"
+              - number
+          shortLink:
+            description: Short link of the card
+            type:
+              - "null"
+              - string
+          isTemplate:
+            description: Flag indicating if the card is a template
+            type:
+              - "null"
+              - boolean
+          badges:
+            description: Various metadata attached to the card
+            type:
+              - "null"
+              - object
+            properties:
+              attachmentsByType:
+                description: Attachments grouped by type
+                type:
+                  - "null"
+                  - object
+                properties:
+                  trello:
+                    description: Trello-specific attachments
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      board:
+                        description: Reference to the board where the attachment belongs
+                        type:
+                          - "null"
+                          - integer
+                      card:
+                        description: Reference to the card associated with the attachment
+                        type:
+                          - "null"
+                          - integer
+              location:
+                description: Location information associated with the card
+                type:
+                  - "null"
+                  - boolean
+              votes:
+                description: Number of votes on the card
+                type:
+                  - "null"
+                  - integer
+              viewingMemberVoted:
+                description:
+                  Flag indicating if the viewing member has voted on the
+                  card
+                type:
+                  - "null"
+                  - boolean
+              subscribed:
+                description: Flag indicating if the user is subscribed to the card
+                type:
+                  - "null"
+                  - boolean
+              fogbugz:
+                description: Integration data for FogBugz
+                type:
+                  - "null"
+                  - string
+              checkItems:
+                description: List of checklist items associated with the card
+                type:
+                  - "null"
+                  - integer
+              checkItemsChecked:
+                description: Number of checklist items checked
+                type:
+                  - "null"
+                  - integer
+              checkItemsEarliestDue:
+                description: Earliest due date among checklist items
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              comments:
+                description: List of comments on the card
+                type:
+                  - "null"
+                  - integer
+              attachments:
+                description: List of attachments associated with the card
+                type:
+                  - "null"
+                  - integer
+              description:
+                description: Detailed description of the card
+                type:
+                  - "null"
+                  - boolean
+              due:
+                description: Due date of the card
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              dueComplete:
+                description: Flag indicating if the due date is complete
+                type:
+                  - "null"
+                  - boolean
+          dueComplete:
+            description: Flag indicating if the due date is complete
+            type:
+              - "null"
+              - boolean
+          due:
+            description: Due date of the card
+            type:
+              - "null"
+              - string
+            format: date-time
+          shortUrl:
+            description: Short URL of the card
+            type:
+              - "null"
+              - string
+          subscribed:
+            description: Flag indicating if the user is subscribed to the card
+            type:
+              - "null"
+              - boolean
+          url:
+            description: URL that leads directly to the card
+            type:
+              - "null"
+              - string
+          cover:
+            description: Cover image information of the card
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              idAttachment:
+                type:
+                  - "null"
+                  - string
+              color:
+                type:
+                  - "null"
+                  - string
+              idUploadedBackground:
+                type:
+                  - "null"
+                  - string
+              size:
+                type:
+                  - "null"
+                  - string
+              brightness:
+                type:
+                  - "null"
+                  - string
+              edgeColor:
+                type:
+                  - "null"
+                  - string
+              sharedSourceUrl:
+                type:
+                  - "null"
+                  - string
+              idPlugin:
+                type:
+                  - "null"
+                  - string
+          idChecklists:
+            description: List of checklist IDs associated with the card
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idMembers:
+            description: List of member IDs assigned to the card
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          idLabels:
+            description: List of label IDs associated with the card
+            type: array
+            items:
+              type:
+                - "null"
+                - string
+          labels:
+            description: List of labels attached to the card
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                idBoard:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                color:
+                  type:
+                    - "null"
+                    - string
   checklists_stream:
     type: DeclarativeStream
     name: checklists
@@ -164,6 +1675,923 @@ definitions:
         $ref: "#/definitions/selector"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier of the card.
+            type:
+              - "null"
+              - string
+          idMemberCreator:
+            description: Identifier of the member who created the card.
+            type:
+              - "null"
+              - string
+          data:
+            description:
+              In-depth details about the card and related entities such
+              as board, checklists, and members.
+            type:
+              - "null"
+              - object
+            properties:
+              old:
+                description: Previous details of the card before updates.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  closed:
+                    description: Previous status of card closure.
+                    type:
+                      - "null"
+                      - boolean
+                  name:
+                    description: Previous name of the card.
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    description: Previous preferences of the card.
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      selfJoin:
+                        description: Previous status of self-join permission.
+                        type:
+                          - "null"
+                          - boolean
+                      permissionLevel:
+                        description: Previous permission level set for the card.
+                        type:
+                          - "null"
+                          - string
+                  dueComplete:
+                    description: Previous status of due date completion.
+                    type:
+                      - "null"
+                      - boolean
+                  due:
+                    description: Previous due date of the card.
+                    type:
+                      - "null"
+                      - string
+              card:
+                description: Details about the card.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  closed:
+                    description: Flag indicating if the card is closed.
+                    type:
+                      - "null"
+                      - boolean
+                  id:
+                    description: Identifier of the card.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the card.
+                    type:
+                      - "null"
+                      - string
+                  idShort:
+                    description: Short identifier of the card.
+                    type:
+                      - "null"
+                      - integer
+                  shortLink:
+                    description: Short link of the card.
+                    type:
+                      - "null"
+                      - string
+                  dueComplete:
+                    description: Flag indicating if the due date of the card is complete.
+                    type:
+                      - "null"
+                      - boolean
+                  due:
+                    description: Due date of the card.
+                    type:
+                      - "null"
+                      - string
+              board:
+                description: Details about the board where the card is located.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Identifier of the board.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the board.
+                    type:
+                      - "null"
+                      - string
+                  shortLink:
+                    description: Short link of the board.
+                    type:
+                      - "null"
+                      - string
+                  prefs:
+                    description: Preferences related to the board.
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      selfJoin:
+                        description:
+                          Flag indicating if self-join is allowed on the
+                          board.
+                        type:
+                          - "null"
+                          - boolean
+                      permissionLevel:
+                        description: Level of permissions set for the board.
+                        type:
+                          - "null"
+                          - string
+              list:
+                description: Details about the list where the card is located.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Identifier of the list.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the list.
+                    type:
+                      - "null"
+                      - string
+              checklist:
+                description: Details about the checklist to which the card belongs.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Identifier of the checklist.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the checklist.
+                    type:
+                      - "null"
+                      - string
+              organization:
+                description: Details about the organization to which the card belongs.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Identifier of the organization.
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the organization.
+                    type:
+                      - "null"
+                      - string
+              creationMethod:
+                description: Method through which the card was created.
+                type:
+                  - "null"
+                  - string
+          type:
+            description: Type of the card.
+            type:
+              - "null"
+              - string
+          date:
+            description: Creation date of the card.
+            type:
+              - "null"
+              - string
+          memberCreator:
+            description: Details of the member who created the card.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Identifier of the member.
+                type:
+                  - "null"
+                  - string
+              username:
+                description: Username of the member.
+                type:
+                  - "null"
+                  - string
+              activityBlocked:
+                description: Flag indicating if the activity of the member is blocked.
+                type:
+                  - "null"
+                  - boolean
+              avatarHash:
+                description: Hash of the member's avatar.
+                type:
+                  - "null"
+                  - string
+              avatarUrl:
+                description: URL of the member's avatar.
+                type:
+                  - "null"
+                  - string
+              fullName:
+                description: Full name of the member.
+                type:
+                  - "null"
+                  - string
+              idMemberReferrer:
+                description: Identifier of the referrer member.
+                type:
+                  - "null"
+                  - string
+              initials:
+                description: Initials of the member.
+                type:
+                  - "null"
+                  - string
+              nonPublicAvailable:
+                description:
+                  Flag indicating if certain details of the member are
+                  not publicly available.
+                type:
+                  - "null"
+                  - boolean
+          name:
+            description: Name of the card.
+            type:
+              - "null"
+              - string
+          desc:
+            description: Description of the card.
+            type:
+              - "null"
+              - string
+          descData:
+            description: Additional data related to the card description.
+            type:
+              - "null"
+              - string
+          closed:
+            description: Flag indicating if the card is closed.
+            type:
+              - "null"
+              - boolean
+          idOrganization:
+            description: Identifier of the organization associated with the card.
+            type:
+              - "null"
+              - string
+          idEnterprise:
+            description: Identifier of the enterprise associated with the card.
+            type:
+              - "null"
+              - string
+          limits:
+            description: Limits set for certain card properties such as check items.
+            type:
+              - "null"
+              - object
+            properties:
+              checkItems:
+                description: Limits related to check items.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  perChecklist:
+                    description: Limit settings per checklist for check items.
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      status:
+                        description: Status of the limit.
+                        type:
+                          - "null"
+                          - string
+                      disableAt:
+                        description: Disable check items at this limit.
+                        type:
+                          - "null"
+                          - integer
+                      warnAt:
+                        description: Warning limit for check items.
+                        type:
+                          - "null"
+                          - integer
+          pinned:
+            description: Flag indicating if the card is pinned.
+            type:
+              - "null"
+              - string
+          shortLink:
+            description: Short link of the card.
+            type:
+              - "null"
+              - string
+          dateLastActivity:
+            description: Date of the last activity on the card.
+            type:
+              - "null"
+              - string
+          datePluginDisable:
+            description: Date of plugin disable related to the card.
+            type:
+              - "null"
+              - string
+          creationMethod:
+            description: Method through which the card was created.
+            type:
+              - "null"
+              - string
+          ixUpdate:
+            description: Update index related to the card.
+            type:
+              - "null"
+              - string
+          enterpriseOwned:
+            description: Flag indicating if the card is owned by an enterprise.
+            type:
+              - "null"
+              - boolean
+          idBoardSource:
+            description:
+              Identifier of the source board if the card is copied from
+              another board.
+            type:
+              - "null"
+              - string
+          starred:
+            description: Flag indicating if the card is starred.
+            type:
+              - "null"
+              - boolean
+          url:
+            description: URL of the card.
+            type:
+              - "null"
+              - string
+          prefs:
+            description: Preferences related to the card.
+            type:
+              - "null"
+              - object
+            properties:
+              permissionLevel:
+                description: Level of permissions set for the card.
+                type:
+                  - "null"
+                  - string
+              hideVotes:
+                description: Flag indicating if votes are hidden on the card.
+                type:
+                  - "null"
+                  - boolean
+              voting:
+                description: Flag indicating if voting is enabled on the card.
+                type:
+                  - "null"
+                  - string
+              comments:
+                description: Flag indicating if comments are enabled on the card.
+                type:
+                  - "null"
+                  - string
+              invitations:
+                description: Details related to card invitations.
+                type:
+                  - "null"
+                  - string
+              selfJoin:
+                description: Flag indicating if self-join is allowed on the card.
+                type:
+                  - "null"
+                  - boolean
+              cardCovers:
+                description: Flag indicating if card covers are enabled on the board.
+                type:
+                  - "null"
+                  - boolean
+              isTemplate:
+                description: Flag indicating if the card is a template.
+                type:
+                  - "null"
+                  - boolean
+              cardAging:
+                description: Aging settings for the card.
+                type:
+                  - "null"
+                  - string
+              calendarFeedEnabled:
+                description: Flag indicating if calendar feed is enabled for the card.
+                type:
+                  - "null"
+                  - boolean
+              background:
+                description: Background settings for the card.
+                type:
+                  - "null"
+                  - string
+              backgroundImage:
+                description: Image set as the background.
+                type:
+                  - "null"
+                  - string
+              backgroundImageScaled:
+                description: Scaled versions of the background image.
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Individual scaled image details.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    width:
+                      description: Width dimension of the scaled image.
+                      type:
+                        - "null"
+                        - integer
+                    height:
+                      description: Height dimension of the scaled image.
+                      type:
+                        - "null"
+                        - integer
+                    url:
+                      description: URL of the scaled image.
+                      type:
+                        - "null"
+                        - string
+              backgroundTile:
+                description: Flag indicating if the background is set to tile.
+                type:
+                  - "null"
+                  - boolean
+              backgroundBrightness:
+                description: Brightness level of the background.
+                type:
+                  - "null"
+                  - string
+              backgroundColor:
+                description: Color of the background.
+                type:
+                  - "null"
+                  - string
+              backgroundBottomColor:
+                description: Bottom color of the background.
+                type:
+                  - "null"
+                  - string
+              backgroundTopColor:
+                description: Top color of the background.
+                type:
+                  - "null"
+                  - string
+              canBePublic:
+                description: Flag indicating if the card can be public.
+                type:
+                  - "null"
+                  - boolean
+              canBeEnterprise:
+                description: Flag indicating if the card can be owned by an enterprise.
+                type:
+                  - "null"
+                  - boolean
+              canBeOrg:
+                description: Flag indicating if the card can be owned by an organization.
+                type:
+                  - "null"
+                  - boolean
+              canBePrivate:
+                description: Flag indicating if the card can be private.
+                type:
+                  - "null"
+                  - boolean
+              canInvite:
+                description: Flag indicating if invitations can be sent for the card.
+                type:
+                  - "null"
+                  - boolean
+          subscribed:
+            description:
+              Flag indicating if the current user is subscribed to the
+              card.
+            type:
+              - "null"
+              - boolean
+          labelNames:
+            description: Names of various labels associated with the card.
+            type:
+              - "null"
+              - object
+            properties:
+              green:
+                description: Name of the green label.
+                type:
+                  - "null"
+                  - string
+              yellow:
+                description: Name of the yellow label.
+                type:
+                  - "null"
+                  - string
+              orange:
+                description: Name of the orange label.
+                type:
+                  - "null"
+                  - string
+              red:
+                description: Name of the red label.
+                type:
+                  - "null"
+                  - string
+              purple:
+                description: Name of the purple label.
+                type:
+                  - "null"
+                  - string
+              blue:
+                description: Name of the blue label.
+                type:
+                  - "null"
+                  - string
+              sky:
+                description: Name of the sky label.
+                type:
+                  - "null"
+                  - string
+              lime:
+                description: Name of the lime label.
+                type:
+                  - "null"
+                  - string
+              pink:
+                description: Name of the pink label.
+                type:
+                  - "null"
+                  - string
+              black:
+                description: Name of the black label.
+                type:
+                  - "null"
+                  - string
+          dateLastView:
+            description: Date of the last view of the card.
+            type:
+              - "null"
+              - string
+          shortUrl:
+            description: Short URL of the card.
+            type:
+              - "null"
+              - string
+          templateGallery:
+            description: Flag indicating if the card is part of the template gallery.
+            type:
+              - "null"
+              - string
+          memberships:
+            description: Details of the memberships related to the card.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual membership details.
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Identifier of the membership.
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  description: Identifier of the member in the membership.
+                  type:
+                    - "null"
+                    - string
+                memberType:
+                  description: Type of the member in the membership.
+                  type:
+                    - "null"
+                    - string
+                unconfirmed:
+                  description: Flag indicating if the membership is unconfirmed.
+                  type:
+                    - "null"
+                    - boolean
+                deactivated:
+                  description: Flag indicating if the membership is deactivated.
+                  type:
+                    - "null"
+                    - boolean
+          checkItemStates:
+            description: State of each check item on the card.
+            type:
+              - "null"
+              - string
+          dueReminder:
+            description: Reminder set for the due date of the card.
+            type:
+              - "null"
+              - string
+          idBoard:
+            description: Identifier of the board where the card is located.
+            type:
+              - "null"
+              - string
+          idList:
+            description: Identifier of the list where the card is located.
+            type:
+              - "null"
+              - string
+          idShort:
+            description: Short identifier of the card.
+            type:
+              - "null"
+              - integer
+          idAttachmentCover:
+            description: Identifier of the attachment serving as the card cover.
+            type:
+              - "null"
+              - string
+          manualCoverAttachment:
+            description: Flag indicating if the card cover is set manually.
+            type:
+              - "null"
+              - boolean
+          pos:
+            description: Position of the card in the list.
+            type:
+              - "null"
+              - number
+          isTemplate:
+            description: Flag indicating if the card is a template.
+            type:
+              - "null"
+              - boolean
+          badges:
+            description:
+              Various metadata related to the card, such as attachments,
+              check items, due dates, votes, etc.
+            type:
+              - "null"
+              - object
+            properties:
+              attachmentsByType:
+                description: Attachments categorized by type such as Trello.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  trello:
+                    description:
+                      Trello specific attachment details for board and
+                      card.
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      board:
+                        description:
+                          Details about the board where the attachment
+                          is from.
+                        type:
+                          - "null"
+                          - integer
+                      card:
+                        description:
+                          Details about the card where the attachment is
+                          from.
+                        type:
+                          - "null"
+                          - integer
+              location:
+                description: Location details associated with the card.
+                type:
+                  - "null"
+                  - boolean
+              votes:
+                description: Number of votes on the card.
+                type:
+                  - "null"
+                  - integer
+              viewingMemberVoted:
+                description:
+                  Flag indicating if the viewing member has voted on the
+                  card.
+                type:
+                  - "null"
+                  - boolean
+              subscribed:
+                description:
+                  Flag indicating if the current user is subscribed to
+                  the card.
+                type:
+                  - "null"
+                  - boolean
+              fogbugz:
+                description: FogBugz specific data related to the card.
+                type:
+                  - "null"
+                  - string
+              checkItems:
+                description: Details about the check items associated with the card.
+                type:
+                  - "null"
+                  - integer
+              checkItemsChecked:
+                description: Number of check items that are checked.
+                type:
+                  - "null"
+                  - integer
+              checkItemsEarliestDue:
+                description: Due date of the earliest check item.
+                type:
+                  - "null"
+                  - string
+              comments:
+                description: Number of comments on the card.
+                type:
+                  - "null"
+                  - integer
+              attachments:
+                description: Details about attachments on the card.
+                type:
+                  - "null"
+                  - integer
+              description:
+                description: Description of the card.
+                type:
+                  - "null"
+                  - boolean
+              due:
+                description: Due date of the card.
+                type:
+                  - "null"
+                  - string
+              dueComplete:
+                description: Flag indicating if the due date is complete.
+                type:
+                  - "null"
+                  - boolean
+          dueComplete:
+            description: Flag indicating if the due date is complete.
+            type:
+              - "null"
+              - boolean
+          due:
+            description: Due date of the card.
+            type:
+              - "null"
+              - string
+          idChecklists:
+            description: Identifiers of checklists associated with the card.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual checklist identifier.
+              type:
+                - "null"
+                - string
+          cover:
+            description: Details about the cover image or color of the card.
+            type:
+              - "null"
+              - object
+            properties:
+              idAttachment:
+                description: Identifier of the attachment serving as the card cover.
+                type:
+                  - "null"
+                  - string
+              color:
+                description: Color of the cover image.
+                type:
+                  - "null"
+                  - string
+              idUploadedBackground:
+                description: Identifier of the uploaded background image.
+                type:
+                  - "null"
+                  - string
+              size:
+                description: Size of the cover image.
+                type:
+                  - "null"
+                  - string
+              brightness:
+                description: Brightness level of the cover image.
+                type:
+                  - "null"
+                  - string
+          username:
+            description: Username associated with the card.
+            type:
+              - "null"
+              - string
+          fullName:
+            description: Full name of the card.
+            type:
+              - "null"
+              - string
+          softLimit:
+            description: Soft limit set for the card.
+            type:
+              - "null"
+              - string
+          idCard:
+            description: Identifier of the card.
+            type:
+              - "null"
+              - string
+          checkItems:
+            description: Details of individual check items on the card.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                idChecklist:
+                  description:
+                    Identifier of the checklist to which the check item
+                    belongs.
+                  type:
+                    - "null"
+                    - string
+                state:
+                  description: State of the check item (complete or incomplete).
+                  type:
+                    - "null"
+                    - string
+                idMember:
+                  description: Identifier of the member assigned to the check item.
+                  type:
+                    - "null"
+                    - string
+                id:
+                  description: Unique identifier of the check item.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the check item.
+                  type:
+                    - "null"
+                    - string
+                nameData:
+                  description: Additional data related to the check item name.
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of the check item.
+                  type:
+                    - "null"
+                    - string
+                pos:
+                  description: Position of the check item on the card.
+                  type:
+                    - "null"
+                    - number
+                creationMethod:
+                  description: Method through which the check item was created.
+                  type:
+                    - "null"
+                    - string
+                due:
+                  description: Due date of the check item.
+                  type:
+                    - "null"
+                    - string
   lists_stream:
     type: DeclarativeStream
     name: lists
@@ -179,6 +2607,50 @@ definitions:
         $ref: "#/definitions/selector"
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier of the list.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the list.
+            type:
+              - "null"
+              - string
+          closed:
+            description: Indicates if the list is archived or not.
+            type:
+              - "null"
+              - boolean
+          pos:
+            description: Position of the list relative to other lists.
+            type:
+              - "null"
+              - number
+          softLimit:
+            description: Soft limit of cards that can be added to the list.
+            type:
+              - "null"
+              - integer
+          idBoard:
+            description: Identifier of the board to which the list belongs.
+            type:
+              - "null"
+              - string
+          subscribed:
+            description:
+              Indicates if the authenticated user is subscribed to the
+              list.
+            type:
+              - "null"
+              - boolean
   users_stream:
     type: DeclarativeStream
     name: users
@@ -195,6 +2667,31 @@ definitions:
       partition_router:
         $ref: "#/definitions/board_id_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the user.
+            type:
+              - string
+          boardId:
+            description: Unique identifier for the board associated with the user.
+            type:
+              - string
+          username:
+            description: Username of the user.
+            type:
+              - "null"
+              - string
+          fullName:
+            description: Full name of the user.
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/boards_stream"
   - "#/definitions/organizations_stream"
@@ -219,20 +2716,26 @@ spec:
       key:
         type: string
         title: API key
-        description: Trello API key. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a> for instructions on how to generate it.
+        description: Trello API key. See the <a
+          href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+          for instructions on how to generate it.
         airbyte_secret: true
         order: 0
       token:
         type: string
         title: API token
-        description: Trello API token. See the <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a> for instructions on how to generate it.
+        description: Trello API token. See the <a
+          href="https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth">docs</a>
+          for instructions on how to generate it.
         airbyte_secret: true
         order: 1
       start_date:
         type: string
         title: Start Date
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
         examples:
           - "2021-03-01T00:00:00Z"
         format: date-time
@@ -243,7 +2746,12 @@ spec:
           type: string
           pattern: "^[0-9a-fA-F]{24}$"
         title: Trello Board IDs
-        description: IDs of the boards to replicate data from. If left empty, data from all boards to which you have access will be replicated. Please note that this is not the 8-character ID in the board's shortLink (URL of the board). Rather, what is required here is the 24-character ID usually returned by the API
+        description:
+          IDs of the boards to replicate data from. If left empty, data
+          from all boards to which you have access will be replicated. Please note
+          that this is not the 8-character ID in the board's shortLink (URL of the
+          board). Rather, what is required here is the 24-character ID usually returned
+          by the API
         order: 3
   advanced_auth:
     auth_flow_type: oauth2.0
