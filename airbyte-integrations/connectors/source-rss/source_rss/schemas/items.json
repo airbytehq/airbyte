@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["published"],
+  "properties": {
+    "title": {
+      "description": "The title of the item.",
+      "type": ["null", "string"]
+    },
+    "link": {
+      "description": "URL link to access the item.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description or content of the item.",
+      "type": ["null", "string"]
+    },
+    "author": {
+      "description": "The author of the item.",
+      "type": ["null", "string"]
+    },
+    "category": {
+      "description": "The category of the item.",
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "description": "Comments related to the item.",
+      "type": ["null", "string"]
+    },
+    "enclosure": {
+      "description": "Additional media file associated with the item.",
+      "type": ["null", "string"]
+    },
+    "guid": {
+      "description": "A unique identifier for the item.",
+      "type": ["null", "string"]
+    },
+    "published": {
+      "description": "The date and time when the item was published.",
+      "type": ["string"],
+      "format": "date-time"
+    }
+  }
+}
