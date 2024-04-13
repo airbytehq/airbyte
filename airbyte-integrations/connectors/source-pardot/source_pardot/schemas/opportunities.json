@@ -3,38 +3,49 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the opportunity.",
       "type": ["integer"]
     },
     "campaign_id": {
+      "description": "The unique identifier of the campaign linked to the opportunity.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the opportunity.",
       "type": ["null", "string"]
     },
     "value": {
+      "description": "The monetary value associated with the opportunity.",
       "type": ["null", "number"]
     },
     "probability": {
+      "description": "The probability of successful closure of the opportunity.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type of opportunity (e.g., new business, upsell, renewal).",
       "type": ["null", "string"]
     },
     "stage": {
+      "description": "The current stage of the opportunity in the sales process.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the opportunity (e.g., open, closed-won, closed-lost).",
       "type": ["null", "string"]
     },
     "closed_at": {
+      "description": "The date and time when the opportunity was closed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the opportunity was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the opportunity was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

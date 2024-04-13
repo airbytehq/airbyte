@@ -3,67 +3,88 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique ID of the visitor activity",
       "type": ["integer"]
     },
     "prospect_id": {
+      "description": "The ID of the prospect associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "visitor_id": {
+      "description": "The ID of the visitor associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "campaign_id": {
+      "description": "The ID of the campaign associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type of visitor activity",
       "type": ["null", "integer"]
     },
     "type_name": {
+      "description": "The name corresponding to the type of visitor activity",
       "type": ["null", "string"]
     },
     "details": {
+      "description": "Additional details or information about the visitor activity",
       "type": ["null", "string"]
     },
     "email_id": {
+      "description": "The ID of the email associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "email_template_id": {
+      "description": "The ID of the email template associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "list_email_id": {
+      "description": "The ID of the list email associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "form_id": {
+      "description": "The ID of the form associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "form_handler_id": {
+      "description": "The ID of the form handler associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "site_search_query_id": {
+      "description": "The ID of the site search query associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "landing_page_id": {
+      "description": "The ID of the landing page associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "paid_search_id_id": {
+      "description": "The ID of the paid search associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "multivariate_test_variation_id": {
+      "description": "The ID of the multivariate test variation associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "visitor_page_view_id": {
+      "description": "The ID of the visitor page view associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "file_id": {
+      "description": "The ID of the file associated with the visitor activity",
       "type": ["null", "integer"]
     },
     "campaign": {
+      "description": "The campaign associated with the visitor activity",
       "type": ["null", "object"]
     },
     "created_at": {
+      "description": "The timestamp when the visitor activity was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the visitor activity was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

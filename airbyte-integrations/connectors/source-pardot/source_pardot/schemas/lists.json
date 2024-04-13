@@ -3,31 +3,40 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the list",
       "type": ["integer"]
     },
     "name": {
+      "description": "The name of the list",
       "type": ["null", "string"]
     },
     "is_public": {
+      "description": "Indicates whether the list is public",
       "type": ["null", "boolean"]
     },
     "is_dynamic": {
+      "description": "Indicates whether the list is dynamically generated",
       "type": ["null", "boolean"]
     },
     "title": {
+      "description": "The title of the list",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the list",
       "type": ["null", "string"]
     },
     "is_crm_visible": {
+      "description": "Indicates whether the list is visible in the CRM system",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the list was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the list was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

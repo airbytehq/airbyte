@@ -3,22 +3,28 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for this list membership",
       "type": ["integer"]
     },
     "list_id": {
+      "description": "ID of the list to which the prospect is a member of",
       "type": ["integer"]
     },
     "prospect_id": {
+      "description": "Unique identifier of the prospect associated with this list membership",
       "type": ["integer"]
     },
     "opted_out": {
+      "description": "Indicates whether the prospect has opted out of this list membership",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "Date and time when this list membership was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when this list membership was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

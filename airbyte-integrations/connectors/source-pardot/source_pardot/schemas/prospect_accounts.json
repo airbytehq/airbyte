@@ -3,20 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of this prospect account",
       "type": ["integer"]
     },
     "name": {
+      "description": "The name of this prospect account",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when this prospect account was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when this prospect account was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "assigned_to": {
+      "description": "The user who is assigned to this prospect account",
       "type": ["null", "object"]
     }
   }

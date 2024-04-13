@@ -3,37 +3,48 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the visitor data.",
       "type": ["integer"]
     },
     "page_view_count": {
+      "description": "The count of page views by the visitor.",
       "type": ["null", "integer"]
     },
     "ip_address": {
+      "description": "The IP address of the visitor.",
       "type": ["null", "string"]
     },
     "hostname": {
+      "description": "The hostname of the visitor.",
       "type": ["null", "string"]
     },
     "campaign_parameter": {
+      "description": "The campaign parameter associated with the visitor.",
       "type": ["null", "string"]
     },
     "medium_parameter": {
+      "description": "The medium parameter associated with the visitor.",
       "type": ["null", "string"]
     },
     "source_parameter": {
+      "description": "The source parameter associated with the visitor.",
       "type": ["null", "string"]
     },
     "content_parameter": {
+      "description": "The content parameter associated with the visitor.",
       "type": ["null", "string"]
     },
     "term_parameter": {
+      "description": "The term parameter associated with the visitor.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the visitor data was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the visitor data was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }
