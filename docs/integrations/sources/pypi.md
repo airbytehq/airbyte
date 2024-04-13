@@ -26,6 +26,7 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------|
+| 0.1.1 | 2024-04-12 | [37237](https://github.com/airbytehq/airbyte/pull/37237) | schema descriptions |
 | 0.1.0   | 2022-10-29 | [18632](https://github.com/airbytehq/airbyte/pull/18632) | Initial Release |
 
 
