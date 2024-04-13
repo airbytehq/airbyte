@@ -4,90 +4,117 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier of the promoted link",
       "type": ["string", "null"]
     },
     "text": {
+      "description": "Text content of the promoted link",
       "type": ["string", "null"]
     },
     "creationTime": {
+      "description": "Timestamp indicating the creation time of the promoted link",
       "type": ["string", "null"]
     },
     "lastModified": {
+      "description": "Timestamp indicating the last modification time of the promoted link",
       "type": ["string", "null"]
     },
     "url": {
+      "description": "URL of the promoted link",
       "type": ["string", "null"]
     },
     "siteName": {
+      "description": "Name of the site where the promoted link is displayed",
       "type": ["string", "null"]
     },
     "sectionName": {
+      "description": "Name of the section where the promoted link is displayed",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the promoted link",
       "type": ["string", "null"]
     },
     "enabled": {
+      "description": "Flag indicating if the promoted link is enabled",
       "type": ["boolean", "null"]
     },
     "campaignId": {
+      "description": "The ID of the campaign associated with the promoted link",
       "type": ["string", "null"]
     },
     "archived": {
+      "description": "Flag indicating if the promoted link is archived",
       "type": ["boolean", "null"]
     },
     "documentLanguage": {
+      "description": "Language of the document associated with the promoted link",
       "type": ["string", "null"]
     },
     "onAirStatus": {
+      "description": "The on-air status indicating if the promoted link is active",
       "type": "object",
       "properties": {
         "onAir": {
+          "description": "Flag indicating if the promoted link is on air",
           "type": ["boolean", "null"]
         },
         "reason": {
+          "description": "Reason for the on air status of the promoted link",
           "type": ["string", "null"]
         }
       }
     },
     "baseUrl": {
+      "description": "Base URL of the promoted link",
       "type": ["string", "null"]
     },
     "documentId": {
+      "description": "The document ID associated with the promoted link",
       "type": ["string", "null"]
     },
     "metaData": {
+      "description": "Additional metadata associated with the promoted link",
       "type": ["string", "null"]
     },
     "approvalStatus": {
+      "description": "The approval status of the promoted link",
       "type": "object",
       "properties": {
         "status": {
+          "description": "The approval status of the promoted link",
           "type": ["string", "null"]
         },
         "isEditable": {
+          "description": "Flag indicating if the approval status is editable",
           "type": ["boolean", "null"]
         }
       }
     },
     "description": {
+      "description": "Description of the promoted link content",
       "type": ["string", "null"]
     },
     "callToAction": {
+      "description": "The call-to-action content for the promoted link",
       "type": "object",
       "properties": {
         "type": {
+          "description": "Type of the call to action for the promoted link",
           "type": ["string", "null"]
         },
         "value": {
+          "description": "Value of the call to action for the promoted link",
           "type": ["string", "null"]
         }
       }
     },
     "imageType": {
+      "description": "Type of image used in the promoted link",
       "type": ["string", "null"]
     },
     "language": {
+      "description": "Language of the promoted link content",
       "type": ["string", "null"]
     }
   }

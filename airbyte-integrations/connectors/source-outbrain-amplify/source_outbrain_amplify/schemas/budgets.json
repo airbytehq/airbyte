@@ -4,48 +4,63 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the budget",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "Name or title given to the budget",
       "type": ["string", "null"]
     },
     "shared": {
+      "description": "Flag indicating if the budget is shared among multiple campaigns",
       "type": ["boolean", "null"]
     },
     "amount": {
+      "description": "Total budget amount allocated for the campaign",
       "type": ["number", "null"]
     },
     "currency": {
+      "description": "Currency code for the budget amount",
       "type": ["string", "null"]
     },
     "amountRemaining": {
+      "description": "Amount of budget remaining to be spent",
       "type": ["number", "null"]
     },
     "amountSpent": {
+      "description": "Amount of budget already spent",
       "type": ["number", "null"]
     },
     "creationTime": {
+      "description": "Timestamp when the budget was created",
       "type": ["string", "null"]
     },
     "lastModified": {
+      "description": "Timestamp of the last modification made to the budget",
       "type": ["string", "null"]
     },
     "startDate": {
+      "description": "Start date of the budget's validity period",
       "type": ["string", "null"]
     },
     "endDate": {
+      "description": "End date of the budget's validity period",
       "type": ["string", "null"]
     },
     "runForever": {
+      "description": "Boolean indicating if the budget runs indefinitely",
       "type": ["boolean", "null"]
     },
     "type": {
+      "description": "Type or category of the budget",
       "type": ["string", "null"]
     },
     "pacing": {
+      "description": "Pacing strategy used for spending the budget",
       "type": ["string", "null"]
     },
     "marketer_id": {
+      "description": "Identifier of the marketer associated with the budget",
       "type": ["string", "null"]
     }
   }

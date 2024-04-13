@@ -4,115 +4,151 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Contains metadata information related to the performance report data.",
       "type": "object",
       "properties": {
         "platform": {
+          "description": "The platform where the campaign is running",
           "type": ["string", "null"]
         },
         "breakdown": {
+          "description": "The breakdown of the performance data",
           "type": ["string", "null"]
         }
       }
     },
     "metrics": {
+      "description": "Contains various metrics data related to the performance report of marketers campaigns by platforms.",
       "type": "object",
       "properties": {
         "impressions": {
+          "description": "The total number of impressions",
           "type": ["integer", "null"]
         },
         "clicks": {
+          "description": "The total number of clicks",
           "type": ["integer", "null"]
         },
         "totalConversions": {
+          "description": "The total number of conversions across all metrics",
           "type": ["number", "null"]
         },
         "conversions": {
+          "description": "The total number of conversions",
           "type": ["number", "null"]
         },
         "viewConversions": {
+          "description": "The total number of conversions specific to video metrics",
           "type": ["number", "null"]
         },
         "spend": {
+          "description": "The total amount spent on the campaign",
           "type": ["number", "null"]
         },
         "ecpc": {
+          "description": "The effective cost per click",
           "type": ["number", "null"]
         },
         "ctr": {
+          "description": "The click-through rate percentage",
           "type": ["number", "null"]
         },
         "conversionRate": {
+          "description": "The conversion rate percentage",
           "type": ["number", "null"]
         },
         "viewConversionRate": {
+          "description": "The conversion rate specific to video metrics",
           "type": ["integer", "null"]
         },
         "cpa": {
+          "description": "The cost per acquisition",
           "type": ["number", "null"]
         },
         "totalCpa": {
+          "description": "The total cost per acquisition across all metrics",
           "type": ["number", "null"]
         },
         "totalSumValue": {
+          "description": "The total sum value across all metrics",
           "type": ["number", "null"]
         },
         "sumValue": {
+          "description": "The total value of the performance metrics",
           "type": ["number", "null"]
         },
         "viewSumValue": {
+          "description": "The total value of video-specific metrics",
           "type": ["number", "null"]
         },
         "totalAverageValue": {
+          "description": "The total average value across all metrics",
           "type": ["number", "null"]
         },
         "averageValue": {
+          "description": "The average value of the performance metrics",
           "type": ["number", "null"]
         },
         "viewAverageValue": {
+          "description": "The average value of video-specific metrics",
           "type": ["number", "null"]
         },
         "totalRoas": {
+          "description": "The total return on ad spend across all metrics",
           "type": ["number", "null"]
         },
         "roas": {
+          "description": "The return on ad spend",
           "type": ["number", "null"]
         },
         "videoReachedFirstQ": {
+          "description": "The number of viewers who reached the first quartile of the video",
           "type": ["integer", "null"]
         },
         "videoReachedSecondQ": {
+          "description": "The number of viewers who reached the second quartile of the video",
           "type": ["integer", "null"]
         },
         "videoReachedThirdQ": {
+          "description": "The number of viewers who reached the third quartile of the video",
           "type": ["integer", "null"]
         },
         "videoReachedCompletion": {
+          "description": "The number of viewers who completed the video",
           "type": ["integer", "null"]
         },
         "videoViewDuration": {
+          "description": "The total duration of video views",
           "type": ["integer", "null"]
         },
         "videoAvgViewDuration": {
+          "description": "The average duration of video views",
           "type": ["number", "null"]
         },
         "videoPlays": {
+          "description": "The total number of video plays",
           "type": ["integer", "null"]
         },
         "clicksOnVideo": {
+          "description": "The number of clicks specifically on video content",
           "type": ["integer", "null"]
         },
         "videoActiveCompletions": {
+          "description": "The total number of video completions",
           "type": ["integer", "null"]
         },
         "videoActiveCompletionsPercentage": {
+          "description": "The percentage of video completions among active viewers",
           "type": ["integer", "null"]
         }
       }
     },
     "marketer_id": {
+      "description": "The unique identifier of the marketer associated with the campaign",
       "type": ["string", "null"]
     },
     "campaign_id": {
+      "description": "The unique identifier of the campaign",
       "type": ["string", "null"]
     }
   }

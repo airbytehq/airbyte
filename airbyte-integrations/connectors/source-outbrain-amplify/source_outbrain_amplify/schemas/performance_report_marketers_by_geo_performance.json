@@ -4,115 +4,151 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Contains metadata information about the performance report data.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier for the metadata",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "The name associated with the metadata",
           "type": ["string", "null"]
         },
         "code": {
+          "description": "The code associated with the metadata",
           "type": ["string", "null"]
         }
       }
     },
     "metrics": {
+      "description": "Contains the metrics related to the marketers' performance by geo performance.",
       "type": "object",
       "properties": {
         "impressions": {
+          "description": "The number of impressions",
           "type": ["number", "null"]
         },
         "clicks": {
+          "description": "The number of clicks",
           "type": ["number", "null"]
         },
         "totalConversions": {
+          "description": "The total number of conversions",
           "type": ["number", "null"]
         },
         "conversions": {
+          "description": "The number of conversions",
           "type": ["number", "null"]
         },
         "viewConversions": {
+          "description": "The number of conversions from view actions",
           "type": ["number", "null"]
         },
         "spend": {
+          "description": "The amount spent",
           "type": ["number", "null"]
         },
         "ecpc": {
+          "description": "The effective cost per click",
           "type": ["number", "null"]
         },
         "ctr": {
+          "description": "The click-through rate",
           "type": ["number", "null"]
         },
         "conversionRate": {
+          "description": "The conversion rate",
           "type": ["number", "null"]
         },
         "viewConversionRate": {
+          "description": "The conversion rate from view actions",
           "type": ["number", "null"]
         },
         "cpa": {
+          "description": "The cost per action",
           "type": ["number", "null"]
         },
         "totalCpa": {
+          "description": "The total cost per action",
           "type": ["number", "null"]
         },
         "totalSumValue": {
+          "description": "The total summed value",
           "type": ["number", "null"]
         },
         "sumValue": {
+          "description": "The summed value",
           "type": ["number", "null"]
         },
         "viewSumValue": {
+          "description": "The summed value from view actions",
           "type": ["number", "null"]
         },
         "totalAverageValue": {
+          "description": "The total average value",
           "type": ["number", "null"]
         },
         "averageValue": {
+          "description": "The average value of the metric",
           "type": ["number", "null"]
         },
         "viewAverageValue": {
+          "description": "The average value from view actions",
           "type": ["number", "null"]
         },
         "totalRoas": {
+          "description": "The total return on ad spend",
           "type": ["number", "null"]
         },
         "roas": {
+          "description": "The return on ad spend",
           "type": ["number", "null"]
         },
         "videoReachedFirstQ": {
+          "description": "The number of video content reached first quartile",
           "type": ["integer", "null"]
         },
         "videoReachedSecondQ": {
+          "description": "The number of video content reached second quartile",
           "type": ["integer", "null"]
         },
         "videoReachedThirdQ": {
+          "description": "The number of video content reached third quartile",
           "type": ["integer", "null"]
         },
         "videoReachedCompletion": {
+          "description": "The number of video content reached completion",
           "type": ["integer", "null"]
         },
         "videoViewDuration": {
+          "description": "The total view duration of video content",
           "type": ["integer", "null"]
         },
         "videoAvgViewDuration": {
+          "description": "The average view duration of video content",
           "type": ["number", "null"]
         },
         "videoPlays": {
+          "description": "The number of video plays",
           "type": ["integer", "null"]
         },
         "clicksOnVideo": {
+          "description": "The number of clicks on video content",
           "type": ["integer", "null"]
         },
         "videoActiveCompletions": {
+          "description": "The number of active completions on video content",
           "type": ["integer", "null"]
         },
         "videoActiveCompletionsPercentage": {
+          "description": "The percentage of active completions on video content",
           "type": ["integer", "null"]
         }
       }
     },
     "marketer_id": {
+      "description": "The unique identifier for the marketer",
       "type": ["string", "null"]
     }
   }

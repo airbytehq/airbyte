@@ -4,165 +4,217 @@
   "additionalProperties": true,
   "properties": {
     "metadata": {
+      "description": "Metadata related to the campaign.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier for the campaign.",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "The name of the campaign.",
           "type": ["string", "null"]
         },
         "campaignOnAir": {
+          "description": "Indicates if the campaign is currently active and running.",
           "type": ["boolean", "null"]
         },
         "onAirReason": {
+          "description": "Reason for the campaign being on air or paused.",
           "type": ["string", "null"]
         },
         "enabled": {
+          "description": "Indicates if the campaign is enabled or disabled.",
           "type": ["boolean", "null"]
         },
         "budget": {
+          "description": "Information about the budget settings for the campaign.",
           "type": "object",
           "properties": {
             "id": {
+              "description": "The unique identifier for the campaign budget.",
               "type": ["string", "null"]
             },
             "shared": {
+              "description": "Indicates if the budget is shared with other campaigns.",
               "type": ["boolean", "null"]
             },
             "amount": {
+              "description": "The budget amount allocated for the campaign.",
               "type": ["number", "null"]
             },
             "currency": {
+              "description": "The currency used for the budget amount.",
               "type": ["string", "null"]
             },
             "startDate": {
+              "description": "The start date for the campaign budget.",
               "type": ["string", "null"]
             },
             "endDate": {
+              "description": "The end date for the campaign budget.",
               "type": ["string", "null"]
             },
             "type": {
+              "description": "The type of budget (e.g., daily, lifetime).",
               "type": ["string", "null"]
             },
             "pacing": {
+              "description": "Information about the pacing strategy for spending the budget.",
               "type": ["string", "null"]
             }
           }
         },
         "isVideo": {
+          "description": "Indicates if the campaign includes video content.",
           "type": ["boolean", "null"]
         },
         "cpc": {
+          "description": "Cost per click for the campaign.",
           "type": ["number", "null"]
         },
         "targetedSegments": {
+          "description": "Segments targeted by the campaign for advertising.",
           "type": ["integer", "null"]
         },
         "optimizationExperimentStatus": {
+          "description": "Status of any optimization experiments being conducted.",
           "type": ["string", "null"]
         },
         "creativeFormat": {
+          "description": "The format of the creative used in the campaign.",
           "type": ["string", "null"]
         }
       }
     },
     "metrics": {
+      "description": "Metrics related to the performance of the campaign.",
       "type": "object",
       "properties": {
         "impressions": {
+          "description": "Total number of impressions served by the campaign.",
           "type": ["number", "null"]
         },
         "clicks": {
+          "description": "Total number of clicks received by the campaign.",
           "type": ["number", "null"]
         },
         "totalConversions": {
+          "description": "Total conversions across all campaigns.",
           "type": ["number", "null"]
         },
         "conversions": {
+          "description": "Total number of conversions recorded.",
           "type": ["number", "null"]
         },
         "viewConversions": {
+          "description": "Total conversions from view interactions.",
           "type": ["number", "null"]
         },
         "spend": {
+          "description": "Total amount spent on the campaign.",
           "type": ["number", "null"]
         },
         "ecpc": {
+          "description": "Effective cost per click for the campaign.",
           "type": ["number", "null"]
         },
         "ctr": {
+          "description": "Click-through rate of the campaign.",
           "type": ["number", "null"]
         },
         "conversionRate": {
+          "description": "Rate of conversions achieved by the campaign.",
           "type": ["number", "null"]
         },
         "viewConversionRate": {
+          "description": "Conversion rate from view interactions.",
           "type": ["number", "null"]
         },
         "cpa": {
+          "description": "Cost per acquisition for the campaign.",
           "type": ["number", "null"]
         },
         "totalCpa": {
+          "description": "Total cost per acquisition across all campaigns.",
           "type": ["number", "null"]
         },
         "totalSumValue": {
+          "description": "Total sum value across all campaigns.",
           "type": ["number", "null"]
         },
         "sumValue": {
+          "description": "Sum value generated by the campaign.",
           "type": ["number", "null"]
         },
         "viewSumValue": {
+          "description": "Total sum value generated from view interactions.",
           "type": ["number", "null"]
         },
         "totalAverageValue": {
+          "description": "Total average value across all campaigns.",
           "type": ["number", "null"]
         },
         "averageValue": {
+          "description": "Average value generated by the campaign.",
           "type": ["number", "null"]
         },
         "viewAverageValue": {
+          "description": "Average value generated from view interactions.",
           "type": ["number", "null"]
         },
         "totalRoas": {
+          "description": "Total return on ad spend across all campaigns.",
           "type": ["number", "null"]
         },
         "roas": {
+          "description": "Return on ad spend for the campaign.",
           "type": ["number", "null"]
         },
         "videoReachedFirstQ": {
+          "description": "Number of users reaching the first quartile of video content.",
           "type": ["integer", "null"]
         },
         "videoReachedSecondQ": {
+          "description": "Number of users reaching the second quartile of video content.",
           "type": ["integer", "null"]
         },
         "videoReachedThirdQ": {
+          "description": "Number of users reaching the third quartile of video content.",
           "type": ["integer", "null"]
         },
         "videoReachedCompletion": {
+          "description": "Number of users reaching the completion of video content.",
           "type": ["integer", "null"]
         },
         "videoViewDuration": {
+          "description": "Total view duration for video content.",
           "type": ["integer", "null"]
         },
         "videoAvgViewDuration": {
+          "description": "Average view duration for video content.",
           "type": ["number", "null"]
         },
         "videoPlays": {
+          "description": "Number of plays for video content.",
           "type": ["integer", "null"]
         },
         "clicksOnVideo": {
+          "description": "Number of clicks specifically on video content.",
           "type": ["integer", "null"]
         },
         "videoActiveCompletions": {
+          "description": "Number of completions for video content.",
           "type": ["integer", "null"]
         },
         "videoActiveCompletionsPercentage": {
+          "description": "Percentage of completion for video content.",
           "type": ["integer", "null"]
         }
       }
     },
     "marketer_id": {
+      "description": "The unique identifier for the marketer associated with the campaign.",
       "type": ["string", "null"]
     }
   }
