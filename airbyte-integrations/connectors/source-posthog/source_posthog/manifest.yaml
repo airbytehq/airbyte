@@ -50,6 +50,48 @@ definitions:
       name: "projects"
       path: "projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the project
+            type: number
+          uuid:
+            description: UUID (Universally Unique Identifier) for the project
+            type: string
+          organization:
+            description: Details about the organization to which the project belongs
+            type: string
+          api_token:
+            description: API token used to authenticate requests for this project
+            type: string
+          name:
+            description: The name of the project
+            type: string
+          completed_snippet_onboarding:
+            description:
+              Flag indicating whether the snippet onboarding process has
+              been completed for this project
+            type: boolean
+          ingested_event:
+            description: Data regarding ingested events for this project
+            type: boolean
+          is_demo:
+            description: Flag indicating whether the project is a demo project
+            type: boolean
+          timezone:
+            description: The timezone setting for the project
+            type: string
+          access_control:
+            description: Access control settings for the project
+            type: boolean
+          effective_membership_level:
+            description:
+              The effective membership level of the project within the
+              organization
+            type: number
   base_slicing_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -70,30 +112,513 @@ definitions:
       name: "cohorts"
       path: "cohorts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the cohort
+            type: integer
+          name:
+            description: Name or title of the cohort
+            type: string
+          groups:
+            description: Groups associated with the cohort
+            type:
+              - array
+              - object
+            items:
+              type: object
+              properties:
+                days:
+                  description: Number of days for the group's criteria
+                  type:
+                    - string
+                    - "null"
+                action_id:
+                  description: Identifier of the action associated with the group
+                  type:
+                    - string
+                    - "null"
+                properties:
+                  description: Properties related to the group
+                  type:
+                    - array
+                  items:
+                    type: object
+          deleted:
+            description: Indicates if the cohort has been deleted
+            type: boolean
+          is_calculating:
+            description: Indicates if the cohort data is currently being calculated
+            type: boolean
+          created_by:
+            description: Information about the user who created the cohort
+            type: object
+            properties:
+              id:
+                description: Identifier of the user who created the cohort
+                type: integer
+              uuid:
+                description: Unique identifier of the user who created the cohort
+                type: string
+              distinct_id:
+                description: Unique identifier for the user creating the cohort
+                type: string
+              first_name:
+                description: First name of the user who created the cohort
+                type:
+                  - string
+                  - "null"
+              email:
+                description: Email address of the user who created the cohort
+                type:
+                  - string
+                  - "null"
+          created_at:
+            description: The timestamp when the cohort was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          last_calculation:
+            description: Timestamp of the last calculation of the cohort data
+            type:
+              - string
+              - "null"
+          errors_calculating:
+            description: Any errors encountered during cohort data calculation
+            type: integer
+          count:
+            description: The total count of cohorts data
+            type:
+              - integer
+              - "null"
+          is_static:
+            description: Indicates if the cohort is static or dynamic
+            type: boolean
   feature_flags_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "feature_flags"
       path: "feature_flags"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the feature flag.
+            type: integer
+          name:
+            description: Name of the feature flag.
+            type: string
+          key:
+            description: Key identifier for the feature flag.
+            type: string
+          rollout_percentage:
+            description:
+              Percentage of users on whom the feature flag will be rolled
+              out.
+            type:
+              - integer
+              - "null"
+          filters:
+            description: Filters applied to the feature flag.
+            type: object
+            properties:
+              properties:
+                description: Filter criteria based on properties.
+                type: array
+                items:
+                  type: object
+          deleted:
+            description: Indicates whether the feature flag has been deleted or not.
+            type: boolean
+          active:
+            description:
+              Indicates whether the feature flag is currently active or
+              not.
+            type: boolean
+          created_by:
+            description: Information about the user who created the feature flag.
+            type: object
+            properties:
+              id:
+                description:
+                  Unique identifier for the user who created the feature
+                  flag.
+                type: integer
+              distinct_id:
+                description:
+                  Unique identifier for the user who created the feature
+                  flag.
+                type: string
+              first_name:
+                description: First name of the user who created the feature flag.
+                type: string
+              email:
+                description: Email address of the user who created the feature flag.
+                type: string
+          created_at:
+            description: The date and time when the feature flag was created.
+            type: string
+            format: date-time
   persons_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "persons"
       path: "persons"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the person record.
+            type: string
+          name:
+            description: The name of the person.
+            type: string
+          distinct_ids:
+            description: Array of unique identifiers associated with the person.
+            type: array
+            items:
+              type: string
+          created_at:
+            description: The timestamp when the person record was created.
+            type: string
+            format: date-time
   annotations_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "annotations"
       path: "annotations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: ID of the annotation
+            type: integer
+          content:
+            description: The text content of the annotation
+            type:
+              - string
+              - "null"
+          date_marker:
+            description: Date and time marker for the annotation
+            type:
+              - string
+              - "null"
+            format: date-time
+          creation_type:
+            description: Type of creation for the annotation
+            type:
+              - string
+              - "null"
+          dashboard_item:
+            description: Associated dashboard item for the annotation
+            type:
+              - string
+              - "null"
+          created_by:
+            description: Details of the user who created the annotation
+            type: object
+            properties:
+              id:
+                description: ID of the user
+                type: integer
+              uuid:
+                description: UUID of the user
+                type: string
+              distinct_id:
+                description: Distinct ID of the user
+                type: string
+              first_name:
+                description: First name of the user
+                type: string
+              email:
+                description: Email address of the user
+                type: string
+          created_at:
+            description: The date and time when the annotation was created
+            type: string
+            format: date-time
+          updated_at:
+            description: The date and time when the annotation was last updated
+            type: string
+            format: date-time
+          deleted:
+            description: Flag indicating if the annotation is deleted
+            type: boolean
+          scope:
+            description: Scope of the annotation
+            type: string
   insights_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "insights"
       path: "insights"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            description: Unique identifier for the insight.
+            type:
+              - number
+          short_id:
+            description: Shortened or abbreviated ID for the insight.
+            type:
+              - string
+              - "null"
+          name:
+            description: Name or title of the insight.
+            derived_name:
+              - string
+              - "null"
+          filters:
+            description: Filter criteria used to generate the insight data.
+            type:
+              - object
+              - "null"
+            properties:
+              display:
+                description: Display settings for the insight.
+                type:
+                  - string
+                  - "null"
+              insight:
+                description: Type of insight being displayed.
+                type:
+                  - string
+                  - "null"
+              interval:
+                description: Time interval used for data aggregation in the insight.
+                type:
+                  - string
+                  - "null"
+              date_from:
+                description: Starting date for the filters applied to the insight.
+                type:
+                  - string
+                  - "null"
+          filters_hash:
+            description: A hashed value based on the applied filters.
+            type:
+              - string
+              - "null"
+          order:
+            description: Ordering information for the insight data.
+            type:
+              - string
+              - "null"
+          deleted:
+            description: Indicates if the insight has been deleted.
+            type:
+              - boolean
+              - "null"
+          last_refresh:
+            description: The time when the insight data was last refreshed.
+            type:
+              - string
+              - "null"
+          refreshing:
+            description: Indicates if the insight data is currently being refreshed.
+            type:
+              - boolean
+              - "null"
+          result:
+            description: Data representing the actual insight results.
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                action_id:
+                  description:
+                    Unique identifier of the action associated with the
+                    result.
+                  type:
+                    - string
+                    - "null"
+                average_conversion_time:
+                  description: Average time taken for conversion in the result set.
+                  type:
+                    - string
+                    - "null"
+                converted_people_url:
+                  description: URL to view the converted people in the result set.
+                  type:
+                    - string
+                    - "null"
+                count:
+                  description: Total count of the items in the result set.
+                  type:
+                    - number
+                    - "null"
+                custom_name:
+                  description: Custom name assigned to the result item.
+                  type:
+                    - string
+                    - "null"
+                name:
+                  description: Name or title of the result item.
+                  type:
+                    - string
+                    - "null"
+                median_conversion_time:
+                  description: Median time taken for conversion in the result set.
+                  type:
+                    - string
+                    - "null"
+                order:
+                  description: Ordering information for the result set.
+                  type:
+                    - number
+                    - "null"
+                type:
+                  description: Type of result item.
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            description: The date and time when the insight was initially created.
+            type:
+              - string
+              - "null"
+          created_by:
+            description: Contains information about the user who created the insight.
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: ID of the user who created the insight.
+                type:
+                  - number
+                  - "null"
+              uuid:
+                description: Unique identifier of the user who created the insight.
+                type:
+                  - string
+                  - "null"
+              distinct_id:
+                description: Distinct ID of the user who created the insight.
+                type:
+                  - string
+                  - "null"
+              first_name:
+                description: First name of the user who created the insight.
+                type:
+                  - string
+                  - "null"
+              email:
+                description: Email of the user who created the insight.
+                type:
+                  - string
+                  - "null"
+          description:
+            description: A brief overview or summary of the insight.
+            type:
+              - string
+              - "null"
+          updated_at:
+            description: The date and time when the insight was last updated.
+            type:
+              - string
+              - "null"
+          favorited:
+            description: Shows if the insight is marked as a favorite.
+            type:
+              - boolean
+              - "null"
+          saved:
+            description: Indicates if the insight has been saved.
+            type:
+              - boolean
+              - "null"
+          last_modified_at:
+            description: The date and time when the insight was last modified.
+            type:
+              - string
+              - "null"
+          last_modified_by:
+            description:
+              Contains information about the user who last modified the
+              insight.
+            type:
+              - object
+              - "null"
+            properties:
+              distinct_id:
+                description: Distinct ID of the user who last modified the insight.
+                type:
+                  - string
+                  - "null"
+              email:
+                description: Email of the user who last modified the insight.
+                type:
+                  - string
+                  - "null"
+              first_name:
+                description: First name of the user who last modified the insight.
+                type:
+                  - string
+                  - "null"
+              id:
+                description: ID of the user who last modified the insight.
+                type:
+                  - number
+                  - "null"
+              uuid:
+                description: Unique identifier of the user who last modified the insight.
+                type:
+                  - string
+                  - "null"
+          is_sample:
+            description: Indicates if the insight is a sample or real data.
+            type:
+              - boolean
+              - "null"
+          effective_restriction_level:
+            description: The effective restriction level applied to the insight.
+            type:
+              - number
+              - "null"
+          effective_privilege_level:
+            description: The effective privilege level assigned to the insight.
+            type:
+              - number
+              - "null"
+          timezone:
+            description: Timezone used for displaying data in the insight.
+            type:
+              - string
+              - "null"
+          tags:
+            description: Additional labels or categories assigned to the insight.
+            type:
+              - array
+              - "null"
+            items:
+              description: Tags associated with the insight.
+              type:
+                - string
+                - "null"
   events_stream:
     $parameters:
       name: "events"
@@ -130,7 +655,51 @@ definitions:
             field_name: before
             inject_into: request_parameter
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the event.
+            type: string
+          distinct_id:
+            description: Unique identifier for the user or device triggering the event.
+            type: string
+          properties:
+            description: Custom properties of the event.
+            type: object
+          event:
+            description: Name of the event being tracked.
+            type: string
+          timestamp:
+            description: Timestamp when the event occurred in ISO date-time format.
+            type: string
+            format: date-time
+          person:
+            description: Information about the user associated with the event.
+            type: object
+            properties:
+              is_identified:
+                description: Flag indicating if the user is identified.
+                type: boolean
+              distinct_ids:
+                description: List of distinct identifiers for the user.
+                type: array
+                items:
+                  type: string
+              properties:
+                description: Additional properties associated with the user.
+                type: object
+          elements:
+            description: List of elements interacted within the event.
+            type: array
+            items:
+              type:
+                - string
+                - object
+          elements_chain:
+            description: Sequence of elements triggering the event.
+            type: string
     retriever:
       transformations:
         - class_name: "source_posthog.components.EventsSimpleRetriever"
