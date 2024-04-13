@@ -3,170 +3,220 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the review",
       "type": "string"
     },
     "consumer": {
+      "description": "Information about the consumer who left the review",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the consumer",
           "type": "string"
         },
         "displayName": {
+          "description": "The display name of the consumer",
           "type": ["string", "null"]
         },
         "displayLocation": {
+          "description": "The display location of the consumer",
           "type": ["string", "null"]
         },
         "numberOfReviews": {
+          "description": "The total number of reviews left by the consumer",
           "type": "integer"
         }
       }
     },
     "businessUnit": {
+      "description": "Information about the business unit associated with the review",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the business unit",
           "type": "string"
         },
         "identifyingName": {
+          "description": "The identifying name of the business unit",
           "type": ["string", "null"]
         },
         "displayName": {
+          "description": "The display name of the business unit",
           "type": ["string", "null"]
         }
       }
     },
     "stars": {
+      "description": "The star rating given in the review",
       "type": ["integer", "null"]
     },
     "title": {
+      "description": "The title of the review",
       "type": ["string", "null"]
     },
     "text": {
+      "description": "The main text content of the review",
       "type": ["string", "null"]
     },
     "language": {
+      "description": "The language used in the review",
       "type": ["string", "null"]
     },
     "location": {
+      "description": "Location related information",
       "type": ["object", "null"],
       "properties": {
         "externalId": {
+          "description": "External ID of the location",
           "type": ["string", "null"]
         },
         "urlFormattedName": {
+          "description": "Formatted URL of the location name",
           "type": ["string", "null"]
         },
         "id": {
+          "description": "The unique identifier of the location",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "The name of the location",
           "type": ["string", "null"]
         }
       }
     },
     "createdAt": {
+      "description": "The date and time when the review was created",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the review was last updated",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "experiencedAt": {
+      "description": "The date and time when the reviewer experienced the reviewed service",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "referralEmail": {
+      "description": "Referral email associated with the review",
       "type": ["string", "null"]
     },
     "referenceId": {
+      "description": "Reference ID of the review",
       "type": ["string", "null"]
     },
     "source": {
+      "description": "The source of the review",
       "type": ["string", "null"]
     },
     "companyReply": {
+      "description": "Reply provided by the company to the review",
       "type": ["object", "null"],
       "properties": {
         "createdAt": {
+          "description": "The date and time when the reply was created",
           "type": ["string", "null"],
           "format": "date-time"
         },
         "updatedAt": {
+          "description": "The date and time when the reply was last updated",
           "type": ["string", "null"],
           "format": "date-time"
         },
         "text": {
+          "description": "The text content of the reply",
           "type": ["string", "null"]
         },
         "authorBusinessUserId": {
+          "description": "The ID of the author business user of the reply",
           "type": ["string", "null"]
         }
       }
     },
     "tags": {
+      "description": "List of tags associated with the review",
       "type": "array",
       "items": {
+        "description": "Details of a specific tag",
         "type": "object",
         "properties": {
           "group": {
+            "description": "The group to which the tag belongs",
             "type": ["string", "null"]
           },
           "value": {
+            "description": "The value of the tag",
             "type": ["string", "null"]
           }
         }
       }
     },
     "findReviewer": {
+      "description": "Information about finding the reviewer",
       "type": "object",
       "properties": {
         "isEligible": {
+          "description": "Indicates if the reviewer is eligible",
           "type": "boolean"
         },
         "requests": {
+          "description": "List of reviewer requests for additional information",
           "type": "array",
           "items": {
+            "description": "Details of a specific reviewer request",
             "type": "object",
             "properties": {
               "status": {
+                "description": "The status of the request",
                 "type": ["string", "null"]
               },
               "consumerResponse": {
+                "description": "Response provided by the consumer",
                 "type": ["object", "null"],
                 "properties": {
                   "referenceId": {
+                    "description": "Reference ID for the response",
                     "type": ["string", "null"]
                   },
                   "name": {
+                    "description": "Consumer's name",
                     "type": ["string", "null"]
                   },
                   "submittedAt": {
+                    "description": "The date and time when the response was submitted",
                     "type": ["string", "null"],
                     "format": "date-time"
                   },
                   "phoneNumber": {
+                    "description": "Consumer's phone number",
                     "type": ["string", "null"]
                   },
                   "address": {
+                    "description": "Consumer's address",
                     "type": ["string", "null"]
                   },
                   "message": {
+                    "description": "Consumer's response message",
                     "type": ["string", "null"]
                   },
                   "email": {
+                    "description": "Consumer's email",
                     "type": ["string", "null"]
                   }
                 }
               },
               "businessUserMessage": {
+                "description": "Message from the business user in response to the reviewer",
                 "type": ["string", "null"]
               },
               "id": {
+                "description": "The unique identifier of the request",
                 "type": ["string", "null"]
               },
               "created": {
+                "description": "The date and time when the request was created",
                 "type": ["string", "null"],
                 "format": "date-time"
               }
@@ -176,28 +226,36 @@
       }
     },
     "isVerified": {
+      "description": "Indicates if the review is verified",
       "type": "boolean"
     },
     "numberOfLikes": {
+      "description": "The total number of likes received by the review",
       "type": "integer"
     },
     "status": {
+      "description": "The status of the review",
       "type": ["null", "string"]
     },
     "reportData": {
+      "description": "Data related to report on the review",
       "type": ["object", "null"],
       "properties": {
         "source": {
+          "description": "The source of the report",
           "type": ["string", "null"]
         },
         "publicComment": {
+          "description": "Public comment provided in the report",
           "type": ["string", "null"]
         },
         "createdAt": {
+          "description": "The date and time when the report was created",
           "type": ["string", "null"],
           "format": "date-time"
         },
         "reasons": {
+          "description": "List of reasons for the report",
           "type": "array",
           "items": {
             "type": "null",
@@ -207,40 +265,51 @@
       }
     },
     "complianceLabels": {
+      "description": "List of labels related to compliance",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "countsTowardsTrustScore": {
+      "description": "Indicates whether the review counts towards the overall trust score",
       "type": "boolean"
     },
     "countsTowardsLocationTrustScore": {
+      "description": "Indicates whether the review counts towards the location trust score",
       "type": ["boolean", "null"]
     },
     "invitation": {
+      "description": "Invitation related to the review",
       "type": ["object", "null"],
       "properties": {
         "businessUnitId": {
+          "description": "The ID of the business unit associated with the invitation",
           "type": ["string", "null"]
         }
       }
     },
     "businessUnitHistory": {
+      "description": "History of changes to the business unit",
       "type": "array",
       "items": {
+        "description": "Details of a specific history entry",
         "type": "object",
         "properties": {
           "identifyingName": {
+            "description": "The identifying name of the business unit at the time of change",
             "type": ["string", "null"]
           },
           "displayName": {
+            "description": "The display name of the business unit at the time of change",
             "type": ["string", "null"]
           },
           "businessUnitId": {
+            "description": "The ID of the business unit associated with this history entry",
             "type": ["string", "null"]
           },
           "changeDate": {
+            "description": "The date and time when the change occurred",
             "type": ["string", "null"],
             "format": "date-time"
           }
@@ -248,6 +317,7 @@
       }
     },
     "reviewVerificationLevel": {
+      "description": "The level of verification for the review",
       "type": ["string", "null"]
     }
   }

@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the business unit.",
       "type": "string"
     },
     "displayName": {
+      "description": "The display name of the business unit.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name of the business unit.",
       "type": "object",
       "properties": {
         "identifying": {
+          "description": "Identifier for the business unit.",
           "type": ["string", "null"]
         },
         "referring": {
+          "description": "List of referring items.",
           "type": ["array", "null"],
           "items": {
             "type": "string"
@@ -23,52 +28,67 @@
       }
     },
     "websiteUrl": {
+      "description": "The URL of the business unit's website.",
       "type": ["string", "null"]
     },
     "country": {
+      "description": "The country where the business unit is located.",
       "type": ["string", "null"]
     },
     "numberOfReviews": {
+      "description": "Statistics related to the number of reviews received by the business unit.",
       "type": ["object", "null"],
       "properties": {
         "total": {
+          "description": "Total number of reviews received.",
           "type": ["integer", "null"]
         },
         "usedForTrustScoreCalculation": {
+          "description": "Indicator if the reviews are used for trust score calculation.",
           "type": ["integer", "null"]
         },
         "oneStar": {
+          "description": "Number of one-star reviews.",
           "type": ["integer", "null"]
         },
         "twoStars": {
+          "description": "Number of two-star reviews.",
           "type": ["integer", "null"]
         },
         "threeStars": {
+          "description": "Number of three-star reviews.",
           "type": ["integer", "null"]
         },
         "fourStars": {
+          "description": "Number of four-star reviews.",
           "type": ["integer", "null"]
         },
         "fiveStars": {
+          "description": "Number of five-star reviews.",
           "type": ["integer", "null"]
         }
       }
     },
     "status": {
+      "description": "The current status of the business unit.",
       "type": ["string", "null"]
     },
     "score": {
+      "description": "Information related to the scoring of the business unit.",
       "type": ["object", "null"],
       "properties": {
         "trustScore": {
+          "description": "The trust score of the business unit.",
           "type": ["number", "null"]
         },
         "stars": {
+          "description": "The star rating of the business unit.",
           "type": ["number", "null"]
         }
       }
     },
     "badFit": {
+      "description": "Indicates whether the business unit is considered a bad fit.",
       "type": ["boolean", "null"]
     }
   }
