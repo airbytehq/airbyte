@@ -61,4 +61,5 @@ GET https://www.mydatascope.com/api/external/locations
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ |:-----------|:----------------------------------------------------------| :------------- |
+| 0.1.1 | 2024-04-12 | [37148](https://github.com/airbytehq/airbyte/pull/37148) | schema descriptions |
 | 0.1.0   | 2022-10-31 | [#18725](https://github.com/airbytehq/airbyte/pull/18725) | Initial commit |
