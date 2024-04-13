@@ -59,6 +59,73 @@ definitions:
       name: "locations"
       primary_key: "id"
       path: "/locations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the location
+            type: integer
+          name:
+            description: Name or title of the location
+            type: string
+          description:
+            description: Description or details about the location
+            type:
+              - string
+              - "null"
+          code:
+            description: Postal code of the location
+            type:
+              - string
+              - "null"
+          address:
+            description: Full address of the location
+            type:
+              - string
+              - "null"
+          city:
+            description: City where the location is situated
+            type:
+              - string
+              - "null"
+          country:
+            description: Country where the location is located
+            type:
+              - string
+              - "null"
+          latitude:
+            description: Latitude coordinate of the location
+            type:
+              - number
+              - "null"
+          longitude:
+            description: Longitude coordinate of the location
+            type:
+              - number
+              - "null"
+          region:
+            description: Region or area where the location is situated
+            type:
+              - string
+              - "null"
+          phone:
+            description: Contact phone number for the location
+            type:
+              - string
+              - "null"
+          company_code:
+            description: Code assigned to the company related to this location
+            type:
+              - string
+              - "null"
+          company_name:
+            description: Name of the company associated with this location
+            type:
+              - string
+              - "null"
   answers_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -67,12 +134,99 @@ definitions:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          form_name:
+            description: The name of the form associated with the answer
+            type: string
+          form_state:
+            description: The state of the form (e.g., draft, submitted)
+            type:
+              - string
+              - "null"
+          user_name:
+            description: The name of the user submitting the answer
+            type: string
+          user_identifier:
+            description: The unique identifier of the user submitting the answer
+            type: string
+          code:
+            description: A code associated with the answer data
+            type: string
+          form_id:
+            description: The unique identifier for the form
+            type: integer
+          created_at:
+            description: The timestamp when the answer was created
+            type: string
+          form_answer_id:
+            description: The unique identifier for the form answer
+            type: integer
+          latitude:
+            description: The latitude coordinate of the user submitting the answer
+            type:
+              - number
+              - "null"
+          longitude:
+            description: The longitude coordinate of the user submitting the answer
+            type:
+              - number
+              - "null"
+          "[question_name1]":
+            description: The answer to question name 1
+            type: string
+          "[question_name2]":
+            description: The answer to question name 2
+            type: string
+          "[question_name3]":
+            description: The answer to question name 3
+            type: string
   lists_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "lists"
       primary_key: "id"
       path: "/metadata_objects"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the list data
+            type: integer
+          name:
+            description: The name or title of the list data
+            type: string
+          description:
+            description: A brief description or note about the list data
+            type: string
+          attribute1:
+            description: The value representing the first attribute of the list data
+            type: string
+          attribute2:
+            description: The value representing the second attribute of the list data
+            type: string
+          list_id:
+            description: The identifier of the list to which the data belongs
+            type: integer
+          account_id:
+            description: The unique identifier of the account to which the list belongs
+            type: integer
+          code:
+            description: The code associated with the list data
+            type: string
+          created_at:
+            description: The timestamp indicating when the list was created
+            type: string
+          updated_at:
+            description: The timestamp indicating when the list data was last updated
+            type: string
   notifications_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -81,6 +235,33 @@ definitions:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the notification
+            type: integer
+          type:
+            description: The type or category of the notification
+            type: string
+          url:
+            description: The URL link associated with the notification
+            type: string
+          form_name:
+            description: The name of the form related to the notification
+            type: string
+          form_code:
+            description: The unique code associated with the form related to the notification
+            type: string
+          user:
+            description: The user details related to the notification
+            type: string
+          created_at:
+            description: The timestamp when the notification was created
+            type: string
 streams:
   - "#/definitions/location_stream"
   - "#/definitions/answers_stream"
