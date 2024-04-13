@@ -60,6 +60,598 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/datetime_cursor"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          comments:
+            description: List of comments related to the reviews
+            items:
+              properties:
+                comment:
+                  description: The text content of the comment
+                  type:
+                    - string
+                    - "null"
+                created:
+                  description: Timestamp of when the comment was created
+                  type:
+                    - string
+                    - "null"
+                createdISO:
+                  description: ISO formatted timestamp of comment creation
+                  type:
+                    - string
+                    - "null"
+                id:
+                  description: Unique identifier of the comment
+                  type:
+                    - string
+                    - "null"
+                owner:
+                  description: Information about the owner of the comment
+                  properties:
+                    avatar:
+                      description: URL to the owner's avatar image
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      description: Email address of the owner
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      description: List of groups the owner belongs to
+                      items:
+                        properties:
+                          id:
+                            description: Unique identifier of the group
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            description: Name of the group
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type: array
+                    name:
+                      description: Name of the owner
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                tags:
+                  description: List of tags associated with the comment
+                  type:
+                    - array
+                    - "null"
+                thread:
+                  description: Sub-thread of comments under the main comment
+                  items:
+                    properties:
+                      comment:
+                        description: The text content of the sub-comment
+                        type:
+                          - string
+                          - "null"
+                      created:
+                        description: Timestamp of when the sub-comment was created
+                        type:
+                          - string
+                          - "null"
+                      createdISO:
+                        description: ISO formatted timestamp of sub-comment creation
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        description: Unique identifier of the sub-comment
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        description: Information about the owner of the sub-comment
+                        properties:
+                          avatar:
+                            description: URL to the owner's avatar image
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            description: Email address of the owner
+                            type:
+                              - string
+                              - "null"
+                          groups:
+                            type:
+                              - array
+                              - "null"
+                          name:
+                            description: Name of the owner
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      tags:
+                        description: List of tags associated with the sub-comment
+                        items:
+                          properties:
+                            tag:
+                              description: Tag associated with the sub-comment
+                              type:
+                                - string
+                                - "null"
+                            user:
+                              description:
+                                Information about the user who added the
+                                tag
+                              properties:
+                                avatar:
+                                  description: URL to the user's avatar image
+                                  type:
+                                    - string
+                                    - "null"
+                                email:
+                                  description: Email address of the user
+                                  type:
+                                    - string
+                                    - "null"
+                                groups:
+                                  items:
+                                    properties:
+                                      id:
+                                        description: Unique identifier of the group
+                                        type:
+                                          - string
+                                          - "null"
+                                      name:
+                                        description: Name of the group
+                                        type:
+                                          - string
+                                          - "null"
+                                    type:
+                                      - object
+                                      - "null"
+                                  type:
+                                    - array
+                                    - "null"
+                                name:
+                                  description: Name of the user
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                          type:
+                            - object
+                            - "null"
+                        type:
+                          - array
+                          - "null"
+                      thread:
+                        description: Sub-thread of comments under the sub-comment
+                        type:
+                          - array
+                          - "null"
+                      updated:
+                        description: Timestamp of when the sub-comment was last updated
+                        type:
+                          - string
+                          - "null"
+                      updatedISO:
+                        description: ISO formatted timestamp of sub-comment last update
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                updated:
+                  description: Timestamp of when the comment was last updated
+                  type:
+                    - string
+                    - "null"
+                updatedISO:
+                  description: ISO formatted timestamp of comment last update
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          createdAt:
+            description: Timestamp of when the review entry was created
+            type:
+              - string
+              - "null"
+          createdAtISO:
+            description: ISO formatted timestamp of review entry creation
+            type:
+              - string
+              - "null"
+          externalId:
+            description: External identifier associated with the review
+            type:
+              - string
+              - "null"
+          externalUrl:
+            description: URL linking to the external source of the review
+            type:
+              - string
+              - "null"
+          lastUpdatedISO:
+            description: ISO formatted timestamp of the last update to the review
+            type:
+              - string
+              - "null"
+          reviews:
+            description: List of reviews associated with the entry
+            items:
+              properties:
+                comment:
+                  description: The text content of the review
+                  type:
+                    - "null"
+                    - string
+                created:
+                  description: Timestamp of when the review was created
+                  type:
+                    - string
+                    - "null"
+                createdISO:
+                  description: ISO formatted timestamp of review creation
+                  type:
+                    - string
+                    - "null"
+                id:
+                  description: Unique identifier of the review
+                  type:
+                    - string
+                    - "null"
+                ratings:
+                  description: List of ratings given to the review
+                  items:
+                    properties:
+                      categoryId:
+                        description: Identifier of the category being rated
+                        type:
+                          - string
+                          - "null"
+                      categoryName:
+                        description: Name of the category being rated
+                        type:
+                          - string
+                          - "null"
+                      cause:
+                        description: Cause for the rating, if applicable
+                        type: "null"
+                      critical:
+                        description: Flag indicating if the rating is critical
+                        type:
+                          - boolean
+                          - "null"
+                      score:
+                        description: Numeric score given in the rating
+                        type:
+                          - integer
+                          - "null"
+                      weight:
+                        description: Weightage of the rating in the overall evaluation
+                        type:
+                          - number
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                received:
+                  description: Timestamp of when the review was received
+                  type:
+                    - boolean
+                    - "null"
+                reviewTime:
+                  description: Total time spent on the review
+                  type:
+                    - string
+                    - "null"
+                reviewee:
+                  description: Information about the entity being reviewed
+                  properties:
+                    avatar:
+                      description: URL to the reviewee's avatar image
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      description: Email address of the reviewee
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      description: List of groups the reviewee belongs to
+                      items:
+                        properties:
+                          id:
+                            description: Unique identifier of the group
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            description: Name of the group
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      description: Name of the reviewee
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                reviewer:
+                  description: Information about the reviewer
+                  properties:
+                    avatar:
+                      description: URL to the reviewer's avatar image
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      description: Email address of the reviewer
+                      type:
+                        - string
+                        - "null"
+                    groups:
+                      description: List of groups the reviewer belongs to
+                      items:
+                        properties:
+                          id:
+                            description: Unique identifier of the group
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            description: Name of the group
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      description: Name of the reviewer
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                score:
+                  description: Overall score assigned to the review
+                  type:
+                    - number
+                    - "null"
+                scorecard:
+                  description: Scorecard data associated with the review
+                  type: "null"
+                tags:
+                  description: List of tags associated with the review
+                  type:
+                    - array
+                    - "null"
+                thread:
+                  description: Sub-thread of comments under the review
+                  items:
+                    properties:
+                      comment:
+                        description: The text content of the sub-comment
+                        type:
+                          - string
+                          - "null"
+                      created:
+                        description: Timestamp of when the sub-comment was created
+                        type:
+                          - string
+                          - "null"
+                      createdISO:
+                        description: ISO formatted timestamp of sub-comment creation
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        description: Unique identifier of the sub-comment
+                        type:
+                          - string
+                          - "null"
+                      owner:
+                        description: Information about the owner of the sub-comment
+                        properties:
+                          avatar:
+                            description: URL to the owner's avatar image
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            description: Email address of the owner
+                            type:
+                              - string
+                              - "null"
+                          groups:
+                            description: List of groups the owner belongs to
+                            items:
+                              properties:
+                                id:
+                                  description: Unique identifier of the group
+                                  type:
+                                    - string
+                                    - "null"
+                                name:
+                                  description: Name of the group
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                            type:
+                              - array
+                              - "null"
+                          name:
+                            description: Name of the owner
+                            type:
+                              - string
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      tags:
+                        description: List of tags associated with the sub-comment
+                        items:
+                          properties:
+                            tag:
+                              description: Tag associated with the sub-comment
+                              type:
+                                - string
+                                - "null"
+                            user:
+                              description:
+                                Information about the user who added the
+                                tag
+                              properties:
+                                avatar:
+                                  description: URL to the user's avatar image
+                                  type:
+                                    - string
+                                    - "null"
+                                email:
+                                  description: Email address of the user
+                                  type:
+                                    - string
+                                    - "null"
+                                groups:
+                                  description: List of groups the user belongs to
+                                  items:
+                                    properties:
+                                      id:
+                                        description: Unique identifier of the group
+                                        type:
+                                          - string
+                                          - "null"
+                                      name:
+                                        description: Name of the group
+                                        type:
+                                          - string
+                                          - "null"
+                                    type:
+                                      - object
+                                      - "null"
+                                  type:
+                                    - array
+                                    - "null"
+                                name:
+                                  description: Name of the user
+                                  type:
+                                    - string
+                                    - "null"
+                              type:
+                                - object
+                                - "null"
+                          type:
+                            - object
+                            - "null"
+                        type:
+                          - array
+                          - "null"
+                      thread:
+                        description: Sub-thread of comments under the sub-comment
+                        type:
+                          - array
+                          - "null"
+                      updated:
+                        description: Timestamp of when the sub-comment was last updated
+                        type:
+                          - string
+                          - "null"
+                      updatedISO:
+                        description: ISO formatted timestamp of sub-comment last update
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                updated:
+                  description: Timestamp of when the review was last updated
+                  type:
+                    - string
+                    - "null"
+                updatedISO:
+                  description: ISO formatted timestamp of review last update
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          sourceType:
+            description: Type of the data source for the review entry
+            type:
+              - string
+              - "null"
+          updated_at:
+            description: Timestamp of when the review entry was last updated
+            type:
+              - string
+              - "null"
+          url:
+            description: URL linking to the review entry
+            type:
+              - string
+              - "null"
+          workspaceId:
+            description: Identifier of the workspace where the review entry belongs
+            type:
+              - string
+              - "null"
   users_stream:
     type: DeclarativeStream
     $parameters:
@@ -71,6 +663,28 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the user.
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the user.
+            type:
+              - string
+              - "null"
+          email:
+            description: The email address of the user.
+            type:
+              - string
+              - "null"
   categories_stream:
     type: DeclarativeStream
     $parameters:
@@ -82,6 +696,80 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the category.
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the category.
+            type:
+              - string
+              - "null"
+          description:
+            description: Description of the category.
+            type:
+              - string
+              - "null"
+          critical:
+            description: Flag indicating if the category is critical or not.
+            type:
+              - boolean
+              - "null"
+          archived:
+            description: Flag indicating if the category is archived or not.
+            type:
+              - boolean
+              - "null"
+          weight:
+            description: Weightage of the category in calculations.
+            type:
+              - number
+              - "null"
+          maxRating:
+            description: Maximum rating possible for the category.
+            type:
+              - integer
+              - "null"
+          scorecards:
+            description: Scorecards associated with the category.
+            type: array
+            items:
+              description: Items related to the scorecards of the category.
+              type: string
+          rootCauses:
+            description: Root causes associated with the category.
+            type: array
+            items:
+              description: Items related to the root causes of the category.
+              type: string
+          position:
+            description: Position of the category among all categories.
+            type:
+              - integer
+              - "null"
+          groupId:
+            description: ID of the group to which the category belongs.
+            type:
+              - string
+              - "null"
+          groupName:
+            description: Name of the group to which the category belongs.
+            type:
+              - string
+              - "null"
+          groupPosition:
+            description: Position of the category within its group.
+            type:
+              - integer
+              - "null"
 streams:
   - "#/definitions/reviews_stream"
   - "#/definitions/users_stream"
