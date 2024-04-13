@@ -38,4 +38,5 @@ The Vitally connector should not run into Vitally API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------- |
+| 0.1.1 | 2024-04-12 | [37284](https://github.com/airbytehq/airbyte/pull/37284) | schema descriptions |
 | 0.1.0   | 2022-10-27 | [18545](https://github.com/airbytehq/airbyte/pull/18545) | Add Vitally Source Connector |
