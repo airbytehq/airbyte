@@ -19,18 +19,22 @@
       "type": ["null", "string"]
     },
     "definition": {
+      "description": "Triggers definition details.",
       "properties": {
         "actions": {
           "description": "The actions triggered by the defined conditions",
           "type": ["null", "string", "array"]
         },
         "condition": {
+          "description": "Specifies the condition that triggers the action",
           "type": ["null", "string", "array"]
         },
         "event": {
+          "description": "Describes the event that triggers the action",
           "type": ["null", "string", "array"]
         },
         "version": {
+          "description": "Indicates the version of the trigger definition",
           "type": ["null", "integer"]
         }
       },
