@@ -3,180 +3,239 @@
   "type": "object",
   "properties": {
     "about": {
+      "description": "A brief description or summary of the page.",
       "type": ["string", "null"]
     },
     "access_token": {
+      "description": "The access token required to fetch data for the page.",
       "type": ["string", "null"]
     },
     "ad_campaign": {
+      "description": "Information about any active ad campaigns associated with the page.",
       "$ref": "adset.json"
     },
     "affiliation": {
+      "description": "The affiliations or associations of the page.",
       "type": ["string", "null"]
     },
     "app_id": {
+      "description": "The unique identifier for the Facebook application associated with the page.",
       "type": ["string", "null"]
     },
     "artists_we_like": {
+      "description": "List of artists or musicians the page likes or is interested in.",
       "type": ["string", "null"]
     },
     "attire": {
+      "description": "Information about the attire or dress code related to the page.",
       "type": ["string", "null"]
     },
     "awards": {
+      "description": "Any awards or accolades received by the page.",
       "type": ["string", "null"]
     },
     "band_interests": {
+      "description": "Interests or preferences related to music bands.",
       "type": ["string", "null"]
     },
     "band_members": {
+      "description": "Members who are part of a musical band associated with the page.",
       "type": ["string", "null"]
     },
     "best_page": {
+      "description": "Indicates whether the page is considered one of the best in a category.",
       "$ref": "page.json"
     },
     "bio": {
+      "description": "Biographical information or details about the page.",
       "type": ["string", "null"]
     },
     "birthday": {
+      "description": "The birthday or founding date of the page.",
       "type": ["string", "null"]
     },
     "booking_agent": {
+      "description": "Information about the booking agent or agency associated with the page.",
       "type": ["string", "null"]
     },
     "built": {
+      "description": "Details about the construction or establishment of the page.",
       "type": ["string", "null"]
     },
     "business": {
+      "description": "Information related to the business aspect of the page.",
       "type": ["string", "null"]
     },
     "can_checkin": {
+      "description": "Indicates if users can check-in to the page location.",
       "type": ["boolean", "null"]
     },
     "can_post": {
+      "description": "Indicates if users can post content on the page.",
       "type": ["boolean", "null"]
     },
     "category": {
+      "description": "The category or type of the page.",
       "type": ["string", "null"]
     },
     "category_list": {
+      "description": "List of categories that the page belongs to.",
       "type": ["array", "null"],
       "items": {
+        "description": "Category details associated with the page.",
         "$ref": "pagecategory.json"
       }
     },
     "checkins": {
+      "description": "Number of check-ins at the page location.",
       "type": ["integer", "null"]
     },
     "company_overview": {
+      "description": "An overview or summary of the company associated with the page.",
       "type": ["string", "null"]
     },
     "connected_instagram_account": {
+      "description": "Information about the connected Instagram account.",
       "$ref": "iguser.json"
     },
     "connected_page_backed_instagram_account": {
+      "description": "Details about Instagram accounts backed by the page.",
       "$ref": "iguser.json"
     },
     "contact_address": {
+      "description": "The contact address details for the page.",
       "$ref": "mailingaddress.json"
     },
     "copyright_whitelisted_ig_partners": {
+      "description": "List of Instagram partners who are whitelisted for copyright content.",
       "type": ["array", "null"],
       "items": {
+        "description": "The details of a whitelisted Instagram partner.",
         "type": ["string", "null"]
       }
     },
     "country_page_likes": {
+      "description": "Number of page likes from users within a specific country.",
       "type": ["integer", "null"]
     },
     "cover": {
+      "description": "Cover photo or image associated with the page.",
       "$ref": "coverphoto.json"
     },
     "culinary_team": {
+      "description": "Information about the culinary team or chefs related to the page.",
       "type": ["string", "null"]
     },
     "current_location": {
+      "description": "Current location details of the page.",
       "type": ["string", "null"]
     },
     "delivery_and_pickup_option_info": {
+      "description": "Information about delivery and pickup options available.",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a delivery or pickup option.",
         "type": ["string", "null"]
       }
     },
     "description": {
+      "description": "A detailed description or summary of the page.",
       "type": ["string", "null"]
     },
     "description_html": {
+      "description": "HTML-formatted description or summary of the page.",
       "type": ["string", "null"]
     },
     "differently_open_offerings": {
+      "description": "Different open offerings or services provided by the page.",
       "type": ["string", "null"]
     },
     "directed_by": {
+      "description": "Name or details of the director associated with the page.",
       "type": ["string", "null"]
     },
     "display_subtext": {
+      "description": "Additional subtext or information displayed with the page.",
       "type": ["string", "null"]
     },
     "displayed_message_response_time": {
+      "description": "Response time displayed for messages sent to the page.",
       "type": ["string", "null"]
     },
     "emails": {
+      "description": "Email addresses associated with the page.",
       "type": ["array", "null"],
       "items": {
+        "description": "An email address linked to the page.",
         "type": ["string", "null"]
       }
     },
     "engagement": {
+      "description": "Metrics or data related to user engagement with the page.",
       "$ref": "engagement.json"
     },
     "fan_count": {
+      "description": "Total number of fans or followers of the page.",
       "type": ["integer", "null"]
     },
     "featured_video": {
+      "description": "A video that is featured or highlighted on the page.",
       "$ref": "advideo.json"
     },
     "features": {
+      "description": "Special features or attributes associated with the page.",
       "type": ["string", "null"]
     },
     "followers_count": {
+      "description": "Number of followers or subscribers of the page.",
       "type": ["integer", "null"]
     },
     "food_styles": {
+      "description": "Styles of food or cuisine related to the page.",
       "type": ["array", "null"],
       "items": {
+        "description": "A specific food style or cuisine.",
         "type": ["string", "null"]
       }
     },
     "founded": {
+      "description": "The founding date or year of the page.",
       "type": ["string", "null"]
     },
     "general_info": {
+      "description": "General information or details about the page.",
       "type": ["string", "null"]
     },
     "general_manager": {
+      "description": "Name or details of the general manager associated with the page.",
       "type": ["string", "null"]
     },
     "genre": {
+      "description": "The genre or category of the page (musical, movie, etc.).",
       "type": ["string", "null"]
     },
     "global_brand_page_name": {
+      "description": "Name of the global brand page associated with the page.",
       "type": ["string", "null"]
     },
     "global_brand_root_id": {
+      "description": "The unique identifier of the global brand root page.",
       "type": ["string", "null"]
     },
     "has_added_app": {
+      "description": "Indicates whether an app has been added to the page.",
       "type": ["boolean", "null"]
     },
     "has_transitioned_to_new_page_experience": {
+      "description": "Flag indicating a transition to new page experience.",
       "type": ["boolean", "null"]
     },
     "has_whatsapp_business_number": {
+      "description": "Indicates whether the page has a WhatsApp business number.",
       "type": ["boolean", "null"]
     },
     "has_whatsapp_number": {
+      "description": "Indicates whether the page has a WhatsApp number.",
       "type": ["boolean", "null"]
     },
     "hometown": {
@@ -210,49 +269,64 @@
       "type": ["boolean", "null"]
     },
     "is_messenger_bot_get_started_enabled": {
+      "description": "Indicates if Messenger bot get started feature is enabled.",
       "type": ["boolean", "null"]
     },
     "is_messenger_platform_bot": {
+      "description": "Indicates if the page has a Messenger platform bot.",
       "type": ["boolean", "null"]
     },
     "is_owned": {
+      "description": "Indicates if the page is owned by the user.",
       "type": ["boolean", "null"]
     },
     "is_permanently_closed": {
+      "description": "Indicates if the page is permanently closed.",
       "type": ["boolean", "null"]
     },
     "is_published": {
+      "description": "Indicates if the page is published.",
       "type": ["boolean", "null"]
     },
     "is_unclaimed": {
+      "description": "Indicates if the page is unclaimed.",
       "type": ["boolean", "null"]
     },
     "is_webhooks_subscribed": {
+      "description": "Indicates if webhooks are subscribed for the page.",
       "type": ["boolean", "null"]
     },
     "leadgen_tos_acceptance_time": {
+      "description": "The date and time of lead generation terms of service acceptance.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "leadgen_tos_accepted": {
+      "description": "Indicates if lead generation terms of service have been accepted.",
       "type": ["boolean", "null"]
     },
     "leadgen_tos_accepting_user": {
+      "description": "The user who accepted the lead generation terms of service.",
       "$ref": "user.json"
     },
     "link": {
+      "description": "The link associated with the page.",
       "type": ["string", "null"]
     },
     "location": {
+      "description": "The location details of the page.",
       "$ref": "location.json"
     },
     "members": {
+      "description": "The members associated with the page.",
       "type": ["string", "null"]
     },
     "merchant_review_status": {
+      "description": "The merchant review status of the page.",
       "type": ["string", "null"]
     },
     "messaging_feature_status": {
+      "description": "The messaging feature status for the page.",
       "$ref": "messagingfeaturestatus.json"
     },
     "messenger_ads_default_icebreakers": {
@@ -268,54 +342,71 @@
       }
     },
     "messenger_ads_quick_replies_type": {
+      "description": "The type of quick replies used in Messenger ads for the page.",
       "type": ["string", "null"]
     },
     "mission": {
+      "description": "The mission statement of the page.",
       "type": ["string", "null"]
     },
     "mpg": {
+      "description": "Details about the Messenger Platform setting.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name of the page.",
       "type": ["string", "null"]
     },
     "name_with_location_descriptor": {
+      "description": "The name of the page with location descriptor.",
       "type": ["string", "null"]
     },
     "network": {
+      "description": "The network associated with the page.",
       "type": ["string", "null"]
     },
     "new_like_count": {
+      "description": "The count of new likes for the page.",
       "type": ["integer", "null"]
     },
     "offer_eligible": {
+      "description": "Indicates if the page is eligible for offers.",
       "type": ["boolean", "null"]
     },
     "overall_star_rating": {
+      "description": "The overall star rating of the page.",
       "type": ["number", "null"]
     },
     "page_token": {
+      "description": "The token associated with the page.",
       "type": ["string", "null"]
     },
     "parent_page": {
+      "description": "The parent page associated with the page.",
       "$ref": "page.json"
     },
     "parking": {
+      "description": "Parking details for the page.",
       "$ref": "pageparking.json"
     },
     "payment_options": {
+      "description": "The payment options available for the page.",
       "$ref": "pagepaymentoptions.json"
     },
     "personal_info": {
+      "description": "The personal information associated with the page.",
       "type": ["string", "null"]
     },
     "personal_interests": {
+      "description": "The personal interests specified for the page.",
       "type": ["string", "null"]
     },
     "pharma_safety_info": {
+      "description": "Pharmaceutical safety information for the page.",
       "type": ["string", "null"]
     },
     "phone": {
+      "description": "The phone number associated with the page.",
       "type": ["string", "null"]
     },
     "pickup_options": {
@@ -325,135 +416,178 @@
       }
     },
     "place_type": {
+      "description": "The type of place the page represents.",
       "type": ["string", "null"]
     },
     "plot_outline": {
+      "description": "The plot outline associated with the page.",
       "type": ["string", "null"]
     },
     "preferred_audience": {
+      "description": "The preferred audience for the page.",
       "$ref": "targeting.json"
     },
     "press_contact": {
+      "description": "The press contact information for the page.",
       "type": ["string", "null"]
     },
     "price_range": {
+      "description": "The price range associated with the page.",
       "type": ["string", "null"]
     },
     "privacy_info_url": {
+      "description": "The URL for privacy information of the page.",
       "type": ["string", "null"]
     },
     "produced_by": {
+      "description": "The entity that produced the page.",
       "type": ["string", "null"]
     },
     "products": {
+      "description": "The products associated with the page.",
       "type": ["string", "null"]
     },
     "promotion_eligible": {
+      "description": "Indicates if the page is eligible for promotions.",
       "type": ["boolean", "null"]
     },
     "promotion_ineligible_reason": {
+      "description": "The reason why the page is ineligible for promotions.",
       "type": ["string", "null"]
     },
     "public_transit": {
+      "description": "Public transit information associated with the page.",
       "type": ["string", "null"]
     },
     "rating_count": {
+      "description": "The count of ratings for the page.",
       "type": ["integer", "null"]
     },
     "recipient": {
+      "description": "The recipient of the information.",
       "type": ["string", "null"]
     },
     "record_label": {
+      "description": "The record label associated with the page.",
       "type": ["string", "null"]
     },
     "release_date": {
+      "description": "The release date of the page.",
       "type": ["string", "null"]
     },
     "restaurant_services": {
+      "description": "Details about restaurant services offered by the page.",
       "$ref": "pagerestaurantservices.json"
     },
     "restaurant_specialties": {
+      "description": "The specialties of the restaurant for the page.",
       "$ref": "pagerestaurantspecialties.json"
     },
     "schedule": {
+      "description": "The schedule information for the page.",
       "type": ["string", "null"]
     },
     "screenplay_by": {
+      "description": "The screenwriter associated with the page.",
       "type": ["string", "null"]
     },
     "season": {
+      "description": "The season information associated with the page.",
       "type": ["string", "null"]
     },
     "single_line_address": {
+      "description": "The single line address of the page.",
       "type": ["string", "null"]
     },
     "starring": {
+      "description": "The stars associated with the page.",
       "type": ["string", "null"]
     },
     "start_info": {
+      "description": "The start information for the page.",
       "$ref": "pagestartinfo.json"
     },
     "store_code": {
+      "description": "The store code associated with the page.",
       "type": ["string", "null"]
     },
     "store_location_descriptor": {
+      "description": "The location descriptor of the store for the page.",
       "type": ["string", "null"]
     },
     "store_number": {
+      "description": "The store number associated with the page.",
       "type": ["integer", "null"]
     },
     "studio": {
+      "description": "The studio associated with the page.",
       "type": ["string", "null"]
     },
     "supports_donate_button_in_live_video": {
+      "description": "Indicates if the page supports a donate button in live videos.",
       "type": ["boolean", "null"]
     },
     "talking_about_count": {
+      "description": "The count of people talking about the page.",
       "type": ["integer", "null"]
     },
     "temporary_status": {
+      "description": "The temporary status information of the page.",
       "type": ["string", "null"]
     },
     "unread_message_count": {
+      "description": "The count of unread messages on the page.",
       "type": ["integer", "null"]
     },
     "unread_notif_count": {
+      "description": "The count of unread notifications on the page.",
       "type": ["integer", "null"]
     },
     "unseen_message_count": {
+      "description": "The count of unseen messages on the page.",
       "type": ["integer", "null"]
     },
     "username": {
+      "description": "The username associated with the page.",
       "type": ["string", "null"]
     },
     "verification_status": {
+      "description": "The verification status of the page.",
       "type": ["string", "null"]
     },
     "voip_info": {
+      "description": "VOIP information associated with the page.",
       "$ref": "voipinfo.json"
     },
     "website": {
+      "description": "The website associated with the page.",
       "type": ["string", "null"]
     },
     "were_here_count": {
+      "description": "The count of people who were here.",
       "type": ["integer", "null"]
     },
     "whatsapp_number": {
+      "description": "The WhatsApp number associated with the page.",
       "type": ["string", "null"]
     },
     "written_by": {
+      "description": "The author who wrote the content for the page.",
       "type": ["string", "null"]
     },
     "ads_posts": {
+      "description": "Data related to ads posts on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of ad posts",
           "type": ["array", "null"],
           "items": {
             "$ref": "pagepost.json"
           }
         },
         "paging": {
+          "description": "Pagination information for ad posts",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -463,6 +597,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -478,15 +613,18 @@
       }
     },
     "agencies": {
+      "description": "Data about agencies associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of agencies",
           "type": ["array", "null"],
           "items": {
             "$ref": "business.json"
           }
         },
         "paging": {
+          "description": "Pagination information for agencies",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -496,6 +634,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -511,15 +650,18 @@
       }
     },
     "albums": {
+      "description": "Data related to albums on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of albums",
           "type": ["array", "null"],
           "items": {
             "$ref": "album.json"
           }
         },
         "paging": {
+          "description": "Pagination information for albums",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -529,6 +671,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -544,15 +687,18 @@
       }
     },
     "assigned_users": {
+      "description": "Data about users assigned to manage the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of assigned users",
           "type": ["array", "null"],
           "items": {
             "$ref": "assigneduser.json"
           }
         },
         "paging": {
+          "description": "Pagination information for assigned users",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -562,6 +708,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -577,15 +724,18 @@
       }
     },
     "blocked": {
+      "description": "Data about blocked users or entities on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of blocked users/entities",
           "type": ["array", "null"],
           "items": {
             "$ref": "profile.json"
           }
         },
         "paging": {
+          "description": "Pagination information for blocked users/entities",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -595,6 +745,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -610,15 +761,18 @@
       }
     },
     "call_to_actions": {
+      "description": "Data related to call-to-action buttons on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of call-to-action buttons",
           "type": ["array", "null"],
           "items": {
             "$ref": "pagecalltoaction.json"
           }
         },
         "paging": {
+          "description": "Pagination information for call-to-action buttons",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -628,6 +782,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -643,15 +798,18 @@
       }
     },
     "canvas_elements": {
+      "description": "Data related to canvas elements associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of canvas elements",
           "type": ["array", "null"],
           "items": {
             "$ref": "canvasbodyelement.json"
           }
         },
         "paging": {
+          "description": "Pagination information for canvas elements",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -661,6 +819,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -676,15 +835,18 @@
       }
     },
     "canvases": {
+      "description": "Data related to canvases associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of canvases",
           "type": ["array", "null"],
           "items": {
             "$ref": "canvas.json"
           }
         },
         "paging": {
+          "description": "Pagination information for canvases",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -694,6 +856,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -709,15 +872,18 @@
       }
     },
     "chat_plugin": {
+      "description": "Data related to the chat plugin on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of chat plugin data",
           "type": ["array", "null"],
           "items": {
             "$ref": "chatplugin.json"
           }
         },
         "paging": {
+          "description": "Pagination information for chat plugin data",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -727,6 +893,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -742,15 +909,18 @@
       }
     },
     "commerce_orders": {
+      "description": "Data related to commerce orders associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of commerce orders",
           "type": ["array", "null"],
           "items": {
             "$ref": "commerceorder.json"
           }
         },
         "paging": {
+          "description": "Pagination information for commerce orders",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -760,6 +930,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -775,15 +946,18 @@
       }
     },
     "conversations": {
+      "description": "Data related to conversations on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of conversations",
           "type": ["array", "null"],
           "items": {
             "$ref": "unifiedthread.json"
           }
         },
         "paging": {
+          "description": "Pagination information for conversations",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -793,6 +967,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -808,15 +983,18 @@
       }
     },
     "crosspost_whitelisted_pages": {
+      "description": "Data about whitelisted pages for crossposting",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of whitelisted pages",
           "type": ["array", "null"],
           "items": {
             "$ref": "page.json"
           }
         },
         "paging": {
+          "description": "Pagination information for whitelisted pages",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -826,6 +1004,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -841,15 +1020,18 @@
       }
     },
     "custom_labels": {
+      "description": "Data for custom labels used on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of custom labels",
           "type": ["array", "null"],
           "items": {
             "$ref": "pageusermessagethreadlabel.json"
           }
         },
         "paging": {
+          "description": "Pagination information for custom labels",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -859,6 +1041,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -874,15 +1057,18 @@
       }
     },
     "custom_user_settings": {
+      "description": "Data for custom settings configured by users",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of custom user settings",
           "type": ["array", "null"],
           "items": {
             "$ref": "customusersettings.json"
           }
         },
         "paging": {
+          "description": "Pagination information for custom user settings",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -892,6 +1078,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -907,15 +1094,18 @@
       }
     },
     "events": {
+      "description": "Data related to events associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of events",
           "type": ["array", "null"],
           "items": {
             "$ref": "event.json"
           }
         },
         "paging": {
+          "description": "Pagination information for events",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -925,6 +1115,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -940,15 +1131,18 @@
       }
     },
     "feed": {
+      "description": "Data related to feed posts on the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of feed posts",
           "type": ["array", "null"],
           "items": {
             "$ref": "pagepost.json"
           }
         },
         "paging": {
+          "description": "Pagination information for feed posts",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -958,6 +1152,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -973,15 +1168,18 @@
       }
     },
     "global_brand_children": {
+      "description": "Data on global children related to the brand",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of global brand children",
           "type": ["array", "null"],
           "items": {
             "$ref": "page.json"
           }
         },
         "paging": {
+          "description": "Pagination information for global brand children",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -991,6 +1189,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -1006,15 +1205,18 @@
       }
     },
     "groups": {
+      "description": "Data related to groups associated with the page",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "List of groups",
           "type": ["array", "null"],
           "items": {
             "$ref": "group.json"
           }
         },
         "paging": {
+          "description": "Pagination information for groups",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -1024,6 +1226,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination",
               "type": "object",
               "properties": {
                 "before": {
@@ -2098,27 +2301,34 @@
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Video data associated with the page.",
           "type": ["array", "null"],
           "items": {
             "$ref": "advideo.json"
           }
         },
         "paging": {
+          "description": "Paging information for videos.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
+              "description": "Link to the previous page of videos.",
               "type": ["string", "null"]
             },
             "next": {
+              "description": "Link to the next page of videos.",
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination.",
               "type": "object",
               "properties": {
                 "before": {
+                  "description": "Cursor for the previous page.",
                   "type": ["string", "null"]
                 },
                 "after": {
+                  "description": "Cursor for the next page.",
                   "type": ["string", "null"]
                 }
               }
@@ -2131,27 +2341,34 @@
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Visitor posts data associated with the page.",
           "type": ["array", "null"],
           "items": {
             "$ref": "pagepost.json"
           }
         },
         "paging": {
+          "description": "Paging information for visitor posts.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
+              "description": "Link to the previous page of visitor posts.",
               "type": ["string", "null"]
             },
             "next": {
+              "description": "Link to the next page of visitor posts.",
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursors for pagination.",
               "type": "object",
               "properties": {
                 "before": {
+                  "description": "Cursor for the previous page.",
                   "type": ["string", "null"]
                 },
                 "after": {
+                  "description": "Cursor for the next page.",
                   "type": ["string", "null"]
                 }
               }

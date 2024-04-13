@@ -3,225 +3,290 @@
   "type": "object",
   "properties": {
     "actions": {
+      "description": "Actions that can be taken on the post.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"]
       }
     },
     "admin_creator": {
+      "description": "The admin who created the post.",
       "type": ["object", "null"]
     },
     "allowed_advertising_objectives": {
+      "description": "Advertising objectives allowed for the post.",
       "type": ["array", "null"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "application": {
+      "description": "The application associated with the post.",
       "$ref": "application.json"
     },
     "backdated_time": {
+      "description": "The time when the post was backdated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "call_to_action": {
+      "description": "The call to action associated with the post.",
       "type": ["string", "null"]
     },
     "can_reply_privately": {
+      "description": "Indicates whether replies can be made privately.",
       "type": ["boolean", "null"]
     },
     "caption": {
+      "description": "The caption of the post.",
       "type": ["string", "null"]
     },
     "child_attachments": {
+      "description": "Attachments associated with child posts.",
       "type": ["array", "null"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "comments_mirroring_domain": {
+      "description": "Domain for mirroring comments.",
       "type": ["string", "null"]
     },
     "coordinates": {
+      "description": "Coordinates associated with the post.",
       "type": ["object", "null"]
     },
     "created_time": {
+      "description": "The time when the post was created.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "description": {
+      "description": "The description or story of the post.",
       "type": ["string", "null"]
     },
     "event": {
+      "description": "Event associated with the post.",
       "$ref": "event.json"
     },
     "expanded_height": {
+      "description": "Expanded height of the post.",
       "type": ["integer", "null"]
     },
     "expanded_width": {
+      "description": "Expanded width of the post.",
       "type": ["integer", "null"]
     },
     "feed_targeting": {
+      "description": "Targeting information for the post.",
       "type": ["string", "null"]
     },
     "from": {
+      "description": "User or Page who created the post.",
       "type": ["object", "null"]
     },
     "full_picture": {
+      "description": "Full picture associated with the post.",
       "type": ["string", "null"]
     },
     "height": {
+      "description": "Height of the post.",
       "type": ["integer", "null"]
     },
     "icon": {
+      "description": "Icon associated with the post.",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "The unique identifier of the post.",
       "type": ["string", "null"]
     },
     "instagram_eligibility": {
+      "description": "Indicates if the post is eligible for Instagram.",
       "type": ["string", "null"]
     },
     "is_app_share": {
+      "description": "Indicates if the post is shared from an app.",
       "type": ["boolean", "null"]
     },
     "is_eligible_for_promotion": {
+      "description": "Indicates if the post is eligible for promotion.",
       "type": ["boolean", "null"]
     },
     "is_expired": {
+      "description": "Indicates if the post has expired.",
       "type": ["boolean", "null"]
     },
     "is_hidden": {
+      "description": "Indicates if the post is hidden.",
       "type": ["boolean", "null"]
     },
     "is_inline_created": {
+      "description": "Indicates if the post was created inline.",
       "type": ["boolean", "null"]
     },
     "is_instagram_eligible": {
+      "description": "Indicates if the post is eligible for Instagram.",
       "type": ["boolean", "null"]
     },
     "is_popular": {
+      "description": "Indicates if the post is popular.",
       "type": ["boolean", "null"]
     },
     "is_published": {
+      "description": "Indicates if the post is published.",
       "type": ["boolean", "null"]
     },
     "is_spherical": {
+      "description": "Indicates if the post is spherical.",
       "type": ["boolean", "null"]
     },
     "link": {
+      "description": "Link associated with the post.",
       "type": ["string", "null"]
     },
     "message": {
+      "description": "Message content of the post.",
       "type": ["string", "null"]
     },
     "message_tags": {
+      "description": "Tags within the message content.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"]
       }
     },
     "multi_share_end_card": {
+      "description": "End card for multi-share post.",
       "type": ["boolean", "null"]
     },
     "multi_share_optimized": {
+      "description": "Optimization information for multi-share post.",
       "type": ["boolean", "null"]
     },
     "name": {
+      "description": "Name associated with the post.",
       "type": ["string", "null"]
     },
     "object_id": {
+      "description": "The object id associated with the post.",
       "type": ["string", "null"]
     },
     "parent_id": {
+      "description": "The parent post id.",
       "type": ["string", "null"]
     },
     "permalink_url": {
+      "description": "URL of the post permalink.",
       "type": ["string", "null"]
     },
     "picture": {
+      "description": "Picture associated with the post.",
       "type": ["string", "null"]
     },
     "place": {
+      "description": "Place associated with the post.",
       "$ref": "place.json"
     },
     "privacy": {
+      "description": "Privacy settings for the post.",
       "$ref": "privacy.json"
     },
     "promotable_id": {
+      "description": "The id of the post eligible for promotion.",
       "type": ["string", "null"]
     },
     "promotion_status": {
+      "description": "Status of post promotion.",
       "type": ["string", "null"]
     },
     "properties": {
+      "description": "Properties associated with the post.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"]
       }
     },
     "scheduled_publish_time": {
+      "description": "Time when the post is scheduled for publishing.",
       "type": ["number", "null"]
     },
     "shares": {
+      "description": "Number of shares for the post.",
       "type": ["object", "null"]
     },
     "source": {
+      "description": "Source of the post.",
       "type": ["string", "null"]
     },
     "status_type": {
+      "description": "Type of status for the post.",
       "type": ["string", "null"]
     },
     "story": {
+      "description": "Story associated with the post.",
       "type": ["string", "null"]
     },
     "story_tags": {
+      "description": "Tags within the story content.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"]
       }
     },
     "subscribed": {
+      "description": "Indicates if the user has subscribed to the post.",
       "type": ["boolean", "null"]
     },
     "target": {
+      "description": "Target associated with the post.",
       "$ref": "profile.json"
     },
     "targeting": {
+      "description": "Targeting information for the post.",
       "type": ["string", "null"]
     },
     "timeline_visibility": {
+      "description": "Visibility of the post on the timeline.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of the post.",
       "type": ["string", "null"]
     },
     "updated_time": {
+      "description": "The time when the post was last updated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "via": {
+      "description": "Source via which the post was created.",
       "type": ["string", "null"]
     },
     "video_buying_eligibility": {
+      "description": "Eligibility for buying video ads.",
       "type": ["array", "null"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "width": {
+      "description": "Width of the post.",
       "type": ["integer", "null"]
     },
     "comments": {
+      "description": "Comments on the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Comment data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "comment.json"
           }
         },
         "paging": {
+          "description": "Pagination information for comments.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -231,6 +296,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -246,15 +312,18 @@
       }
     },
     "dynamic_posts": {
+      "description": "Dynamic posts associated with the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Dynamic post data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "rtbdynamicpost.json"
           }
         },
         "paging": {
+          "description": "Pagination information for dynamic posts.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -264,6 +333,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -279,15 +349,18 @@
       }
     },
     "insights": {
+      "description": "Insights data for the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Insights data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "insightsresult.json"
           }
         },
         "paging": {
+          "description": "Pagination information for insights.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -297,6 +370,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -312,15 +386,18 @@
       }
     },
     "reactions": {
+      "description": "Reactions on the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Reaction data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "profile.json"
           }
         },
         "paging": {
+          "description": "Pagination information for reactions.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -330,6 +407,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -345,15 +423,18 @@
       }
     },
     "sharedposts": {
+      "description": "Posts shared from the original post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Shared post data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "post.json"
           }
         },
         "paging": {
+          "description": "Pagination information for shared posts.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -363,6 +444,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -378,15 +460,18 @@
       }
     },
     "sponsor_tags": {
+      "description": "Tags of sponsors associated with the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Sponsor tag data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "page.json"
           }
         },
         "paging": {
+          "description": "Pagination information for sponsor tags.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -396,6 +481,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
@@ -411,15 +497,18 @@
       }
     },
     "to": {
+      "description": "Recipients of the post.",
       "type": ["object", "null"],
       "properties": {
         "data": {
+          "description": "Recipient data.",
           "type": ["array", "null"],
           "items": {
             "$ref": "profile.json"
           }
         },
         "paging": {
+          "description": "Pagination information for recipients.",
           "type": ["object", "null"],
           "properties": {
             "previous": {
@@ -429,6 +518,7 @@
               "type": ["string", "null"]
             },
             "cursors": {
+              "description": "Cursor information for pagination.",
               "type": "object",
               "properties": {
                 "before": {
