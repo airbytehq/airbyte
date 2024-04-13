@@ -44,21 +44,144 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/increment_paginator"
-  # API Docs: https://smaily.com/help/api/segments/list-segments/
+    # API Docs: https://smaily.com/help/api/segments/list-segments/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the user.
+            type: integer
+          email:
+            description: The email address of the user.
+            type:
+              - string
+              - "null"
+          first_name:
+            description: The first name of the user.
+            type:
+              - string
+              - "null"
+          last_name:
+            description: The last name of the user.
+            type:
+              - string
+              - "null"
+          is_owner:
+            description: Indicates if the user is the owner of the account.
+            type:
+              - boolean
+              - "null"
+          role:
+            description: The role of the user.
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: The unique identifier of the user's role.
+                type: integer
+              name:
+                description: The name of the user's role.
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
   segments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "segments"
       primary_key: "id"
       path: "/list.php"
-  # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+    # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the segment record.
+            type: string
+          name:
+            description:
+              Name of the segment which helps in identifying the group
+              of subscribers.
+            type:
+              - string
+              - "null"
+          subscribers_count:
+            description: Total count of subscribers within the segment.
+            type:
+              - integer
+              - "null"
+        required:
+          - id
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaign.php"
-  # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+    # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the campaign.
+            type: string
+          name:
+            description: The name of the campaign.
+            type:
+              - string
+              - "null"
+          template:
+            description: The template used for the campaign.
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: The unique identifier of the template.
+                type: string
+              name:
+                description: The name of the template.
+                type:
+                  - string
+                  - "null"
+              preview_url:
+                description: The URL for previewing the template.
+                type:
+                  - string
+                  - "null"
+          tags:
+            description: List of tags associated with the campaign.
+            type:
+              - array
+              - "null"
+            items:
+              description: A tag related to the campaign.
+              type: string
+          created_at:
+            description: The date and time when the campaign was created.
+            type:
+              - string
+              - "null"
+          completed_at:
+            description: The date and time when the campaign was completed.
+            type:
+              - string
+              - "null"
+          status:
+            description: The current status of the campaign.
+            type:
+              - string
+              - "null"
+        required:
+          - id
   templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -72,14 +195,100 @@ definitions:
         pagination_strategy:
           type: PageIncrement
           page_size: 1000
-  # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+    # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the template
+            type: integer
+          type:
+            description: The type or category of the template
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the template
+            type:
+              - string
+              - "null"
+          created_at:
+            description: The timestamp when the template was created
+            type:
+              - string
+              - "null"
+          modified_at:
+            description: The timestamp when the template was last modified
+            type:
+              - string
+              - "null"
+          preview_url:
+            description: The URL to preview the template design
+            type:
+              - string
+              - "null"
+        required:
+          - id
   automations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "automations"
       primary_key: "id"
       path: "/autoresponder.php"
-  # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+    # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the automation
+            type: string
+          name:
+            description: Name of the automation
+            type:
+              - string
+              - "null"
+          sections:
+            description: Represents different sections or steps within an automation.
+            type:
+              - array
+              - "null"
+            items:
+              description: Individual section details in the automation flow.
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the section within the automation
+                  type: integer
+                subject:
+                  description: Subject of the section
+                  type:
+                    - string
+                    - "null"
+                template:
+                  description: Defines the template used in this section.
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      description: Unique identifier for the template within the section
+                      type: integer
+                    name:
+                      description: Name of the template
+                      type:
+                        - string
+                        - "null"
+                    preview_url:
+                      description: URL for previewing the template
+                      type:
+                        - string
+                        - "null"
+        required:
+          - id
   ab_tests_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -87,6 +296,94 @@ definitions:
       primary_key: "id"
       path: "/split.php"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the AB test.
+            type: integer
+          name:
+            description: The name or title of the AB test.
+            type:
+              - string
+              - "null"
+          sections:
+            description:
+              An array of sections where each section contains the information
+              related to A/B test templates.
+            type:
+              - array
+              - "null"
+            items:
+              description:
+                Details of each section including the template information
+                for A/B testing.
+              type: object
+              properties:
+                id:
+                  description: The unique identifier for the section.
+                  type: integer
+                subject:
+                  description: The subject line used in the section of the AB test.
+                  type:
+                    - string
+                    - "null"
+                template:
+                  description:
+                    The specific template used for the A/B test within
+                    the section.
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      description:
+                        The unique identifier for the template used in
+                        the section.
+                      type: integer
+                    name:
+                      description: The name or title of the template.
+                      type:
+                        - string
+                        - "null"
+                    preview_url:
+                      description: The URL to preview the template.
+                      type:
+                        - string
+                        - "null"
+          tags:
+            description:
+              Additional tags or labels that can be associated with the
+              A/B test data.
+            type:
+              - array
+              - "null"
+            items:
+              description: Any tags associated with the AB test.
+              type:
+                - string
+                - "null"
+          created_at:
+            description: The date and time when the AB test was created.
+            type:
+              - string
+              - "null"
+          completed_at:
+            description: The date and time when the AB test was completed.
+            type:
+              - string
+              - "null"
+          status:
+            description:
+              The status of the AB test, such as 'active', 'paused', or
+              'completed'.
+            type:
+              - string
+              - "null"
+        required:
+          - id
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/segments_stream"
