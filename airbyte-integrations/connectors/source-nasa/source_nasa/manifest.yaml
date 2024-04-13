@@ -15,7 +15,9 @@ definitions:
       type: NoAuth
     request_parameters:
       api_key: "{{ config['api_key'] }}"
-      start_date: "{{ stream_interval.start_time if stream_interval else config['start_date'] }}"
+      start_date:
+        "{{ stream_interval.start_time if stream_interval else config['start_date']
+        }}"
 
   retriever:
     type: SimpleRetriever
@@ -54,6 +56,103 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          resource:
+            description:
+              Contains information about NASA's Astronomy Picture of the
+              Day (APOD) data.
+            type:
+              - "null"
+              - object
+            properties:
+              image_set:
+                description: Details about the image set (if applicable).
+                type:
+                  - "null"
+                  - string
+              planet:
+                description: The celestial body or planet shown in the image.
+                type:
+                  - "null"
+                  - string
+          concept_tags:
+            description: Any concept tags associated with the image, if available.
+            type:
+              - "null"
+              - boolean
+          title:
+            description: Title or name of the image.
+            type:
+              - "null"
+              - string
+          date:
+            description: Date when the image was taken.
+            type:
+              - "null"
+              - string
+            format: "%Y-%m-%d"
+          url:
+            description: URL to the image or media content.
+            type:
+              - "null"
+              - string
+            format: uri
+          hdurl:
+            description: URL to the high-definition version of the image.
+            type:
+              - "null"
+              - string
+            format: uri
+          media_type:
+            description: Type of media associated with the image (e.g., image, video).
+            type:
+              - "null"
+              - string
+            enum:
+              - image
+              - video
+          explanation:
+            description: Explanation or description of the image content.
+            type:
+              - "null"
+              - string
+          concepts:
+            description:
+              Key-value pairs of concepts related to the image indexed
+              by numeric identifiers.
+            type:
+              - "null"
+              - object
+              - string
+            patternProperties:
+              ^[0-9]+$:
+                description: Concept description
+                type:
+                  - "null"
+                  - string
+          thumbnail_url:
+            description: URL to the thumbnail version of the image.
+            type:
+              - "null"
+              - string
+            format: uri
+          copyright:
+            description: Copyright information related to the image.
+            type:
+              - "null"
+              - string
+          service_version:
+            description: API service version number.
+            type:
+              - "null"
+              - string
+            pattern: ^v[0-9]$
 streams:
   - "#/definitions/nasa_apod_stream"
 
