@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-pendo
   githubIssueLabel: source-pendo
   icon: pendo.svg
