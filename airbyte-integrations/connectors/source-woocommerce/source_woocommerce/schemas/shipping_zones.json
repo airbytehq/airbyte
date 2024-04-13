@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the shipping zone.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the shipping zone.",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "Order in which the shipping zone appears.",
       "type": ["null", "integer"]
     }
   }

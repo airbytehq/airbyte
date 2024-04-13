@@ -3,51 +3,65 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the tax rate",
       "type": ["null", "integer"]
     },
     "country": {
+      "description": "Country for which the tax rate is applicable",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State or region to which the tax rate applies",
       "type": ["null", "string"]
     },
     "postcode": {
+      "description": "Specific postcode to which the tax rate applies",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "City to which the tax rate applies",
       "type": ["null", "string"]
     },
     "postcodes": {
+      "description": "List of postcodes where the tax rate applies",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "cities": {
+      "description": "List of cities where the tax rate applies",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "rate": {
+      "description": "Numeric value representing the tax rate percentage",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or label for the tax rate",
       "type": ["null", "string"]
     },
     "priority": {
+      "description": "Priority of the tax rate when calculating taxes",
       "type": ["null", "integer"]
     },
     "compound": {
+      "description": "Indicates if the tax rate is compound",
       "type": ["null", "boolean"]
     },
     "shipping": {
+      "description": "Indicates if the tax rate applies to shipping costs",
       "type": ["null", "boolean"]
     },
     "order": {
+      "description": "Order in which the tax rate should be applied",
       "type": ["null", "integer"]
     },
     "class": {
+      "description": "Classification of the tax rate (e.g., standard, reduced, zero)",
       "type": ["null", "string"]
     }
   }

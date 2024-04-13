@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the product attribute",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The display name of the product attribute",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "A URL-friendly version of the attribute name",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of attribute, e.g., select, color, size",
       "type": ["null", "string"]
     },
     "order_by": {
+      "description": "Determines the method to order terms",
       "type": ["null", "string"]
     },
     "has_archives": {
+      "description": "Flag indicating if this attribute has product archives associated with it",
       "type": ["null", "boolean"]
     }
   }

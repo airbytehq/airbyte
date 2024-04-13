@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "slug": {
+      "description": "The unique slug identifier for the tax class.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the tax class.",
       "type": ["null", "string"]
     }
   }

@@ -3,279 +3,360 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the order.",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "Parent order ID, if this order is a part of another order.",
       "type": ["null", "integer"]
     },
     "number": {
+      "description": "Order number.",
       "type": ["null", "string"]
     },
     "order_key": {
+      "description": "Key that uniquely identifies the order.",
       "type": ["null", "string"]
     },
     "created_via": {
+      "description": "Method used to create the order.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "API version used to process the order.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the order.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency used for the order.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "Date and time when the order was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "GMT date and time when the order was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "Date and time when the order was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified_gmt": {
+      "description": "GMT date and time when the order was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "discount_total": {
+      "description": "Total discount amount applied to the order.",
       "type": ["null", "string"]
     },
     "discount_tax": {
+      "description": "Total amount of tax on discounts.",
       "type": ["null", "string"]
     },
     "shipping_total": {
+      "description": "Total amount for shipping.",
       "type": ["null", "string"]
     },
     "shipping_tax": {
+      "description": "Total amount of tax on shipping.",
       "type": ["null", "string"]
     },
     "cart_tax": {
+      "description": "Total amount of tax for the cart.",
       "type": ["null", "string"]
     },
     "total": {
+      "description": "Total amount for the order.",
       "type": ["null", "string"]
     },
     "total_tax": {
+      "description": "Overall tax amount for the order.",
       "type": ["null", "string"]
     },
     "prices_include_tax": {
+      "description": "Flag indicating if prices include tax.",
       "type": ["null", "boolean"]
     },
     "customer_id": {
+      "description": "User ID associated with the customer.",
       "type": ["null", "integer"]
     },
     "customer_ip_address": {
+      "description": "IP address of the customer.",
       "type": ["null", "string"]
     },
     "customer_user_agent": {
+      "description": "User agent of the customer's browser.",
       "type": ["null", "string"]
     },
     "customer_note": {
+      "description": "Any notes provided by the customer.",
       "type": ["null", "string"]
     },
     "billing": {
+      "description": "Billing information associated with the order.",
       "$ref": "order_billing.json"
     },
     "shipping": {
+      "description": "Shipping method used for the order.",
       "$ref": "order_shipping.json"
     },
     "payment_method": {
+      "description": "Payment method used for the order.",
       "type": ["null", "string"]
     },
     "payment_method_title": {
+      "description": "Title of the payment method.",
       "type": ["null", "string"]
     },
     "transaction_id": {
+      "description": "Unique ID associated with the transaction.",
       "type": ["null", "string"]
     },
     "date_paid": {
+      "description": "Date and time when the order was paid for.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_paid_gmt": {
+      "description": "GMT date and time when the order was paid for.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_completed": {
+      "description": "Date and time when the order was completed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_completed_gmt": {
+      "description": "GMT date and time when the order was completed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "cart_hash": {
+      "description": "Hash that uniquely identifies the current cart.",
       "type": ["null", "string"]
     },
     "meta_data": {
+      "description": "Additional metadata for the order.",
       "$ref": "meta_data.json"
     },
     "shop_url": {
+      "description": "URL of the shop associated with the order.",
       "type": ["null", "string"]
     },
     "line_items": {
+      "description": "Details of individual products purchased in the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the line item.",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Name of the product.",
             "type": ["null", "string"]
           },
           "product_id": {
+            "description": "Product ID associated with the line item.",
             "type": ["null", "integer"]
           },
           "variation_id": {
+            "description": "Variation ID of the product, if applicable.",
             "type": ["null", "integer"]
           },
           "quantity": {
+            "description": "Quantity of the product purchased.",
             "type": ["null", "number"]
           },
           "tax_class": {
+            "description": "Tax class for the line item.",
             "type": ["null", "string"]
           },
           "subtotal": {
+            "description": "Subtotal for the line item.",
             "type": ["null", "string"]
           },
           "subtotal_tax": {
+            "description": "Tax amount on the subtotal.",
             "type": ["null", "string"]
           },
           "total": {
+            "description": "Total amount for the line item.",
             "type": ["null", "string"]
           },
           "total_tax": {
+            "description": "Total tax amount for the line item.",
             "type": ["null", "string"]
           },
           "taxes": {
+            "description": "Taxes applied to the line item.",
             "$ref": "taxes.json"
           },
           "meta_data": {
+            "description": "Additional metadata for the line item.",
             "$ref": "meta_data.json"
           },
           "sku": {
+            "description": "Stock keeping unit of the product.",
             "type": ["null", "string"]
           },
           "price": {
+            "description": "Price of the product.",
             "type": ["null", "number"]
           }
         }
       }
     },
     "tax_lines": {
+      "description": "Tax details for the order.",
       "$ref": "taxes.json"
     },
     "shipping_lines": {
+      "description": "Details of the shipping methods used for the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the shipping line.",
             "type": ["null", "integer"]
           },
           "method_title": {
+            "description": "Title of the shipping method.",
             "type": ["null", "string"]
           },
           "method_id": {
+            "description": "ID of the shipping method.",
             "type": ["null", "string"]
           },
           "total": {
+            "description": "Total amount for shipping.",
             "type": ["null", "string"]
           },
           "total_tax": {
+            "description": "Total tax amount for shipping.",
             "type": ["null", "string"]
           },
           "taxes": {
+            "description": "Taxes applied to the shipping.",
             "$ref": "taxes.json"
           },
           "meta_data": {
+            "description": "Additional metadata for the shipping line.",
             "$ref": "meta_data.json"
           }
         }
       }
     },
     "fee_lines": {
+      "description": "Details of any additional fees charged on the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the fee line.",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Name of the fee line.",
             "type": ["null", "string"]
           },
           "tax_class": {
+            "description": "Tax class for the fee.",
             "type": ["null", "string"]
           },
           "tax_status": {
+            "description": "Tax status for the fee.",
             "type": ["null", "string"]
           },
           "total": {
+            "description": "Total amount for the fee.",
             "type": ["null", "string"]
           },
           "total_tax": {
+            "description": "Total tax amount for the fee.",
             "type": ["null", "string"]
           },
           "taxes": {
+            "description": "Taxes applied to the fee.",
             "$ref": "taxes.json"
           },
           "meta_data": {
+            "description": "Additional metadata for the fee line.",
             "$ref": "meta_data.json"
           }
         }
       }
     },
     "coupon_lines": {
+      "description": "Details of any applied coupons on the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the coupon line.",
             "type": ["null", "integer"]
           },
           "code": {
+            "description": "Coupon code applied to the order.",
             "type": ["null", "string"]
           },
           "discount": {
+            "description": "Discount amount from the coupon.",
             "type": ["null", "string"]
           },
           "discount_tax": {
+            "description": "Tax amount on the discount.",
             "type": ["null", "string"]
           },
           "meta_data": {
+            "description": "Additional metadata for the coupon line.",
             "$ref": "meta_data.json"
           }
         }
       }
     },
     "refunds": {
+      "description": "Details of any refunds issued for the order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the refund.",
             "type": ["null", "integer"]
           },
           "reason": {
+            "description": "Reason for the refund.",
             "type": ["null", "string"]
           },
           "total": {
+            "description": "Total amount refunded.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "set_paid": {
+      "description": "Flag indicating if the order is paid.",
       "type": ["null", "boolean"]
     },
     "_links": {
+      "description": "Links related to the order resource.",
       "$ref": "_links.json"
     }
   }

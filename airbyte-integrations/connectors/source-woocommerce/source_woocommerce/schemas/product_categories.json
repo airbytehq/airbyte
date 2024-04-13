@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the product category.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the product category.",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "Unique slug used in URLs to identify the category.",
       "type": ["null", "string"]
     },
     "parent": {
+      "description": "ID of the parent category if this category is a subcategory.",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "A brief description of the product category.",
       "type": ["null", "string"]
     },
     "display": {
+      "description": "Flag to determine if the category should be displayed.",
       "type": ["null", "string"]
     },
     "image": {
+      "description": "URL of an image associated with the category.",
       "$ref": "product_images.json"
     },
     "menu_order": {
+      "description": "The order in which the category should be displayed in menus.",
       "type": ["null", "integer"]
     },
     "count": {
+      "description": "The number of products in this category.",
       "type": ["null", "integer"]
     }
   }

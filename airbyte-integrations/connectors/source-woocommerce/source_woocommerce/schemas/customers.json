@@ -3,58 +3,75 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the customer",
       "type": ["null", "integer"]
     },
     "date_created": {
+      "description": "Date and time when the customer was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_created_gmt": {
+      "description": "Date and time when the customer was created in GMT",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified": {
+      "description": "Date and time when the customer was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_modified_gmt": {
+      "description": "Date and time when the customer was last modified in GMT",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "email": {
+      "description": "Email address of the customer",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "First name of the customer",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the customer",
       "type": ["null", "string"]
     },
     "role": {
+      "description": "Role of the customer within the system",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "Username of the customer",
       "type": ["null", "string"]
     },
     "billing": {
+      "description": "Billing information of the customer",
       "$ref": "order_billing.json"
     },
     "shipping": {
+      "description": "Shipping information of the customer",
       "$ref": "order_shipping.json"
     },
     "is_paying_customer": {
+      "description": "Flag indicating if the customer is a paying customer",
       "type": ["null", "boolean"]
     },
     "avatar_url": {
+      "description": "URL of the customer's avatar image",
       "type": ["null", "string"]
     },
     "meta_data": {
+      "description": "Additional metadata related to the customer",
       "$ref": "meta_data.json"
     },
     "_links": {
+      "description": "Links related to the customer resource",
       "$ref": "_links.json"
     },
     "shop_url": {
+      "description": "URL of the customer's shop, if available",
       "type": ["null", "string"]
     }
   }
