@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the tag",
       "type": ["number"]
     },
     "name": {
+      "description": "Name or label assigned to the tag",
       "type": ["null", "string"]
     },
     "hexColor": {
+      "description": "Hexadecimal color code associated with the tag for visual representation",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Flag indicating whether the tag is archived or not",
       "type": ["null", "boolean"]
     },
     "dateArchived": {
+      "description": "Date when the tag was archived",
       "type": ["null", "string"]
     }
   }

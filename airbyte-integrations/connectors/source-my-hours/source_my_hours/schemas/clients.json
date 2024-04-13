@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the client.",
       "type": ["number"]
     },
     "contactName": {
+      "description": "Name of the primary contact person for the client.",
       "type": ["null", "string"]
     },
     "contactEmail": {
+      "description": "Email address of the primary contact person for the client.",
       "type": ["null", "string"]
     },
     "customId": {
+      "description": "Custom unique identifier for the client.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the client.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Boolean flag indicating if the client is archived or not.",
       "type": ["null", "boolean"]
     },
     "dateArchived": {
+      "description": "Date when the client was archived.",
       "type": ["null", "string"]
     }
   }

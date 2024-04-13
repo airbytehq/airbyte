@@ -4,192 +4,253 @@
   "additionalProperties": true,
   "properties": {
     "logId": {
+      "description": "ID of the time log entry.",
       "type": ["number"]
     },
     "userId": {
+      "description": "ID of the user who logged the time.",
       "type": ["null", "number"]
     },
     "date": {
+      "description": "The date of the time log.",
       "type": ["null", "string"]
     },
     "userName": {
+      "description": "Name of the user who logged the time.",
       "type": ["null", "string"]
     },
     "clientId": {
+      "description": "ID of the client associated with the time log.",
       "type": ["null", "number"]
     },
     "clientName": {
+      "description": "Name of the client associated with the time log.",
       "type": ["null", "string"]
     },
     "projectId": {
+      "description": "ID of the project associated with the time log.",
       "type": ["null", "number"]
     },
     "projectName": {
+      "description": "Name of the project associated with the time log.",
       "type": ["null", "string"]
     },
     "projectInvoiceMethod": {
+      "description": "Invoice method for the project.",
       "type": ["null", "number"]
     },
     "taskId": {
+      "description": "ID of the task associated with the time log.",
       "type": ["null", "number"]
     },
     "taskName": {
+      "description": "Name of the task associated with the time log.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the time log.",
       "type": ["null", "string"]
     },
     "rate": {
+      "description": "Rate applicable for the time log.",
       "type": ["null", "number"]
     },
     "billable": {
+      "description": "Boolean indicating if the time is billable.",
       "type": ["null", "boolean"]
     },
     "inLockedPeriod": {
+      "description": "Indicates if the time log is in a locked period.",
       "type": ["null", "boolean"]
     },
     "billableAmount": {
+      "description": "The amount billable for the logged time.",
       "type": ["null", "number"]
     },
     "amount": {
+      "description": "The total amount of time logged.",
       "type": ["null", "number"]
     },
     "laborCost": {
+      "description": "The labor cost for the time logged.",
       "type": ["null", "number"]
     },
     "laborRate": {
+      "description": "Rate of labor for the time log.",
       "type": ["null", "number"]
     },
     "laborDuration": {
+      "description": "The total labor duration.",
       "type": ["null", "number"]
     },
     "logDuration": {
+      "description": "Duration of the time log.",
       "type": ["null", "number"]
     },
     "expense": {
+      "description": "Expenses associated with the time log.",
       "type": ["null", "number"]
     },
     "cost": {
+      "description": "The cost incurred for the time logged.",
       "type": ["null", "number"]
     },
     "note": {
+      "description": "Additional notes related to the time log.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the time log.",
       "type": ["null", "number"]
     },
     "invoiceId": {
+      "description": "The ID of the invoice associated with the time log.",
       "type": ["null", "number"]
     },
     "invoiced": {
+      "description": "Indicates if the time log has been invoiced.",
       "type": ["null", "boolean"]
     },
     "billableHours": {
+      "description": "The number of billable hours logged.",
       "type": ["null", "number"]
     },
     "laborHours": {
+      "description": "The total labor hours logged.",
       "type": ["null", "number"]
     },
     "customField1": {
+      "description": "Custom field 1 data.",
       "type": ["null", "number"]
     },
     "customField2": {
+      "description": "Custom field 2 data.",
       "type": ["null", "number"]
     },
     "customField3": {
+      "description": "Custom field 3 data.",
       "type": ["null", "number"]
     },
     "monthOfYear": {
+      "description": "Month of the year for the time log.",
       "type": ["null", "string"]
     },
     "weekNo": {
+      "description": "Week number within the year.",
       "type": ["null", "number"]
     },
     "weekOfYear": {
+      "description": "Week of the year for the time log.",
       "type": ["null", "string"]
     },
     "times": {
+      "description": "Time entries within the time log.",
       "type": ["null", "array"],
       "items": {
         "type": ["object"],
         "properties": {
           "id": {
+            "description": "ID of the time entry.",
             "type": ["null", "number"]
           },
           "duration": {
+            "description": "Duration of the time entry.",
             "type": ["null", "number"]
           },
           "startTime": {
+            "description": "Start time of the time entry.",
             "type": ["null", "string"]
           },
           "endTime": {
+            "description": "End time of the time entry.",
             "type": ["null", "string"]
           },
           "running": {
+            "description": "Indicates if the time entry is running.",
             "type": ["null", "boolean"]
           },
           "deleted": {
+            "description": "Indicates if the time entry is deleted.",
             "type": ["null", "boolean"]
           }
         }
       }
     },
     "roundtype": {
+      "description": "Round type for time calculation.",
       "type": ["null", "number"]
     },
     "attachments": {
+      "description": "Attachments associated with the time log.",
       "type": ["null", "array"]
     },
     "balance": {
+      "description": "The remaining balance after time logging.",
       "type": ["null", "number"]
     },
     "billableExpense": {
+      "description": "Indicates if expenses are billable for the time logged.",
       "type": ["null", "number"]
     },
     "billableHoursLogBillable": {
+      "description": "The billable hours for log billing.",
       "type": ["null", "number"]
     },
     "clientCustomId": {
+      "description": "Custom ID of the client associated with the time log.",
       "type": ["null", "string"]
     },
     "endTime": {
+      "description": "The end time of the logged time.",
       "type": ["null", "string"]
     },
     "invoicedAmount": {
+      "description": "The amount already invoiced for the time log.",
       "type": ["null", "number"]
     },
     "logDurationBillable": {
+      "description": "Billable duration of the time log.",
       "type": ["null", "number"]
     },
     "startTime": {
+      "description": "The start time of the logged time.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "startEndTime": {
+      "description": "Start and end times combined.",
       "type": ["null", "string"]
     },
     "teams": {
+      "description": "Teams associated with the time log.",
       "type": ["null", "array"],
       "items": {
+        "description": "Team details.",
         "type": ["null", "string"]
       }
     },
     "teamsNames": {
+      "description": "Names of teams associated with the time log.",
       "type": ["null", "string"]
     },
     "taskListName": {
+      "description": "Name of the task list.",
       "type": ["null", "string"]
     },
     "taskDueDate": {
+      "description": "Due date for the associated task.",
       "type": ["null", "string"]
     },
     "taskStartDate": {
+      "description": "Start date for the associated task.",
       "type": ["null", "string"]
     },
     "tagsData": {
+      "description": "Additional data related to tags.",
       "type": ["null", "array"]
     },
     "uninvoicedAmount": {
+      "description": "Amount yet to be invoiced for the time-log.",
       "type": ["null", "number"]
     }
   }
