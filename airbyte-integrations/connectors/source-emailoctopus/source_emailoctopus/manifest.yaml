@@ -48,7 +48,61 @@ definitions:
         field_pointers:
           - ["content", "html"]
           - ["content", "plain_text"]
-  # API Docs: https://emailoctopus.com/api-documentation/lists/get-all
+    # API Docs: https://emailoctopus.com/api-documentation/lists/get-all
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Campaigns
+        description: Details of all campaigns.
+        properties:
+          id:
+            type: string
+            title: Campaign ID
+            description: The identifier of the campaign.
+          status:
+            type: string
+            title: Status
+            description: The status of the campaign (DRAFT/SENDING/SENT/ERROR).
+          name:
+            type:
+              - string
+              - "null"
+            title: Campaign Name
+            description: The name of the campaign.
+          subject:
+            type:
+              - string
+              - "null"
+            title: Subject
+            description: The subject of the campaign.
+          to:
+            type: array
+            title: To
+            description: The ids of the lists the campaign was sent to.
+            items:
+              type: string
+          from:
+            type: object
+            title: From
+            description: The sender of the campaign.
+            properties:
+              name:
+                type: string
+                title: Sender Name
+                description: The name the campaign was sent from.
+              email_address:
+                type: string
+                title: Sender Email Address
+                description: The email address the campaign was sent from.
+          created_at:
+            type: string
+            title: Campaign Created At
+            description: When the campaign was created, in ISO 8601 format.
+          sent_at:
+            type: string
+            title: Campaign Sent At
+            description: When the campaign was sent, in ISO 8601 format.
   lists_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -65,6 +119,69 @@ definitions:
         field_pointers:
           - ["tags"]
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Lists
+        description: Details of all lists.
+        properties:
+          id:
+            type: string
+            title: List ID
+            description: The identifier of the list.
+          name:
+            type: string
+            title: List Name
+            description: The name of the list.
+          double_opt_in:
+            type: boolean
+            title: Double Opt-in
+            description: If double opt-in has been enabled on the list.
+          fields:
+            type: array
+            title: Subscriber Fields
+            description: Stored information on subscribers.
+            properties:
+              tag:
+                type: string
+                title: Tag
+                description: The identifier used to reference the field in your emails.
+              type:
+                type: string
+                title: Type
+                description: The type of the field - can be NUMBER, TEXT or DATE.
+              label:
+                type: string
+                title: Label
+                description: A human readable label for the field.
+              fallback:
+                type: "null"
+                title: Fallback
+                description:
+                  A default value for the field, used when there is no
+                  other value available.
+          counts:
+            type: object
+            title: Counts
+            description: The summary counts of the list.
+            properties:
+              pending:
+                type: integer
+                title: Pending
+                description: The number of pending contacts in the list.
+              subscribed:
+                type: integer
+                title: Subscribed
+                description: The number of subscribed contacts in the list.
+              unsubscribed:
+                type: integer
+                title: Unsubscribed
+                description: The number of unsubscribed contacts in the list.
+          created_at:
+            type: string
+            title: List Created At
+            description: When the list was created, in ISO 8601 format.
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/lists_stream"
