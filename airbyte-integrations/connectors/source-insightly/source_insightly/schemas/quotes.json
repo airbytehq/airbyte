@@ -3,131 +3,172 @@
   "type": "object",
   "properties": {
     "QUOTE_ID": {
+      "description": "The ID of the quote",
       "type": "integer"
     },
     "QUOTATION_NAME": {
+      "description": "The name or title of the quote",
       "type": ["string", "null"]
     },
     "OPPORTUNITY_ID": {
+      "description": "The ID of the opportunity associated with the quote",
       "type": ["integer", "null"]
     },
     "CONTACT_ID": {
+      "description": "The ID of the contact associated with the quote",
       "type": ["integer", "null"]
     },
     "ORGANISATION_ID": {
+      "description": "The ID of the organization associated with the quote",
       "type": ["integer", "null"]
     },
     "PRICEBOOK_ID": {
+      "description": "The ID of the price book used for pricing in the quote",
       "type": ["integer", "null"]
     },
     "QUOTATION_NUMBER": {
+      "description": "The unique number or identifier of the quote",
       "type": ["string", "null"]
     },
     "QUOTATION_DESCRIPTION": {
+      "description": "The description or notes associated with the quote",
       "type": ["string", "null"]
     },
     "QUOTATION_PHONE": {
+      "description": "The phone number associated with the quote",
       "type": ["string", "null"]
     },
     "QUOTATION_EMAIL": {
+      "description": "The email address associated with the quote",
       "type": ["string", "null"]
     },
     "QUOTATION_FAX": {
+      "description": "The fax number associated with the quote",
       "type": ["string", "null"]
     },
     "QUOTE_STATUS": {
+      "description": "The status of the quote (e.g., drafted, sent, accepted)",
       "type": ["string", "null"]
     },
     "QUOTATION_EXPIRATION_DATE": {
+      "description": "The date and time the quote is set to expire",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "LINE_ITEM_COUNT": {
+      "description": "The number of line items in the quote",
       "type": ["integer", "null"]
     },
     "IS_SYNCING": {
+      "description": "Flag indicating if the quote is currently being synced",
       "type": ["boolean", "null"]
     },
     "QUOTATION_CURRENCY_CODE": {
+      "description": "The currency code used for the quote",
       "type": ["string", "null"]
     },
     "SUBTOTAL": {
+      "description": "The subtotal amount before discounts and taxes",
       "type": ["integer", "null"]
     },
     "DISCOUNT": {
+      "description": "The discount applied to the quote",
       "type": ["integer", "null"]
     },
     "TOTAL_PRICE": {
+      "description": "The total price of the quote after applying all charges and discounts",
       "type": ["integer", "null"]
     },
     "SHIPPING_HANDLING": {
+      "description": "The shipping and handling charges applied to the quote",
       "type": ["integer", "null"]
     },
     "TAX": {
+      "description": "The tax amount applied to the quote",
       "type": ["integer", "null"]
     },
     "GRAND_TOTAL": {
+      "description": "The total amount of the quote including all charges and discounts",
       "type": ["integer", "null"]
     },
     "ADDRESS_BILLING_NAME": {
+      "description": "The name associated with the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_BILLING_STREET": {
+      "description": "The street of the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_BILLING_CITY": {
+      "description": "The city of the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_BILLING_STATE": {
+      "description": "The state of the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_BILLING_POSTCODE": {
+      "description": "The postal code of the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_BILLING_COUNTRY": {
+      "description": "The country of the billing address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_NAME": {
+      "description": "The name associated with the shipping address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_STREET": {
+      "description": "The street of the shipping address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_CITY": {
+      "description": "The city of the shipping address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_STATE": {
+      "description": "The state of the shipping address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_POSTCODE": {
+      "description": "The postal code of the shipping address",
       "type": ["string", "null"]
     },
     "ADDRESS_SHIPPING_COUNTRY": {
+      "description": "The country of the shipping address",
       "type": ["string", "null"]
     },
     "OWNER_USER_ID": {
+      "description": "The ID of the user who owns the quote",
       "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
+      "description": "The date and time the quote was created in UTC",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
+      "description": "The date and time the quote was last updated in UTC",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "CREATED_USER_ID": {
+      "description": "The ID of the user who created the quote",
       "type": ["integer", "null"]
     },
     "CUSTOMFIELDS": {
+      "description": "Custom fields associated with the quote",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "FIELD_NAME": {
+            "description": "The name of the custom field",
             "type": ["string", "null"]
           },
           "FIELD_VALUE": {
+            "description": "The value of the custom field",
             "type": "object"
           }
         }

@@ -3,6 +3,7 @@
   "type": "object",
   "properties": {
     "TAG_NAME": {
+      "description": "The name of the tag associated with the record.",
       "type": "string"
     }
   }

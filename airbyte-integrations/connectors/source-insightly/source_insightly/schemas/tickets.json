@@ -3,80 +3,104 @@
   "type": "object",
   "properties": {
     "TICKET_ID": {
+      "description": "The unique identifier of the ticket.",
       "type": "integer"
     },
     "ORGANISATION_ID": {
+      "description": "The unique identifier of the organization associated with the ticket.",
       "type": ["integer", "null"]
     },
     "TICKET_TYPE": {
+      "description": "The type or category of the ticket.",
       "type": ["string", "null"]
     },
     "SUBJECT": {
+      "description": "The subject or title of the ticket.",
       "type": ["string", "null"]
     },
     "TICKET_STATUS": {
+      "description": "The status of the ticket (e.g., open, closed, resolved).",
       "type": ["string", "null"]
     },
     "PRIORITY": {
+      "description": "The priority level of the ticket.",
       "type": ["string", "null"]
     },
     "TO_EMAIL_ADDRESS": {
+      "description": "The email address the ticket is associated with.",
       "type": ["string", "null"]
     },
     "CONTACT_ID": {
+      "description": "The unique identifier of the contact associated with the ticket.",
       "type": ["integer", "null"]
     },
     "CREATED_USER_ID": {
+      "description": "The unique identifier of the user who created the ticket.",
       "type": ["integer", "null"]
     },
     "OWNER_USER_ID": {
+      "description": "The unique identifier of the user who owns the ticket.",
       "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
+      "description": "The date and time the ticket was created in Coordinated Universal Time (UTC).",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
+      "description": "The date and time the ticket was last updated in Coordinated Universal Time (UTC).",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "TICKET_NUMBER": {
+      "description": "The ticket number assigned to the ticket.",
       "type": ["string", "null"]
     },
     "SOURCE": {
+      "description": "The source of the ticket (e.g., email, chat, phone).",
       "type": ["string", "null"]
     },
     "DATE_SOLVED_UTC": {
+      "description": "The date and time the ticket was solved in Coordinated Universal Time (UTC).",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_CLOSED_UTC": {
+      "description": "The date and time the ticket was closed in Coordinated Universal Time (UTC).",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "TicketCommentBodyHtml": {
+      "description": "The HTML content of the ticket comments.",
       "type": ["string", "null"]
     },
     "CUSTOMFIELDS": {
+      "description": "Additional custom fields associated with the ticket.",
       "type": "array",
       "items": {
+        "description": "Custom fields associated with the ticket.",
         "type": "object",
         "properties": {
           "FIELD_NAME": {
+            "description": "The name of the custom field.",
             "type": ["string", "null"]
           },
           "FIELD_VALUE": {
+            "description": "The value of the custom field.",
             "type": "object"
           }
         }
       }
     },
     "TAGS": {
+      "description": "Tags associated with the ticket for categorization or grouping purposes.",
       "type": "array",
       "items": {
+        "description": "Tags associated with the ticket.",
         "type": "object",
         "properties": {
           "TAG_NAME": {
+            "description": "The name of the tag.",
             "type": ["string", "null"]
           }
         }
