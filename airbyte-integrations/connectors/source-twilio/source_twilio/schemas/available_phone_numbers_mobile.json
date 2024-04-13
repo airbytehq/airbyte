@@ -49,6 +49,7 @@
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Represents the capabilities of the available mobile phone numbers such as SMS and voice services",
       "properties": {
         "voice": {
           "description": "Indicates if voice calling capability is available",

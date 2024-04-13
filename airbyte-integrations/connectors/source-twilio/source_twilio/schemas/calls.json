@@ -109,6 +109,7 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains URIs for related subresources such as recordings or notifications.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

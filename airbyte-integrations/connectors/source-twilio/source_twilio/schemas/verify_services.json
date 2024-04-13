@@ -41,6 +41,7 @@
       "type": ["null", "string"]
     },
     "totp": {
+      "description": "Object containing configuration settings for Time-based One-Time Password (TOTP) verification method.",
       "type": ["null", "object"],
       "properties": {
         "time_step": {
@@ -74,6 +75,7 @@
       "type": ["null", "string"]
     },
     "push": {
+      "description": "Object containing configuration settings for push verification method.",
       "type": ["null", "object"],
       "properties": {
         "apn_credential_sid": {
@@ -107,6 +109,7 @@
       "type": ["null", "boolean"]
     },
     "links": {
+      "description": "Object containing related hyperlinks for verify_services data.",
       "type": ["null", "object"],
       "properties": {
         "verification_checks": {

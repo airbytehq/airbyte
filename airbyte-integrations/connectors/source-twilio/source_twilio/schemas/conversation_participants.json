@@ -24,6 +24,7 @@
       "type": ["null", "string"]
     },
     "messaging_binding": {
+      "description": "Details about the messaging binding for the conversation participant.",
       "type": ["null", "object"],
       "properties": {
         "type": {

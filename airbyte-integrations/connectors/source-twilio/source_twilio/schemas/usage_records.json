@@ -13,6 +13,7 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains references to sub-resources related to the usage record.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

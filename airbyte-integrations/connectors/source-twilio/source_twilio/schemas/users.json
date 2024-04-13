@@ -53,6 +53,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains URLs to related resources for the user data.",
       "type": ["null", "object"],
       "properties": {
         "user_conversations": {

@@ -45,6 +45,7 @@
       "type": ["null", "string"]
     },
     "timers": {
+      "description": "Contains timers or time-related information for the user conversation.",
       "type": ["null", "object"],
       "properties": {
         "chat_service_sid": {
@@ -78,6 +79,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains links related to the user conversation data.",
       "type": ["null", "object"],
       "properties": {
         "conversation": {

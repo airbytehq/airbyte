@@ -39,6 +39,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Represents links related to the flow data.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

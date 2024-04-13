@@ -48,6 +48,7 @@
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains related hypermedia links associated with the executions data.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

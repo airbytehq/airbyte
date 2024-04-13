@@ -49,6 +49,7 @@
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Object containing the capabilities of the available phone number",
       "properties": {
         "voice": {
           "description": "Capability for Voice calls",
