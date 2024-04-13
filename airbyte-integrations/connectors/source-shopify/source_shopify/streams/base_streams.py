@@ -182,7 +182,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     state_checkpoint_interval = 250
     # guarantee for the NestedSubstreams to emit the STATE
     # when we have the abnormal STATE distance between Parent and Substream
-    at_least_one_record_output = False
+    filter_by_state_checkpoint = False
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -213,68 +213,44 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                 params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
 
-    def should_emit_at_least_one_record(self, processed_records: int) -> bool:
-        return self.at_least_one_record_output and processed_records >= self.state_checkpoint_interval
-
-    def emit_duplicated_record_message(
-        self,
-        record_pk: Union[str, int],
-        state_value: Optional[Any] = None,
-        record_value: Optional[Any] = None,
-    ) -> None:
-        state_message = f"The STATE value `{state_value}` is bigger than the record observed `{record_value}`"
-        duplicated_record_message = f"Emitting duplicated record with PK: `{record_pk}` as a checkpoint"
-        self.logger.info(f"Stream `{self.name}`. {state_message}. {duplicated_record_message}.")
+    def should_checkpoint(self, index: int) -> bool:
+        return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(
-        self, stream_state: Optional[Mapping[str, Any]] = None, records_slice: Optional[Iterable[Mapping]] = None
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        records_slice: Optional[Iterable[Mapping]] = None,
     ) -> Iterable:
         # Getting records >= state
-        processed_records = 0
-        emitted_records = 0
         if stream_state:
             state_value = stream_state.get(self.cursor_field, self.default_state_comparison_value)
-            for record in records_slice:
-                processed_records += 1
+            for index, record in enumerate(records_slice, 1):
                 if self.cursor_field in record:
                     record_value = record.get(self.cursor_field, self.default_state_comparison_value)
                     if record_value:
                         if record_value >= state_value:
                             yield record
-                            emitted_records += 1
                         else:
-                            if self.should_emit_at_least_one_record(processed_records):
-                                self.emit_duplicated_record_message(
-                                    record_pk=record.get(self.primary_key),
-                                    state_value=state_value,
-                                    record_value=record_value,
+                            if self.should_checkpoint(index):
+                                self.logger.info(
+                                    f"Stream `{self.name}`. Checkpointing: {{PK: '{record.get(self.primary_key)}', cursor: '{record_value}'}}."
                                 )
                                 yield record
-                                emitted_records += 1
                     else:
                         # old entities could have cursor field in place, but set to null
                         self.logger.warning(
                             f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
                         )
                         yield record
-                        emitted_records += 1
                 else:
                     # old entities could miss the cursor field
                     self.logger.warning(
                         f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
                     )
                     yield record
-                    emitted_records += 1
-            # final stats message
-            stats = {
-                "emitted": emitted_records,
-                "processed": processed_records,
-                "filtered_by_state": processed_records - emitted_records,
-            }
-            self.logger.info(f"Stream `{self.name}`. Stats: {stats}.")
         else:
             yield from records_slice
 
@@ -461,7 +437,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
 
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = 50
-    at_least_one_record_output = True
+    filter_by_state_checkpoint = True
     data_field = None
     parent_stream_class: Union[ShopifyStream, IncrementalShopifyStream] = None
     mutation_map: Mapping[str, Any] = None
