@@ -2,40 +2,106 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": { "type": "integer" },
+    "id": {
+      "description": "The unique identifier of the user.",
+      "type": "integer"
+    },
     "created_at": {
+      "description": "The date and time when the user was created.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "updated_at": {
+      "description": "The date and time when the user was last updated.",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
-    "name": { "type": "string" },
-    "title": { "type": "string" },
-    "age": { "type": "integer" },
-    "email": { "type": "string" },
-    "telephone": { "type": "string" },
-    "gender": { "type": "string" },
-    "language": { "type": "string" },
-    "academic_degree": { "type": "string" },
-    "nationality": { "type": "string" },
-    "occupation": { "type": "string" },
-    "height": { "type": "string" },
-    "blood_type": { "type": "string" },
-    "weight": { "type": "integer" },
+    "name": {
+      "description": "The name of the user.",
+      "type": "string"
+    },
+    "title": {
+      "description": "The title of the user.",
+      "type": "string"
+    },
+    "age": {
+      "description": "The age of the user.",
+      "type": "integer"
+    },
+    "email": {
+      "description": "The email address of the user.",
+      "type": "string"
+    },
+    "telephone": {
+      "description": "The telephone number of the user.",
+      "type": "string"
+    },
+    "gender": {
+      "description": "The gender of the user.",
+      "type": "string"
+    },
+    "language": {
+      "description": "The language spoken by the user.",
+      "type": "string"
+    },
+    "academic_degree": {
+      "description": "The academic degree held by the user.",
+      "type": "string"
+    },
+    "nationality": {
+      "description": "The nationality of the user.",
+      "type": "string"
+    },
+    "occupation": {
+      "description": "The occupation of the user.",
+      "type": "string"
+    },
+    "height": {
+      "description": "The height of the user.",
+      "type": "string"
+    },
+    "blood_type": {
+      "description": "The blood type of the user.",
+      "type": "string"
+    },
+    "weight": {
+      "description": "The weight of the user.",
+      "type": "integer"
+    },
     "address": {
+      "description": "User's address information.",
       "type": "object",
       "properties": {
-        "street_number": { "type": "string" },
-        "street_name": { "type": "string" },
-        "city": { "type": "string" },
-        "state": { "type": "string" },
-        "province": { "type": "string" },
-        "postal_code": { "type": "string" },
-        "country_code": { "type": "string" }
+        "street_number": {
+          "description": "The street number of the user's address.",
+          "type": "string"
+        },
+        "street_name": {
+          "description": "The name of the street of the user's address.",
+          "type": "string"
+        },
+        "city": {
+          "description": "The city of residence of the user.",
+          "type": "string"
+        },
+        "state": {
+          "description": "The state of the user's location.",
+          "type": "string"
+        },
+        "province": {
+          "description": "The province of the user's location.",
+          "type": "string"
+        },
+        "postal_code": {
+          "description": "The postal code of the user's address.",
+          "type": "string"
+        },
+        "country_code": {
+          "description": "The country code of the user's location.",
+          "type": "string"
+        }
       }
     }
   }
