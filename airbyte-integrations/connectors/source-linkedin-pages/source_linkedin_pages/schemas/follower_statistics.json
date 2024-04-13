@@ -4,6 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "followerCountsByStaffCountRange": {
+      "description": "Follower counts grouped by staff count range.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -11,6 +12,7 @@
       }
     },
     "followerCountsByFunction": {
+      "description": "Follower counts grouped by function.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -18,6 +20,7 @@
       }
     },
     "followerCountsByAssociationType": {
+      "description": "Follower counts grouped by association type.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -25,6 +28,7 @@
       }
     },
     "followerCountsBySeniority": {
+      "description": "Follower counts grouped by seniority level.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -32,6 +36,7 @@
       }
     },
     "followerCountsByRegion": {
+      "description": "Follower counts grouped by region/area.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -39,9 +44,11 @@
       }
     },
     "organizationalEntity": {
+      "description": "Information about the organizational entity these statistics are related to.",
       "type": ["null", "string"]
     },
     "followerCountsByCountry": {
+      "description": "Follower counts grouped by country.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -49,6 +56,7 @@
       }
     },
     "followerCountsByIndustry": {
+      "description": "Follower counts grouped by industry.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

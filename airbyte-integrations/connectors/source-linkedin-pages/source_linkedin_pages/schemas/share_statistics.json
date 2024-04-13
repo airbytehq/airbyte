@@ -4,37 +4,50 @@
   "additionalProperties": true,
   "properties": {
     "totalShareStatistics": {
+      "description": "Contains the aggregate share statistics for a given page",
       "type": ["null", "object"],
       "properties": {
         "uniqueImpressionsCount": {
+          "description": "The count of unique users who saw the shared content.",
           "type": ["null", "integer"]
         },
         "clickCount": {
+          "description": "The total number of clicks on the shared content.",
           "type": ["null", "integer"]
         },
         "engagement": {
+          "description": "An overall measure of engagement combining different interactions on the shared content.",
           "type": ["null", "number"]
         },
         "likeCount": {
+          "description": "The total number of likes received on the shared content.",
           "type": ["null", "integer"]
         },
         "commentCount": {
+          "description": "The total number of comments on the shared content.",
           "type": ["null", "integer"]
         },
         "shareCount": {
+          "description": "The total number of shares of the shared content.",
           "type": ["null", "integer"]
         },
         "commentMentionsCount": {
+          "description": "The count of mentions in the comments associated with the shared content.",
           "type": ["null", "integer"]
         },
         "impressionCount": {
+          "description": "The total number of times the shared content was displayed to users.",
           "type": ["null", "integer"]
         },
         "shareMentionsCount": {
+          "description": "The count of mentions in the shared content itself.",
           "type": ["null", "integer"]
         }
       }
     },
-    "organizationalEntity": { "type": ["null", "string"] }
+    "organizationalEntity": {
+      "description": "Information about the organizational entity associated with the share statistics.",
+      "type": ["null", "string"]
+    }
   }
 }
