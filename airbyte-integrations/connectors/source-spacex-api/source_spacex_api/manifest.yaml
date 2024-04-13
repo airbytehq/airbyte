@@ -27,178 +27,239 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           auto_update:
+            description: Flag indicating if this launch data is automatically updated
             type: boolean
           capsules:
+            description: Information about capsules used in the launch.
             items:
+              description: List of capsules related to this launch
               type:
                 - "null"
                 - string
             type: array
           cores:
+            description: Information about the rocket cores involved in the launch.
             items:
+              description: Details about a specific rocket core used in the launch.
               properties:
+                description: Information about the booster cores used in the launch.
                 core:
+                  description: Core information of the rocket used in the launch
                   type:
                     - "null"
                     - string
                 flight:
+                  description: The flight number of the core
                   type: number
                 gridfins:
+                  description: Flag indicating if the core has grid fins
                   type: boolean
                 landing_attempt:
+                  description: Flag indicating if a landing was attempted
                   type: boolean
                 landing_success:
+                  description: Flag indicating if the landing was successful
                   type: boolean
                 landing_type:
+                  description: The type of landing performed
                   type:
                     - "null"
                     - string
                 landpad:
+                  description: ID of the landing pad
                   type:
                     - "null"
                     - string
                 legs:
+                  description: Flag indicating if the core has landing legs
                   type: boolean
                 reused:
+                  description: Flag indicating if the core has been reused
                   type: boolean
               type: object
             type: array
           crew:
+            description: Information about the crew involved in the launch.
             items:
+              description: List of crew members for this launch
               type:
                 - "null"
                 - string
             type: array
           date_local:
+            description: Local date and time of the launch
             type:
               - "null"
               - string
           date_precision:
+            description: Precision of the launch date and time
             type:
               - "null"
               - string
           date_unix:
+            description: Unix timestamp of the launch date and time
             type: number
           date_utc:
+            description: UTC date and time of the launch
             type:
               - "null"
               - string
           static_fire_date_unix:
+            description: Unix timestamp of the static fire test date
             type:
               - "null"
               - number
           static_fire_date_utc:
+            description: UTC date and time of the static fire test
             type:
               - "null"
               - string
           window:
+            description: The launch window duration
             type:
               - "null"
               - number
           details:
+            description: Details about the launch
             type: string
           fairings:
+            description: Information about the fairings used in the launch.
             properties:
               recovered:
+                description: Flag indicating if the fairings were recovered
                 type: boolean
               recovery_attempt:
+                description:
+                  Flag indicating if there was an attempt to recover the
+                  fairings
                 type: boolean
               reused:
+                description: Flag indicating if the fairings were reused
                 type: boolean
               ships:
+                description: List of ships associated with the fairings.
                 items:
+                  description: List of ships involved in fairings recovery
                   type:
                     - "null"
                     - string
                 type: array
             type: object
           failures:
+            description: List of failures occurred during the launch
             type: array
           flight_number:
+            description: The flight number of this launch
             type: number
           id:
+            description: Unique ID of the launch
             type:
               - "null"
               - string
           launch_library_id:
+            description: ID of the launch in the Launch Library
             type:
               - "null"
               - string
           launchpad:
+            description: Details of the launchpad used for the launch
             type:
               - "null"
               - string
           links:
+            description: Various links related to the launch.
             properties:
               flickr:
+                description: Flickr links related to the launch.
                 properties:
                   original:
+                    description: Original Flickr link related to the launch.
                     items:
+                      description: List of original resolution images from Flickr
                       type:
                         - "null"
                         - string
                     type: array
                   small:
+                    description: Link to a small resolution image from Flickr
                     type: array
                 type: object
               patch:
+                description: Patch link related to the launch.
                 properties:
                   large:
+                    description: Link to a large size patch image
                     type:
                       - "null"
                       - string
                   small:
+                    description: Link to a small size patch image
                     type:
                       - "null"
                       - string
                 type: object
               reddit:
+                description: Reddit links related to the launch.
                 properties:
                   launch:
+                    description: Link to the Reddit thread about this launch
                     type:
                       - "null"
                       - string
                 type: object
               article:
+                description: Link to the article about the launch
                 type:
                   - "null"
                   - string
               webcast:
+                description: Link to the webcast of the launch
                 type:
                   - "null"
                   - string
               wikipedia:
+                description: Link to the Wikipedia page about the launch
                 type:
                   - "null"
                   - string
               youtube_id:
+                description: ID of the YouTube video of the launch
                 type:
                   - "null"
                   - string
             type: object
           name:
+            description: Name of the launch
             type:
               - "null"
               - string
           net:
+            description: NET (No Earlier Than) date and time of the launch
             type: boolean
           payloads:
+            description: Information about payloads carried in the launch.
             items:
+              description: List of payloads carried on this launch
               type:
                 - "null"
                 - string
             type: array
           rocket:
+            description: Details of the rocket used in the launch
             type:
               - "null"
               - string
           ships:
+            description: List of ships involved in the launch
             type: array
           success:
+            description: Flag indicating if the launch was successful
             type: boolean
           tbd:
+            description: Flag indicating if the launch date is To Be Decided
             type: boolean
           upcoming:
+            description: Flag indicating if the launch is upcoming
             type: boolean
         type: object
     retriever:
@@ -230,36 +291,48 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           id:
+            description: The unique identifier of the capsule
             type:
               - "null"
               - string
           land_landings:
+            description: The number of land landings completed by the capsule
             type: number
           last_update:
+            description: The timestamp of the last update made to the capsule data
             type:
               - "null"
               - string
           launches:
+            description:
+              Information about the launches the capsule has been a part
+              of
             items:
+              description: Details of a specific launch
               type:
                 - "null"
                 - string
             type: array
           reuse_count:
+            description: The count of times the capsule has been reused for launches
             type: number
           serial:
+            description: The unique serial number of the capsule
             type:
               - "null"
               - string
           status:
+            description: The current status of the capsule
             type:
               - "null"
               - string
           type:
+            description: The type or model of the capsule
             type:
               - "null"
               - string
           water_landings:
+            description: The number of water landings completed by the capsule
             type: number
         type: object
     retriever:
@@ -291,82 +364,107 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           ceo:
+            description: The Chief Executive Officer of SpaceX
             type:
               - "null"
               - string
           coo:
+            description: The Chief Operating Officer of SpaceX
             type:
               - "null"
               - string
           cto:
+            description: The Chief Technology Officer of SpaceX
             type:
               - "null"
               - string
           cto_propulsion:
+            description:
+              The Chief Technology Officer responsible for propulsion at
+              SpaceX
             type:
               - "null"
               - string
           employees:
+            description: The total number of employees working at SpaceX
             type: number
           founded:
+            description: The year SpaceX was founded
             type: number
           founder:
+            description: The founder(s) of SpaceX
             type:
               - "null"
               - string
           headquarters:
+            description: Information about the headquarters location of SpaceX
             properties:
               address:
+                description: The street address of SpaceX headquarters
                 type:
                   - "null"
                   - string
               city:
+                description: The city where SpaceX headquarters is located
                 type:
                   - "null"
                   - string
               state:
+                description: The state where SpaceX headquarters is located
                 type:
                   - "null"
                   - string
             type: object
           id:
+            description: Unique identifier for the SpaceX company data
             type:
               - "null"
               - string
           launch_sites:
+            description: The number of launch sites operated by SpaceX
             type: number
           links:
+            description: Various external links related to SpaceX
             properties:
               elon_twitter:
+                description: Elon Musk's Twitter account
                 type:
                   - "null"
                   - string
               flickr:
+                description: Link to SpaceX's Flickr account
                 type:
                   - "null"
                   - string
               twitter:
+                description: SpaceX's Twitter account
                 type:
                   - "null"
                   - string
               website:
+                description: SpaceX's official website
                 type:
                   - "null"
                   - string
             type: object
           name:
+            description: The name of the SpaceX company
             type:
               - "null"
               - string
           summary:
+            description: A brief summary or description of SpaceX
             type:
               - "null"
               - string
           test_sites:
+            description: The number of test sites operated by SpaceX
             type: number
           valuation:
+            description: The valuation of SpaceX as a company
             type: number
           vehicles:
+            description: The types of vehicles operated by SpaceX
             type: number
         type: object
     retriever:
@@ -398,32 +496,40 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           agency:
+            description: The space agency associated with the crew member.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the crew member.
             type:
               - "null"
               - string
           image:
+            description: URL of the image of the crew member.
             type:
               - "null"
               - string
           launches:
+            description: List of launches the crew member has participated in.
             items:
+              description: Details of a launch the crew member has participated in.
               type:
                 - "null"
                 - string
             type: array
           name:
+            description: Name of the crew member.
             type:
               - "null"
               - string
           status:
+            description: Current status of the crew member.
             type:
               - "null"
               - string
           wikipedia:
+            description: URL of the Wikipedia page of the crew member.
             type:
               - "null"
               - string
@@ -457,38 +563,58 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           asds_attempts:
+            description:
+              Number of attempts made to land on an Autonomous Spaceport
+              Drone Ship (ASDS).
             type: number
           asds_landings:
+            description:
+              Number of successful landings achieved on an Autonomous Spaceport
+              Drone Ship (ASDS).
             type: number
           block:
+            description: The version or block of the core.
             type:
               - "null"
               - number
           id:
+            description: Unique identifier for the core.
             type:
               - "null"
               - string
           last_update:
+            description: Timestamp of the last update to the core data.
             type:
               - "null"
               - string
           launches:
+            description: List of launch IDs associated with this core.
             items:
+              description: Launch ID that this core was a part of.
               type:
                 - "null"
                 - string
             type: array
           reuse_count:
+            description: Number of times the core has been reused for launches.
             type: number
           rtls_attempts:
+            description:
+              Number of attempts made to land using Return To Launch Site
+              (RTLS) method.
             type: number
           rtls_landings:
+            description:
+              Number of successful landings achieved using Return To Launch
+              Site (RTLS) method.
             type: number
           serial:
+            description: The serial number of the core.
             type:
               - "null"
               - string
           status:
+            description: Current status of the core (active, lost, retired, etc).
             type:
               - "null"
               - string
@@ -522,158 +648,226 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           active:
+            description:
+              Indicates whether the dragon spacecraft is currently active
+              or not.
             type: boolean
           crew_capacity:
+            description: Maximum number of crew members the dragon spacecraft can accommodate.
             type: number
           description:
+            description: Brief description of the dragon spacecraft.
             type:
               - "null"
               - string
           diameter:
+            description: Diameter of the spacecraft.
             properties:
               feet:
+                description: Diameter of the dragon spacecraft in feet.
                 type: number
               meters:
+                description: Diameter of the dragon spacecraft in meters.
                 type: number
             type: object
           dry_mass_kg:
+            description: Dry mass of the dragon spacecraft in kilograms.
             type: number
           dry_mass_lb:
+            description: Dry mass of the dragon spacecraft in pounds.
             type: number
           first_flight:
+            description: Date of the first flight of the dragon spacecraft.
             type:
               - "null"
               - string
           flickr_images:
+            description: An array of Flickr image URLs related to the spacecraft.
             items:
+              description: Array of URLs to flickr images showcasing the dragon spacecraft.
               type:
                 - "null"
                 - string
             type: array
           heat_shield:
+            description: Information about the spacecraft's heat shield.
             properties:
               dev_partner:
+                description: Development partner responsible for the heat shield.
                 type:
                   - "null"
                   - string
               material:
+                description: Material used in the heat shield of the dragon spacecraft.
                 type:
                   - "null"
                   - string
               size_meters:
+                description: Size of the heat shield in meters.
                 type: number
               temp_degrees:
+                description: Temperature resistance of the heat shield in degrees.
                 type: number
             type: object
           height_w_trunk:
+            description: Total height of the spacecraft with trunk included.
             properties:
               feet:
+                description: Total height of the dragon spacecraft with trunk in feet.
                 type: number
               meters:
+                description: Total height of the dragon spacecraft with trunk in meters.
                 type: number
             type: object
           id:
+            description: Unique identifier for the dragon spacecraft.
             type:
               - "null"
               - string
           launch_payload_mass:
+            description: Mass of the payload launched by the spacecraft.
             properties:
               kg:
+                description: Mass of the payload for launch in kilograms.
                 type: number
               lb:
+                description: Mass of the payload for launch in pounds.
                 type: number
             type: object
           launch_payload_vol:
+            description: Volume of the payload launched by the spacecraft.
             properties:
               cubic_feet:
+                description: Volume of the payload for launch in cubic feet.
                 type: number
               cubic_meters:
+                description: Volume of the payload for launch in cubic meters.
                 type: number
             type: object
           name:
+            description: Name of the dragon spacecraft.
             type:
               - "null"
               - string
           orbit_duration_yr:
+            description:
+              Expected duration the dragon spacecraft can remain in orbit
+              in years.
             type: number
           pressurized_capsule:
+            description: Details about the pressurized capsule of the spacecraft.
             properties:
               payload_volume:
+                description: Volume capacity of the pressurized capsule.
                 properties:
                   cubic_feet:
+                    description:
+                      Volume of the pressurized capsule payload in cubic
+                      feet.
                     type: number
                   cubic_meters:
+                    description:
+                      Volume of the pressurized capsule payload in cubic
+                      meters.
                     type: number
                 type: object
             type: object
           return_payload_mass:
+            description: Mass of the payload returned by the spacecraft.
             properties:
               kg:
+                description: Mass of the payload for return in kilograms.
                 type: number
               lb:
+                description: Mass of the payload for return in pounds.
                 type: number
             type: object
           return_payload_vol:
+            description: Volume of the payload returned by the spacecraft.
             properties:
               cubic_feet:
+                description: Volume of the payload for return in cubic feet.
                 type: number
               cubic_meters:
+                description: Volume of the payload for return in cubic meters.
                 type: number
             type: object
           sidewall_angle_deg:
+            description: Angle of the sidewall of the dragon spacecraft in degrees.
             type: number
           thrusters:
+            description: Information about the thrusters used by the spacecraft.
             items:
               properties:
                 amount:
+                  description:
+                    Number of thrusters of the specific type on the dragon
+                    spacecraft.
                   type: number
                 fuel_1:
+                  description: Type of fuel used by the first fuel tank of the thrusters.
                   type:
                     - "null"
                     - string
                 fuel_2:
+                  description: Type of fuel used by the second fuel tank of the thrusters.
                   type:
                     - "null"
                     - string
                 isp:
+                  description: Specific impulse of the thrusters.
                   type: number
                 pods:
+                  description: Number of pods containing the thrusters.
                   type: number
                 thrust:
+                  description: Thrust produced by the thruster.
                   properties:
                     kN:
+                      description: Thrust of the thrusters in kilonewtons.
                       type: number
                     lbf:
+                      description: Thrust of the thrusters in pounds-force.
                       type: number
                   type: object
                 type:
+                  description: Type of thrusters used on the dragon spacecraft.
                   type:
                     - "null"
                     - string
               type: object
             type: array
           trunk:
+            description: Details about the trunk of the spacecraft.
             properties:
               cargo:
+                description: Cargo capacity of the trunk.
                 properties:
                   solar_array:
+                    description: Presence of solar array in the trunk cargo space.
                     type: number
                   unpressurized_cargo:
+                    description: Capacity for unpressurized cargo in the trunk.
                     type: boolean
                 type: object
               trunk_volume:
+                description: Volume of the trunk.
                 properties:
                   cubic_feet:
+                    description: Total volume of the trunk in cubic feet.
                     type: number
                   cubic_meters:
+                    description: Total volume of the trunk in cubic meters.
                     type: number
                 type: object
             type: object
           type:
+            description: Type of the dragon spacecraft.
             type:
               - "null"
               - string
           wikipedia:
+            description: URL to the Wikipedia page of the dragon spacecraft.
             type:
               - "null"
               - string
@@ -707,20 +901,25 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           details:
+            description: Additional details about the landpad.
             type:
               - "null"
               - string
           full_name:
+            description: The full name of the landpad.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier of the landpad.
             type:
               - "null"
               - string
           images:
+            description: Contains data related to images for the landpad.
             properties:
               large:
+                description: An array containing URLs of large images of the landpad.
                 items:
                   type:
                     - "null"
@@ -728,40 +927,51 @@ streams:
                 type: array
             type: object
           landing_attempts:
+            description: Total number of landing attempts made on the landpad.
             type: number
           landing_successes:
+            description: Total number of successful landings on the landpad.
             type: number
           latitude:
+            description: Latitude coordinate of the landpad location.
             type: number
           launches:
+            description: An array of launch IDs associated with this landpad.
             items:
               type:
                 - "null"
                 - string
             type: array
           locality:
+            description: Locality where the landpad is situated.
             type:
               - "null"
               - string
           longitude:
+            description: Longitude coordinate of the landpad location.
             type: number
           name:
+            description: Name of the landpad.
             type:
               - "null"
               - string
           region:
+            description: Region where the landpad is located.
             type:
               - "null"
               - string
           status:
+            description: Current status of the landpad.
             type:
               - "null"
               - string
           type:
+            description: Type of the landpad (e.g., landing, support).
             type:
               - "null"
               - string
           wikipedia:
+            description: URL to the Wikipedia page related to the landpad.
             type:
               - "null"
               - string
@@ -795,145 +1005,190 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           apoapsis_km:
+            description:
+              The highest point in a satellite's orbit above Earth's surface
+              in kilometers.
             type:
               - "null"
               - number
           arg_of_pericenter:
+            description: The angle between the ascending node and the periapsis.
             type:
               - "null"
               - number
           customers:
+            description: The customers or organizations associated with the payload.
             items:
               type:
                 - "null"
                 - string
             type: array
           dragon:
+            description: Details specific to SpaceX Dragon spacecraft.
             properties:
               capsule:
+                description: The specific capsule identifier of the Dragon spacecraft.
                 type:
                   - "null"
                   - string
               flight_time_sec:
+                description: The duration of the flight in seconds for Dragon spacecraft.
                 type:
                   - "null"
                   - number
               land_landing:
+                description: Indicates if the Dragon spacecraft landed on land.
                 type:
                   - boolean
                   - "null"
               manifest:
+                description: Information about the cargo manifest of Dragon spacecraft.
                 type:
                   - "null"
                   - string
               mass_returned_kg:
+                description: The mass returned to Earth by Dragon spacecraft in kilograms.
                 type:
                   - "null"
                   - number
               mass_returned_lbs:
+                description: The mass returned to Earth by Dragon spacecraft in pounds.
                 type:
                   - "null"
                   - number
               water_landing:
+                description: Indicates if the Dragon spacecraft landed on water.
                 type:
                   - boolean
                   - "null"
             type: object
           eccentricity:
+            description: The measure of how elongated an orbit is.
             type:
               - "null"
               - number
           epoch:
+            description: The point in time when the data is applicable.
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the payload data.
             type:
               - "null"
               - string
           inclination_deg:
+            description:
+              The tilt of the orbital plane relative to the Earth's equator
+              in degrees.
             type:
               - "null"
               - number
           launch:
+            description: Information about the launch associated with the payload.
             type:
               - "null"
               - string
           lifespan_years:
+            description: The expected lifespan of the payload in years.
             type:
               - "null"
               - number
           longitude:
+            description:
+              The angular distance of an orbiting body measured on the celestial
+              equator.
             type:
               - "null"
               - number
           manufacturers:
+            description: The manufacturers or companies responsible for the payload.
             items:
               type:
                 - "null"
                 - string
             type: array
           mass_kg:
+            description: The mass of the payload in kilograms.
             type:
               - "null"
               - number
           mass_lbs:
+            description: The mass of the payload in pounds.
             type:
               - "null"
               - number
           mean_anomaly:
+            description: The position of a body in its elliptical orbit.
             type:
               - "null"
               - number
           mean_motion:
+            description: The average angular speed of an object in its orbit.
             type:
               - "null"
               - number
           name:
+            description: The name or title of the payload.
             type:
               - "null"
               - string
           nationalities:
+            description: The nationalities associated with the payload.
             items:
               type:
                 - "null"
                 - string
             type: array
           norad_ids:
+            description: The NORAD identifier(s) assigned to the payload.
             items:
               type: number
             type: array
           orbit:
+            description: The type of orbit the payload is in.
             type:
               - "null"
               - string
           periapsis_km:
+            description:
+              The lowest point in a satellite's orbit above Earth's surface
+              in kilometers.
             type:
               - "null"
               - number
           period_min:
+            description: The time taken for one complete orbit in minutes.
             type:
               - "null"
               - number
           raan:
+            description: The right ascension of the ascending node.
             type:
               - "null"
               - number
           reference_system:
+            description:
+              The coordinate system used as a frame of reference for the
+              orbit.
             type:
               - "null"
               - string
           regime:
+            description: The region of space where the satellite is orbiting.
             type:
               - "null"
               - string
           reused:
+            description: Indicates if the payload is a reused spacecraft component.
             type: boolean
           semi_major_axis_km:
+            description: Half of the major axis of the elliptical orbit in kilometers.
             type:
               - "null"
               - number
           type:
+            description: The type or category of the payload.
             type:
               - "null"
               - string
@@ -967,27 +1222,34 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           details:
+            description: Description of the historical event.
             type:
               - "null"
               - string
           event_date_unix:
+            description: Event date in UNIX timestamp format.
             type: number
           event_date_utc:
+            description: Event date in Coordinated Universal Time (UTC).
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the historical event.
             type:
               - "null"
               - string
           links:
+            description: Contains links associated with the history data.
             properties:
               article:
+                description: Link to the article providing more details about the event.
                 type:
                   - "null"
                   - string
             type: object
           title:
+            description: Title or summary of the historical event.
             type:
               - "null"
               - string
@@ -1021,228 +1283,309 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           active:
+            description: Indicates if the rocket is currently active or not.
             type: boolean
           boosters:
+            description: The number of boosters the rocket uses during launch.
             type: number
           company:
+            description: The company that manufactures the rocket.
             type:
               - "null"
               - string
           cost_per_launch:
+            description: The cost incurred per launch of the rocket.
             type: number
           country:
+            description: The country where the rocket is based or operated from.
             type:
               - "null"
               - string
           description:
+            description: A brief description or overview of the rocket.
             type:
               - "null"
               - string
           diameter:
+            description: The diameter of the rocket in feet and meters.
             properties:
               feet:
+                description: The diameter of the rocket in feet.
                 type: number
               meters:
+                description: The diameter of the rocket in meters.
                 type: number
             type: object
           engines:
+            description: Details about the rocket's engines.
             properties:
               engine_loss_max:
+                description: The maximum amount of engine loss during operation.
                 type:
                   - "null"
                   - number
               isp:
+                description:
+                  Specific Impulse (ISP) of the engines at sea level and
+                  in vacuum.
                 properties:
                   sea_level:
+                    description: ISP of the engines at sea level.
                     type: number
                   vacuum:
+                    description: ISP of the engines in vacuum.
                     type: number
                 type: object
               layout:
+                description: The layout or configuration of the engines.
                 type:
                   - "null"
                   - string
               number:
+                description: The total number of engines used in the rocket.
                 type: number
               propellant_1:
+                description: The type of propellant used as fuel in the first stage.
                 type:
                   - "null"
                   - string
               propellant_2:
+                description: The type of propellant used as fuel in the second stage.
                 type:
                   - "null"
                   - string
               thrust_sea_level:
+                description: Thrust generated by the engines at sea level.
                 properties:
                   kN:
+                    description: Thrust in kilonewtons.
                     type: number
                   lbf:
+                    description: Thrust in pounds-force.
                     type: number
                 type: object
               thrust_to_weight:
+                description: The thrust-to-weight ratio of the engines.
                 type: number
               thrust_vacuum:
+                description: Thrust generated by the engines in vacuum.
                 properties:
                   kN:
+                    description: Thrust in kilonewtons.
                     type: number
                   lbf:
+                    description: Thrust in pounds-force.
                     type: number
                 type: object
               type:
+                description: The type of engines used.
                 type:
                   - "null"
                   - string
               version:
+                description: The version or variant of the engines.
                 type:
                   - "null"
                   - string
             type: object
           first_flight:
+            description: The date of the rocket's first flight.
             type:
               - "null"
               - string
           first_stage:
+            description: Details about the rocket's first stage.
             properties:
               burn_time_sec:
+                description: The burn time duration of the first stage in seconds.
                 type:
                   - "null"
                   - number
               engines:
+                description: The number of engines used in the first stage.
                 type: number
               fuel_amount_tons:
+                description: The amount of fuel carried by the first stage in tons.
                 type: number
               reusable:
+                description: Indicates if the first stage is reusable or not.
                 type: boolean
               thrust_sea_level:
+                description: Thrust generated by the first stage engines at sea level.
                 properties:
                   kN:
+                    description: Thrust in kilonewtons.
                     type: number
                   lbf:
+                    description: Thrust in pounds-force.
                     type: number
                 type: object
               thrust_vacuum:
+                description: Thrust generated by the first stage engines in vacuum.
                 properties:
                   kN:
+                    description: Thrust in kilonewtons.
                     type: number
                   lbf:
+                    description: Thrust in pounds-force.
                     type: number
                 type: object
             type: object
           flickr_images:
+            description: Links to images of the rocket on Flickr.
             items:
+              description: URLs of individual images.
               type:
                 - "null"
                 - string
             type: array
           height:
+            description: The height of the rocket in feet and meters.
             properties:
               feet:
+                description: The height of the rocket in feet.
                 type: number
               meters:
+                description: The height of the rocket in meters.
                 type: number
             type: object
           id:
+            description: The unique identifier of the rocket.
             type:
               - "null"
               - string
           landing_legs:
+            description: Details about the rocket's landing legs.
             properties:
               material:
+                description: The material used in the construction of landing legs.
                 type:
                   - "null"
                   - string
               number:
+                description: The number of landing legs.
                 type: number
             type: object
           mass:
+            description: The mass of the rocket in kilograms and pounds.
             properties:
               kg:
+                description: The mass of the rocket in kilograms.
                 type: number
               lb:
+                description: The mass of the rocket in pounds.
                 type: number
             type: object
           name:
+            description: The name of the rocket.
             type:
               - "null"
               - string
           payload_weights:
+            description: Details about the rocket's payload weights.
             items:
+              description: Information about each payload weight carried by the rocket.
               properties:
                 id:
+                  description: The identifier of the payload weight.
                   type:
                     - "null"
                     - string
                 kg:
+                  description: The payload weight in kilograms.
                   type: number
                 lb:
+                  description: The payload weight in pounds.
                   type: number
                 name:
+                  description: The name or description of the payload.
                   type:
                     - "null"
                     - string
               type: object
             type: array
           second_stage:
+            description: Details about the rocket's second stage.
             properties:
               burn_time_sec:
+                description: The burn time duration of the second stage in seconds.
                 type:
                   - "null"
                   - number
               engines:
+                description: The number of engines used in the second stage.
                 type: number
               fuel_amount_tons:
+                description: The amount of fuel carried by the second stage in tons.
                 type: number
               payloads:
+                description: Details about the payloads carried by the second stage.
                 properties:
                   composite_fairing:
+                    description: Details about the composite fairing enclosing the payloads.
                     properties:
                       diameter:
+                        description: The diameter of the fairing in feet and meters.
                         properties:
                           feet:
+                            description: The diameter of the fairing in feet.
                             type:
                               - "null"
                               - number
                           meters:
+                            description: The diameter of the fairing in meters.
                             type:
                               - "null"
                               - number
                         type: object
                       height:
+                        description: The height of the fairing in feet and meters.
                         properties:
                           feet:
+                            description: The height of the fairing in feet.
                             type:
                               - "null"
                               - number
                           meters:
+                            description: The height of the fairing in meters.
                             type:
                               - "null"
                               - number
                         type: object
                     type: object
                   option_1:
+                    description: An additional option for payloads.
                     type:
                       - "null"
                       - string
                 type: object
               reusable:
+                description: Indicates if the second stage is reusable or not.
                 type: boolean
               thrust:
+                description: Thrust generated by the second stage.
                 properties:
                   kN:
+                    description: Thrust in kilonewtons.
                     type: number
                   lbf:
+                    description: Thrust in pounds-force.
                     type: number
                 type: object
             type: object
           stages:
+            description: The number of stages in the rocket.
             type: number
           success_rate_pct:
+            description: The percentage success rate of the rocket's launches.
             type: number
           type:
+            description: The type or category of the rocket.
             type:
               - "null"
               - string
           wikipedia:
+            description: A link to the Wikipedia page about the rocket.
             type:
               - "null"
               - string
@@ -1276,74 +1619,101 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           apoapsis_au:
+            description: Apoapsis distance from the Sun in astronomical units
             type: number
           details:
+            description: Details about the roadster
             type:
               - "null"
               - string
           earth_distance_km:
+            description: Distance of the roadster from Earth in kilometers
             type: number
           earth_distance_mi:
+            description: Distance of the roadster from Earth in miles
             type: number
           eccentricity:
+            description: Eccentricity of the roadster's orbit
             type: number
           epoch_jd:
+            description: Epoch Julian Date
             type: number
           flickr_images:
+            description: Images of the roadster on Flickr
             items:
               type:
                 - "null"
                 - string
             type: array
           id:
+            description: Unique identifier for the roadster
             type:
               - "null"
               - string
           inclination:
+            description: Inclination of the roadster's orbit
             type: number
           launch_date_unix:
+            description: Launch date in UNIX timestamp format
             type: number
           launch_date_utc:
+            description: Launch date in Coordinated Universal Time (UTC)
             type:
               - "null"
               - string
           launch_mass_kg:
+            description: Launch mass of the roadster in kilograms
             type: number
           launch_mass_lbs:
+            description: Launch mass of the roadster in pounds
             type: number
           longitude:
+            description: Longitude position of the roadster
             type: number
           mars_distance_km:
+            description: Distance of the roadster from Mars in kilometers
             type: number
           mars_distance_mi:
+            description: Distance of the roadster from Mars in miles
             type: number
           name:
+            description: Name of the roadster
             type:
               - "null"
               - string
           norad_id:
+            description: NORAD ID of the roadster
             type: number
           orbit_type:
+            description: Type of orbit the roadster is in
             type:
               - "null"
               - string
           periapsis_arg:
+            description: Argument of periapsis
             type: number
           periapsis_au:
+            description: Periapsis distance from the Sun in astronomical units
             type: number
           period_days:
+            description: Orbital period in days
             type: number
           semi_major_axis_au:
+            description: Semi-major axis of the roadster's orbit in astronomical units
             type: number
           speed_kph:
+            description: Speed of the roadster in kilometers per hour
             type: number
           speed_mph:
+            description: Speed of the roadster in miles per hour
             type: number
           video:
+            description: Video link related to the roadster
             type:
               - "null"
               - string
           wikipedia:
+            description: Wikipedia link related to the roadster
             type:
               - "null"
               - string
@@ -1377,100 +1747,128 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           abs:
+            description: American Bureau of Shipping identifier for the ship
             type:
               - "null"
               - number
           active:
+            description: Indicates if the ship is currently active or not
             type: boolean
           class:
+            description: Class or category the ship belongs to
             type:
               - "null"
               - number
           home_port:
+            description: Port where the ship is based or registered
             type:
               - "null"
               - string
           id:
+            description: Unique identifier for the ship
             type:
               - "null"
               - string
           image:
+            description: URL of the ship's image
             type:
               - "null"
               - string
           imo:
+            description: International Maritime Organization number of the ship
             type:
               - "null"
               - number
           latitude:
+            description: Latitude coordinate of the ship's current location
             type:
               - "null"
               - number
           course_deg:
+            description: The ship's current course in degrees
             type:
               - "null"
               - number
           last_ais_update:
+            description:
+              Timestamp of the last AIS (Automatic Identification System)
+              update for the ship
             type:
               - "null"
               - string
           speed_kn:
+            description: Speed of the ship in knots
             type:
               - "null"
               - number
           launches:
+            description: Data regarding the launch history and details for the ship.
             items:
+              description: List of launch IDs associated with the ship
               type:
                 - "null"
                 - string
             type: array
           legacy_id:
+            description: Legacy identifier for the ship
             type:
               - "null"
               - string
           link:
+            description: URL providing additional information about the ship
             type:
               - "null"
               - string
           longitude:
+            description: Longitude coordinate of the ship's current location
             type:
               - "null"
               - number
           mass_kg:
+            description: Mass of the ship in kilograms
             type:
               - "null"
               - number
           mass_lbs:
+            description: Mass of the ship in pounds
             type:
               - "null"
               - number
           mmsi:
+            description: Maritime Mobile Service Identity number of the ship
             type:
               - "null"
               - number
           model:
+            description: Model or type of the ship
             type:
               - "null"
               - string
           name:
+            description: Name of the ship
             type:
               - "null"
               - string
           roles:
+            description: Roles and responsibilities of the ship within SpaceX operations.
             items:
+              description: List of roles or responsibilities associated with the ship
               type:
                 - "null"
                 - string
             type: array
           status:
+            description: Current status or condition of the ship
             type:
               - "null"
               - string
           type:
+            description: Type or classification of the ship
             type:
               - "null"
               - string
           year_built:
+            description: Year the ship was built
             type:
               - "null"
               - number
@@ -1504,157 +1902,208 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           height_km:
+            description: The height of the Starlink satellite above sea level in kilometers.
             type:
               - "null"
               - number
           id:
+            description: The unique identifier of the Starlink satellite.
             type:
               - "null"
               - string
           latitude:
+            description: The latitude coordinate of the Starlink satellite location.
             type:
               - "null"
               - number
           launch:
+            description: Information about the launch details of the Starlink satellite.
             type:
               - "null"
               - string
           longitude:
+            description: The longitude coordinate of the Starlink satellite location.
             type:
               - "null"
               - number
           spaceTrack:
+            description:
+              Data related to the Space Track service for monitoring Starlink
+              satellites.
             properties:
               APOAPSIS:
+                description: The highest point of the orbit of the satellite.
                 type: number
               ARG_OF_PERICENTER:
+                description: The angle from the ascending node to the pericenter.
                 type: number
               BSTAR:
+                description: Ballistic coefficient in the SGP4 model.
                 type: number
               CCSDS_OMM_VERS:
+                description: Version of the Orbit Mean-Elements Message.
                 type:
                   - "null"
                   - string
               CENTER_NAME:
+                description: The name of the center that generated the TLE.
                 type:
                   - "null"
                   - string
               CLASSIFICATION_TYPE:
+                description: The classification type of the satellite.
                 type:
                   - "null"
                   - string
               COMMENT:
+                description: Additional comments or information.
                 type:
                   - "null"
                   - string
               COUNTRY_CODE:
+                description: The country code of the satellite owner/operator.
                 type:
                   - "null"
                   - string
               CREATION_DATE:
+                description: The date when the TLE was created.
                 type:
                   - "null"
                   - string
               DECAYED:
+                description: Indicator if the satellite has decayed from orbit.
                 type: number
               DECAY_DATE:
+                description: The date when the satellite decayed from orbit.
                 type:
                   - "null"
                   - string
               ECCENTRICITY:
+                description: The eccentricity value of the satellite's orbit.
                 type: number
               ELEMENT_SET_NO:
+                description: The element set number of the TLE.
                 type: number
               EPHEMERIS_TYPE:
+                description: The type of ephemeris used.
                 type: number
               EPOCH:
+                description: The epoch (time) of the TLE or element set.
                 type:
                   - "null"
                   - string
               FILE:
+                description: The filename or identifier of the TLE.
                 type: number
               GP_ID:
+                description: The Ground Point ID used in mission planning.
                 type: number
               INCLINATION:
+                description: The inclination of the satellite's orbit.
                 type: number
               LAUNCH_DATE:
+                description: The date when the satellite was launched.
                 type:
                   - "null"
                   - string
               MEAN_ANOMALY:
+                description: The mean anomaly of the satellite in orbit.
                 type: number
               MEAN_ELEMENT_THEORY:
+                description: The mean orbital elements theory used.
                 type:
                   - "null"
                   - string
               MEAN_MOTION:
+                description: The mean motion of the satellite in orbit.
                 type: number
               MEAN_MOTION_DDOT:
+                description: Second derivative of the mean motion.
                 type: number
               MEAN_MOTION_DOT:
+                description: First derivative of the mean motion.
                 type: number
               NORAD_CAT_ID:
+                description: The NORAD Catalog ID of the satellite.
                 type: number
               OBJECT_ID:
+                description: The unique identifier of the satellite object.
                 type:
                   - "null"
                   - string
               OBJECT_NAME:
+                description: The name of the satellite object.
                 type:
                   - "null"
                   - string
               OBJECT_TYPE:
+                description: The type or category of the satellite object.
                 type:
                   - "null"
                   - string
               ORIGINATOR:
+                description: The originator or source of the TLE.
                 type:
                   - "null"
                   - string
               PERIAPSIS:
+                description: The lowest point of the orbit of the satellite.
                 type: number
               PERIOD:
+                description: The orbital period of the satellite.
                 type: number
               RA_OF_ASC_NODE:
+                description: The right ascension of the ascending node.
                 type: number
               RCS_SIZE:
+                description: The size of the Radar Cross Section (RCS) of the satellite.
                 type:
                   - "null"
                   - string
               REF_FRAME:
+                description: The reference frame or coordinate system used.
                 type:
                   - "null"
                   - string
               REV_AT_EPOCH:
+                description: The revolution count at epoch.
                 type: number
               SEMIMAJOR_AXIS:
+                description: The semimajor axis of the satellite's orbit.
                 type: number
               SITE:
+                description: The tracking or monitoring site that generated the TLE.
                 type:
                   - "null"
                   - string
               TIME_SYSTEM:
+                description: The time system used in the TLE.
                 type:
                   - "null"
                   - string
               TLE_LINE0:
+                description: The first line of Two-Line Element Set data.
                 type:
                   - "null"
                   - string
               TLE_LINE1:
+                description: The second line of Two-Line Element Set data.
                 type:
                   - "null"
                   - string
               TLE_LINE2:
+                description: The third line of Two-Line Element Set data.
                 type:
                   - "null"
                   - string
             type: object
           velocity_kms:
+            description: The velocity in kilometers per second of the satellite.
             type:
               - "null"
               - number
           version:
+            description: The version or revision of the Starlink data.
             type:
               - "null"
               - string
