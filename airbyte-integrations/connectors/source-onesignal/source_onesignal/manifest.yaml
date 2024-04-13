@@ -79,6 +79,174 @@ definitions:
     $parameters:
       path: "apps"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the app.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the app.
+            type:
+              - "null"
+              - string
+          players:
+            description: Players associated with this app.
+            type:
+              - "null"
+              - integer
+          messageable_players:
+            description: Players who can receive messages from this app.
+            type:
+              - "null"
+              - integer
+          updated_at:
+            description: The timestamp when the record was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_at:
+            description: The timestamp when the record was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          gcm_key:
+            description: The key for Google Cloud Messaging (GCM).
+            type:
+              - "null"
+              - string
+          chrome_key:
+            description: The key for Chrome push notifications.
+            type:
+              - "null"
+              - string
+          chrome_web_key:
+            description: The key for Chrome web push notifications.
+            type:
+              - "null"
+              - string
+          chrome_web_origin:
+            description: The origin for Chrome web notifications.
+            type:
+              - "null"
+              - string
+          chrome_web_gcm_sender_id:
+            description: The GCM sender ID for Chrome web notifications.
+            type:
+              - "null"
+              - string
+          chrome_web_default_notification_icon:
+            description: The default notification icon for Chrome web notifications.
+            type:
+              - "null"
+              - string
+          chrome_web_sub_domain:
+            description: The sub-domain for Chrome web notifications.
+            type:
+              - "null"
+              - string
+          apns_env:
+            description: The environment for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - string
+          apns_certificates:
+            description: Certificates for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - string
+          safari_apns_certificate:
+            description: The certificate for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_site_origin:
+            description: The site origin for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_push_id:
+            description: The push ID for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_icon_16_16:
+            description: The 16x16 icon for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_icon_32_32:
+            description: The 32x32 icon for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_icon_64_64:
+            description: The 64x64 icon for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_icon_128_128:
+            description: The 128x128 icon for Safari push notifications.
+            type:
+              - "null"
+              - string
+          safari_icon_256_256:
+            description: The 256x256 icon for Safari push notifications.
+            type:
+              - "null"
+              - string
+          site_name:
+            description: The name of the site associated with the app.
+            type:
+              - "null"
+              - string
+          basic_auth_key:
+            description: The basic authentication key.
+            type:
+              - "null"
+              - string
+          additional_data_is_root_payload:
+            description:
+              Indicates whether additional data is included in the root
+              payload.
+            type:
+              - "null"
+              - boolean
+          apns_key_id:
+            description: The key ID for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - integer
+          fcm_v1_service_account_json:
+            description:
+              The service account JSON for Firebase Cloud Messaging (FCM)
+              v1.
+            type:
+              - "null"
+              - string
+          apns_p8:
+            description: The P8 key for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - string
+          apns_bundle_id:
+            description: The bundle ID for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - integer
+          apns_team_id:
+            description: The team ID for Apple Push Notification Service (APNS).
+            type:
+              - "null"
+              - integer
   incremental_sync_base:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters.incremental_cursor }}"
@@ -106,6 +274,117 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_with_pagination"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the device
+            type: string
+          identifier:
+            description: Identifier for the device
+            type:
+              - "null"
+              - string
+          session_count:
+            description: Total count of user sessions
+            type:
+              - "null"
+              - integer
+          language:
+            description: Language preference of the user
+            type:
+              - "null"
+              - string
+          timezone:
+            description: Timezone setting of the device
+            type:
+              - "null"
+              - integer
+          game_version:
+            description: Version of the game installed on the device
+            type:
+              - "null"
+              - string
+          device_os:
+            description: Operating system of the device
+            type:
+              - "null"
+              - string
+          device_type:
+            description: Type of device (e.g., mobile, tablet)
+            type:
+              - "null"
+              - integer
+          device_model:
+            description: Model of the device
+            type:
+              - "null"
+              - string
+          ad_id:
+            description: Unique identifier for advertising ID
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags associated with the device
+            type:
+              - "null"
+              - object
+            properties: {}
+          last_active:
+            description: Timestamp of the last user activity
+            type:
+              - "null"
+              - integer
+          amount_spent:
+            description: Total amount spent by the user
+            type:
+              - "null"
+              - number
+          created_at:
+            description: Timestamp indicating when the device was created
+            type:
+              - "null"
+              - integer
+          invalid_identifier:
+            description: Flag indicating if the device identifier is invalid
+            type:
+              - "null"
+              - boolean
+          badge_count:
+            description: Number of badge counts visible on the device
+            type:
+              - "null"
+              - integer
+          playtime:
+            description: Total playtime on the device
+            type:
+              - "null"
+              - integer
+          sdk:
+            description: Software development kit version integrated
+            type:
+              - "null"
+              - string
+          test_type:
+            description: Type of testing environment
+            type:
+              - "null"
+              - string
+          ip:
+            description: IP address of the device
+            type:
+              - "null"
+              - string
+          external_user_id:
+            description: User ID from external system
+            type:
+              - "null"
+              - string
   notifications_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
     $parameters:
@@ -119,6 +398,618 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_with_pagination"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          adm_big_picture:
+            description: URL of a big picture to be displayed in ADM notifications
+            type:
+              - "null"
+              - string
+          adm_group:
+            description: Group key for combining notifications in ADM format
+            type:
+              - "null"
+              - string
+          adm_group_message:
+            description: Group message for ADM notifications
+            type:
+              - "null"
+              - object
+            properties:
+              en:
+                description: English language content for group message
+                type:
+                  - "null"
+                  - string
+          adm_large_icon:
+            description: URL of a large icon to be displayed in ADM notifications
+            type:
+              - "null"
+              - string
+          adm_small_icon:
+            description: URL of a small icon to be displayed in ADM notifications
+            type:
+              - "null"
+              - string
+          adm_sound:
+            description: Sound to play for ADM notifications
+            type:
+              - "null"
+              - string
+          spoken_text:
+            description: Spoken text content for notifications
+            type:
+              - "null"
+              - object
+            properties:
+              description: Properties for spoken text content
+          alexa_ssml:
+            description: SSML content for Alexa notifications
+            type:
+              - "null"
+              - string
+          alexa_display_title:
+            description: Title to be displayed for Alexa notifications
+            type:
+              - "null"
+              - string
+          amazon_background_data:
+            description: Background data for Amazon notifications
+            type:
+              - "null"
+              - boolean
+          android_accent_color:
+            description: Accent color for Android notifications
+            type:
+              - "null"
+              - string
+          android_group:
+            description: Group key for combining notifications in Android format
+            type:
+              - "null"
+              - string
+          android_group_message:
+            description: Group message for Android notifications
+            type:
+              - "null"
+              - object
+            properties:
+              en:
+                description: English language content for group message
+                type:
+                  - "null"
+                  - string
+          android_led_color:
+            description: Color code for LED notification light on Android devices
+            type:
+              - "null"
+              - string
+          android_sound:
+            description: Sound to play for Android notifications
+            type:
+              - "null"
+              - string
+          android_visibility:
+            description: Visibility level for Android notifications
+            type:
+              - "null"
+              - integer
+          app_id:
+            description: ID of the application related to the notification
+            type: string
+          big_picture:
+            description: URL of a big picture to be displayed in notifications
+            type:
+              - "null"
+              - string
+          buttons:
+            description: Action buttons to be displayed in the notification
+            type:
+              - "null"
+              - string
+          canceled:
+            description: Flag indicating if the notification has been canceled
+            type:
+              - "null"
+              - boolean
+          chrome_big_picture:
+            description: URL of a big picture for Chrome notifications
+            type:
+              - "null"
+              - string
+          chrome_icon:
+            description: Icon to be displayed in Chrome notifications
+            type:
+              - "null"
+              - string
+          chrome_web_icon:
+            description: Icon to be displayed for Chrome web notifications
+            type:
+              - "null"
+              - string
+          chrome_web_image:
+            description: Image URL for Chrome web notifications
+            type:
+              - "null"
+              - string
+          chrome_web_badge:
+            description: Badge to be displayed for Chrome web notifications
+            type:
+              - "null"
+              - string
+          content_available:
+            description: Flag indicating if content is available for notifications
+            type:
+              - "null"
+              - boolean
+          name:
+            description: Name associated with the notification
+            type:
+              - "null"
+              - string
+          contents:
+            description: Content of the notification
+            type:
+              - "null"
+              - object
+            properties:
+              en:
+                description: English language content of the notification
+                type:
+                  - "null"
+                  - string
+          converted:
+            description: Flag indicating if the notification was converted
+            type:
+              - "null"
+              - integer
+          data:
+            description: Additional data related to the notification
+            type:
+              - "null"
+              - object
+            properties:
+              description: Properties for additional data
+          delayed_option:
+            description: Option for delayed delivery of the notification
+            type:
+              - "null"
+              - string
+          delivery_time_of_day:
+            description: Time of day for delivery of the notification
+            type:
+              - "null"
+              - string
+          errored:
+            description: Flag indicating if an error occurred with the notification
+            type:
+              - "null"
+              - integer
+          excluded_segments:
+            description: Segments excluded from receiving the notification
+            type:
+              - "null"
+              - array
+            items:
+              description: Item representing a segment
+              type: string
+          failed:
+            description: Flag indicating if the notification failed to deliver
+            type:
+              - "null"
+              - integer
+          firefox_icon:
+            description: Icon to be displayed for Firefox notifications
+            type:
+              - "null"
+              - string
+          global_image:
+            description: Global image for notifications
+            type:
+              - "null"
+              - string
+          headings:
+            description: Headings for the notification
+            type:
+              - "null"
+              - object
+            properties:
+              en:
+                description: English language headings for the notification
+                type:
+                  - "null"
+                  - string
+          huawei_accent_color:
+            description: Accent color for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_big_picture:
+            description: URL of a big picture for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_channel_id:
+            description: Channel ID for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_existing_channel_id:
+            description: Existing channel ID for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_group:
+            description: Group key for combining notifications in Huawei format
+            type:
+              - "null"
+              - string
+          huawei_group_message:
+            description: Group message for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_large_icon:
+            description: URL of a large icon for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_led_color:
+            description: Color code for LED notification light on Huawei devices
+            type:
+              - "null"
+              - string
+          huawei_msg_type:
+            description: Message type for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_small_icon:
+            description: URL of a small icon for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_sound:
+            description: Sound to play for Huawei notifications
+            type:
+              - "null"
+              - string
+          huawei_visibility:
+            description: Visibility level for Huawei notifications
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique ID of the notification
+            type: string
+          include_player_ids:
+            description: Player IDs to include for the notification
+            type:
+              - "null"
+              - string
+          include_external_user_ids:
+            description: External user IDs to include for the notification
+            type:
+              - "null"
+              - string
+          included_segments:
+            description: Segments included for receiving the notification
+            type: array
+            items:
+              description: Item representing a segment
+              type: string
+          thread_id:
+            description: Thread ID for the notification
+            type:
+              - "null"
+              - string
+          ios_badgeCount:
+            description: Badge count for iOS notifications
+            type:
+              - "null"
+              - integer
+          ios_badgeType:
+            description: Badge type for iOS notifications
+            type:
+              - "null"
+              - string
+          ios_category:
+            description: Category for iOS notifications
+            type:
+              - "null"
+              - string
+          ios_interruption_level:
+            description: Interruption level for iOS notifications
+            type:
+              - "null"
+              - string
+          ios_relevance_score:
+            description: Relevance score for iOS notifications
+            type:
+              - "null"
+              - number
+          ios_sound:
+            description: Sound to play for iOS notifications
+            type:
+              - "null"
+              - string
+          apns_alert:
+            description: Alert content for APNS notifications
+            type:
+              - "null"
+              - object
+            properties:
+              description: Properties for APNS alert content
+          target_content_identifier:
+            description: Identifier for target content related to the notification
+            type:
+              - "null"
+              - string
+          isAdm:
+            description: Flag indicating if the notification is in ADM format
+            type:
+              - "null"
+              - boolean
+          isAndroid:
+            description: Flag indicating if the notification is for Android devices
+            type:
+              - "null"
+              - boolean
+          isChrome:
+            description: Flag indicating if the notification is for Chrome
+            type:
+              - "null"
+              - boolean
+          isChromeWeb:
+            description: Flag indicating if the notification is for Chrome web
+            type:
+              - "null"
+              - boolean
+          isAlexa:
+            description: Flag indicating if the notification is for Alexa devices
+            type:
+              - "null"
+              - boolean
+          isFirefox:
+            description: Flag indicating if the notification is for Firefox browser
+            type:
+              - "null"
+              - boolean
+          isIos:
+            description: Flag indicating if the notification is for iOS devices
+            type:
+              - "null"
+              - boolean
+          isSafari:
+            description: Flag indicating if the notification is for Safari browser
+            type:
+              - "null"
+              - boolean
+          isWP:
+            description: Flag indicating if the notification is for Windows Phone
+            type:
+              - "null"
+              - boolean
+          isWP_WNS:
+            description:
+              Flag indicating if the notification is for Windows Phone
+              with WNS
+            type:
+              - "null"
+              - boolean
+          isEdge:
+            description: Flag indicating if the notification is for Edge browser
+            type:
+              - "null"
+              - boolean
+          isHuawei:
+            description: Flag indicating if the notification is for Huawei devices
+            type:
+              - "null"
+              - boolean
+          isSMS:
+            description: Flag indicating if the notification is for SMS
+            type:
+              - "null"
+              - boolean
+          large_icon:
+            description: URL of a large icon to be displayed in notifications
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority level of the notification
+            type:
+              - "null"
+              - integer
+          queued_at:
+            description: Timestamp when the notification was queued
+            type: integer
+          remaining:
+            description: Number of remaining notifications
+            type:
+              - "null"
+              - integer
+          send_after:
+            description: Timestamp to send the notification after
+            type:
+              - "null"
+              - integer
+          completed_at:
+            description: Timestamp indicating when the notification was completed
+            type:
+              - "null"
+              - integer
+          small_icon:
+            description: URL of a small icon to be displayed in notifications
+            type:
+              - "null"
+              - string
+          successful:
+            description: Flag indicating if the notification was successfully delivered
+            type:
+              - "null"
+              - integer
+          received:
+            description: Flag indicating if the notification was received
+            type:
+              - "null"
+              - integer
+          tags:
+            description: Tags associated with the notification
+            type:
+              - "null"
+              - object
+            properties:
+              description: Properties for tags
+          filters:
+            description: Filters applied for targeting the notification
+            type:
+              - "null"
+              - string
+          template_id:
+            description: ID of the template used for the notification
+            type:
+              - "null"
+              - string
+          ttl:
+            description: Time to live for the notification
+            type:
+              - "null"
+              - integer
+          url:
+            description: URL related to the notification
+            type:
+              - "null"
+              - string
+          web_url:
+            description: URL for web push notifications
+            type:
+              - "null"
+              - string
+          app_url:
+            description: URL to open when the notification is clicked
+            type:
+              - "null"
+              - string
+          web_buttons:
+            description: Buttons displayed in web notifications
+            type:
+              - "null"
+              - string
+          web_push_topic:
+            description: Topic for web push notifications
+            type:
+              - "null"
+              - string
+          wp_sound:
+            description: Sound for Windows Phone notifications
+            type:
+              - "null"
+              - string
+          wp_wns_sound:
+            description: Sound for Windows Phone with WNS notifications
+            type:
+              - "null"
+              - string
+          platform_delivery_stats:
+            description: Delivery statistics for different platforms
+            type: object
+            properties:
+              android:
+                description: Delivery statistics for Android platform
+                type:
+                  - "null"
+                  - object
+                properties:
+                  successful:
+                    description:
+                      Number of successfully delivered notifications on
+                      Android
+                    type: integer
+                  errored:
+                    description: Number of notifications with errors on Android
+                    type: integer
+                  failed:
+                    description: Number of failed notifications on Android
+                    type: integer
+                  converted:
+                    description: Number of notifications converted on Android
+                    type: integer
+                  received:
+                    description: Number of notifications received on Android
+                    type: integer
+              ios:
+                description: Delivery statistics for iOS platform
+                type:
+                  - "null"
+                  - object
+                properties:
+                  successful:
+                    description:
+                      Number of successfully delivered notifications on
+                      iOS
+                    type: integer
+                  errored:
+                    description: Number of notifications with errors on iOS
+                    type: integer
+                  failed:
+                    description: Number of failed notifications on iOS
+                    type: integer
+                  converted:
+                    description: Number of notifications converted on iOS
+                    type: integer
+                  received:
+                    description: Number of notifications received on iOS
+                    type: integer
+          ios_attachments:
+            description: Attachments for iOS notifications
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the attachment
+                type:
+                  - "null"
+                  - string
+          throttle_rate_per_minute:
+            description: Throttle rate per minute for sending notifications
+            type:
+              - "null"
+              - integer
+          sms_from:
+            description: Sender information for SMS notifications
+            type:
+              - "null"
+              - string
+          sms_media_urls:
+            description: Media URLs for SMS notifications
+            type:
+              - "null"
+              - string
+          email_click_tracking_disabled:
+            description:
+              Flag indicating if email click tracking is disabled for the
+              notification
+            type:
+              - "null"
+              - boolean
+          fcap_group_ids:
+            description: IDs of the frequency capping groups
+            type:
+              - "null"
+              - string
+          fcap_status:
+            description: Status of the frequency capping
+            type:
+              - "null"
+              - string
   outcomes_stream:
     $ref: "#/definitions/rest_api_key_auth_base_stream"
     name: "outcomes"
@@ -127,6 +1018,26 @@ definitions:
       extractorPath: "outcomes"
       path: "apps/{{ config['applications'][0]['app_id'] }}/outcomes"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the outcome data
+            type: string
+          value:
+            description:
+              The actual value of the outcome data based on the aggregation
+              type
+            type: integer
+          aggregation:
+            description:
+              The type of aggregation performed on the data (e.g., sum,
+              average, count)
+            type: string
 streams:
   - "#/definitions/apps_stream"
   - "#/definitions/devices_stream"
