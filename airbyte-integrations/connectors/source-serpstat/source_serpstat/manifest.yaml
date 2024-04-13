@@ -17,28 +17,40 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           ad_keywords:
+            description: Number of keywords the domain is advertising for
             type: number
           ads:
+            description: Number of ads displayed by the domain
             type: number
           date:
+            description: Date the data was collected
             type: string
           domain:
+            description: Domain name
             type: string
           down_keywords:
+            description: Number of keywords the domain has lost rankings for
             type: number
           keywords:
+            description: Total number of keywords the domain ranks for
             type: number
           new_keywords:
+            description: Number of new keywords the domain has gained rankings for
             type: number
           out_keywords:
+            description: Number of keywords leading traffic away from the domain
             type: number
           rised_keywords:
+            description: Number of keywords the domain has improved rankings for
             type: number
           traff:
+            description: Estimated organic traffic to the domain
             type: number
           visible:
+            description: Domain's visibility score
             type: number
           visible_static:
+            description: Static version of the domain's visibility score
             type: number
         type: object
     retriever:
@@ -99,7 +111,9 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition:
+            "{{response.result.summary_info.page > config['pages_to_fetch']
+            - 1}}"
   - type: DeclarativeStream
     name: Domains summary
     primary_key:
@@ -110,34 +124,55 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           ad_keywords:
+            description: Number of advertising keywords used by the domain
             type: number
           ads:
+            description: Number of ads displayed by the domain
             type: number
           ads_dynamic:
+            description: Dynamic changes in the number of ads displayed by the domain
             type: number
           domain:
+            description: Domain name for which the data is summarized
             type: string
           down_keywords:
+            description: Number of keywords where the domain has lost its ranking
             type: number
           keywords:
+            description: Total number of keywords the domain is ranking for
             type: number
           keywords_dynamic:
+            description:
+              Dynamic changes in the total number of keywords the domain
+              is ranking for
             type: number
           new_keywords:
+            description: Number of new keywords acquired by the domain
             type: number
           out_keywords:
+            description:
+              Number of referring domains where the domain's backlinks are
+              located
             type: number
           prev_date:
+            description: Date of the previous summary data
             type: string
           rised_keywords:
+            description: Number of keywords where the domain has improved its ranking
             type: number
           traff:
+            description: Estimated monthly organic traffic to the domain
             type: number
           traff_dynamic:
+            description:
+              Dynamic changes in the estimated monthly organic traffic to
+              the domain
             type: number
           visible:
+            description: Domain's visibility in search results based on ranking positions
             type: number
           visible_dynamic:
+            description: Dynamic changes in the domain's visibility in search results
             type: number
         type: object
     retriever:
@@ -199,42 +234,79 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           concurrency:
+            description:
+              The level of competition for a particular keyword based on
+              the number of websites targeting the same keyword.
             type: number
           cost:
+            description:
+              The average cost-per-click (CPC) for the keyword in paid search
+              advertising.
             type: number
           difficulty:
+            description:
+              A metric indicating how difficult it is to rank for a specific
+              keyword in search engine results.
             type: number
           domain:
+            description: The domain name for which the keyword data is retrieved.
             type: string
           dynamic:
+            description:
+              Indicates whether the keyword is dynamically generated in search
+              results.
             type:
               - "null"
               - number
           found_results:
+            description: The total number of search results found for a specific keyword.
             type: number
           geo_names:
+            description: Geographic names associated with the keyword or search query.
             type: array
           keyword:
+            description: The specific keyword for which the data is provided.
             type: string
           keyword_length:
+            description: The length of the keyword in characters.
             type: number
           position:
+            description:
+              The position at which a website appears in search results for
+              a specific keyword.
             type: number
           region_queries_count:
+            description:
+              The number of searches conducted for the keyword in a specific
+              region.
             type: number
           region_queries_count_wide:
+            description:
+              The total number of searches conducted for the keyword across
+              multiple regions.
             type: number
           subdomain:
+            description:
+              A subdomain associated with the main domain for additional
+              keyword data.
             type:
               - "null"
               - string
           traff:
+            description:
+              The estimated amount of traffic that the domain receives from
+              the specified keyword.
             type: number
           types:
+            description:
+              Different types of keywords, such as informational, transactional,
+              or commercial.
             items:
+              description: Specifies the detailed classification of a keyword.
               type: string
             type: array
           url:
+            description: The URL associated with the specific keyword being analyzed.
             type: string
         type: object
     retriever:
@@ -296,7 +368,9 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition:
+            "{{response.result.summary_info.page > config['pages_to_fetch']
+            - 1}}"
   - type: DeclarativeStream
     name: Domain keywords by region
     primary_key:
@@ -307,12 +381,20 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           country_name_en:
+            description:
+              The name of the country in English where the domain keywords
+              are being tracked.
             type: string
           db_name:
+            description: The name of the database containing keyword data for the domain.
             type: string
           domain:
+            description: The domain for which the keywords data is being fetched.
             type: string
           keywords_count:
+            description:
+              The total count of keywords associated with the domain in the
+              specified region.
             type: number
         type: object
     retriever:
@@ -372,46 +454,67 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           ad_keywords:
+            description: Keywords used in advertisement campaigns related to the domain
             type: number
           ads:
+            description: Number of advertisement campaigns run by the domain
             type: number
           ads_dynamic:
+            description: Dynamic data related to advertisement campaigns of the domain
             type: number
           common:
+            description: Common data among domain competitors
             type: number
           domain:
+            description: Domain name of the competitor
             type: string
           down_keywords:
+            description: Keywords causing a decrease in the domain's performance
             type: number
           intersected:
+            description: Keywords that are common between the domain and its competitors
             type: number
           keywords:
+            description: Keywords relevant to the domain's performance
             type: number
           keywords_dynamic:
+            description: Dynamic data related to keywords of the domain
             type: number
           missing:
+            description: Data that is missing for the domain and its competitors
             type: number
           new_keywords:
+            description: Newly discovered keywords related to the domain
             type: number
           new_relevance:
+            description: New relevance data for the domain
             type: number
           not_intersected:
+            description: Keywords not common between the domain and its competitors
             type: number
           our_relevance:
+            description: Relevance data specific to the domain
             type: number
           out_keywords:
+            description: Keywords affecting the domain performance negatively
             type: number
           relevance:
+            description: Relevance data of the domain in comparison to its competitors
             type: number
           rised_keywords:
+            description: Keywords leading to an increase in the domain's performance
             type: number
           traff:
+            description: Amount of traffic received by the domain
             type: number
           traff_dynamic:
+            description: Dynamic data related to the domain's traffic
             type: number
           visible:
+            description: Visibility score of the domain
             type: number
           visible_dynamic:
+            description: Dynamic data related to the domain's visibility
             type: number
         type: object
     retriever:
@@ -472,12 +575,18 @@ streams:
         $schema: http://json-schema.org/schema#
         properties:
           facebook_shares:
+            description: The number of times the page has been shared on Facebook.
             type: number
           organic_keywords:
+            description:
+              The number of organic keywords the page is ranking for in search
+              engines.
             type: number
           potencial_traff:
+            description: The potential traffic estimation for the page.
             type: number
           url:
+            description: The URL of the top page for the domain.
             type: string
         type: object
     retriever:
@@ -539,7 +648,9 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition:
+            "{{response.result.summary_info.page > config['pages_to_fetch']
+            - 1}}"
 
 metadata:
   autoImportSchema:
