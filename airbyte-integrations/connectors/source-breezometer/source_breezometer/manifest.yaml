@@ -23,6 +23,76 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/current-conditions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            description: The date and time when the air quality data was recorded.
+            type:
+              - "null"
+              - string
+          data_available:
+            description:
+              Indicates whether air quality data is available for the requested
+              location.
+            type:
+              - "null"
+              - boolean
+          indexes:
+            description: Air quality index data
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                description: BreezoMeter AQI (BAQI) value
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description:
+                      The display name representing the air quality level
+                      (e.g., 'Good', 'Moderate').
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    description:
+                      The Air Quality Index (AQI) value indicating the
+                      quality of air at the given time and location.
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    description: The formatted AQI value for display purposes.
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    description:
+                      The color representation associated with the air
+                      quality category for visualization.
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    description:
+                      The air quality category based on the AQI value (e.g.,
+                      'Good', 'Moderate', 'Unhealthy').
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    description:
+                      The primary pollutant affecting the air quality at
+                      the given time and location.
+                    type:
+                      - "null"
+                      - string
   air_quality_forecast_stream:
     retriever:
       record_selector:
@@ -42,6 +112,80 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/forecast/hourly"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            description: Date and time for the air quality forecast data.
+            type:
+              - "null"
+              - string
+          data_available:
+            description:
+              Indicates if air quality forecast data is available for the
+              requested date and time.
+            type:
+              - "null"
+              - boolean
+          indexes:
+            description: Contains air quality index forecasts for various pollutants.
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                description:
+                  BreezoMeter Air Quality Index (BAQI) value for the specified
+                  date and time.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description:
+                      The user-friendly display name associated with the
+                      air quality category.
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    description:
+                      The Air Quality Index (AQI) value represents the
+                      overall air quality for the specified date and time.
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    description:
+                      The display value of the Air Quality Index (AQI),
+                      providing a user-friendly representation.
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    description:
+                      The color associated with the air quality category
+                      for visual representation.
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    description:
+                      The air quality category based on the AQI value,
+                      such as Good, Moderate, Unhealthy, etc.
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    description:
+                      The primary pollutant that has the greatest impact
+                      on the overall air quality.
+                    type:
+                      - "null"
+                      - string
   air_quality_historical_stream:
     retriever:
       record_selector:
@@ -61,6 +205,82 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/historical/hourly"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            description: Date and time when the air quality data was recorded.
+            type:
+              - "null"
+              - string
+          data_available:
+            description:
+              Indicates if historical air quality data is available for
+              the requested date and location.
+            type:
+              - "null"
+              - boolean
+          indexes:
+            description:
+              Contains various air quality indexes for the specified historical
+              data.
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                description:
+                  The BreezoMeter Air Quality Index (BAQI) provides a comprehensive
+                  and user-friendly method to analyze real-time air quality information.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description:
+                      Name assigned to the air quality category for display
+                      purposes.
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    description:
+                      Air Quality Index (AQI) value representing the overall
+                      air quality level at the given time.
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    description:
+                      Human-readable interpretation of the AQI value for
+                      easy understanding.
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    description:
+                      Color representation associated with the air quality
+                      category for visual feedback.
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    description:
+                      Categorized level of air quality based on the AQI
+                      value.
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    description:
+                      Main pollutant contributing to the current air quality
+                      index value.
+                    type:
+                      - "null"
+                      - string
   pollen_forecast_stream:
     retriever:
       record_selector:
@@ -80,6 +300,171 @@ definitions:
       primary_key: "index_id"
       path: "/pollen/v2/forecast/daily"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          date:
+            description: The date for the pollen forecast data.
+            type:
+              - "null"
+              - string
+          index_id:
+            description: The unique identifier for the pollen index.
+            type:
+              - "null"
+              - string
+          index_display_name:
+            description: The name of the pollen index.
+            type:
+              - "null"
+              - string
+          types:
+            description: Different types of pollen forecasts available
+            type:
+              - "null"
+              - object
+            properties:
+              grass:
+                description: Pollen forecast for grass
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description: The display name of the grass pollen index.
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    description:
+                      Flag indicating whether the grass pollen is currently
+                      in season.
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    description:
+                      Flag indicating whether data is available for the
+                      grass pollen index.
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    description: Pollen index data for grass
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        description: The numerical value of the grass pollen index.
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        description: The category of the grass pollen index.
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        description: The color associated with the grass pollen index.
+                        type:
+                          - "null"
+                          - string
+              tree:
+                description: Pollen forecast for trees
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description: The display name of the tree pollen index.
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    description:
+                      Flag indicating whether the tree pollen is currently
+                      in season.
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    description:
+                      Flag indicating whether data is available for the
+                      tree pollen index.
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    description: Pollen index data for trees
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        description: The numerical value of the tree pollen index.
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        description: The category of the tree pollen index.
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        description: The color associated with the tree pollen index.
+                        type:
+                          - "null"
+                          - string
+              weed:
+                description: Pollen forecast for weeds
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    description: The display name of the weed pollen index.
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    description:
+                      Flag indicating whether the weed pollen is currently
+                      in season.
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    description:
+                      Flag indicating whether data is available for the
+                      weed pollen index.
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    description: Pollen index data for weeds
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        description: The numerical value of the weed pollen index.
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        description: The category of the weed pollen index.
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        description: The color associated with the weed pollen index.
+                        type:
+                          - "null"
+                          - string
   weather_current_stream:
     retriever:
       record_selector:
@@ -98,6 +483,212 @@ definitions:
       primary_key: "datetime"
       path: "/weather/v1/current-conditions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            description: Timestamp of the current weather data
+            type:
+              - "null"
+              - string
+          is_day_time:
+            description: Indicator if it is currently daytime
+            type:
+              - "null"
+              - boolean
+          icon_code:
+            description: Code representing the weather icon
+            type:
+              - "null"
+              - integer
+          weather_text:
+            description: Text representation of the current weather conditions
+            type:
+              - "null"
+              - string
+          temperature:
+            description:
+              Measure of hotness or coldness of the air typically measured
+              in degrees Celsius or Fahrenheit.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of temperature
+                type:
+                  - "null"
+                  - number
+              units:
+                description: Unit of measurement for temperature
+                type:
+                  - "null"
+                  - string
+          feels_like_temperature:
+            description:
+              Subjective temperature perceived by humans, taking into account
+              the effects of temperature, humidity, and wind.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of feels like temperature
+                type:
+                  - "null"
+                  - number
+              units:
+                description: Unit of measurement for feels like temperature
+                type:
+                  - "null"
+                  - string
+          relative_humidity:
+            description: Percentage of relative humidity in the air
+            type:
+              - "null"
+              - integer
+          precipitation:
+            description:
+              Measurements related to any forms of water, such as rain
+              or snow, falling from the atmosphere.
+            type:
+              - "null"
+              - object
+            properties:
+              precipitation_probability:
+                description: Probability of precipitation occurrence
+                type:
+                  - "null"
+                  - integer
+              total_precipitation:
+                description:
+                  Total amount of precipitation that has fallen in a specific
+                  time period.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  value:
+                    description: Numeric value of total precipitation
+                    type:
+                      - "null"
+                      - number
+                  units:
+                    description: Unit of measurement for total precipitation
+                    type:
+                      - "null"
+                      - string
+          wind:
+            description:
+              Movement of air in the atmosphere, carries weather systems
+              and affects temperatures.
+            type:
+              - "null"
+              - object
+            properties:
+              speed:
+                description:
+                  Rate at which air is moving, usually in kilometers per
+                  hour or miles per hour.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  value:
+                    description: Numeric value of wind speed
+                    type:
+                      - "null"
+                      - number
+                  units:
+                    description: Unit of measurement for wind speed
+                    type:
+                      - "null"
+                      - string
+              direction:
+                description: Wind direction in compass degrees
+                type:
+                  - "null"
+                  - integer
+          wind_gust:
+            description:
+              Brief increase in the speed of wind that lasts for less than
+              20 seconds followed by a rapid decrease.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of wind gust
+                type:
+                  - "null"
+                  - number
+              units:
+                description: Unit of measurement for wind gust
+                type:
+                  - "null"
+                  - string
+          pressure:
+            description:
+              Force exerted by the atmosphere on a specific area, influencing
+              weather patterns.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of pressure
+                type:
+                  - "null"
+                  - number
+              units:
+                description: Unit of measurement for pressure
+                type:
+                  - "null"
+                  - string
+          visibility:
+            description:
+              Distance at which objects can be clearly seen, affected by
+              weather conditions like fog or rain.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of visibility
+                type:
+                  - "null"
+                  - integer
+              units:
+                description: Unit of measurement for visibility
+                type:
+                  - "null"
+                  - string
+          dew_point:
+            description:
+              Indicates the temperature at which air becomes saturated
+              with water vapor and dew forms.
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                description: Numeric value of dew point
+                type:
+                  - "null"
+                  - number
+              units:
+                description: Unit of measurement for dew point
+                type:
+                  - "null"
+                  - string
+          cloud_cover:
+            description: Percentage of the sky covered by clouds
+            type:
+              - "null"
+              - integer
   weather_forecast_stream:
     retriever:
       record_selector:
@@ -116,6 +707,64 @@ definitions:
       name: "weather_forecast"
       path: "/weather/v1/forecast/daily"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          start_date:
+            description: The date for which the weather forecast is provided.
+            type:
+              - "null"
+              - string
+          sun:
+            description: Information related to sun events and conditions.
+            type:
+              - "null"
+              - object
+            properties:
+              sunrise_time:
+                description: The time the sun will rise.
+                type:
+                  - "null"
+                  - string
+              sunset_time:
+                description: The time the sun will set.
+                type:
+                  - "null"
+                  - string
+          moon:
+            description: Information related to moon events and conditions.
+            type:
+              - "null"
+              - object
+            properties:
+              moonrise_time:
+                description: The time the moon will rise.
+                type:
+                  - "null"
+                  - string
+              moonset_time:
+                description: The time the moon will set.
+                type:
+                  - "null"
+                  - string
+              moon_phase:
+                description: The phase of the moon (e.g., full moon, waxing crescent).
+                type:
+                  - "null"
+                  - string
+              moon_age:
+                description: The age of the moon in days.
+                type:
+                  - "null"
+                  - number
+          max_uv_index:
+            description: The maximum UV index forecasted for the day.
+            type:
+              - "null"
+              - integer
   wildfire_burnt_area_stream:
     retriever:
       record_selector:
@@ -134,6 +783,100 @@ definitions:
       name: "wildfire_burnt_area"
       path: "/fires/v1/burnt-area"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          type:
+            description: Type of data (e.g., GeoJSON)
+            type:
+              - "null"
+              - string
+          features:
+            description: List of wildfire burnt area features
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the burnt area feature
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of feature (e.g., wildfire)
+                  type:
+                    - "null"
+                    - string
+                properties:
+                  description: Details about the burnt area
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    CurrentLat:
+                      description: Current latitude of the burnt area
+                      type:
+                        - "null"
+                        - number
+                    CurrentLon:
+                      description: Current longitude of the burnt area
+                      type:
+                        - "null"
+                        - number
+                    DiscoveryDateTime:
+                      description: Date and time when the wildfire was discovered
+                      type:
+                        - "null"
+                        - string
+                    EventDescription:
+                      description: Description of the wildfire event
+                      type:
+                        - "null"
+                        - string
+                    LastUpdated:
+                      description: Last updated timestamp for the burnt area
+                      type:
+                        - "null"
+                        - string
+                geometry:
+                  description: The geographical shape of the burnt area
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of geometry (e.g., polygon)
+                      type:
+                        - "null"
+                        - string
+                    coordinates:
+                      description: List of coordinate points outlining the burnt area
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - array
+                            items:
+                              type:
+                                - "null"
+                                - number
   wildfire_locate_stream:
     retriever:
       record_selector:
@@ -152,6 +895,101 @@ definitions:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          type:
+            description: Type of data response
+            type:
+              - "null"
+              - string
+          features:
+            description: List of wildfire locations
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the wildfire event
+                  type:
+                    - "null"
+                    - string
+                type:
+                  description: Type of the wildfire location feature
+                  type:
+                    - "null"
+                    - string
+                properties:
+                  description: Properties of the wildfire event
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    CurrentLat:
+                      description: Latitude of the current location
+                      type:
+                        - "null"
+                        - number
+                    CurrentLon:
+                      description: Longitude of the current location
+                      type:
+                        - "null"
+                        - number
+                    DiscoveryDateTime:
+                      description: Date and time when the wildfire was discovered
+                      type:
+                        - "null"
+                        - string
+                    EventDescription:
+                      description: Description of the wildfire event
+                      type:
+                        - "null"
+                        - string
+                    LastUpdated:
+                      description: Date and time when the data was last updated
+                      type:
+                        - "null"
+                        - string
+                geometry:
+                  description: Geographical information of the wildfire location
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: Type of geometry data
+                      type:
+                        - "null"
+                        - string
+                    coordinates:
+                      description: List of latitude and longitude coordinates
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - array
+                            items:
+                              description: Coordinate value
+                              type:
+                                - "null"
+                                - number
 streams:
   - "#/definitions/air_quality_current_stream"
   - "#/definitions/air_quality_forecast_stream"
