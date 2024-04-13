@@ -37,6 +37,205 @@ definitions:
       primary_key: "id"
       path: "/v1/customers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the customer
+            type:
+              - integer
+          uuid:
+            description: Universal unique identifier for the customer
+            type:
+              - string
+          external_id:
+            description: External ID for customer
+            type:
+              - "null"
+              - string
+          external_ids:
+            description: List of external IDs
+            type:
+              - "null"
+              - array
+          data_source_uuid:
+            description: UUID of the data source
+            type:
+              - "null"
+              - string
+          data_source_uuids:
+            description: UUIDs of connected data sources
+            type:
+              - "null"
+              - array
+          name:
+            description: Customer's name
+            type:
+              - "null"
+              - string
+          company:
+            description: Customer's company name
+            type:
+              - "null"
+              - string
+          email:
+            description: Customer's email address
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the customer
+            type:
+              - "null"
+              - string
+          lead_created_at:
+            description: Date of lead creation
+            type:
+              - "null"
+              - string
+          free_trial_started_at:
+            description: Start date of free trial
+            type:
+              - "null"
+              - string
+          customer_since:
+            description: Date when customer started
+            type:
+              - "null"
+              - string
+          city:
+            description: Customer's city
+            type:
+              - "null"
+              - string
+          state:
+            description: Customer's state
+            type:
+              - "null"
+              - string
+          country:
+            description: Customer's country
+            type:
+              - "null"
+              - string
+          zip:
+            description: Customer's zip code
+            type:
+              - "null"
+              - string
+          attributes:
+            description: Additional attributes of the customer
+            type:
+              - "null"
+              - object
+            properties:
+              tags:
+                description: Tags associated with the customer
+                type:
+                  - "null"
+                  - array
+              stripe:
+                description: Stripe specific attributes
+                type:
+                  - "null"
+                  - object
+                properties:
+                  brandID:
+                    description: Stripe brand ID
+                    type:
+                      - "null"
+                      - string
+                  brandName:
+                    description: Name of the brand associated with Stripe
+                    type:
+                      - "null"
+                      - string
+                  createdAt:
+                    description: Creation date of the Stripe account
+                    type:
+                      - "null"
+                      - string
+                  platformName:
+                    description: Name of the platform linked with Stripe
+                    type:
+                      - "null"
+                      - string
+              clearbit:
+                description: Clearbit data for the customer
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              custom:
+                description: Custom attributes for the customer
+                type:
+                  - "null"
+                  - object
+                properties: {}
+          address:
+            description: Customer's address information
+            type:
+              - "null"
+              - object
+            properties:
+              country:
+                description: Country of the address
+                type:
+                  - "null"
+                  - string
+              state:
+                description: State of the address
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City of the address
+                type:
+                  - "null"
+                  - string
+              address_zip:
+                description: Zip code of the address
+                type:
+                  - "null"
+                  - string
+          mrr:
+            description: Current monthly recurring revenue
+            type:
+              - "null"
+              - integer
+          arr:
+            description: Additional Arr information
+            type:
+              - "null"
+              - integer
+          billing-system-url:
+            description: URL of the billing system
+            type:
+              - "null"
+              - string
+          chartmogul-url:
+            description: URL for accessing ChartMogul data
+            type:
+              - "null"
+              - string
+          billing-system-type:
+            description: Type of billing system in use
+            type:
+              - "null"
+              - string
+          currency:
+            description: Currency used for billing
+            type:
+              - "null"
+              - string
+          currency-sign:
+            description: Currency sign for display
+            type:
+              - "null"
+              - string
   activities_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -63,6 +262,88 @@ definitions:
       primary_key: "uuid"
       path: "/v1/activities"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          description:
+            description: A description of the activity
+            type:
+              - "null"
+              - string
+          activity-mrr-movement:
+            description: The change in MRR caused by the activity
+            type:
+              - "null"
+              - integer
+          activity-mrr:
+            description:
+              The amount of MRR (Monthly Recurring Revenue) generated by
+              the activity
+            type:
+              - "null"
+              - integer
+          activity-arr:
+            description:
+              The amount of Arr (Annual Recurring Revenue) generated by
+              the activity
+            type:
+              - "null"
+              - integer
+          date:
+            description: The date on which the activity occurred
+            type:
+              - "null"
+              - string
+          type:
+            description:
+              The type of activity (e.g., new sale, upgrade, downgrade,
+              churn)
+            type:
+              - "null"
+              - string
+          currency:
+            description: The currency used for the revenue data in this activity
+            type:
+              - "null"
+              - string
+          subscription-external-id:
+            description: The external ID of the subscription associated with the activity
+            type:
+              - "null"
+              - string
+          plan-external-id:
+            description: The external ID of the plan associated with the activity
+            type:
+              - "null"
+              - string
+          customer-name:
+            description: The name of the customer associated with the activity
+            type:
+              - "null"
+              - string
+          customer-uuid:
+            description: The UUID of the customer associated with the activity
+            type:
+              - "null"
+              - string
+          customer-external-id:
+            description: The external ID of the customer associated with the activity
+            type:
+              - "null"
+              - string
+          billing-connector-uuid:
+            description: The UUID of the billing connector associated with the activity
+            type:
+              - "null"
+              - string
+          uuid:
+            description: The UUID of the activity record
+            type:
+              - string
   customer_daily_count_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -77,6 +358,21 @@ definitions:
       primary_key: "date"
       path: "/v1/metrics/customer-count"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            description: The date for which the customer count data is recorded.
+            type:
+              - string
+          customers:
+            description: The total count of customers for a specific day.
+            type:
+              - integer
   customer_weekly_count_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -91,6 +387,21 @@ definitions:
       primary_key: "date"
       path: "/v1/metrics/customer-count"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            description: The date of the week for which the customer count is provided.
+            type:
+              - string
+          customers:
+            description: The count of unique customers for the week.
+            type:
+              - integer
   customer_monthly_count_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -105,6 +416,21 @@ definitions:
       primary_key: "date"
       path: "/v1/metrics/customer-count"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            description: The date for which the customer count is recorded.
+            type:
+              - string
+          customers:
+            description: The count of unique customers for the specified time period.
+            type:
+              - integer
   customer_quarterly_count_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -119,6 +445,23 @@ definitions:
       primary_key: "date"
       path: "/v1/metrics/customer-count"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            description:
+              The date representing the quarter for which the customer
+              count is provided.
+            type:
+              - string
+          customers:
+            description: The number of customers during the specified quarter.
+            type:
+              - integer
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/activities_stream"
