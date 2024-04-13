@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the post",
+      "type": ["null", "string"]
+    },
+    "threadId": {
+      "description": "The ID of the thread the post belongs to",
+      "type": ["null", "string"]
+    },
+    "conversationId": {
+      "description": "The ID of the conversation the post belongs to",
+      "type": ["null", "string"]
+    },
+    "createdDateTime": {
+      "description": "The date and time the post was created",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "lastModifiedDateTime": {
+      "description": "The date and time the post was last modified",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "@odata.etag": {
+      "description": "Entity tag used for cache control and optimistic concurrency",
+      "type": ["null", "string"]
+    },
+    "changeKey": {
+      "description": "The key used for change tracking of the post",
+      "type": ["null", "string"]
+    },
+    "categories": {
+      "description": "Categories associated with the conversation post.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Categories associated with the post",
+        "type": ["null", "string"]
+      }
+    },
+    "receivedDateTime": {
+      "description": "The date and time the post was received",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "hasAttachments": {
+      "description": "Indicates whether the post has attachments",
+      "type": ["null", "boolean"]
+    },
+    "body": {
+      "description": "The main content of the conversation post.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "contentType": {
+          "description": "The type of content in the post (e.g., text, HTML)",
+          "type": ["null", "string"]
+        },
+        "content": {
+          "description": "The content of the post",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "from": {
+      "description": "The sender of the conversation post.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "emailAddress": {
+          "description": "Email address of the sender.",
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "description": "The name of the sender",
+              "type": ["null", "string"]
+            },
+            "address": {
+              "description": "The email address of the sender",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "sender": {
+      "description": "The sender of the conversation post.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "emailAddress": {
+          "description": "Email address of the sender.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "name": {
+              "description": "The name of the sender",
+              "type": ["null", "string"]
+            },
+            "address": {
+              "description": "The email address of the sender",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

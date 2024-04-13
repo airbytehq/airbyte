@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the group owner.",
+      "type": ["null", "string"]
+    },
+    "groupId": {
+      "description": "The unique identifier of the group the owner belongs to.",
+      "type": ["null", "string"]
+    },
+    "@odata.type": {
+      "description": "The object type being returned as per the OData protocol.",
+      "type": ["null", "string"]
+    },
+    "businessPhones": {
+      "description": "The list of business phone numbers associated with the group owner.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "A business phone number.",
+        "type": ["null", "string"]
+      }
+    },
+    "displayName": {
+      "description": "The display name of the group owner.",
+      "type": ["null", "string"]
+    },
+    "givenName": {
+      "description": "The given name (first name) of the group owner.",
+      "type": ["null", "string"]
+    },
+    "jobTitle": {
+      "description": "The job title of the group owner.",
+      "type": ["null", "string"]
+    },
+    "mail": {
+      "description": "The email address of the group owner.",
+      "type": ["null", "string"]
+    },
+    "mobilePhone": {
+      "description": "The mobile phone number of the group owner.",
+      "type": ["null", "string"]
+    },
+    "officeLocation": {
+      "description": "The office location of the group owner.",
+      "type": ["null", "string"]
+    },
+    "preferredLanguage": {
+      "description": "The preferred language of the group owner.",
+      "type": ["null", "string"]
+    },
+    "surname": {
+      "description": "The surname (last name) of the group owner.",
+      "type": ["null", "string"]
+    },
+    "userPrincipalName": {
+      "description": "The user principal name (login name) of the group owner.",
+      "type": ["null", "string"]
+    }
+  }
+}

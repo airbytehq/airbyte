@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the channel member.",
+      "type": ["null", "string"]
+    },
+    "@odata.type": {
+      "description": "The type of data represented by the object.",
+      "type": ["null", "string"]
+    },
+    "displayName": {
+      "description": "The display name of the channel member.",
+      "type": ["null", "string"]
+    },
+    "roles": {
+      "description": "The roles assigned to the channel member within the channel.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Individual role assigned to the channel member.",
+        "type": ["null", "string"]
+      }
+    },
+    "userId": {
+      "description": "The unique identifier of the user associated with the channel member.",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "The email address of the channel member.",
+      "type": ["null", "string"]
+    },
+    "channelId": {
+      "description": "The unique identifier of the channel the member belongs to.",
+      "type": ["null", "string"]
+    },
+    "tenantId": {
+      "description": "The unique identifier of the tenant to which the channel member belongs.",
+      "type": ["null", "string"]
+    },
+    "visibleHistoryStartDateTime": {
+      "description": "The date and time from which the channel member's history is visible.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    }
+  }
+}

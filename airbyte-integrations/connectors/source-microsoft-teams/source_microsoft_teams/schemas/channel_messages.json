@@ -1,0 +1,279 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the message.",
+      "type": ["null", "string"]
+    },
+    "replyToId": {
+      "description": "ID of the message being replied to, if applicable.",
+      "type": ["null", "string"]
+    },
+    "etag": {
+      "description": "ETag used for concurrency control.",
+      "type": ["null", "string"]
+    },
+    "messageType": {
+      "description": "Type of message, e.g., regular, system.",
+      "type": ["null", "string"]
+    },
+    "createdDateTime": {
+      "description": "Date and time when the message was created.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "lastModifiedDateTime": {
+      "description": "Date and time when the message was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "deletedDateTime": {
+      "description": "Date and time when the message was deleted, if applicable.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "subject": {
+      "description": "Subject or title of the message.",
+      "type": ["null", "string"]
+    },
+    "summary": {
+      "description": "Brief summary or preview of the message content.",
+      "type": ["null", "string"]
+    },
+    "chatId": {
+      "description": "ID of the chat from which the message originates.",
+      "type": ["null", "string"]
+    },
+    "importance": {
+      "description": "Indication of the message's importance, e.g., high, normal, low.",
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "description": "Locale or language setting for the message.",
+      "type": ["null", "string"]
+    },
+    "webUrl": {
+      "description": "URL to access the message in a web interface.",
+      "type": ["null", "string"]
+    },
+    "policyViolation": {
+      "description": "Information about any policy violations related to the message.",
+      "type": ["null", "string"]
+    },
+    "from": {
+      "description": "Details of the sender of the message.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "application": {
+          "description": "Information about the application sending the message.",
+          "type": ["null", "string"]
+        },
+        "device": {
+          "description": "Details about the device from which the message was sent.",
+          "type": ["null", "string"]
+        },
+        "conversation": {
+          "description": "Details about the conversation context, if any.",
+          "type": ["null", "string"]
+        },
+        "user": {
+          "description": "Information about the user who sent the message.",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "description": "ID of the user sending the message.",
+              "type": ["null", "string"]
+            },
+            "displayName": {
+              "description": "Display name of the user sending the message.",
+              "type": ["null", "string"]
+            },
+            "userIdentityType": {
+              "description": "Type of identity used for the user, e.g., azureADUser.",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "body": {
+      "description": "The main content of the message body.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "contentType": {
+          "description": "Type of content in the message body, e.g., text, html.",
+          "type": ["null", "string"]
+        },
+        "content": {
+          "description": "Text content of the message or chat.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "channelIdentity": {
+      "description": "Identity information of the channel where the message was posted.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "teamId": {
+          "description": "Identifier of the team to which the channel belongs.",
+          "type": ["null", "string"]
+        },
+        "channelId": {
+          "description": "Identifier of the channel where the message was posted.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "attachments": {
+      "description": "Additional files or media attached to the message.",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "contentType": {
+                "type": ["null", "string"]
+              },
+              "contentUrl": {
+                "type": ["null", "string"]
+              },
+              "content": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "thumbnailUrl": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "mentions": {
+      "description": "Users or entities mentioned in the message.",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "mentionText": {
+                "type": ["null", "string"]
+              },
+              "mentioned": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "application": {
+                    "type": ["null", "string"]
+                  },
+                  "device": {
+                    "type": ["null", "string"]
+                  },
+                  "conversation": {
+                    "type": ["null", "string"]
+                  },
+                  "user": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "userIdentityType": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reactions": {
+      "description": "Reactions or emojis associated with the message.",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "reactionType": {
+                "type": ["null", "string"]
+              },
+              "createdDateTime": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "user": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "application": {
+                    "type": ["null", "string"]
+                  },
+                  "device": {
+                    "type": ["null", "string"]
+                  },
+                  "conversation": {
+                    "type": ["null", "string"]
+                  },
+                  "user": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "userIdentityType": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the user.",
+      "type": ["null", "string"]
+    },
+    "@odata.type": {
+      "description": "The type of the Microsoft Graph resource.",
+      "type": ["null", "string"]
+    },
+    "businessPhones": {
+      "description": "List of business phone numbers for the user.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Individual business phone number.",
+        "type": ["null", "string"]
+      }
+    },
+    "displayName": {
+      "description": "The display name of the user.",
+      "type": ["null", "string"]
+    },
+    "givenName": {
+      "description": "The given name (first name) of the user.",
+      "type": ["null", "string"]
+    },
+    "jobTitle": {
+      "description": "The job title of the user.",
+      "type": ["null", "string"]
+    },
+    "mail": {
+      "description": "The email address of the user.",
+      "type": ["null", "string"]
+    },
+    "mobilePhone": {
+      "description": "The mobile phone number of the user.",
+      "type": ["null", "string"]
+    },
+    "officeLocation": {
+      "description": "The office location of the user.",
+      "type": ["null", "string"]
+    },
+    "preferredLanguage": {
+      "description": "The preferred language of the user.",
+      "type": ["null", "string"]
+    },
+    "surname": {
+      "description": "The surname (last name) of the user.",
+      "type": ["null", "string"]
+    },
+    "userPrincipalName": {
+      "description": "The user principal name (UPN) of the user.",
+      "type": ["null", "string"]
+    }
+  }
+}

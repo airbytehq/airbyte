@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the team drive.",
+      "type": ["null", "string"]
+    },
+    "createdDateTime": {
+      "description": "The date and time when the team drive was created.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "description": {
+      "description": "A brief description of the team drive.",
+      "type": ["null", "string"]
+    },
+    "lastModifiedBy": {
+      "description": "Details of the user who last modified the team drive",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "description": "The display name of the user who last modified the team drive.",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "The unique identifier of the user who last modified the team drive.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "lastModifiedDateTime": {
+      "description": "The date and time when the team drive was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "name": {
+      "description": "The name of the team drive.",
+      "type": ["null", "string"]
+    },
+    "webUrl": {
+      "description": "The URL to access the team drive via a web browser.",
+      "type": ["null", "string"]
+    },
+    "driveType": {
+      "description": "The type of the team drive (e.g., private, public).",
+      "type": ["null", "string"]
+    },
+    "createdBy": {
+      "description": "Details of the user who created the team drive",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "user": {
+          "description": "Details of the user who created the team drive",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "displayName": {
+              "description": "The display name of the user who created the team drive.",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "owner": {
+      "description": "Details of the group that owns the team drive",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "group": {
+          "description": "Details of the group that owns the team drive",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "description": "The email address of the group that owns the team drive.",
+              "type": ["null", "string"]
+            },
+            "id": {
+              "description": "The unique identifier of the group that owns the team drive.",
+              "type": ["null", "string"]
+            },
+            "displayName": {
+              "description": "The display name of the group that owns the team drive.",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "quota": {
+      "description": "Quota information for the team drive",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "deleted": {
+          "description": "The amount of storage space that has been deleted from the team drive.",
+          "type": ["null", "integer"]
+        },
+        "remaining": {
+          "description": "The remaining storage space available in the team drive.",
+          "type": ["null", "number"]
+        },
+        "state": {
+          "description": "The current state of the team drive's storage quota (e.g., normal, exceeded).",
+          "type": ["null", "string"]
+        },
+        "total": {
+          "description": "The total storage space allocated to the team drive.",
+          "type": ["null", "number"]
+        },
+        "used": {
+          "description": "The amount of storage space used in the team drive.",
+          "type": ["null", "integer"]
+        }
+      }
+    }
+  }
+}
