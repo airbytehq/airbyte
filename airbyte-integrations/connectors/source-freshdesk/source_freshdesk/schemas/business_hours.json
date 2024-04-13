@@ -23,9 +23,11 @@
       "type": ["null", "string"]
     },
     "working_hours": {
+      "description": "Represents the business hours for each day of the week",
       "type": ["null", "object"],
       "properties": {
         "monday": {
+          "description": "Specifies the business hours for Monday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -39,6 +41,7 @@
           }
         },
         "tuesday": {
+          "description": "Specifies the business hours for Tuesday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -52,6 +55,7 @@
           }
         },
         "wednesday": {
+          "description": "Specifies the business hours for Wednesday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -65,6 +69,7 @@
           }
         },
         "thursday": {
+          "description": "Specifies the business hours for Thursday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -78,6 +83,7 @@
           }
         },
         "friday": {
+          "description": "Specifies the business hours for Friday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -91,6 +97,7 @@
           }
         },
         "saturday": {
+          "description": "Specifies the business hours for Saturday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
@@ -104,6 +111,7 @@
           }
         },
         "sunday": {
+          "description": "Specifies the business hours for Sunday",
           "type": ["null", "object"],
           "properties": {
             "start_time": {
