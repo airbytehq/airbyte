@@ -265,6 +265,7 @@
       "readOnly": true
     },
     "self": {
+      "description": "The URL of the workflow scheme draft resource",
       "type": "string",
       "readOnly": true
     },

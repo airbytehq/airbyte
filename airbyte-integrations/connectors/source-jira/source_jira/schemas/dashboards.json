@@ -2090,6 +2090,7 @@
       "type": "string"
     },
     "editpermission": {
+      "description": "List of items representing the specific edit permissions assigned for the dashboard.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -2130,6 +2131,7 @@
       "type": ["null", "boolean"]
     },
     "editPermissions": {
+      "description": "Details about the users/groups who have edit permissions for the dashboard.",
       "type": ["null", "array"],
       "items": {
         "description": "List of edit permissions for the dashboard.",

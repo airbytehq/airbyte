@@ -19,6 +19,7 @@
       "type": "string"
     },
     "fields": {
+      "description": "Contains various field values associated with the sprint issue",
       "type": "object",
       "properties": {
         "flagged": {
@@ -42,6 +43,7 @@
           "type": ["null", "object"]
         },
         "comment": {
+          "description": "Comments added to the sprint issue",
           "type": ["null", "array"],
           "items": {
             "description": "Comments added to the issue",
@@ -53,6 +55,7 @@
           "type": ["null", "object"]
         },
         "worklog": {
+          "description": "Work logs related to the sprint issue",
           "type": ["null", "array"],
           "items": {
             "description": "Work logs related to the issue",
@@ -74,6 +77,7 @@
           "type": ["null", "object"]
         },
         "status": {
+          "description": "Status details of the sprint issue",
           "type": ["null", "object"],
           "properties": {
             "description": {
@@ -97,6 +101,7 @@
               "type": ["null", "string"]
             },
             "statusCategory": {
+              "description": "Category of the status of the sprint issue",
               "type": ["null", "object"],
               "properties": {
                 "colorName": {

@@ -556,6 +556,7 @@
       "readOnly": true
     },
     "fieldsToInclude": {
+      "description": "Specify the fields to include in the fetched issues data. Use specific field names or 'all' to include all fields.",
       "type": "object"
     },
     "fields": {

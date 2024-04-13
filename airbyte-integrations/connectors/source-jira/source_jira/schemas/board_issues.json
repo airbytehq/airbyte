@@ -19,6 +19,7 @@
       "type": "string"
     },
     "fields": {
+      "description": "Fields associated with the issues on the board",
       "type": "object",
       "properties": {
         "flagged": {

@@ -66,8 +66,10 @@
       }
     },
     "defaultGroupsDetails": {
+      "description": "Details of default groups assigned to application roles.",
       "type": ["null", "array"],
       "items": {
+        "description": "Information about a specific default group.",
         "type": ["null", "object"],
         "properties": {
           "groupId": {
