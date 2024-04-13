@@ -18,6 +18,7 @@
       "type": ["null", "string"]
     },
     "adlabels": {
+      "description": "Ad labels associated with the ad",
       "type": ["null", "array"],
       "items": {
         "type": "object",
@@ -48,6 +49,7 @@
       "type": ["null", "integer"]
     },
     "bid_info": {
+      "description": "Bid information for the ad",
       "type": ["null", "object"],
       "properties": {
         "CLICKS": {
@@ -77,6 +79,7 @@
       "type": ["null", "string"]
     },
     "creative": {
+      "description": "Details of the creative used in the ad",
       "type": ["null", "object"],
       "properties": {
         "creative_id": {
@@ -120,6 +123,7 @@
       "type": ["null", "string"]
     },
     "recommendations": {
+      "description": "Recommended actions or strategies for the ad",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -156,6 +160,7 @@
       "type": ["null", "string"]
     },
     "tracking_specs": {
+      "description": "Specifications for tracking ad performance",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -346,6 +351,7 @@
       }
     },
     "conversion_specs": {
+      "description": "Specifications for tracking conversions",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],

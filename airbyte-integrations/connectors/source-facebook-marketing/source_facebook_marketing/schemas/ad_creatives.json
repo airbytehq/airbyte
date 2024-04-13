@@ -5,9 +5,11 @@
       "type": ["null", "string"]
     },
     "object_story_id": {
+      "description": "Story ID associated with the object.",
       "type": ["null", "string"]
     },
     "image_url": {
+      "description": "URL of the main image used in the ad creative.",
       "type": ["null", "string"]
     },
     "id": {
@@ -54,6 +56,7 @@
       "type": ["null", "string"]
     },
     "asset_feed_spec": {
+      "description": "Specifies the asset customization rules, call to actions, and groups for the ad creative.",
       "type": ["null", "object"],
       "properties": {
         "ad_formats": {
@@ -82,6 +85,7 @@
           }
         },
         "asset_customization_rules": {
+          "description": "Customization rules for assets within the ad creative.",
           "type": ["null", "array"],
           "items": {
             "description": "Rules for customizing the ad asset.",
@@ -250,6 +254,7 @@
           }
         },
         "call_to_actions": {
+          "description": "Actions prompting the audience to take in response to the ad.",
           "type": ["null", "array"],
           "items": {
             "description": "A collection of call-to-action elements.",
@@ -393,6 +398,7 @@
           }
         },
         "groups": {
+          "description": "Group information related to the asset feed.",
           "type": ["null", "array"],
           "items": {
             "description": "Groups information associated with the ad creative.",
@@ -634,27 +640,35 @@
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title of the ad creative.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or title of the ad creative.",
       "type": ["null", "string"]
     },
     "image_crops": {
+      "description": "Cropped versions of the main image used in the ad creative.",
       "$ref": "ads_image_crops.json"
     },
     "instagram_actor_id": {
+      "description": "Instagram actor ID associated with the ad creative.",
       "type": ["null", "string"]
     },
     "instagram_permalink_url": {
+      "description": "Permalink URL of the ad creative on Instagram.",
       "type": ["null", "string"]
     },
     "instagram_story_id": {
+      "description": "ID of the story on Instagram.",
       "type": ["null", "string"]
     },
     "link_og_id": {
+      "description": "Open Graph ID related to the link.",
       "type": ["null", "string"]
     },
     "object_id": {
+      "description": "ID of the associated object.",
       "type": ["null", "string"]
     },
     "object_story_spec": {
@@ -1338,18 +1352,23 @@
       "type": ["null", "object"]
     },
     "object_type": {
+      "description": "Type of object associated with the ad creative.",
       "type": ["null", "string"]
     },
     "object_url": {
+      "description": "URL of the associated object.",
       "type": ["null", "string"]
     },
     "product_set_id": {
+      "description": "ID of the product set linked to the ad creative.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the ad creative.",
       "type": ["null", "string"]
     },
     "template_url": {
+      "description": "URL of the template used in the ad creative.",
       "type": ["null", "string"]
     },
     "template_url_spec": {
@@ -1448,21 +1467,27 @@
       }
     },
     "thumbnail_data_url": {
+      "description": "URL of the thumbnail data.",
       "type": ["null", "string"]
     },
     "thumbnail_url": {
+      "description": "URL of the thumbnail image.",
       "type": ["null", "string"]
     },
     "image_hash": {
+      "description": "Hash value representing the image used in the ad creative.",
       "type": ["null", "string"]
     },
     "url_tags": {
+      "description": "Tags added to the URL of the ad creative.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "ID of the video used in the ad creative.",
       "type": ["null", "string"]
     },
     "link_url": {
+      "description": "URL associated with the ad creative.",
       "type": ["null", "string"]
     }
   },

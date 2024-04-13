@@ -23,6 +23,7 @@
       "type": ["null", "string"]
     },
     "business": {
+      "description": "Represents information about the business associated with the ad account.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -68,6 +69,7 @@
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Specifies the capabilities of the ad account.",
       "type": ["null", "array"],
       "items": {
         "description": "List of capabilities associated with the ad account.",
@@ -96,6 +98,7 @@
       "type": ["null", "string"]
     },
     "extended_credit_invoice_group": {
+      "description": "Contains details about the extended credit invoice group linked to the ad account.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -115,6 +118,7 @@
           "type": ["null", "string"]
         },
         "emails": {
+          "description": "Emails associated with the extended credit invoice group.",
           "type": ["null", "array"],
           "items": {
             "description": "List of email addresses associated with the extended credit invoice group.",
@@ -128,6 +132,7 @@
       }
     },
     "failed_delivery_checks": {
+      "description": "List of failed delivery checks performed for the ad account.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -156,6 +161,7 @@
       "type": ["null", "number"]
     },
     "funding_source_details": {
+      "description": "Provides information about the funding source linked to the ad account.",
       "type": ["null", "object"],
       "properties": {
         "display_string": {
@@ -245,9 +251,11 @@
       "type": ["null", "number"]
     },
     "rf_spec": {
+      "description": "Specifications related to reach and frequency for the ad account.",
       "type": ["null", "object"],
       "properties": {
         "countries": {
+          "description": "List of countries targeted by the ad account for reach and frequency campaigns.",
           "type": ["null", "array"],
           "items": {
             "description": "List of countries specified in the RF spec.",
@@ -309,6 +317,7 @@
       "type": ["null", "number"]
     },
     "tos_accepted": {
+      "description": "Indicates whether the terms of service have been accepted for the ad account.",
       "type": ["null", "object"],
       "properties": {
         "web_custom_audience_tos": {
@@ -318,6 +327,7 @@
       }
     },
     "user_tasks": {
+      "description": "Tasks assigned to users associated with the ad account.",
       "type": ["null", "array"],
       "items": {
         "description": "List of user tasks associated with the ad account.",
@@ -325,6 +335,7 @@
       }
     },
     "user_tos_accepted": {
+      "description": "Records the acceptance of terms of service by users of the ad account.",
       "type": ["null", "object"],
       "properties": {
         "web_custom_audience_tos": {

@@ -5,6 +5,7 @@
       "type": ["null", "string"]
     },
     "adlabels": {
+      "description": "Labels associated with the ad campaigns.",
       "type": ["null", "array"],
       "items": {
         "type": "object",
@@ -72,6 +73,7 @@
       "type": ["null", "string"]
     },
     "issues_info": {
+      "description": "Information on any issues related to the campaigns.",
       "type": ["null", "array"],
       "items": {
         "type": "object",

@@ -22,6 +22,7 @@
       "type": ["null", "string"]
     },
     "data_source": {
+      "description": "Information about the source of the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "type": {
@@ -39,6 +40,7 @@
       }
     },
     "delivery_status": {
+      "description": "Status of the delivery related to the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
@@ -60,6 +62,7 @@
       "type": ["null", "boolean"]
     },
     "lookalike_audience_ids": {
+      "description": "IDs of lookalike audiences based on this custom audience.",
       "type": ["null", "array"],
       "items": {
         "description": "List of IDs of lookalike audiences based on this custom audience.",
@@ -67,6 +70,7 @@
       }
     },
     "lookalike_spec": {
+      "description": "Specifications for creating lookalike audiences.",
       "type": ["null", "object"],
       "properties": {
         "country": {
@@ -82,6 +86,7 @@
           "type": ["null", "string"]
         },
         "origin": {
+          "description": "Details about the original custom audience for lookalike creation.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -108,6 +113,7 @@
       "type": ["null", "string"]
     },
     "operation_status": {
+      "description": "Status of ongoing operations related to the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
@@ -129,6 +135,7 @@
       "type": ["null", "integer"]
     },
     "permission_for_actions": {
+      "description": "Permissions granted for actions associated with the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "can_edit": {
@@ -170,6 +177,7 @@
       "type": ["null", "string"]
     },
     "sharing_status": {
+      "description": "Status of sharing permissions for the custom audience.",
       "type": ["null", "object"],
       "properties": {
         "code": {
