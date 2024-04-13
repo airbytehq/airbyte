@@ -34,6 +34,50 @@ definitions:
     $parameters:
       path: "assignments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the assignment.
+            type: integer
+            default: 0
+          election:
+            description: The election status of the assignment.
+            type:
+              - "null"
+              - string
+            default:
+          exclude_from_meetings:
+            description: Specifies if the assignment should be excluded from meetings.
+            type: boolean
+            default: false
+          focus:
+            description: The focus of the assignment.
+            type:
+              - "null"
+              - string
+            default: ""
+          links:
+            description: The related links associated with the assignment.
+            type: object
+            default: {}
+            properties:
+              person:
+                description: Link to the person assigned to the role.
+                type:
+                  - "null"
+                  - integer
+                default:
+              role:
+                description: Link to the role assigned as part of the assignment.
+                type:
+                  - "null"
+                  - integer
+                default:
   checklist_items_stream:
     $ref: "#/definitions/base_stream"
     name: "checklist_items"
@@ -41,6 +85,50 @@ definitions:
     $parameters:
       path: "checklist_items"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the checklist item.
+            type: integer
+            default: 0
+          description:
+            description: The description of the checklist item.
+            type: string
+            default: ""
+          frequency:
+            description: The frequency at which the checklist item needs to be completed.
+            type: string
+            default: ""
+          link:
+            description: A link related to the checklist item.
+            type: string
+            default: ""
+          global:
+            description: Indicates if the checklist item is global across all circles.
+            type: boolean
+            default: false
+          links:
+            description: Additional links related to the checklist item.
+            type: object
+            default: {}
+            properties:
+              circle:
+                description: The circle associated with the checklist item.
+                type:
+                  - "null"
+                  - integer
+                default:
+              role:
+                description: The role associated with the checklist item.
+                type:
+                  - "null"
+                  - integer
+                default:
   circles_stream:
     $ref: "#/definitions/base_stream"
     name: "circles"
@@ -48,6 +136,64 @@ definitions:
     $parameters:
       path: "circles"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the circle
+            type: integer
+            default: 0
+          name:
+            description: The name of the circle
+            type: string
+            default: ""
+          short_name:
+            description: The short name or abbreviation of the circle
+            type: string
+            default: ""
+          strategy:
+            description: The strategy or purpose behind the formation of the circle
+            type:
+              - "null"
+              - string
+            default:
+          organization_id:
+            description: The identifier of the organization to which the circle belongs
+            type: integer
+            default: 0
+          links:
+            description: Various links associated with the circle
+            type: object
+            default: {}
+            properties:
+              roles:
+                description: Link to the roles within the circle
+                type: array
+                default: []
+                items:
+                  type: integer
+              policies:
+                description: Link to the policies related to the circle
+                type: array
+                default: []
+                items:
+                  type: integer
+                  default: 0
+              domain:
+                description: Link to the domain associated with the circle
+                type: array
+                default: []
+                items:
+                  type: integer
+                  default: 0
+              supported_role:
+                description: Supporting role within the circle
+                type: integer
+                default: 0
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "custom_fields"
@@ -55,6 +201,36 @@ definitions:
     $parameters:
       path: "custom_fields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the custom field entry.
+            type: integer
+            default: 0
+          field_name:
+            description: The name of the custom field.
+            type: string
+            default: ""
+          field_value:
+            description: The value associated with the custom field.
+            type: string
+            default: ""
+          links:
+            description: Additional links associated with the custom field entry.
+            type: object
+            default: {}
+            properties:
+              role:
+                description: The role associated with the custom field entry.
+                type:
+                  - "null"
+                  - integer
+                default:
   metrics_stream:
     $ref: "#/definitions/base_stream"
     name: "metrics"
@@ -62,6 +238,54 @@ definitions:
     $parameters:
       path: "metrics"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the metric data
+            type: integer
+            default: 0
+          description:
+            description: Description of the metric data
+            type: string
+            default: ""
+          frequency:
+            description:
+              The frequency at which the metric is recorded (e.g., daily,
+              weekly)
+            type: string
+            default: ""
+          link:
+            description: Related link for more information about the metric
+            type: string
+            default: ""
+          global:
+            description:
+              Indicates whether the metric data is global or specific to
+              a particular entity
+            type: boolean
+            default: false
+          links:
+            description: Additional related links
+            type: object
+            default: {}
+            properties:
+              role:
+                description: Link to the role associated with the metric
+                type:
+                  - "null"
+                  - integer
+                default:
+              circle:
+                description: Link to the circle associated with the metric
+                type:
+                  - "null"
+                  - integer
+                default:
   people_stream:
     $ref: "#/definitions/base_stream"
     name: "people"
@@ -69,6 +293,71 @@ definitions:
     $parameters:
       path: "people"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the person.
+            type:
+              - "null"
+              - integer
+          tag_names:
+            description: List of tag names associated with the person.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          name:
+            description: The name of the person.
+            type:
+              - "null"
+              - string
+          settings:
+            description: Settings or preferences of the person.
+            type:
+              - "null"
+              - object
+          email:
+            description: The email address of the person.
+            type:
+              - "null"
+              - string
+          external_id:
+            description: The unique external identifier of the person.
+            type:
+              - "null"
+              - integer
+          links:
+            description: Links related to the person.
+            type:
+              - "null"
+              - object
+            properties:
+              circles:
+                description: List of circles the person is part of.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - integer
+              organization_ids:
+                description: List of organization IDs associated with the person.
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - integer
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
@@ -76,6 +365,104 @@ definitions:
     $parameters:
       path: "projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the project.
+            type: integer
+            default: 0
+          description:
+            description: A brief description of the project.
+            type: string
+            default: ""
+          status:
+            description: The current status of the project.
+            type: string
+            default: ""
+          waiting_on_who:
+            description: Specifies who the project is waiting on.
+            type:
+              - "null"
+              - string
+            default:
+          waiting_on_what:
+            description: Specifies what the project is waiting on.
+            type:
+              - "null"
+              - string
+            default:
+          link:
+            description: A link associated with the project.
+            type:
+              - "null"
+              - string
+            default:
+          value:
+            description: The estimated value or impact of the project.
+            type:
+              - "null"
+              - integer
+            default:
+          effort:
+            description: The effort or resources required for the project.
+            type:
+              - "null"
+              - integer
+            default:
+          roi:
+            description: Return on investment (ROI) for the project.
+            type:
+              - "null"
+              - number
+            default:
+          private_to_circle:
+            description: Indicates if the project is private to the circle.
+            type: boolean
+            default: false
+          created_at:
+            description: The date and time when the project was created.
+            type: string
+            format: date-time
+            default: ""
+          archived_at:
+            description: The date and time when the project was archived.
+            type:
+              - "null"
+              - string
+            format: date-time
+            default:
+          type:
+            description: The type or category of the project.
+            type: string
+            default: ""
+          links:
+            description: Links to other related entities.
+            type: object
+            default: {}
+            properties:
+              role:
+                description: Link to the role associated with the project.
+                type:
+                  - "null"
+                  - integer
+                default:
+              person:
+                description: Link to the person associated with the project.
+                type:
+                  - "null"
+                  - integer
+                default:
+              circle:
+                description: Link to the circle associated with the project.
+                type:
+                  - "null"
+                  - integer
+                default:
   roles_stream:
     $ref: "#/definitions/base_stream"
     name: "roles"
@@ -83,6 +470,95 @@ definitions:
     $parameters:
       path: "roles"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the role
+            type: integer
+            default: 0
+          tag_names:
+            description: List of tags associated with the role
+            type: array
+            default: []
+            items:
+              type: string
+              default: ""
+          name:
+            description: Name of the role
+            type: string
+            default: ""
+          is_core:
+            description: Flag indicating if the role is a core role within the circle
+            type: boolean
+            default: false
+          name_with_circle_for_core_roles:
+            description: Combination of role name and circle name for core roles
+            type: string
+            default: ""
+          purpose:
+            description: Purpose or objective of the role
+            type: string
+            default: ""
+          elected_until:
+            description: Date until the role is elected for
+            type:
+              - "null"
+              - string
+            format: date
+            default:
+          organization_id:
+            description: Unique identifier for the organization
+            type: integer
+            default: 0
+          links:
+            description: Related links for the role
+            type: object
+            default: {}
+            properties:
+              circle:
+                description: Circle to which the role belongs
+                type:
+                  - "null"
+                  - integer
+                default:
+              supporting_circle:
+                description: Supporting circle for the role if applicable
+                type:
+                  - "null"
+                  - integer
+                default:
+              domains:
+                description: List of domains in which the role operates
+                type: array
+                default: []
+                items:
+                  type:
+                    - "null"
+                    - integer
+                  default:
+              accountabilities:
+                description: List of accountabilities associated with the role
+                type: array
+                default: []
+                items:
+                  type:
+                    - "null"
+                    - integer
+                  default:
+              people:
+                description: List of people assigned to the role
+                type: array
+                default: []
+                items:
+                  type:
+                    - "null"
+                    - integer
+                  default:
 streams:
   - "#/definitions/assignments_stream"
   - "#/definitions/checklist_items_stream"
