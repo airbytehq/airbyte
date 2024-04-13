@@ -45,42 +45,405 @@ definitions:
       name: "time_entries"
       primary_key: "id"
       path: "/api/v9/me/time_entries"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          at:
+            description: Timestamp of when the time entry was recorded
+            type: string
+          billable:
+            description: Indicates if the time entry is billable or not
+            type: boolean
+          description:
+            description: Detailed description of the time entry
+            type:
+              - "null"
+              - string
+          duration:
+            description: Duration of the time entry in seconds
+            type: integer
+          duronly:
+            description: Boolean indicating if the time entry is 'duration only'
+            type: boolean
+          id:
+            description: Unique identifier of the time entry
+            type: integer
+          pid:
+            description: Project identifier associated with the time entry
+            type: integer
+          project_id:
+            description: ID of the project associated with the time entry
+            type:
+              - "null"
+              - integer
+          server_deleted_at:
+            description: Timestamp when the time entry was deleted on the server
+            type:
+              - "null"
+              - string
+          start:
+            description: Start time of the time entry
+            type: string
+          stop:
+            description: End time of the time entry
+            type: string
+          tag_ids:
+            description: Array of tag IDs associated with the time entry
+            type:
+              - "null"
+              - array
+          tags:
+            description: Array of tags associated with the time entry
+            type:
+              - "null"
+              - array
+          task_id:
+            description: ID of the task associated with the time entry
+            type:
+              - "null"
+              - integer
+          tid:
+            description: Task identifier associated with the time entry
+            type: integer
+          uid:
+            description: User identifier associated with the time entry
+            type: integer
+          user_id:
+            description: ID of the user who recorded the time entry
+            type: integer
+          wid:
+            description: Workspace identifier associated with the time entry
+            type: integer
+          workspace_id:
+            description: ID of the workspace where the time entry was recorded
+            type: integer
   organizations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "organizations"
       primary_key: "id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          admin:
+            description: The admin user associated with the organization.
+            type: boolean
+          at:
+            description: Indicates the time zone of the organization.
+            type: string
+          created_at:
+            description: The timestamp when the organization was created.
+            type: string
+          id:
+            description: Unique identifier for the organization.
+            type: integer
+          is_chargify:
+            description: Flag indicating if the organization uses Chargify for payment.
+            type: boolean
+          is_multi_workspace_enabled:
+            description:
+              Flag indicating if multiple workspaces are enabled for the
+              organization.
+            type: boolean
+          is_unified:
+            description: Flag indicating if the organization has a unified workspace.
+            type: boolean
+          max_workspaces:
+            description: The maximum number of workspaces allowed for the organization.
+            type: integer
+          name:
+            description: Name of the organization.
+            type: string
+          owner:
+            description: The owner of the organization.
+            type: boolean
+          payment_methods:
+            description: The payment methods associated with the organization.
+            type: string
+          pricing_plan_id:
+            description: Identifier for the pricing plan of the organization.
+            type: integer
+          server_deleted_at:
+            description:
+              Timestamp indicating when the organization was deleted from
+              the server.
+            type:
+              - "null"
+              - string
+          suspended_at:
+            description: Timestamp indicating when the organization was suspended.
+            type:
+              - "null"
+              - string
+          trial_info:
+            description: Information related to the trial period of the organization.
+            type: object
+          user_count:
+            description: Total number of users associated with the organization.
+            type: integer
   organizations_users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "organizations_users"
       primary_key: "id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          admin:
+            description: Indicates if the user has admin privileges within the organization.
+            type: boolean
+          avatar_url:
+            description: URL to the user's avatar image.
+            type: string
+          can_edit_email:
+            description:
+              Boolean flag to determine if the user can edit their email
+              address.
+            type: boolean
+          email:
+            description: Email address of the user.
+            type: string
+          groups:
+            description: List of groups the user belongs to within the organization.
+            type:
+              - "null"
+              - array
+          id:
+            description: Unique identifier for the user.
+            type: integer
+          inactive:
+            description: Boolean flag to indicate if the user is currently inactive.
+            type: boolean
+          invitation_code:
+            description: Code used for inviting the user to the organization.
+            type:
+              - "null"
+              - string
+          joined:
+            description: Date when the user joined the organization.
+            type: boolean
+          name:
+            description: Name of the user.
+            type: string
+          owner:
+            description:
+              Boolean flag to indicate if the user is the owner of the
+              organization.
+            type: boolean
+          user_id:
+            description: ID of the user.
+            type: integer
+          workspaces:
+            description: List of workspaces associated with the user within the organization.
+            type: array
   organizations_groups_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "organizations_groups"
       primary_key: "group_id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}/groups"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          at:
+            description: Timestamp indicating when the group data was last accessed
+            type: string
+          group_id:
+            description: Unique identifier for the organization group
+            type: integer
+          name:
+            description: Name of the organization group
+            type: string
+          users:
+            description: List of users belonging to the organization group
+            type:
+              - "null"
+              - array
+          workspaces:
+            description: List of workspaces associated with the organization group
+            type: array
   workspace_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workspace"
       primary_key: ""
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/statistics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          admins:
+            description: Details about the workspace administrators
+            type: array
+          groups_count:
+            description: The total number of groups within the workspace
+            type: integer
+          members_count:
+            description: The total number of members within the workspace
+            type: integer
   workspace_clients_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workspace_clients"
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/clients"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          archived:
+            description: Indicates if the client is archived or not
+            type: boolean
+          at:
+            description: Timestamp of when the client was last updated
+            type: string
+          id:
+            description: Unique identifier for the client
+            type: integer
+          name:
+            description: Name of the client
+            type: string
+          server_deleted_at:
+            description: Timestamp of when the client was deleted from the server
+            type: string
+          wid:
+            description: Workspaces' ID to which this client belongs to
+            type: integer
   workspace_projects_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workspace_projects"
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/projects"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          active:
+            description: Indicates if the project is currently active
+            type: boolean
+          actual_hours:
+            description: Total actual hours logged for the project
+            type:
+              - "null"
+              - integer
+          at:
+            description: Timestamp of when the project was last updated
+            type: string
+          auto_estimates:
+            description: Flag to indicate if project estimates are automatically calculated
+            type:
+              - "null"
+              - boolean
+          billable:
+            description: Flag to indicate if project hours are billable
+            type:
+              - "null"
+              - boolean
+          cid:
+            description: Client ID associated with the project
+            type:
+              - "null"
+              - integer
+          client_id:
+            description: Client ID associated with the project
+            type:
+              - "null"
+              - integer
+          color:
+            description: Color code associated with the project
+            type: string
+          created_at:
+            description: Timestamp of when the project was created
+            type: string
+          currency:
+            description: Currency used for project rates
+            type:
+              - "null"
+              - string
+          current_period:
+            description: Current billing period for the project
+            type:
+              - "null"
+              - object
+          estimated_hours:
+            description: Total estimated hours for the project
+            type:
+              - "null"
+              - integer
+          first_time_entry:
+            description: Flag indicating if the project has had any time entries logged
+            type: string
+          fixed_fee:
+            description: Fixed fee amount for the project
+            type:
+              - "null"
+              - number
+          id:
+            description: Unique identifier for the project
+            type: integer
+          is_private:
+            description: Flag indicating if the project is private or public
+            type: boolean
+          name:
+            description: Name of the project
+            type: string
+          rate:
+            description: Hourly rate for the project
+            type:
+              - "null"
+              - number
+          rate_last_updated:
+            description: Timestamp of when the project rate was last updated
+            type:
+              - "null"
+              - string
+          recurring:
+            description: Flag indicating if the project is a recurring project
+            type: boolean
+          recurring_parameters:
+            description: Additional parameters for recurring projects
+            type:
+              - "null"
+              - array
+          server_deleted_at:
+            description: Timestamp of when the project was deleted from the server
+            type:
+              - "null"
+              - string
+          template:
+            description:
+              Flag to indicate if the project is a template or a regular
+              project
+            type:
+              - "null"
+              - boolean
+          wid:
+            description: Unique identifier for the workspace
+            type: integer
+          workspace_id:
+            description: ID of the workspace where the project belongs
+            type: integer
   workspace_tasks_stream:
     retriever:
       record_selector:
@@ -95,6 +458,55 @@ definitions:
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/tasks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          active:
+            description: A flag indicating if the task is currently active or not.
+            type: boolean
+          at:
+            description: The timestamp of when the task was last updated.
+            type: string
+          estimated_seconds:
+            description: The estimated duration of the task in seconds.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier of the task.
+            type: integer
+          name:
+            description: The name or title of the task.
+            type: string
+          project_id:
+            description:
+              The unique identifier of the project associated with the
+              task.
+            type: integer
+          recurring:
+            description: A flag indicating if the task is recurring or not.
+            type: boolean
+          server_deleted_at:
+            description: The timestamp of when the task was deleted on the server.
+            type:
+              - "null"
+              - string
+          tracked_seconds:
+            description: The total duration the task has been tracked in seconds.
+            type: integer
+          user_id:
+            description: The unique identifier of the user who owns the task.
+            type:
+              - "null"
+              - integer
+          workspace_id:
+            description:
+              The unique identifier of the workspace to which the task
+              belongs.
+            type: integer
 streams:
   - "#/definitions/time_entries_stream"
   - "#/definitions/organizations_stream"
