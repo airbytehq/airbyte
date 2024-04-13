@@ -70,6 +70,7 @@
       "type": ["null", "string"]
     },
     "web_view_properties": {
+      "description": "Properties related to the web view functionality when a user interacts with the ad.",
       "type": ["null", "object"],
       "properties": {
         "url": {
@@ -99,6 +100,7 @@
       "type": ["null", "string"]
     },
     "ad_to_place_properties": {
+      "description": "Properties related to the ad to be displayed within the Snapchat interface.",
       "type": ["null", "object"],
       "properties": {
         "place_id": {

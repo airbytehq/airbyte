@@ -58,6 +58,7 @@
       "type": ["null", "boolean"]
     },
     "configuration_settings": {
+      "description": "Settings related to organization configurations",
       "type": ["null", "object"],
       "properties": {
         "notifications_enabled": {
