@@ -3,89 +3,115 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the telephony provider edge",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the telephony provider edge",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "The division associated with the telephony provider edge",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the division",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the division details",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional notes or descriptions for the record",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the telephony provider edge",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "The date and time when the record was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The date and time when the record was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "The user who last modified the record",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "The user who created the record",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The current state of the telephony provider edge",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "The application that was used for the last modification",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "The application that was used to create the record",
       "type": ["null", "string"]
     },
     "phoneNumber": {
+      "description": "The phone number associated with the provider edge",
       "type": ["null", "string"]
     },
     "didPool": {
+      "description": "The DID pool associated with the telephony provider edge",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the DID pool",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the DID pool",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the DID pool details",
           "type": ["null", "string"]
         }
       }
     },
     "owner": {
+      "description": "The owner associated with the telephony provider edge",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the owner",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the owner",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the owner details",
           "type": ["null", "string"]
         }
       }
     },
     "ownerType": {
+      "description": "The type of owner for the telephony provider edge",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "The URI to access the telephony provider edge details",
       "type": ["null", "string"]
     }
   }

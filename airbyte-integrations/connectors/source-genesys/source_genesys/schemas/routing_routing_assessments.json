@@ -3,42 +3,53 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the routing assessment",
       "type": ["null", "string"]
     },
     "queues": {
+      "description": "Queues associated with the routing assessment",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier for the queue",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI for accessing more information about the queue",
           "type": ["null", "string"]
         }
       }
     },
     "kpiAssessments": {
+      "description": "Key Performance Indicator (KPI) assessments related to the routing assessment",
       "type": "object",
       "properties": {
         "kpi": {
+          "description": "The Key Performance Indicator (KPI) associated with the assessment",
           "type": ["null", "string"]
         },
         "assessmentResult": {
+          "description": "The result of the KPI assessment",
           "type": ["null", "string"]
         }
       }
     },
     "state": {
+      "description": "The current state of the routing assessment",
       "type": ["null", "string"]
     },
     "dateCreated": {
+      "description": "The date and time when the routing assessment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The date and time when the routing assessment was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "selfUri": {
+      "description": "The URI for accessing the routing assessment itself",
       "type": ["null", "string"]
     }
   }

@@ -3,111 +3,144 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the user.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "User's full name.",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "User's organizational division details.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "Unique identifier for the division.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the division.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "Self URI for the division.",
           "type": ["null", "string"]
         }
       }
     },
     "chat": {
+      "description": "User's chat details or messaging information.",
       "type": "object",
       "properties": {
         "jabberId": {
+          "description": "Unique identifier for user's chat account.",
           "type": ["null", "string"]
         }
       }
     },
     "department": {
+      "description": "User's department within the organization.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "User's email address.",
       "type": ["null", "string"]
     },
     "primaryContactInfo": {
+      "description": "User's primary contact information like email, phone number, etc.",
       "type": "array",
       "properties": {
         "address": {
+          "description": "Primary contact address for the user.",
           "type": ["null", "string"]
         },
         "display": {
+          "description": "Display name associated with the primary contact.",
           "type": ["null", "string"]
         },
         "mediaType": {
+          "description": "Type of media for the primary contact.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "Type of primary contact info (e.g., mobile, landline).",
           "type": ["null", "string"]
         },
         "extension": {
+          "description": "Extension number associated with the primary contact.",
           "type": ["null", "string"]
         },
         "countryCode": {
+          "description": "Country code of the primary contact address.",
           "type": ["null", "string"]
         },
         "integration": {
+          "description": "Integration details related to the primary contact.",
           "type": ["null", "string"]
         }
       }
     },
     "addresses": {
+      "description": "User's addresses information such as home, work, etc.",
       "type": "array",
       "properties": {
         "address": {
+          "description": "User's address.",
           "type": ["null", "string"]
         },
         "display": {
+          "description": "Display name associated with the address.",
           "type": ["null", "string"]
         },
         "mediaType": {
+          "description": "Type of media for the address.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "Type of address (e.g., home, work).",
           "type": ["null", "string"]
         },
         "extension": {
+          "description": "Extension number associated with the address.",
           "type": ["null", "string"]
         },
         "countryCode": {
+          "description": "Country code of the user's address.",
           "type": ["null", "string"]
         },
         "integration": {
+          "description": "Integration details related to the address.",
           "type": ["null", "string"]
         }
       }
     },
     "state": {
+      "description": "State of the user (e.g., active, inactive).",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "User's job title.",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "User's unique username for login.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version number of the user data.",
       "type": ["null", "number"]
     },
     "acdAutoAnswer": {
+      "description": "Indicates whether the user's ACD calls are automatically answered.",
       "type": ["null", "boolean"]
     },
     "dateLastLogin": {
+      "description": "Date and time of the user's last login.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "selfUri": {
+      "description": "URI for accessing the user's resource.",
       "type": ["null", "string"]
     }
   }

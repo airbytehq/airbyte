@@ -3,67 +3,87 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the DID pool.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name or title assigned to the DID pool.",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Information about the division to which the DID pool belongs.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the division.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI for accessing more details about the division.",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Any detailed descriptions or information provided for the DID pool data.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version number of the DID pool entry.",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "The date and time when the DID pool entry was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The date and time when the DID pool entry was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "The user who last modified this DID pool entry.",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "The user who originally created this DID pool entry.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The current state or status of the DID pool.",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "The application through which the DID pool entry was last modified.",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "The application through which the DID pool entry was created.",
       "type": ["null", "string"]
     },
     "startPhoneNumber": {
+      "description": "The starting phone number range of the DID pool.",
       "type": ["null", "string"]
     },
     "endPhoneNumber": {
+      "description": "The ending phone number range of the DID pool.",
       "type": ["null", "string"]
     },
     "comments": {
+      "description": "Any additional comments or notes related to the DID pool data.",
       "type": ["null", "string"]
     },
     "provider": {
+      "description": "Information about the telephony provider associated with the DID pool.",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "The URI for accessing more details about the DID pool.",
       "type": ["null", "string"]
     }
   }

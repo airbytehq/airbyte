@@ -3,89 +3,115 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of this telephony provider edge extension.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of this telephony provider edge extension.",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "Details about the division associated with the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the division associated with this extension.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division associated with this extension.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the division details.",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional information or details about this extension.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of this telephony provider edge extension.",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "The date and time when this extension was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The date and time when this extension was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "The user who last modified this extension.",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "The user who created this telephony provider edge extension.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state of this telephony provider edge extension.",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "The application used by the last modifier when modifying this extension.",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "The application used by the creator when creating this extension.",
       "type": ["null", "string"]
     },
     "number": {
+      "description": "The number associated with this extension.",
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "Owner details of the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the owner (user/account) of this extension.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the owner (user/account) of this extension.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the owner's details.",
           "type": ["null", "string"]
         }
       }
     },
     "extensionPool": {
+      "description": "Information related to the extension pool used by the telephony provider edge extension.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the extension pool this extension belongs to.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the extension pool this extension belongs to.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the extension pool details.",
           "type": ["null", "string"]
         }
       }
     },
     "ownerType": {
+      "description": "The type of the owner (e.g., user or account) of this extension.",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "The URI to access the details of this extension.",
       "type": ["null", "string"]
     }
   }

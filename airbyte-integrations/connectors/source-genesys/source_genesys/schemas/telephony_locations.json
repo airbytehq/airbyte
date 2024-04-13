@@ -3,122 +3,157 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the location.",
       "type": ["string"]
     },
     "name": {
+      "description": "The name of the telephony location.",
       "type": ["null", "string"]
     },
     "contactuser": {
+      "description": "Information about the contact user.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The ID of the contact user.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The URI to access the contact user details.",
           "type": ["null", "string"]
         }
       }
     },
     "emergencyNumber": {
+      "description": "Information about the emergency contact number.",
       "type": "object",
       "properties": {
         "e164": {
+          "description": "The E.164 formatted emergency number.",
           "type": ["null", "string"]
         },
         "number": {
+          "description": "The emergency contact number.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type of emergency number.",
           "type": ["null", "string"]
         }
       }
     },
     "address": {
+      "description": "The physical address information.",
       "type": "object",
       "properties": {
         "city": {
+          "description": "The city of the address.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country code of the address.",
           "type": ["null", "string"]
         },
         "countryName": {
+          "description": "The name of the country.",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "The state or region of the address.",
           "type": ["null", "string"]
         },
         "street1": {
+          "description": "The first line of the street address.",
           "type": ["null", "string"]
         },
         "street2": {
+          "description": "The second line of the street address.",
           "type": ["null", "string"]
         },
         "zipcode": {
+          "description": "The postal code of the address.",
           "type": ["null", "string"]
         }
       }
     },
     "state": {
+      "description": "The current state of the location.",
       "type": ["null", "string"]
     },
     "notes": {
+      "description": "Any additional notes or comments related to the location.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the telephony location data.",
       "type": ["null", "number"]
     },
     "profileImage": {
+      "description": "Information about the profile image.",
       "type": "object",
       "properties": {
         "resolution": {
+          "description": "The resolution of the profile image.",
           "type": ["null", "string"]
         },
         "imageUri": {
+          "description": "The URI to access the profile image.",
           "type": ["null", "string"]
         }
       }
     },
     "floorplanImage": {
+      "description": "Information about the floorplan image.",
       "type": "object",
       "properties": {
         "resolution": {
+          "description": "The resolution of the floorplan image.",
           "type": ["null", "string"]
         },
         "imageUri": {
+          "description": "The URI to access the floorplan image.",
           "type": ["null", "string"]
         }
       }
     },
     "addressVerificationDetails": {
+      "description": "Details about the verification of the address.",
       "type": "object",
       "properties": {
         "status": {
+          "description": "The status of address verification process.",
           "type": ["null", "string"]
         },
         "dateFinished": {
+          "description": "The date and time when address verification was completed.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "dateStarted": {
+          "description": "The date and time when address verification was started.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "service": {
+          "description": "The service used for address verification.",
           "type": ["null", "string"]
         }
       }
     },
     "addressVerified": {
+      "description": "Indicates whether the address is verified or not.",
       "type": ["null", "boolean"]
     },
     "addressStored": {
+      "description": "Indicates whether the address is stored or not.",
       "type": ["null", "boolean"]
     },
     "images": {
+      "description": "Additional images related to the location.",
       "type": ["null", "string"]
     },
     "selfUri": {
+      "description": "The URI to access the telephony location details.",
       "type": ["null", "string"]
     }
   }

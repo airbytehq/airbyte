@@ -3,70 +3,91 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the telephony station.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the telephony station.",
       "type": ["null", "string"]
     },
     "descriptions": {
+      "description": "The description of the telephony station.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the telephony station.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "The user ID associated with the telephony station.",
       "type": ["null", "string"]
     },
     "webRtcUserId": {
+      "description": "The user ID associated with WebRTC on the telephony station.",
       "type": ["null", "string"]
     },
     "primaryEdge": {
+      "description": "The primary edge telephony station used for communication.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the primary edge associated with the telephony station.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the primary edge associated with the telephony station.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The self URI of the primary edge associated with the telephony station.",
           "type": ["null", "string"]
         }
       }
     },
     "secondaryEdge": {
+      "description": "The secondary edge telephony station used for communication.",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The unique identifier of the secondary edge associated with the telephony station.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the secondary edge associated with the telephony station.",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The self URI of the secondary edge associated with the telephony station.",
           "type": ["null", "string"]
         }
       }
     },
     "type": {
+      "description": "The type of the telephony station.",
       "type": ["null", "string"]
     },
     "lineAppearanceId": {
+      "description": "The ID representing the line appearance on the telephony station.",
       "type": ["null", "string"]
     },
     "webRtcMediaDscp": {
+      "description": "The media DSCP (Differentiated Services Code Point) value for WebRTC on the telephony station.",
       "type": ["null", "number"]
     },
     "webRtcPersistentEnabled": {
+      "description": "Flag indicating if WebRTC persistence is enabled on the telephony station.",
       "type": ["null", "boolean"]
     },
     "webRtcForceTurn": {
+      "description": "Flag indicating if force TURN is enabled for WebRTC on the telephony station.",
       "type": ["null", "boolean"]
     },
     "webRtcCallAppearances": {
+      "description": "The call appearances related to WebRTC for the telephony station.",
       "type": ["null", "number"]
     },
     "selfUri": {
+      "description": "The self URI of the telephony station.",
       "type": ["null", "string"]
     }
   }

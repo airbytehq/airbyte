@@ -3,95 +3,123 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The ID of the outbound route",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the outbound route",
       "type": ["null", "string"]
     },
     "division": {
+      "description": "The division information associated with the outbound route",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The ID of the division",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the division",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The self URI of the division",
           "type": ["null", "string"]
         }
       }
     },
     "descriptions": {
+      "description": "Additional descriptions about the outbound route",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the outbound route",
       "type": ["null", "number"]
     },
     "dateCreated": {
+      "description": "The date and time when the outbound route was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateModified": {
+      "description": "The date and time when the outbound route was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "modifiedBy": {
+      "description": "The user who last modified the outbound route",
       "type": ["null", "string"]
     },
     "createdBy": {
+      "description": "The user who created the outbound route",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state of the outbound route",
       "type": ["null", "string"]
     },
     "modifiedByApp": {
+      "description": "The application that was used to last modify the outbound route",
       "type": ["null", "string"]
     },
     "createdByApp": {
+      "description": "The application that was used to create the outbound route",
       "type": ["null", "string"]
     },
     "classificationTypes": {
+      "description": "The classification types associated with the outbound route",
       "type": ["array"]
     },
     "enabled": {
+      "description": "Indicates whether the outbound route is enabled or not",
       "type": ["null", "boolean"]
     },
     "distribution": {
+      "description": "The distribution associated with the outbound route",
       "type": ["null", "string"]
     },
     "externalTrunkBases": {
+      "description": "The external trunk bases associated with the outbound route",
       "type": "array",
       "properties": {
         "id": {
+          "description": "The ID of the external trunk base",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the external trunk base",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The self URI of the external trunk base",
           "type": ["null", "string"]
         }
       }
     },
     "site": {
+      "description": "The site information associated with the outbound route",
       "type": "object",
       "properties": {
         "id": {
+          "description": "The ID of the site",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the site",
           "type": ["null", "string"]
         },
         "selfUri": {
+          "description": "The self URI of the site",
           "type": ["null", "string"]
         }
       }
     },
     "managed": {
+      "description": "Indicates whether the outbound route is managed or not",
       "type": ["null", "boolean"]
     },
     "selfUri": {
+      "description": "The self URI of the outbound route",
       "type": ["null", "string"]
     }
   }
