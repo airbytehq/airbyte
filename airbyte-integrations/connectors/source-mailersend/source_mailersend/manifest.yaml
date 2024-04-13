@@ -60,6 +60,103 @@ definitions:
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the activity
+            type:
+              - string
+          created_at:
+            description: The timestamp when the activity was created
+            type:
+              - string
+            format: date-time
+          updated_at:
+            description: The timestamp when the activity was last updated
+            type:
+              - string
+            format: date-time
+          type:
+            description: The type of activity (e.g., email sent, email opened)
+            type:
+              - string
+          email:
+            description: Represents email related information
+            type:
+              - object
+            properties:
+              id:
+                description: The unique identifier of the email
+                type:
+                  - string
+              from:
+                description: The sender's email address
+                type:
+                  - string
+              subject:
+                description: The subject of the email
+                type:
+                  - string
+              text:
+                description: The plain text content of the email
+                type:
+                  - "null"
+                  - string
+              html:
+                description: The HTML content of the email
+                type:
+                  - "null"
+                  - string
+              status:
+                description: The status of the email delivery
+                type:
+                  - string
+              tags:
+                description: Tags associated with the email
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The timestamp when the email was created
+                type:
+                  - string
+                format: date-time
+              updated_at:
+                description: The timestamp when the email was last updated
+                type:
+                  - string
+                format: date-time
+              recipient:
+                description: Represents the recipient of the email
+                type:
+                  - object
+                properties:
+                  id:
+                    description: The unique identifier of the recipient email
+                    type:
+                      - string
+                  email:
+                    description: The recipient's email address
+                    type:
+                      - string
+                  created_at:
+                    description: The timestamp when the recipient email was created
+                    type:
+                      - string
+                    format: date-time
+                  updated_at:
+                    description: The timestamp when the recipient email was last updated
+                    type:
+                      - string
+                    format: date-time
+                  deleted_at:
+                    description: The timestamp when the recipient email was deleted
+                    type:
+                      - string
 streams:
   - "#/definitions/activity_stream"
 
