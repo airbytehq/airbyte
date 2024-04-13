@@ -44,6 +44,41 @@ definitions:
       extractorPath: "users"
       path: "users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the user.
+            type:
+              - string
+          name:
+            description: The name of the user.
+            type:
+              - "null"
+              - string
+          email:
+            description: The email address of the user.
+            type:
+              - string
+            format: email
+          activated:
+            description: Flag indicating if the user account is activated or not.
+            type:
+              - "null"
+              - boolean
+          default_mailbox_id:
+            description: The default mailbox identifier associated with the user.
+            type:
+              - "null"
+              - string
+          salesforce_id:
+            description: The Salesforce identifier associated with the user.
+            type:
+              - "null"
+              - string
   leads_stream:
     $ref: "#/definitions/base_stream"
     name: "leads"
@@ -52,6 +87,131 @@ definitions:
       extractorPath: "leads"
       path: "leads"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+          bounced:
+            type:
+              - "null"
+              - boolean
+          owner_id:
+            type:
+              - string
+          creator_id:
+            type:
+              - "null"
+              - string
+          optedout:
+            type:
+              - "null"
+              - boolean
+          sent_count:
+            type:
+              - "null"
+              - integer
+          replied_count:
+            type:
+              - "null"
+              - integer
+          last_sent_at:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          data:
+            company_name:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+              format: email
+            first_name:
+              type:
+                - "null"
+                - string
+            last_name:
+              type:
+                - "null"
+                - string
+            address:
+              type:
+                - "null"
+                - string
+            city:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - string
+            phone:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            industry:
+              type:
+                - "null"
+                - string
+            snippet:
+              type:
+                - "null"
+                - string
+            snippet1:
+              type:
+                - "null"
+                - string
+            snippet2:
+              type:
+                - "null"
+                - string
+            snippet3:
+              type:
+                - "null"
+                - string
+            snippet4:
+              type:
+                - "null"
+                - string
+            twitch_name:
+              type:
+                - "null"
+                - string
+            linkedin:
+              type:
+                - "null"
+                - string
+            twitter:
+              type:
+                - "null"
+                - string
+            facebook:
+              type:
+                - "null"
+                - string
+            salesforce_id:
+              type:
+                - "null"
+                - string
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     name: "campaigns"
@@ -60,6 +220,83 @@ definitions:
       extractorPath: "campaigns"
       path: "campaigns"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique ID of the campaign
+            type:
+              - string
+          name:
+            description: Name of the campaign
+            type:
+              - "null"
+              - string
+          creator:
+            description: Details of the campaign creator
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique ID of the campaign creator
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the campaign creator
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email of the campaign creator
+                type:
+                  - "null"
+                  - string
+          stats:
+            description: Statistics related to the campaign progress
+            type:
+              - "null"
+              - object
+            properties:
+              prospects_contacted:
+                description: Number of prospects contacted
+                type:
+                  - "null"
+                  - integer
+              prospects_reached:
+                description: Number of prospects reached
+                type:
+                  - "null"
+                  - integer
+              prospects_opened:
+                description: Number of prospects who opened the campaign
+                type:
+                  - "null"
+                  - integer
+              prospects_replied:
+                description: Number of prospects who replied
+                type:
+                  - "null"
+                  - integer
+              prospects_bounced:
+                description: Number of prospects bounced
+                type:
+                  - "null"
+                  - integer
+              prospects_optedout:
+                description: Number of prospects who opted out
+                type:
+                  - "null"
+                  - integer
+              total_contacted:
+                description: Total number of prospects contacted
+                type:
+                  - "null"
+                  - integer
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/leads_stream"
