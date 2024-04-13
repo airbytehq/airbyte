@@ -32,7 +32,61 @@ definitions:
     $parameters:
       name: "stock_api"
       primary_key: "t"
-      path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
+      path:
+        "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier']
+        }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date']
+        }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{
+        config['apiKey'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          v:
+            description: Volume of stocks traded at a specific time
+            type:
+              - "null"
+              - number
+          vw:
+            description: Volume-weighted average price of the stock
+            type:
+              - "null"
+              - number
+          otc:
+            description: Time when the stock transaction occurred
+            type:
+              - "null"
+              - boolean
+          o:
+            description: Opening price of the stock at a particular time
+            type:
+              - "null"
+              - number
+          c:
+            description: Closing price of the stock at a specific time
+            type:
+              - "null"
+              - number
+          h:
+            description: Highest price the stock reached during a given period
+            type:
+              - "null"
+              - number
+          l:
+            description: Lowest price the stock dropped to within a certain timeframe
+            type:
+              - "null"
+              - number
+          t:
+            description: Type of stock (common stock, preferred stock, etc.)
+            type:
+              - "null"
+              - integer
+          n:
+            description: Name of the stock or company
+            type:
+              - "null"
+              - number
 streams:
   - "#/definitions/stock_api_stream"
 
