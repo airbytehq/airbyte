@@ -49,16 +49,9 @@ definitions:
     record_selector:
       $ref: "#/definitions/user_field_selector"
 
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_instatus/schemas/{{ parameters['name'] }}.json"
-
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-
   status_pages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -66,6 +59,180 @@ definitions:
       primary_key: "id"
       path: "v2/pages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Identifier for the status page.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the status page.
+            type:
+              - "null"
+              - string
+          subdomain:
+            description: Subdomain configured for accessing the status page.
+            type:
+              - "null"
+              - string
+          logoUrl:
+            description: URL of the logo used for the status page.
+            type:
+              - "null"
+              - string
+          faviconUrl:
+            description: URL of the favicon for the status page.
+            type:
+              - "null"
+              - string
+          websiteUrl:
+            description: URL of the website linked to the status page.
+            type:
+              - "null"
+              - string
+          customDomain:
+            description: Custom domain name configured for the status page.
+            type:
+              - "null"
+              - string
+          publicEmail:
+            description: Public email address for contacting support or feedback.
+            type:
+              - "null"
+              - string
+          twitter:
+            description: Twitter handle associated with the status page.
+            type:
+              - "null"
+              - string
+          status:
+            description: Current operational status of the status page.
+            type:
+              - "null"
+              - string
+          subscribeBySms:
+            description: Option to subscribe for status updates via SMS.
+            type:
+              - "null"
+              - boolean
+          language:
+            description: Primary language used for the status page content.
+            type:
+              - "null"
+              - string
+          useLargeHeader:
+            description: Option to use a larger header design for the status page.
+            type:
+              - "null"
+              - boolean
+          brandColor:
+            description: The primary brand color used for the status page.
+            type:
+              - "null"
+              - string
+          okColor:
+            description: Color denoting components that are functioning normally.
+            type:
+              - "null"
+              - string
+          disruptedColor:
+            description: Color used for components with disrupted service.
+            type:
+              - "null"
+              - string
+          degradedColor:
+            description: Color used for components with degraded performance.
+            type:
+              - "null"
+              - string
+          downColor:
+            description: Color used for components that are down or offline.
+            type:
+              - "null"
+              - string
+          noticeColor:
+            description: Color used for notices or informational messages.
+            type:
+              - "null"
+              - string
+          unknownColor:
+            description: Color used for components with unknown or undetermined status.
+            type:
+              - "null"
+              - string
+          googleAnalytics:
+            description: Google Analytics tracking code for the status page.
+            type:
+              - "null"
+              - string
+          smsService:
+            description: SMS service provider integrated for status notifications.
+            type:
+              - "null"
+              - string
+          htmlInMeta:
+            description: HTML meta tags and data for the status page.
+            type:
+              - "null"
+              - string
+          htmlAboveHeader:
+            description: HTML content placed above the header section.
+            type:
+              - "null"
+              - string
+          htmlBelowHeader:
+            description: HTML content placed below the header section.
+            type:
+              - "null"
+              - string
+          htmlAboveFooter:
+            description: HTML content placed above the footer section.
+            type:
+              - "null"
+              - string
+          htmlBelowFooter:
+            description: HTML content placed below the footer section.
+            type:
+              - "null"
+              - string
+          htmlBelowSummary:
+            description: HTML content placed below the status summary.
+            type:
+              - "null"
+              - string
+          cssGlobal:
+            description: Global CSS styles applied to the status page.
+            type:
+              - "null"
+              - string
+          onboarded:
+            description: Flag indicating if the status page is onboarded or set up.
+            type:
+              - "null"
+              - boolean
+          launchDate:
+            description: The date and time when the status page was launched.
+            type:
+              - "null"
+              - string
+            format: date-time
+          createdAt:
+            description: The date and time when the status page was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            description: The date and time when the status page data was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
   user_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,6 +240,37 @@ definitions:
       primary_key: "id"
       path: "v1/user"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user.
+            type:
+              - "null"
+              - string
+          email:
+            description: User's email address.
+            type:
+              - "null"
+              - string
+          name:
+            description: User's full name.
+            type:
+              - "null"
+              - string
+          slug:
+            description: User's unique identifier in a URL-friendly format.
+            type:
+              - "null"
+              - string
+          avatar:
+            description: User's avatar image URL.
+            type:
+              - "null"
+              - string
   page_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -93,6 +291,238 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: ID of the page component
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the page component
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the page component
+            type:
+              - "null"
+              - string
+          uniqueEmail:
+            description: Unique email associated with the page component
+            type:
+              - "null"
+              - string
+          description:
+            description:
+              Contains general information about the fetched page components
+              data.
+            type:
+              - "null"
+              - string
+          showUptime:
+            description: Indicates if uptime is to be shown for the page component
+            type:
+              - "null"
+              - boolean
+          order:
+            description: Order of the page component
+            type:
+              - "null"
+              - integer
+          group:
+            description: Details related to the group of components.
+            type:
+              - "null"
+              - object
+            properties:
+              closed:
+                description: Indicates if the group is closed
+                type:
+                  - "null"
+                  - boolean
+              createdAt:
+                description: Timestamp of when the group was created
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              description:
+                description: Description of the group
+                type:
+                  - "null"
+                  - string
+              descriptionHtml:
+                description: HTML formatted description of the group
+                type:
+                  - "null"
+                  - string
+              descriptionTranslationId:
+                description: Translation ID of the description
+                type:
+                  - "null"
+                  - string
+              id:
+                description: ID of the group
+                type:
+                  - "null"
+                  - string
+              importedFromStatuspage:
+                description: Indicates if the group was imported from a Statuspage
+                type:
+                  - "null"
+                  - boolean
+              name:
+                description: Name of the group
+                type:
+                  - "null"
+                  - string
+              nameHtml:
+                description: HTML formatted name of the group
+                type:
+                  - "null"
+                  - string
+              nameHtmlTranslationId:
+                description: Translation ID of the name
+                type:
+                  - "null"
+                  - string
+              order:
+                description: Order of the group
+                type:
+                  - "null"
+                  - integer
+              showUptime:
+                description: Indicates if uptime is to be shown for the group
+                type:
+                  - "null"
+                  - boolean
+              siteId:
+                description: ID of the site the group belongs to
+                type:
+                  - "null"
+                  - string
+              titled:
+                description: Indicates if the group is titled
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                description: Timestamp of when the group was last updated
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              translations:
+                description: Translations for the group information.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    description: Name translations
+                    type:
+                      - "null"
+                      - string
+                  description:
+                    description: Description translations
+                    type:
+                      - "null"
+                      - string
+          incidents:
+            description: List of incidents related to the page components.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: ID of the incident
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the incident
+                  type:
+                    - "null"
+                    - string
+                started:
+                  description: Timestamp of when the incident started
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                status:
+                  description: Status of the incident
+                  type:
+                    - "null"
+                    - string
+                components:
+                  description: List of components related to the incident.
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      id:
+                        description: ID of the component
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        description: Name of the component
+                        type:
+                          - "null"
+                          - string
+                      status:
+                        description: Status of the component
+                        type:
+                          - "null"
+                          - string
+                      showUptime:
+                        description: Indicates if uptime is to be shown for the component
+                        type:
+                          - "null"
+                          - boolean
+          updates:
+            description: Any updates or changes made to the page components.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the update
+                type:
+                  - "null"
+                  - string
+              message:
+                description: Message of the update
+                type:
+                  - "null"
+                  - string
+              messageHtml:
+                description: HTML formatted message of the update
+                type:
+                  - "null"
+                  - string
+              status:
+                description: Status of the update
+                type:
+                  - "null"
+                  - string
+              started:
+                description: Timestamp of when the update started
+                type:
+                  - "null"
+                  - string
+                format: date-time
   incidents_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -111,6 +541,172 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the incident.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the incident.
+            type:
+              - "null"
+              - string
+          started:
+            description: Timestamp when the incident was started.
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            description: Current status of the incident.
+            type:
+              - "null"
+              - string
+          resolved:
+            description: Timestamp when the incident was resolved.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updates_ids:
+            description: List of IDs referencing the updates associated with the incident.
+            type:
+              - "null"
+              - array
+          updates:
+            description: List of updates related to incidents
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the update.
+                  type:
+                    - "null"
+                    - string
+                message:
+                  description: Text message describing the update.
+                  type:
+                    - "null"
+                    - string
+                messageHtml:
+                  description: HTML formatted message describing the update.
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: Status of the update.
+                  type:
+                    - "null"
+                    - string
+                notify:
+                  description:
+                    Flag indicating if notifications should be sent for
+                    the update.
+                  type:
+                    - "null"
+                    - boolean
+                started:
+                  description: Timestamp when the update started.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                ended:
+                  description: Timestamp when the update ended.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                duration:
+                  description: Duration of the update.
+                  type:
+                    - "null"
+                    - integer
+                createdAt:
+                  description: Timestamp when the update was created.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          components:
+            description: List of components related to incidents
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the component.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the component.
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: Status of the component.
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  description:
+                    Flag indicating if the uptime status should be displayed
+                    for the component.
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  description: The site where the incident occurred
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier for the site.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the site.
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      description: Subdomain of the site.
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      description: Color associated with the site.
+                      type:
+                        - "null"
+                        - boolean
+                    logoUrl:
+                      description: URL of the logo for the site.
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      description: Public email address associated with the site.
+                      type:
+                        - "null"
+                        - string
   incident_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
@@ -127,10 +723,162 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/api_error_handler_requester"
-        path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
+        path:
+          "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id
+          }}/incident-updates/{{ stream_slice.incident_update_id }}"
       partition_router:
         $ref: "#/definitions/incident_updates_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the incident update
+            type:
+              - "null"
+              - string
+          message:
+            description: Text description of the incident update
+            type:
+              - "null"
+              - string
+          messageHtml:
+            description: HTML formatted description of the incident update
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the incident update
+            type:
+              - "null"
+              - string
+          notify:
+            description: Flag indicating whether to send notification
+            type:
+              - "null"
+              - boolean
+          started:
+            description: Timestamp when the incident update was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          incident:
+            description:
+              Represents an incident containing related information and
+              updates
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the incident
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the incident
+                type:
+                  - "null"
+                  - string
+              started:
+                description: Timestamp when the incident started
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              status:
+                description: Status of the incident
+                type:
+                  - "null"
+                  - string
+              components:
+                description: The components affected by the incident
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier for the component
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the component
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      description: Status of the component
+                      type:
+                        - "null"
+                        - string
+                    showUptime:
+                      description: Flag indicating whether uptime should be shown
+                      type:
+                        - "null"
+                        - boolean
+                    site:
+                      description: Information about the site related to the incident
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        subdomain:
+                          description: Subdomain of the site
+                          type:
+                            - "null"
+                            - string
+                        logoUrl:
+                          description: URL of the site's logo
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          description: Name of the site
+                          type:
+                            - "null"
+                            - string
+                        slackIntegrations:
+                          description: List of Slack integrations related to the site
+                          type:
+                            - "null"
+                            - array
+                        subscribers:
+                          description: A list of subscribers related to the site
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              name:
+                                description: Name of the subscriber
+                                type:
+                                  - "null"
+                                  - string
+                    subscribers:
+                      description: A list of subscribers related to the incident component
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          name:
+                            description: Name of the subscriber
+                            type:
+                              - "null"
+                              - object
   maintenances_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -149,6 +897,192 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the maintenance.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the maintenance.
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the maintenance.
+            type:
+              - "null"
+              - string
+          start:
+            description: The starting time of the maintenance.
+            type:
+              - "null"
+              - string
+            format: date-time
+          duration:
+            description: The duration of the maintenance.
+            type:
+              - "null"
+              - integer
+          notifyStart:
+            description: Flag to notify at the start of the maintenance.
+            type:
+              - "null"
+              - boolean
+          notifyEnd:
+            description: Flag to notify at the end of the maintenance.
+            type:
+              - "null"
+              - boolean
+          notifyEarly:
+            description: Flag to notify early about the maintenance.
+            type:
+              - "null"
+              - boolean
+          notifyMinutes:
+            description: The number of minutes to notify before the maintenance.
+            type:
+              - "null"
+              - integer
+          autoStart:
+            description: The automatic starting time for the maintenance.
+            type:
+              - "null"
+              - boolean
+          autoEnd:
+            description: The automatic ending time for the maintenance.
+            type:
+              - "null"
+              - boolean
+          updates:
+            description: List of maintenance updates.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the update.
+                  type:
+                    - "null"
+                    - string
+                message:
+                  description: The message of the update.
+                  type:
+                    - "null"
+                    - string
+                messageHtml:
+                  description: The HTML-formatted message of the update.
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: The status of the update.
+                  type:
+                    - "null"
+                    - string
+                notify:
+                  description: Flag to notify about the update.
+                  type:
+                    - "null"
+                    - boolean
+                started:
+                  description: The starting time of the update.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                ended:
+                  description: The ending time of the update.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                duration:
+                  description: The duration of the update.
+                  type:
+                    - "null"
+                    - integer
+                createdAt:
+                  description: The creation time of the update.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          components:
+            description: List of components related to the maintenance updates.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the component.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the component.
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: The status of the component.
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  description: Flag to show component uptime status.
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  description: Details of the site where the maintenance is scheduled.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the site.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: The name of the site.
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      description: The subdomain of the site.
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      description: The color representing the site.
+                      type:
+                        - "null"
+                        - boolean
+                    logoUrl:
+                      description: The URL of the site's logo.
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      description: The public email address of the site.
+                      type:
+                        - "null"
+                        - string
   maintenance_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
@@ -165,10 +1099,149 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/api_error_handler_requester"
-        path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
+        path:
+          "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id
+          }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
       partition_router:
         $ref: "#/definitions/maintenance_updates_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the maintenance update.
+            type:
+              - "null"
+              - string
+          message:
+            description: Message associated with the maintenance update.
+            type:
+              - "null"
+              - string
+          messageHtml:
+            description: HTML formatted message associated with the maintenance update.
+            type:
+              - "null"
+              - string
+          notify:
+            description:
+              Flag indicating if users are notified about the maintenance
+              update.
+            type:
+              - "null"
+              - boolean
+          started:
+            description: Date and time when the maintenance update started.
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            description: Overall status of the maintenance update.
+            type:
+              - "null"
+              - string
+          maintenance:
+            description: Contains information about ongoing maintenance updates.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the maintenance event.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the maintenance update.
+                type:
+                  - "null"
+                  - string
+              start:
+                description: Start date and time of the maintenance event.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              status:
+                description: Status of the maintenance event.
+                type:
+                  - "null"
+                  - string
+              components:
+                description: Contains a list of components under maintenance.
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Details about a specific component being maintained.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier for the component.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the component.
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      description: Status of the component.
+                      type:
+                        - "null"
+                        - string
+                    showUptime:
+                      description:
+                        Flag indicating if uptime is to be displayed for
+                        the component.
+                      type:
+                        - "null"
+                        - boolean
+                    site:
+                      description:
+                        Details about the site where the component is being
+                        maintained.
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          description: Unique identifier for the site.
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          description: Name of the site.
+                          type:
+                            - "null"
+                            - string
+                        subdomain:
+                          description: Subdomain for the site.
+                          type:
+                            - "null"
+                            - string
+                        color:
+                          description: Color associated with the site.
+                          type:
+                            - "null"
+                            - string
+                        logoUrl:
+                          description: URL for the site's logo.
+                          type:
+                            - "null"
+                            - string
+                        publicEmail:
+                          description: Public email address associated with the site.
+                          type:
+                            - "null"
+                            - string
   templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -182,6 +1255,169 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the template
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the template
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the template
+            type:
+              - "null"
+              - string
+          nameTranslationId:
+            description: Translation identifier for the template name
+            type:
+              - "null"
+              - string
+          message:
+            description: Text message associated with the template
+            type:
+              - "null"
+              - string
+          messageTranslationId:
+            description: Translation identifier for the text message
+            type:
+              - "null"
+              - string
+          messageHtml:
+            description: HTML formatted message associated with the template
+            type:
+              - "null"
+              - string
+          messageHtmlTranslationId:
+            description: Translation identifier for the HTML formatted message
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the template
+            type:
+              - "null"
+              - string
+          notify:
+            description:
+              Flag indicating whether notifications are enabled for the
+              template
+            type:
+              - "null"
+              - boolean
+          createdAt:
+            description: Date and time when the template was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          siteId:
+            description: Unique identifier for the site associated with the template
+            type:
+              - "null"
+              - string
+          importedFromStatuspage:
+            description: Indicates whether the template was imported from a statuspage
+            type:
+              - "null"
+              - boolean
+          deletedAt:
+            description: Date and time when the template was deleted
+            type:
+              - "null"
+              - string
+            format: date-time
+          components:
+            description: List of components belonging to the template
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the component
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the component
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: Status of the component
+                  type:
+                    - "null"
+                    - string
+                showUptime:
+                  description:
+                    Flag indicating whether uptime is to be shown for the
+                    component
+                  type:
+                    - "null"
+                    - boolean
+                site:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier for the site
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the site
+                      type:
+                        - "null"
+                        - string
+                    subdomain:
+                      description: Subdomain of the site
+                      type:
+                        - "null"
+                        - string
+                    color:
+                      description: Color associated with the site
+                      type:
+                        - "null"
+                        - string
+                    logoUrl:
+                      description: URL of the logo for the site
+                      type:
+                        - "null"
+                        - string
+                    publicEmail:
+                      description: Public email address of the site
+                      type:
+                        - "null"
+                        - string
+          translations:
+            description: Translations for message and name
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Translated name of the template
+                type:
+                  - "null"
+                  - string
+              message:
+                description: Translated text message
+                type:
+                  - "null"
+                  - string
   team_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -195,6 +1431,32 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the team member.
+            type:
+              - "null"
+              - string
+          name:
+            description: Full name of the team member.
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the team member.
+            type:
+              - "null"
+              - string
+          avatar:
+            description: URL to the team member's avatar image.
+            type:
+              - "null"
+              - string
   subscribers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -208,6 +1470,109 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the subscriber
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the subscriber
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number of the subscriber
+            type:
+              - "null"
+              - string
+          webhook:
+            description: URL for webhook notifications
+            type:
+              - "null"
+              - string
+          webhookEmail:
+            description: Email address for webhook notifications
+            type:
+              - "null"
+              - string
+          confirmed:
+            description: Flag indicating if the subscriber is confirmed
+            type:
+              - "null"
+              - boolean
+          all:
+            description: Total number of subscribers
+            type:
+              - "null"
+              - boolean
+          components:
+            description: Details of individual components
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the component
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the component
+                type:
+                  - "null"
+                  - string
+              status:
+                description: Current status of the component
+                type:
+                  - "null"
+                  - string
+              showUptime:
+                description: Flag indicating whether uptime is to be shown
+                type:
+                  - "null"
+                  - boolean
+              site:
+                description: Details of the site associated with the component
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: Unique identifier for the site
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    description: Name of the site
+                    type:
+                      - "null"
+                      - string
+                  subdomain:
+                    description: Subdomain of the site's URL
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    description: Color theme of the site
+                    type:
+                      - "null"
+                      - boolean
+                  logoUrl:
+                    description: URL of the site's logo
+                    type:
+                      - "null"
+                      - boolean
+                  publicEmail:
+                    description: Publicly visible email address of the site
+                    type:
+                      - "null"
+                      - boolean
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -221,6 +1586,62 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the metric data.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the metric data.
+            type:
+              - "null"
+              - string
+          active:
+            description: true if the metrics data is currently active, false otherwise.
+            type:
+              - "null"
+              - boolean
+          order:
+            description: The order in which the metric data is displayed or processed.
+            type:
+              - "null"
+              - integer
+          suffix:
+            description:
+              Any additional suffix or unit attached to the metric data
+              values.
+            type:
+              - "null"
+              - string
+          data:
+            description: The main data object that contains the metrics information.
+            type:
+              - "null"
+              - array
+            items:
+              description: An array of items containing individual metric data sets.
+              type:
+                - "null"
+                - object
+              properties:
+                properties:
+                  description: The properties of each individual metric data set.
+                  timestamp:
+                    description: The timestamp of the metric data point.
+                    type:
+                      - "null"
+                      - integer
+                  value:
+                    description: The value of the metric data at the specific timestamp.
+                    type:
+                      - "null"
+                      - number
   page_url_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -240,6 +1661,103 @@ definitions:
       partition_router:
         $ref: "#/definitions/page_url_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          page:
+            description: Details of the status page itself
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the status page
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL to access the status page
+                type:
+                  - "null"
+                  - string
+              status:
+                description: Current status of the status page
+                type:
+                  - "null"
+                  - string
+          activeIncidents:
+            description: List of currently active incidents
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: Name or title of the incident
+                  type:
+                    - "null"
+                    - string
+                started:
+                  description: Timestamp when the incident started
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: Current status of the incident
+                  type:
+                    - "null"
+                    - string
+                impact:
+                  description: Severity of the incident
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: URL for more details about the incident
+                  type:
+                    - "null"
+                    - string
+          activeMaintenances:
+            description: List of ongoing maintenance activities
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                name:
+                  description: Name or description of the maintenance activity
+                  type:
+                    - "null"
+                    - string
+                start:
+                  description: Timestamp when the maintenance started
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: Current status of the maintenance
+                  type:
+                    - "null"
+                    - string
+                duration:
+                  description: Expected duration of the maintenance
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: URL for more details about the maintenance
+                  type:
+                    - "null"
+                    - string
 streams:
   - "#/definitions/status_pages_stream"
   - "#/definitions/page_components_stream"
