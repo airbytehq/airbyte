@@ -28,8 +28,118 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "fonts"
-      path: "/webfonts?key={{ config['api_key'] }}&sort={{ config['sort'] or 'SORT_UNDEFINED'}}&prettyPrint={{ config['prettyPrint'] or 'true'}}&alt={{ config['alt'] or 'json'}}"
+      path:
+        "/webfonts?key={{ config['api_key'] }}&sort={{ config['sort'] or 'SORT_UNDEFINED'}}&prettyPrint={{
+        config['prettyPrint'] or 'true'}}&alt={{ config['alt'] or 'json'}}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        definitions: {}
+        $schema: http://json-schema.org/draft-07/schema#
+        $id: https://example.com/object1666796406.json
+        title: Root
+        type: object
+        properties:
+          kind:
+            description: The API resource kind, always set to 'webfonts#webfontList'
+            $id: "#root/kind"
+            title: Kind
+            type: string
+            default: ""
+            pattern: ^.*$
+          items:
+            description: List of fonts available in the API
+            $id: "#root/items"
+            title: Items
+            type: array
+            default: []
+            items:
+              $id: "#root/items/items"
+              title: Items
+              type: object
+              properties:
+                family:
+                  description: The name of the font family (e.g. 'Roboto', 'Open Sans')
+                  $id: "#root/items/items/family"
+                  title: Family
+                  type: string
+                  default: ""
+                  pattern: ^.*$
+                variants:
+                  description: Different styles and weights available for the font
+                  $id: "#root/items/items/variants"
+                  title: Variants
+                  type: array
+                  default: []
+                  items:
+                    $id: "#root/items/items/variants/items"
+                    title: Items
+                    type: string
+                    default: ""
+                    pattern: ^.*$
+                subsets:
+                  description: List of language subsets supported by the font
+                  $id: "#root/items/items/subsets"
+                  title: Subsets
+                  type: array
+                  default: []
+                  items:
+                    $id: "#root/items/items/subsets/items"
+                    title: Items
+                    type: string
+                    default: ""
+                    pattern: ^.*$
+                version:
+                  description: Version of the font data
+                  $id: "#root/items/items/version"
+                  title: Version
+                  type: string
+                  default: ""
+                  pattern: ^.*$
+                lastModified:
+                  description: Timestamp of the last modification date of the font
+                  $id: "#root/items/items/lastModified"
+                  title: Lastmodified
+                  type: string
+                  default: ""
+                  pattern: ^.*$
+                files:
+                  description: Different file variants available for the font
+                  $id: "#root/items/items/files"
+                  title: Files
+                  type: object
+                  properties:
+                    regular:
+                      description: URL to the regular font file
+                      $id: "#root/items/items/files/regular"
+                      title: Regular
+                      type: string
+                      default: ""
+                      pattern: ^.*$
+                    italic:
+                      description: URL to the italic font file
+                      $id: "#root/items/items/files/italic"
+                      title: Italic
+                      type: string
+                      default: ""
+                      pattern: ^.*$
+                category:
+                  description:
+                    The category the font belongs to (e.g. 'sans-serif',
+                    'serif')
+                  $id: "#root/items/items/category"
+                  title: Category
+                  type: string
+                  default: ""
+                  pattern: ^.*$
+                kind:
+                  description: The resource kind, should always be 'webfonts#webfont'
+                  $id: "#root/items/items/kind"
+                  title: Kind
+                  type: string
+                  default: ""
+                  pattern: ^.*$
 streams:
   - "#/definitions/fonts_stream"
 
