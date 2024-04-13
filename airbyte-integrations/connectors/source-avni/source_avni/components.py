@@ -7,7 +7,6 @@ import requests
 @dataclass
 class CustomAuthenticator(BasicHttpAuthenticator):
 
-
     @property
     def token(self) -> str:
 
@@ -28,9 +27,9 @@ class CustomAuthenticator(BasicHttpAuthenticator):
         return "auth-token"
 
     def get_client_id(self):
-    
-        url_client = "https://app.avniproject.org/idp-details"
-        response = requests.get(url_client)
+
+        url_client = self.config["url_base"] + "/idp-details"
+        response = requests.get(url_client, timeout=30)
         response.raise_for_status()
         client = response.json()
         return client["cognito"]["clientId"]
