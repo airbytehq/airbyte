@@ -43,5 +43,6 @@ This source requires no setup.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.1 | 2024-04-12 | [37235](https://github.com/airbytehq/airbyte/pull/37235) | schema descriptions |
 | 0.2.0 | 2023-06-15 | [29391](https://github.com/airbytehq/airbyte/pull/29391) |  Migrated to Low Code |
 | 0.1.0 | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) |  Initial Release      |

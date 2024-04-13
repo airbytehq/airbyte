@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-zenefits
   githubIssueLabel: source-zenefits
   icon: icon.svg

@@ -82,6 +82,7 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------|
+| 0.1.5 | 2024-04-12 | [37299](https://github.com/airbytehq/airbyte/pull/37299) | schema descriptions |
 | 0.1.4   | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth                        |         
 | 0.1.3   | 2022-09-30 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic                     |         
 | 0.1.2   | 2022-09-29 | [17399](https://github.com/airbytehq/airbyte/pull/17399) | Fixed `403` error while `check connection`     |

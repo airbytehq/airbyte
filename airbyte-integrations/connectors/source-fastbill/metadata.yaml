@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-fastbill
   githubIssueLabel: source-fastbill
   icon: fastbill.svg

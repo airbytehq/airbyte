@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-mailjet-sms
   githubIssueLabel: source-mailjet-sms
   icon: mailjetsms.svg

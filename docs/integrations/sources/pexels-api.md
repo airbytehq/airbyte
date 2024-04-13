@@ -73,4 +73,5 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.1 | 2024-04-12 | [37222](https://github.com/airbytehq/airbyte/pull/37222) | schema descriptions |
 | 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854) | Initial commit |

@@ -74,6 +74,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 0.1.14 | 2024-04-12 | [36625](https://github.com/airbytehq/airbyte/pull/36625) | schema descriptions |
 | 0.1.13  | 2024-03-04 | [35783](https://github.com/airbytehq/airbyte/pull/35783) | Change order of authentication methods in spec                              |
 | 0.1.12  | 2024-02-12 | [35156](https://github.com/airbytehq/airbyte/pull/35156) | Manage dependencies with Poetry.                                            |
 | 0.1.11  | 2024-01-12 | [34204](https://github.com/airbytehq/airbyte/pull/34204) | Prepare for airbyte-lib                                                     |

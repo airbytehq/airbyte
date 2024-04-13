@@ -47,6 +47,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.4.3 | 2024-04-12 | [36659](https://github.com/airbytehq/airbyte/pull/36659) | schema descriptions |
 | 0.4.2   | 2024-03-25 | [36448](https://github.com/airbytehq/airbyte/pull/36448) | Unpin CDK version                                                       |
 | 0.4.1   | 2024-02-12 | [35145](https://github.com/airbytehq/airbyte/pull/35145) | Manage dependencies with Poetry                                         |
 | 0.4.0   | 2024-01-05 | [32957](https://github.com/airbytehq/airbyte/pull/32957) | Added undeclared fields to schema and migrated to base image            |

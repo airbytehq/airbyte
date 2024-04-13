@@ -56,4 +56,5 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date | Pull Request | Subject                                    |
 | :------ |:-----|:-------------| :----------------------------------------- |
+| 0.1.1 | 2024-04-12 | [37232](https://github.com/airbytehq/airbyte/pull/37232) | schema descriptions |
 | 0.1.0   | 2022-11-09  | 18220  | 🎉 New Source: Postmarkapp API [low-code CDK] |

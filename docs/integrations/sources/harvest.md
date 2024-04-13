@@ -88,6 +88,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 0.1.25 | 2024-04-12 | [36641](https://github.com/airbytehq/airbyte/pull/36641) | schema descriptions |
 | 0.1.24  | 2024-02-26 | [35541](https://github.com/airbytehq/airbyte/pull/35541) | Improve check command to avoid missing alerts                                      |
 | 0.1.23  | 2024-02-19 | [35305](https://github.com/airbytehq/airbyte/pull/35305) | Fix pendulum parsing error                                                         |
 | 0.1.22  | 2024-02-12 | [35154](https://github.com/airbytehq/airbyte/pull/35154) | Manage dependencies with Poetry.                                                   |

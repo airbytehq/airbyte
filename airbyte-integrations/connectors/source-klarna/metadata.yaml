@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 60c24725-00ae-490c-991d-55b78c3197e0
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-klarna
   githubIssueLabel: source-klarna
   icon: klarna.svg

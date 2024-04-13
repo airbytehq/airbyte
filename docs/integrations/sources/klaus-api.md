@@ -31,4 +31,5 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ |:-----------| :------------------------------------------------------- |:-------------------------------|
+| 0.1.1 | 2024-04-12 | [37183](https://github.com/airbytehq/airbyte/pull/37183) | schema descriptions |
 | 0.1.0   | 2023-05-04 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Klaus API Source Connector |

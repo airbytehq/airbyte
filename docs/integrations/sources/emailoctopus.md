@@ -24,4 +24,5 @@ No documented strict rate limit.
 
 | Version | Date       | Pull Request | Subject                                                    |
 |:--------|:-----------| :----------- |:-----------------------------------------------------------|
+| 0.1.1 | 2024-04-12 | [37154](https://github.com/airbytehq/airbyte/pull/37154) | schema descriptions |
 | 0.1.0   | 2022-10-29 | [18647](https://github.com/airbytehq/airbyte/pull/18647) | Initial commit |

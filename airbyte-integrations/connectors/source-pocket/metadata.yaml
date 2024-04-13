@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-pocket
   githubIssueLabel: source-pocket
   icon: pocket.svg

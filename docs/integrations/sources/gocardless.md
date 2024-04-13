@@ -32,4 +32,5 @@ This source is capable of syncing the following streams:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2024-04-12 | [37168](https://github.com/airbytehq/airbyte/pull/37168) | schema descriptions |
 | 0.1.0 | 2022-10-19 | [17792](https://github.com/airbytehq/airbyte/pull/17792) | Initial release supporting the GoCardless |

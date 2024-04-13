@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-smartengage
   githubIssueLabel: source-smartengage
   icon: smartengage.svg

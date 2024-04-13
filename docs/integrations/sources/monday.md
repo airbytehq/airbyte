@@ -74,6 +74,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 2.0.5 | 2024-04-12 | [36652](https://github.com/airbytehq/airbyte/pull/36652) | schema descriptions |
 | 2.0.4   | 2024-02-28 | [35696](https://github.com/airbytehq/airbyte/pull/35696)  | Fix extraction for `null` value in stream `Activity logs`               |
 | 2.0.3   | 2024-02-21 | [35506](https://github.com/airbytehq/airbyte/pull/35506)  | Support for column values of the mirror type for the `Items` stream.    |
 | 2.0.2   | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146)  | Manage dependencies with Poetry.                                        |

@@ -79,4 +79,5 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.1 | 2024-04-12 | [37249](https://github.com/airbytehq/airbyte/pull/37249) | schema descriptions |
 | 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |

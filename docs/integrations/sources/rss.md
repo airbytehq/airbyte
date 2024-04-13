@@ -34,4 +34,5 @@ None
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2024-04-12 | [37252](https://github.com/airbytehq/airbyte/pull/37252) | schema descriptions |
 | 0.1.0 | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
