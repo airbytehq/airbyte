@@ -53,6 +53,7 @@
       "type": ["null", "boolean"]
     },
     "folder": {
+      "description": "Details about the folder associated with the program",
       "type": ["object", "null"],
       "properties": {
         "type": {
