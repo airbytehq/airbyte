@@ -39,7 +39,79 @@ definitions:
       name: "forms"
       primary_key: "id"
       path: "/forms"
-  # API Docs: https://developers.convertkit.com/#sequences
+    # API Docs: https://developers.convertkit.com/#sequences
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the form.
+            type: integer
+          uid:
+            description: Unique identifier for the user who created the form.
+            type:
+              - string
+              - "null"
+          name:
+            description: Name or title of the form.
+            type:
+              - string
+              - "null"
+          created_at:
+            description: Timestamp for when the form was created.
+            type:
+              - string
+              - "null"
+          archived:
+            description: Flag indicating if the form is archived or not.
+            type:
+              - boolean
+              - "null"
+          type:
+            description: Type of the form (e.g., inline, modal, slide-in).
+            type:
+              - string
+              - "null"
+          url:
+            description: URL of the form.
+            type:
+              - string
+              - "null"
+          embed_js:
+            description: Javascript code for embedding the form on a webpage.
+            type:
+              - string
+              - "null"
+          embed_url:
+            description: URL to the embeddable form.
+            type:
+              - string
+              - "null"
+          title:
+            description: Title of the form, usually displayed prominently.
+            type:
+              - string
+              - "null"
+          description:
+            description:
+              Description of the form, providing more details about its
+              purpose.
+            type:
+              - string
+              - "null"
+          sign_up_button_text:
+            description: Text displayed on the sign-up button for the form.
+            type:
+              - string
+              - "null"
+          success_message:
+            description: Message shown to users upon successful form submission.
+            type:
+              - string
+              - "null"
+        required:
+          - id
   sequences_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -51,7 +123,39 @@ definitions:
       name: "sequences"
       primary_key: "id"
       path: "/sequences"
-  # API Docs: https://developers.convertkit.com/#tags
+    # API Docs: https://developers.convertkit.com/#tags
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the sequence
+            type: integer
+          name:
+            description: The name of the sequence
+            type:
+              - string
+              - "null"
+          hold:
+            description:
+              Boolean flag indicating whether the sequence is on hold or
+              active
+            type:
+              - boolean
+              - "null"
+          repeat:
+            description: Boolean flag indicating whether the sequence is set to repeat
+            type:
+              - boolean
+              - "null"
+          created_at:
+            description: The date and time when the sequence was created
+            type:
+              - string
+              - "null"
+        required:
+          - id
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -62,20 +166,103 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/increment_paginator"
-  # API Docs: https://developers.convertkit.com/#subscribers
+    # API Docs: https://developers.convertkit.com/#subscribers
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the tag.
+            type: integer
+          name:
+            description: The name of the tag.
+            type:
+              - string
+              - "null"
+          created_at:
+            description: The date and time when the tag was created.
+            type:
+              - string
+              - "null"
+        required:
+          - id
   subscribers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
-  # API Docs: https://developers.convertkit.com/#broadcasts
+    # API Docs: https://developers.convertkit.com/#broadcasts
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the subscriber
+            type: integer
+          first_name:
+            description: The first name of the subscriber
+            type:
+              - string
+              - "null"
+          email_address:
+            description: The email address of the subscriber
+            type:
+              - string
+              - "null"
+          state:
+            description:
+              The current state of the subscriber (e.g., active, unsubscribed,
+              etc.)
+            type:
+              - string
+              - "null"
+          created_at:
+            description: The date and time when the subscriber was added to the list
+            type:
+              - string
+              - "null"
+          fields:
+            description: A collection of subscriber fields.
+            type:
+              - object
+              - "null"
+            properties:
+              last_name:
+                description: The last name of the subscriber
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
   broadcasts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "broadcasts"
       primary_key: "id"
       path: "/broadcasts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the broadcast
+            type: integer
+          created_at:
+            description: The timestamp when the broadcast was created
+            type:
+              - string
+              - "null"
+          subject:
+            description: The subject line of the broadcast
+            type:
+              - string
+              - "null"
+        required:
+          - id
 streams:
   - "#/definitions/forms_stream"
   - "#/definitions/sequences_stream"
