@@ -4,6 +4,7 @@
   "additionalProperties": false,
   "properties": {
     "_id": {
+      "description": "Unique identifier for the customer",
       "type": "integer"
     },
     "ReadOnly": {

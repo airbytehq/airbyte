@@ -4,28 +4,35 @@
   "additionalProperties": false,
   "properties": {
     "_id": {
+      "description": "Unique identifier for the order.",
       "type": "integer"
     },
     "_cursor": {
+      "description": "Cursor for pagination.",
       "type": "string",
       "format": "date-time"
     },
     "ReadOnly": {
+      "description": "Flag indicating if the order is read-only.",
       "$ref": "order/models/order_read_only.json"
     },
     "OrderItems": {
+      "description": "List of items included in the order.",
       "type": "array",
       "items": {
         "$ref": "order/models/order_item.json"
       }
     },
     "ReferenceNum": {
+      "description": "Reference number associated with the order.",
       "type": "string"
     },
     "Description": {
+      "description": "Description of the order.",
       "type": "string"
     },
     "PoNum": {
+      "description": "Purchase order number.",
       "type": "string"
     },
     "ExternalId": {
@@ -33,50 +40,65 @@
       "type": "string"
     },
     "EarliestShipDate": {
+      "description": "Earliest date and time the order can be shipped.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ShipCancelDate": {
+      "description": "Date and time the shipment can be canceled.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Notes": {
+      "description": "Any additional notes related to the order.",
       "type": "string"
     },
     "NumUnits1": {
+      "description": "Number of units of the first type.",
       "type": ["null", "number"]
     },
     "Unit1Identifier": {
+      "description": "Identifier for unit type 1.",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "NumUnits2": {
+      "description": "Number of units of the second type.",
       "type": ["null", "number"]
     },
     "Unit2Identifier": {
+      "description": "Identifier for unit type 2.",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "TotalWeight": {
+      "description": "Total weight of the order.",
       "type": ["null", "number"]
     },
     "TotalVolume": {
+      "description": "Total volume of the order.",
       "type": ["null", "number"]
     },
     "BillingCode": {
+      "description": "Billing code associated with the order.",
       "type": "string"
     },
     "AsnNumber": {
+      "description": "Advance Shipment Notice number.",
       "type": "string"
     },
     "UpsServiceOptionCharge": {
+      "description": "Charge associated with UPS service options.",
       "type": ["null", "number"]
     },
     "UpsTransportationCharge": {
+      "description": "Charge for UPS transportation services.",
       "type": ["null", "number"]
     },
     "AddFreightToCod": {
+      "description": "Whether additional freight charges should be added to Cash on Delivery.",
       "type": "boolean"
     },
     "UpsIsResidential": {
+      "description": "Flag indicating if the UPS delivery address is residential.",
       "type": "boolean"
     },
     "ExportChannelIdentifier": {
@@ -84,22 +106,28 @@
       "$ref": "generic/models/channel_identifier.json"
     },
     "RoutePickupDate": {
+      "description": "Date and time for route pickup.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ShippingNotes": {
+      "description": "Additional notes related to shipping.",
       "type": "string"
     },
     "MasterBillOfLadingId": {
+      "description": "ID of the master bill of lading.",
       "type": "string"
     },
     "InvoiceNumber": {
+      "description": "Invoice number related to the order.",
       "type": "string"
     },
     "FulfillInvInfo": {
+      "description": "Fulfillment invoice information.",
       "$ref": "order/models/fulfill_inv_info.json"
     },
     "RoutingInfo": {
+      "description": "Routing information for the order.",
       "$ref": "order/models/routing_info.json"
     },
     "Billing": {
@@ -119,12 +147,14 @@
       "$ref": "generic/models/order_contact_info.json"
     },
     "SavedElements": {
+      "description": "Saved elements related to the order.",
       "type": "array",
       "items": {
         "$ref": "generic/models/saved_element.json"
       }
     },
     "ParcelOption": {
+      "description": "Option chosen for parcel delivery.",
       "$ref": "order/models/parcel_option.json"
     }
   }

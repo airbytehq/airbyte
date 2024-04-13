@@ -4,31 +4,40 @@
   "additionalProperties": false,
   "properties": {
     "_id": {
+      "description": "Unique identifier for the stock item",
       "type": "integer"
     },
     "_cursor": {
+      "description": "Cursor for pagination in the API response",
       "type": "string",
       "format": "date-time"
     },
     "ReceiveItemId": {
+      "description": "Identifier for the received item",
       "type": "integer"
     },
     "ItemIdentifier": {
+      "description": "Identifier for the stock item",
       "$ref": "generic/models/item_identifier.json"
     },
     "Description": {
+      "description": "Main description of the stock item",
       "type": "string"
     },
     "Description2": {
+      "description": "Secondary description of the stock item",
       "type": "string"
     },
     "Upc": {
+      "description": "UPC (Universal Product Code) of the stock item",
       "type": "string"
     },
     "Qualifier": {
+      "description": "Qualifier for the stock item",
       "type": "string"
     },
     "Received": {
+      "description": "Quantity of the stock item that has been received",
       "type": "number"
     },
     "Available": {
@@ -44,9 +53,11 @@
       "type": "boolean"
     },
     "OnHand": {
+      "description": "Quantity of the stock item currently on hand",
       "type": "number"
     },
     "SecondaryReceived": {
+      "description": "Quantity of the stock item received in secondary units",
       "type": ["null", "number"]
     },
     "SecondaryAvailable": {
@@ -54,62 +65,81 @@
       "type": ["null", "number"]
     },
     "LotNumber": {
+      "description": "Lot number associated with the stock item",
       "type": "string"
     },
     "SerialNumber": {
+      "description": "Serial number associated with the stock item",
       "type": "string"
     },
     "ExpirationDate": {
+      "description": "Date and time when the stock item expires",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Cost": {
+      "description": "Cost of the stock item",
       "type": ["null", "number"]
     },
     "SupplierIdentifier": {
+      "description": "Identifier for the supplier of the stock item",
       "$ref": "generic/models/contact_identifier.json"
     },
     "LocationIdentifier": {
+      "description": "Identifier for the location of the stock item",
       "$ref": "generic/models/location_identifier.json"
     },
     "PalletIdentifier": {
+      "description": "Identifier for the pallet holding the stock item",
       "$ref": "generic/models/pallet_identifier.json"
     },
     "InventoryUnitOfMeasureIdentifier": {
+      "description": "Identifier for the unit of measure for inventory",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "SecondaryUnitOfMeasureIdentifier": {
+      "description": "Identifier for the secondary unit of measure",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "InventoryUnitsPerSecondaryUnit": {
+      "description": "Number of inventory units per secondary unit",
       "type": ["null", "number"]
     },
     "ReceiverId": {
+      "description": "Identifier for the receiver of the stock item",
       "type": "integer"
     },
     "ReceivedDate": {
+      "description": "Date and time when the stock item was received",
       "type": "string",
       "format": "date-ime"
     },
     "ReferenceNum": {
+      "description": "Reference number associated with the stock item",
       "type": "string"
     },
     "PoNum": {
+      "description": "Purchase order number associated with the stock item",
       "type": "string"
     },
     "TrailerNumber": {
+      "description": "Trailer number associated with the stock item",
       "type": "string"
     },
     "SavedElements": {
+      "description": "Saved additional elements related to the stock item",
       "type": "array",
       "items": {
+        "description": "Additional item related to the stock item",
         "$ref": "generic/models/saved_element.json"
       }
     },
     "WeightImperial": {
+      "description": "Weight of the stock item in imperial units",
       "type": ["null", "number"]
     },
     "WeightMetric": {
+      "description": "Weight of the stock item in metric units",
       "type": ["null", "number"]
     }
   }

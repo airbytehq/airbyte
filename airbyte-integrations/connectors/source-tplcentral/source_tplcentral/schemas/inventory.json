@@ -4,32 +4,41 @@
   "additionalProperties": false,
   "properties": {
     "_id": {
+      "description": "Unique identifier of the inventory record",
       "type": "integer"
     },
     "_cursor": {
+      "description": "Cursor for pagination in the API response",
       "type": "string",
       "format": "date-time"
     },
     "ReceiverId": {
+      "description": "Identifier of the receiver who accepted the inventory",
       "type": "integer"
     },
     "ReceivedDate": {
+      "description": "Date when the inventory was received",
       "type": "string",
       "format": "date-time"
     },
     "ReceiveItemId": {
+      "description": "Identifier associated with the receiving of the inventory item",
       "type": "integer"
     },
     "CustomerIdentifier": {
+      "description": "Identifier of the customer associated with the inventory",
       "$ref": "generic/models/customer_identifier.json"
     },
     "FacilityIdentifier": {
+      "description": "Identifier of the facility storing the inventory",
       "$ref": "generic/models/facility_identifier.json"
     },
     "ItemIdentifier": {
+      "description": "Identifier of the inventory item",
       "$ref": "generic/models/item_identifier.json"
     },
     "ItemDescription": {
+      "description": "Description of the inventory item",
       "type": "string"
     },
     "Description2": {
@@ -37,119 +46,156 @@
       "type": "string"
     },
     "Upc": {
+      "description": "Universal Product Code of the inventory item",
       "type": "string"
     },
     "Qualifier": {
+      "description": "Qualifier for the inventory item",
       "type": "string"
     },
     "InventoryUnitOfMeasureIdentifier": {
+      "description": "Identifier of the unit of measure used for inventory",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "SecondaryUnitOfMeasureIdentifier": {
+      "description": "Identifier of the secondary unit of measure used for inventory",
       "$ref": "generic/models/unit_of_measure_identifier.json"
     },
     "InventoryUnitsPerSecondaryUnit": {
+      "description": "Number of inventory units per secondary unit",
       "type": ["null", "number"]
     },
     "ReceivedQty": {
+      "description": "Quantity of inventory received",
       "type": "number"
     },
     "OnHandQty": {
+      "description": "Total quantity of inventory on hand",
       "type": "number"
     },
     "AvailableQty": {
+      "description": "Quantity of inventory available for sale or use",
       "type": "number"
     },
     "OnHoldQty": {
+      "description": "Quantity of inventory currently on hold",
       "type": "number"
     },
     "SecondaryReceivedQty": {
+      "description": "Quantity of inventory received in secondary units",
       "type": ["null", "number"]
     },
     "SecondaryOnHandQty": {
+      "description": "Total quantity of inventory on hand in secondary units",
       "type": ["null", "number"]
     },
     "SecondaryAvailableQty": {
+      "description": "Quantity of inventory available in secondary units",
       "type": ["null", "number"]
     },
     "SecondaryOnHoldQty": {
+      "description": "Quantity of inventory currently on hold in secondary units",
       "type": ["null", "number"]
     },
     "WeightImperial": {
+      "description": "Weight of the inventory item in imperial units",
       "type": ["null", "number"]
     },
     "WeightImperialOnHand": {
+      "description": "Weight of inventory on hand in imperial units",
       "type": ["null", "number"]
     },
     "WeightImperialAvailable": {
+      "description": "Weight of available inventory in imperial units",
       "type": ["null", "number"]
     },
     "WeightMetric": {
+      "description": "Weight of the inventory item in metric units",
       "type": ["null", "number"]
     },
     "WeightMetricOnHand": {
+      "description": "Weight of inventory on hand in metric units",
       "type": ["null", "number"]
     },
     "WeightMetricAvailable": {
+      "description": "Weight of available inventory in metric units",
       "type": ["null", "number"]
     },
     "SavedElements": {
+      "description": "Saved elements related to the inventory item",
       "type": "array",
       "items": {
         "$ref": "generic/models/saved_element.json"
       }
     },
     "LotNumber": {
+      "description": "Lot number associated with the inventory item",
       "type": "string"
     },
     "SerialNumber": {
+      "description": "Serial number associated with the inventory item",
       "type": "string"
     },
     "ExpirationDate": {
+      "description": "Date when the inventory item expires",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Cost": {
+      "description": "Cost per unit of the inventory item",
       "type": ["null", "number"]
     },
     "SupplierIdentifier": {
+      "description": "Identifier of the supplier providing the inventory",
       "$ref": "generic/models/contact_identifier.json"
     },
     "LocationIdentifier": {
+      "description": "Identifier of the location within the facility where the inventory is stored",
       "$ref": "generic/models/location_identifier.json"
     },
     "PalletIdentifier": {
+      "description": "Identifier of the pallet where the inventory is stored",
       "$ref": "generic/models/pallet_identifier.json"
     },
     "OnHold": {
+      "description": "Indicator if inventory is currently on hold",
       "type": "boolean"
     },
     "OnHoldReason": {
+      "description": "Reason for placing the inventory on hold",
       "type": "string"
     },
     "OnHoldDate": {
+      "description": "Date when the inventory was put on hold",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "OnHoldUserIdentifier": {
+      "description": "Identifier of the user who placed the inventory on hold",
       "$ref": "generic/models/user_identifier.json"
     },
     "Quarantined": {
+      "description": "Indicator if inventory is currently quarantined",
       "type": "boolean"
     },
     "RowVersion": {
+      "description": "Version number of the inventory item",
       "type": "string"
     },
     "StockRowVersion": {
+      "description": "Version number of the stock related to the inventory item",
       "type": "string"
     },
     "ReferenceNum": {
+      "description": "Reference number associated with the inventory item",
       "type": "string"
     },
     "PoNum": {
+      "description": "Purchase order number associated with the inventory",
       "type": "string"
     },
     "TrailerNumber": {
+      "description": "Number of the trailer used for transporting the inventory",
       "type": "string"
     }
   }
