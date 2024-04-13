@@ -3,30 +3,38 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the attachment entity.",
       "type": "integer"
     },
     "attachment_id": {
+      "description": "The unique identifier for the attachment.",
       "type": ["null", "integer"]
     },
     "team_template": {
+      "description": "Details of the team template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "The unique identifier for the team template.",
           "type": ["null", "string"]
         },
         "_href": {
+          "description": "The URL reference for the team template.",
           "type": ["null", "string"]
         }
       }
     },
     "name": {
+      "description": "The name of the attachment.",
       "type": ["null", "string"]
     },
     "download_url": {
+      "description": "The URL for downloading the attachment file.",
       "type": ["null", "string"]
     },
     "attachment_file_size": {
+      "description": "The size of the attachment file in bytes.",
       "type": ["null", "integer"]
     }
   }

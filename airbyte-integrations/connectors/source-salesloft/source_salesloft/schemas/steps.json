@@ -3,54 +3,69 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the step",
       "type": "integer"
     },
     "created_at": {
+      "description": "Timestamp indicating the date and time when the step was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp indicating the date and time when the step was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "disabled": {
+      "description": "Flag indicating if the step is disabled or not",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "Type or category of the step",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or title of the step",
       "type": ["null", "string"]
     },
     "display_name": {
+      "description": "Name displayed for the step",
       "type": ["null", "string"]
     },
     "day": {
+      "description": "Day of the week for the step",
       "type": ["null", "integer"]
     },
     "step_number": {
+      "description": "Sequential number assigned to the step within the cadence",
       "type": ["null", "integer"]
     },
     "details": {
+      "description": "Additional details or information related to the step",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the additional details",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to additional details",
           "type": ["null", "string"]
         }
       }
     },
     "cadence": {
+      "description": "Information about the sales cadence associated with the step",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the sales cadence",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink reference to the sales cadence",
           "type": ["null", "string"]
         }
       }

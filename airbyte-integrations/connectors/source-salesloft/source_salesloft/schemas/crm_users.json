@@ -3,27 +3,34 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the CRM user.",
       "type": "integer"
     },
     "crm_id": {
+      "description": "The unique identifier for the CRM user in the system.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the CRM user was created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the CRM user was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "user": {
+      "description": "Details of the user associated with the CRM account.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "The unique identifier for the user associated with the CRM account.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "The URL link to access more details of the user.",
           "type": ["null", "string"]
         }
       }

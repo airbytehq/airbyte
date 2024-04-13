@@ -4,22 +4,28 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the custom field",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or label of the custom field",
       "type": ["null", "string"]
     },
     "field_type": {
+      "description": "The type of field (e.g., text, number, dropdown, etc.)",
       "type": ["null", "string"]
     },
     "value_type": {
+      "description": "The type of value the custom field accepts (e.g., string, integer, boolean, etc.)",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the custom field was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the custom field was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

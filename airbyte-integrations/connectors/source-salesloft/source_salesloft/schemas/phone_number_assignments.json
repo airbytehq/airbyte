@@ -3,19 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the phone number assignment.",
       "type": "integer"
     },
     "number": {
+      "description": "The phone number assigned.",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "The user associated with this phone number assignment.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "ID of the user.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user information.",
           "type": ["null", "string"]
         }
       }

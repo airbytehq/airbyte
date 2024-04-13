@@ -3,51 +3,64 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the note",
       "type": "integer"
     },
     "content": {
+      "description": "The content of the note entered by the user",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the note was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the note was last updated",
       "type": "string",
       "format": "date-time"
     },
     "user": {
+      "description": "The user who created the note",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the user",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink to the user",
           "type": ["null", "string"]
         }
       }
     },
     "associated_with": {
+      "description": "The object associated with this note, such as a contact or account.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the associated object",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink to the associated object",
           "type": ["null", "string"]
         }
       }
     },
     "call": {
+      "description": "The call associated with this note, if applicable.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the associated call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Hyperlink to the associated call",
           "type": ["null", "string"]
         }
       }

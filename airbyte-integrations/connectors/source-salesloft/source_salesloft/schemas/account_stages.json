@@ -3,20 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the account stage.",
       "type": "integer"
     },
     "name": {
+      "description": "The name of the account stage.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the account stage was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the account stage was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "order": {
+      "description": "The display order of the account stage.",
       "type": ["null", "integer"]
     }
   }

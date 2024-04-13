@@ -4,17 +4,21 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the call disposition",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the call disposition was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the call disposition was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name or label assigned to the call disposition",
       "type": ["null", "string"]
     }
   }

@@ -4,84 +4,107 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the call data record.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the call record was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp indicating when the call record was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "to": {
+      "description": "Phone number or contact that received the call.",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "Phone number or contact from which the call originated.",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "Duration of the call in seconds.",
       "type": ["null", "integer"]
     },
     "direction": {
+      "description": "Direction of the call (e.g., incoming, outgoing).",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the call (e.g., completed, missed).",
       "type": ["null", "string"]
     },
     "call_type": {
+      "description": "Type of the call (e.g., inbound, outbound).",
       "type": ["null", "string"]
     },
     "call_uuid": {
+      "description": "Unique identifier for the call.",
       "type": ["null", "string"]
     },
     "recording": {
+      "description": "Information related to the call recording.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "url": {
+          "description": "URL to access the call recording.",
           "type": ["null", "string"]
         },
         "status": {
+          "description": "Status of the recording (e.g., available, unavailable).",
           "type": ["null", "string"]
         },
         "recording_status": {
+          "description": "Status of the call recording (e.g., recording started, recording finished).",
           "type": ["null", "string"]
         }
       }
     },
     "call": {
+      "description": "Information related to the call.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the call.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the call details.",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "Information related to the user who made/received the call.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user details.",
           "type": ["null", "string"]
         }
       }
     },
     "called_person": {
+      "description": "Information about the person who was called.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the called person.",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the called person's details.",
           "type": ["null", "string"]
         }
       }

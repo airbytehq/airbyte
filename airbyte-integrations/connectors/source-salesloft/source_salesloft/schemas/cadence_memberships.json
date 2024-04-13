@@ -3,97 +3,123 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique ID of the membership",
       "type": "integer"
     },
     "added_at": {
+      "description": "The date and time when the membership was added",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the membership was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the membership was last updated",
       "type": "string",
       "format": "date-time"
     },
     "person_deleted": {
+      "description": "Indicates if the associated person has been deleted",
       "type": ["null", "boolean"]
     },
     "currently_on_cadence": {
+      "description": "Indicates if the person is currently on the cadence",
       "type": ["null", "boolean"]
     },
     "current_state": {
+      "description": "Current state of the membership",
       "type": ["null", "string"]
     },
     "cadence": {
+      "description": "Details about the cadence associated with the membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the cadence details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the cadence",
           "type": ["null", "integer"]
         }
       }
     },
     "person": {
+      "description": "Details about the person associated with the cadence membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the person details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the person",
           "type": ["null", "integer"]
         }
       }
     },
     "user": {
+      "description": "Information about the user who is managing the cadence membership.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the user details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the user",
           "type": ["null", "integer"]
         }
       }
     },
     "latest_action": {
+      "description": "Information about the latest action taken within the cadence.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the latest action details",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the latest action",
           "type": ["null", "integer"]
         }
       }
     },
     "counts": {
+      "description": "Counts related to the cadence membership like tasks completed, emails sent, etc.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "views": {
+          "description": "Number of email views",
           "type": ["null", "integer"]
         },
         "clicks": {
+          "description": "Number of email clicks",
           "type": ["null", "integer"]
         },
         "replies": {
+          "description": "Number of replies received",
           "type": ["null", "integer"]
         },
         "calls": {
+          "description": "Number of calls made",
           "type": ["null", "integer"]
         },
         "sent_emails": {
+          "description": "Number of emails sent",
           "type": ["null", "integer"]
         },
         "bounces": {
+          "description": "Number of bounced emails",
           "type": ["null", "integer"]
         }
       }

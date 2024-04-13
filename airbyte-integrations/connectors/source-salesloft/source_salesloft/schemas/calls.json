@@ -3,105 +3,132 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the call entry",
       "type": "integer"
     },
     "to": {
+      "description": "Destination of the call, e.g., phone number",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "Duration of the call in seconds",
       "type": ["null", "integer"]
     },
     "sentiment": {
+      "description": "Emotional tone or feeling associated with the call",
       "type": ["null", "string"]
     },
     "disposition": {
+      "description": "Outcome or result of the call",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the call was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp indicating when the call was last updated",
       "type": "string",
       "format": "date-time"
     },
     "user": {
+      "description": "User details associated with the call activity (e.g., user ID, name)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the user associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the user associated with the call",
           "type": ["null", "string"]
         }
       }
     },
     "action": {
+      "description": "Details of the action related to the call (e.g., call type, outcome)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the action related to the call",
           "type": ["null", "integer"]
         }
       }
     },
     "called_person": {
+      "description": "Data about the person who was called (e.g., name, contact information)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the person who was called",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the person who was called",
           "type": ["null", "string"]
         }
       }
     },
     "crm_activity": {
+      "description": "CRM activity details linked to the call (e.g., activity type, status)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the CRM activity associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the CRM activity associated with the call",
           "type": ["null", "string"]
         }
       }
     },
     "note": {
+      "description": "Additional notes or comments related to the call",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the note related to the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the note related to the call",
           "type": ["null", "string"]
         }
       }
     },
     "cadence": {
+      "description": "Information about the cadence associated with the call (e.g., cadence name, type)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the cadence associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the cadence associated with the call",
           "type": ["null", "string"]
         }
       }
     },
     "step": {
+      "description": "Information about the step in the call process (e.g., step number, description)",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier for the step in the cadence associated with the call",
           "type": ["null", "integer"]
         },
         "_href": {
+          "description": "Link to the step in the cadence associated with the call",
           "type": ["null", "string"]
         }
       }

@@ -3,256 +3,332 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique ID of the person record",
       "type": "integer"
     },
     "created_at": {
+      "description": "Date and time when the person record was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time when the person record was last updated",
       "type": "string",
       "format": "date-time"
     },
     "last_contacted_at": {
+      "description": "Date and time when the person was last contacted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_replied_at": {
+      "description": "Date and time when the person last replied to an email",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "first_name": {
+      "description": "First name of the person",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the person",
       "type": ["null", "string"]
     },
     "display_name": {
+      "description": "Name displayed for the person",
       "type": ["null", "string"]
     },
     "email_address": {
+      "description": "Email address of the person",
       "type": ["null", "string"]
     },
     "full_email_address": {
+      "description": "Full email address of the person",
       "type": ["null", "string"]
     },
     "secondary_email_address": {
+      "description": "Secondary email address of the person",
       "type": ["null", "string"]
     },
     "personal_email_address": {
+      "description": "Personal email address of the person",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number of the person",
       "type": ["null", "string"]
     },
     "phone_extension": {
+      "description": "Extension for the person's phone number",
       "type": ["null", "string"]
     },
     "home_phone": {
+      "description": "Home phone number of the person",
       "type": ["null", "string"]
     },
     "mobile_phone": {
+      "description": "Mobile phone number of the person",
       "type": ["null", "string"]
     },
     "linkedin_url": {
+      "description": "LinkedIn profile URL of the person",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Job title of the person",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "City where the person is located",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State/Province where the person is located",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "Country where the person is located",
       "type": ["null", "string"]
     },
     "work_city": {
+      "description": "City where the person works",
       "type": ["null", "string"]
     },
     "work_state": {
+      "description": "State/Province where the person works",
       "type": ["null", "string"]
     },
     "work_country": {
+      "description": "Country where the person works",
       "type": ["null", "string"]
     },
     "crm_url": {
+      "description": "URL to access the person's record in the CRM",
       "type": ["null", "string"]
     },
     "crm_id": {
+      "description": "ID of the person in the CRM system",
       "type": ["null", "string"]
     },
     "crm_object_type": {
+      "description": "Type of object in the CRM associated with the person",
       "type": ["null", "string"]
     },
     "owner_crm_id": {
+      "description": "CRM ID of the person's owner",
       "type": ["null", "string"]
     },
     "person_company_name": {
+      "description": "Name of the person\u2019s associated company",
       "type": ["null", "string"]
     },
     "person_company_website": {
+      "description": "Website of the person\u2019s associated company",
       "type": ["null", "string"]
     },
     "person_company_industry": {
+      "description": "Industry of the person\u2019s associated company",
       "type": ["null", "string"]
     },
     "do_not_contact": {
+      "description": "Boolean indicating if the person should not be contacted",
       "type": ["null", "boolean"]
     },
     "bouncing": {
+      "description": "Boolean indicating if emails to this person are bouncing",
       "type": ["null", "boolean"]
     },
     "locale": {
+      "description": "Language/locale preference of the person",
       "type": ["null", "string"]
     },
     "personal_website": {
+      "description": "Personal website URL of the person",
       "type": ["null", "string"]
     },
     "twitter_handle": {
+      "description": "Twitter handle of the person",
       "type": ["null", "string"]
     },
     "last_contacted_type": {
+      "description": "Type of last contact with the person",
       "type": ["null", "string"]
     },
     "job_seniority": {
+      "description": "Seniority level of the person's job",
       "type": ["null", "string"]
     },
     "custom_fields": {
+      "description": "Custom fields associated with the person",
       "type": ["null", "object"],
       "additionalProperties": true,
-      "properties": {}
+      "properties": {
+        "description": "Individual custom field"
+      }
     },
     "tags": {
+      "description": "Tags associated with the person",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual tag",
         "type": ["null", "string"]
       }
     },
     "contact_restrictions": {
+      "description": "List of contact restrictions for the person",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual contact restriction",
         "type": ["null", "string"]
       }
     },
     "counts": {
+      "description": "Various count metrics related to the person",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "emails_sent": {
+          "description": "Number of emails sent to this person",
           "type": ["null", "integer"]
         },
         "emails_viewed": {
+          "description": "Number of emails viewed by this person",
           "type": ["null", "integer"]
         },
         "emails_clicked": {
+          "description": "Number of emails clicked by this person",
           "type": ["null", "integer"]
         },
         "emails_replied_to": {
+          "description": "Number of emails replied to by this person",
           "type": ["null", "integer"]
         },
         "emails_bounced": {
+          "description": "Number of emails bounced for this person",
           "type": ["null", "integer"]
         },
         "calls": {
+          "description": "Number of calls made to this person",
           "type": ["null", "integer"]
         }
       }
     },
     "account": {
+      "description": "Information related to the account associated with the person",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the account resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the account",
           "type": ["null", "integer"]
         }
       }
     },
     "owner": {
+      "description": "Information about the owner (user) of this person's record",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the owner resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the owner",
           "type": ["null", "integer"]
         }
       }
     },
     "last_contacted_by": {
+      "description": "Information about the last person who contacted this person",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the last contacted by resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the last contacted by person",
           "type": ["null", "integer"]
         }
       }
     },
     "import": {
+      "description": "Information related to the import of the person data",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the import resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the import",
           "type": ["null", "integer"]
         }
       }
     },
     "person_stage": {
+      "description": "Stage of the person in the sales process",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the person stage resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the person stage",
           "type": ["null", "integer"]
         }
       }
     },
     "most_recent_cadence": {
+      "description": "Information about the most recent cadence associated with the person",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the most recent cadence resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the most recent cadence",
           "type": ["null", "integer"]
         }
       }
     },
     "last_completed_step_cadence": {
+      "description": "Information about the last completed step's cadence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the last completed step cadence resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the last completed step cadence",
           "type": ["null", "integer"]
         }
       }
     },
     "last_completed_step": {
+      "description": "Information about the last completed step in a sequence",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "_href": {
+          "description": "Link to the last completed step resource",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the last completed step",
           "type": ["null", "integer"]
         }
       }
