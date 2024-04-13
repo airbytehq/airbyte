@@ -51,6 +51,7 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.2.4 | 2024-04-12 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | schema descriptions |
 | 0.2.3   | 2023-09-08 | [27946](https://github.com/airbytehq/airbyte/pull/27946) | Changed `Date Since` input field title to `Replication Start Date`                                   |
 | 0.2.2   | 2023-03-09 | [23909](https://github.com/airbytehq/airbyte/pull/23909) | Updated the input config pattern to accept both `RFC3339` and `datetime string` formats in UI    |
 | 0.2.1   | 2023-02-14 | [23009](https://github.com/airbytehq/airbyte/pull/23009) |Specified date formatting in specification                                                            |
