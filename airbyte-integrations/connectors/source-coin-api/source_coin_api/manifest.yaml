@@ -5,7 +5,9 @@ definitions:
     extractor:
       field_path: []
   requester:
-    url_base: "{{ 'https://rest.coinapi.io/v1' if config['environment'] == 'production' else 'https://rest-sandbox.coinapi.io/v1' }}"
+    url_base:
+      "{{ 'https://rest.coinapi.io/v1' if config['environment'] == 'production'
+      else 'https://rest-sandbox.coinapi.io/v1' }}"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -33,18 +35,200 @@ definitions:
       name: "ohlcv_historical_data"
       primary_key: "time_period_start"
       path: "/ohlcv/{{ config['symbol_id'] }}/history"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time_period_start:
+            description:
+              The timestamp representing the start time of the specified
+              time period (in UTC).
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_period_end:
+            description:
+              The timestamp representing the end time of the specified
+              time period (in UTC).
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_open:
+            description:
+              The timestamp representing the opening time of the specified
+              period (in UTC).
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_close:
+            description:
+              The timestamp representing the closing time of the specified
+              period (in UTC).
+            type:
+              - "null"
+              - string
+            format: date-time
+          price_open:
+            description: The opening price of the asset for the specified time period.
+            type:
+              - "null"
+              - number
+          price_high:
+            description:
+              The highest price of the asset reached during the specified
+              time period.
+            type:
+              - "null"
+              - number
+          price_low:
+            description:
+              The lowest price of the asset reached during the specified
+              time period.
+            type:
+              - "null"
+              - number
+          price_close:
+            description:
+              The closing price of the asset during the specified time
+              period.
+            type:
+              - "null"
+              - number
+          volume_traded:
+            description:
+              The total volume of the asset traded during the specified
+              time period.
+            type:
+              - "null"
+              - number
+          trades_count:
+            description:
+              The total number of trades executed during the specified
+              time period.
+            type:
+              - "null"
+              - integer
   trades_historical_data_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "trades_historical_data"
       primary_key: "uuid"
       path: "/trades/{{ config['symbol_id'] }}/history"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          symbol_id:
+            description: The unique symbol identifier for the trade.
+            type:
+              - "null"
+              - string
+          time_period_end:
+            description: The end timestamp of the time period to which the trade belongs.
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_exchange:
+            description:
+              The timestamp of the trade in the exchange's native time
+              format.
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_coinapi:
+            description: The timestamp of the trade in the CoinAPI format.
+            type:
+              - "null"
+              - string
+            format: date-time
+          uuid:
+            description: The universally unique identifier associated with the trade.
+            type:
+              - "null"
+              - string
+          price:
+            description: The price at which the trade occurred.
+            type:
+              - "null"
+              - number
+          size:
+            description: The size or quantity of the trade.
+            type:
+              - "null"
+              - number
+          taker_side:
+            description:
+              The side of the trade representing the taker (e.g., buy or
+              sell).
+            type:
+              - "null"
+              - string
   quotes_historical_data_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "quotes_historical_data"
       path: "/quotes/{{ config['symbol_id'] }}/history"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          symbol_id:
+            description: A unique identifier for the symbol being quoted.
+            type:
+              - "null"
+              - string
+          time_exchange:
+            description:
+              The timestamp of when the quote data was received by the
+              exchange.
+            type:
+              - "null"
+              - string
+            format: date-time
+          time_coinapi:
+            description:
+              The timestamp when the quote data was received by the CoinAPI
+              service.
+            type:
+              - "null"
+              - string
+            format: date-time
+          ask_price:
+            description: The asking price for the specified symbol at the given time.
+            type:
+              - "null"
+              - number
+          ask_size:
+            description:
+              The size of the ask order for the specified symbol at the
+              given time.
+            type:
+              - "null"
+              - number
+          bid_price:
+            description: The bidding price for the specified symbol at the given time.
+            type:
+              - "null"
+              - number
+          bid_size:
+            description:
+              The size of the bid order for the specified symbol at the
+              given time.
+            type:
+              - "null"
+              - number
 streams:
   - "#/definitions/ohlcv_historical_data_stream"
   - "#/definitions/trades_historical_data_stream"
