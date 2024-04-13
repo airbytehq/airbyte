@@ -4,80 +4,109 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the time record entry",
       "type": ["null", "integer"]
     },
     "date": {
+      "description": "The date of the time record entry",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The timestamp when the time record was created",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "The user associated with the time record entry",
       "type": ["null", "integer"]
     },
     "time": {
+      "description": "Time spent on the task record",
       "type": ["null", "integer"]
     },
     "task": {
+      "description": "Represents the task information for the time record.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the task",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name or title of the task",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type or category of the task",
           "type": ["null", "string"]
         },
         "status": {
+          "description": "The status of the task",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL link to access the task details",
           "type": ["null", "string"]
         },
         "iteration": {
+          "description": "Iteration number associated with the task",
           "type": ["null", "string"]
         },
         "projects": {
+          "description": "List of projects the task belongs to.",
           "type": ["null", "array"],
-          "items": {}
+          "items": {
+            "description": "List of projects the task is associated with"
+          }
         },
         "createdAt": {
+          "description": "The timestamp when the task was created",
           "type": ["null", "string"]
         },
         "labels": {
+          "description": "List of labels associated with the task.",
           "type": ["null", "array"],
-          "items": {}
+          "items": {
+            "description": "List of labels associated with the task"
+          }
         },
         "time": {
+          "description": "Time related information for the task.",
           "type": ["null", "object"],
           "properties": {
             "total": {
+              "description": "Total time spent on the task",
               "type": ["null", "integer"]
             },
             "users": {
+              "description": "List of users who have recorded time for the task.",
               "type": ["null", "object"],
               "properties": {
                 "1029023": {
+                  "description": "Time spent on the task by User ID 1029023",
                   "type": ["null", "integer"]
                 },
                 "1163985": {
+                  "description": "Time spent on the task by User ID 1163985",
                   "type": ["null", "integer"]
                 }
               }
             },
             "timerTime": {
+              "description": "Time spent using a timer for the task",
               "type": ["null", "integer"]
             }
           }
         },
         "completed": {
+          "description": "Flag indicating whether the task is completed",
           "type": ["null", "boolean"]
         },
         "assignees": {
+          "description": "List of users assigned to the task.",
           "type": ["null", "array"],
-          "items": {}
+          "items": {
+            "description": "List of assignees for the task"
+          }
         }
       }
     }

@@ -4,98 +4,138 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the time entry.",
       "type": ["null", "integer"]
     },
     "date": {
+      "description": "The date of the time entry.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the time entry was created.",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "The user associated with the time entry.",
       "type": ["null", "integer"]
     },
     "time": {
+      "description": "The time spent on the task entry.",
       "type": ["null", "integer"]
     },
     "task": {
+      "description": "Represents a task with associated time data",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the task.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the task.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type of the task.",
           "type": ["null", "string"]
         },
         "status": {
+          "description": "The status of the task.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "The URL related to the task.",
           "type": ["null", "string"]
         },
         "iteration": {
+          "description": "Iteration associated with the task.",
           "type": ["null", "string"]
         },
         "projects": {
+          "description": "Specifies the projects the task is associated with.",
           "type": ["null", "array"],
-          "items": { "type": "string" }
+          "items": {
+            "description": "Projects the task is associated with.",
+            "type": "string"
+          }
         },
         "createdAt": {
+          "description": "The date and time when the task was created.",
           "type": ["null", "string"]
         },
         "labels": {
+          "description": "Provides labels associated with the task.",
           "type": ["null", "array"],
-          "items": { "type": "string" }
+          "items": {
+            "description": "Labels associated with the task.",
+            "type": "string"
+          }
         },
         "time": {
+          "description": "Contains information about the time tracked for the task",
           "type": ["null", "object"],
           "properties": {
             "total": {
+              "description": "The total time spent on the task.",
               "type": ["null", "integer"]
             },
             "users": {
+              "description": "Contains users and their time entries for the task.",
               "type": ["null", "object"],
               "properties": {
                 "1029023": {
+                  "description": "User-specific time data.",
                   "type": ["null", "integer"]
                 }
               }
             },
             "timerTime": {
+              "description": "The time spent on the task with a timer.",
               "type": ["null", "integer"]
             }
           }
         },
         "completed": {
+          "description": "Indicates if the task is completed.",
           "type": ["null", "boolean"]
         },
         "assignees": {
+          "description": "Lists the users assigned to the task.",
           "type": ["null", "array"],
-          "items": { "type": "string" }
+          "items": {
+            "description": "Assignees assigned to the task.",
+            "type": "string"
+          }
         }
       }
     },
     "history": {
+      "description": "Represents the time entry history related to the task.",
       "type": ["null", "array"],
       "items": {
+        "description": "History items related to the time entry.",
         "type": ["null", "object"],
         "additionalProperties": true
       }
     },
     "lockReasons": {
+      "description": "Contains reasons for locking the time entry.",
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": {
+        "description": "Reasons for locking the time entry.",
+        "type": "string"
+      }
     },
     "isLocked": {
+      "description": "Indicates if the time entry is locked.",
       "type": ["null", "boolean"]
     },
     "cost": {
+      "description": "The cost associated with the time entry.",
       "type": ["null", "integer"]
     },
     "costRate": {
+      "description": "The cost rate for the time entry.",
       "type": ["null", "integer"]
     }
   }
