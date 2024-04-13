@@ -32,6 +32,7 @@
       "airbyte_type": "timestamp_with_timezone"
     },
     "options": {
+      "description": "The available options for segment data",
       "type": ["null", "object"],
       "properties": {
         "match": {
@@ -39,8 +40,10 @@
           "type": ["null", "string"]
         },
         "conditions": {
+          "description": "Conditions set for segment filtering",
           "type": ["null", "array"],
           "items": {
+            "description": "Specific conditions to filter segments",
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {

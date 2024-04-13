@@ -22,6 +22,7 @@
       "readOnly": true
     },
     "type": {
+      "description": "The type of campaign (e.g., 'regular', 'automated', 'plain-text')",
       "$ref": "campaignType.json"
     },
     "create_time": {
@@ -45,6 +46,7 @@
       "readOnly": true
     },
     "status": {
+      "description": "The current status of the campaign (e.g., 'sent', 'draft', 'scheduled')",
       "$ref": "campaignStatus.json"
     },
     "emails_sent": {
