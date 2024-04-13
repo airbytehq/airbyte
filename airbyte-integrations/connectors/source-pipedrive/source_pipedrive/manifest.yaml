@@ -36,7 +36,9 @@ definitions:
       type: "DefaultPaginator"
       pagination_strategy:
         type: "CursorPagination"
-        cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+        cursor_value:
+          "{{ response['additional_data']['pagination']['next_start']
+          }}"
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
@@ -54,7 +56,9 @@ definitions:
     cursor_field: "update_time"
     datetime_format: "%Y-%m-%d %H:%M:%S"
     start_datetime:
-      datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S') }}"
+      datetime:
+        "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S')
+        }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     start_time_option:
       field_name: "since_timestamp"
@@ -77,12 +81,489 @@ definitions:
       path_extractor: "deal"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: ID of the deal
+            type:
+              - "null"
+              - integer
+          creator_user_id:
+            description: ID of the user who created the deal
+            type:
+              - "null"
+              - integer
+          user_id:
+            description: ID of the user associated with the deal
+            type:
+              - "null"
+              - integer
+          person_id:
+            description: ID of the person associated with the deal
+            type:
+              - "null"
+              - integer
+          org_id:
+            description: ID of the organization associated with the deal
+            type:
+              - "null"
+              - integer
+          stage_id:
+            description: ID of the current stage of the deal
+            type:
+              - "null"
+              - integer
+          title:
+            description: Title or summary of the deal
+            type:
+              - "null"
+              - string
+          value:
+            description: Monetary value of the deal
+            type:
+              - "null"
+              - number
+          currency:
+            description: Currency associated with the deal
+            type:
+              - "null"
+              - string
+          add_time:
+            description: Timestamp when the deal was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of the last update made to the deal
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          stage_change_time:
+            description: Timestamp of the last stage change for the deal
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the deal is currently active or not
+            type:
+              - "null"
+              - boolean
+          deleted:
+            description: Indicates if the deal has been deleted
+            type:
+              - "null"
+              - boolean
+          status:
+            description: Current status of the deal
+            type:
+              - "null"
+              - string
+          probability:
+            description: Probability of winning the deal
+            type:
+              - "null"
+              - number
+          next_activity_date:
+            description: Date of the next planned activity related to the deal
+            type:
+              - "null"
+              - string
+            format: date
+          next_activity_time:
+            description: Timestamp of the next planned activity for the deal
+            type:
+              - "null"
+              - string
+          next_activity_id:
+            description: ID of the next planned activity for the deal
+            type:
+              - "null"
+              - integer
+          last_activity_id:
+            description: ID of the last activity related to the deal
+            type:
+              - "null"
+              - integer
+          last_activity_date:
+            description: Date of the last activity related to the deal
+            type:
+              - "null"
+              - string
+            format: date
+          lost_reason:
+            description: Reason for losing the deal
+            type:
+              - "null"
+              - string
+          visible_to:
+            description: Visibility settings for the deal
+            type:
+              - "null"
+              - string
+          close_time:
+            description: Timestamp when the deal was closed
+            type:
+              - "null"
+              - string
+          pipeline_id:
+            description: ID of the pipeline to which the deal belongs
+            type:
+              - "null"
+              - integer
+          won_time:
+            description: Timestamp when the deal was won
+            type:
+              - "null"
+              - string
+          first_won_time:
+            description: Timestamp when the deal was first won
+            type:
+              - "null"
+              - string
+          lost_time:
+            description: Timestamp when the deal was lost
+            type:
+              - "null"
+              - string
+          products_count:
+            description: Total count of products associated with the deal
+            type:
+              - "null"
+              - integer
+          files_count:
+            description: Total count of files attached to the deal
+            type:
+              - "null"
+              - integer
+          notes_count:
+            description: Total count of notes associated with the deal
+            type:
+              - "null"
+              - integer
+          followers_count:
+            description: Total count of followers for the deal
+            type:
+              - "null"
+              - integer
+          email_messages_count:
+            description: Total count of email messages related to the deal
+            type:
+              - "null"
+              - integer
+          activities_count:
+            description: Total count of activities associated with the deal
+            type:
+              - "null"
+              - integer
+          done_activities_count:
+            description: Total count of completed activities for the deal
+            type:
+              - "null"
+              - integer
+          undone_activities_count:
+            description: Total count of incomplete activities for the deal
+            type:
+              - "null"
+              - integer
+          participants_count:
+            description: Total count of participants associated with the deal
+            type:
+              - "null"
+              - integer
+          expected_close_date:
+            description: Expected date for closing the deal
+            type:
+              - "null"
+              - string
+            format: date
+          last_incoming_mail_time:
+            description: Timestamp of the last incoming mail related to the deal
+            type:
+              - "null"
+              - string
+          last_outgoing_mail_time:
+            description: Timestamp of the last outgoing mail related to the deal
+            type:
+              - "null"
+              - string
+          label:
+            description: Label associated with the deal
+            type:
+              - "null"
+              - string
+          stage_order_nr:
+            description: Order number of the current stage of the deal
+            type:
+              - "null"
+              - integer
+          person_name:
+            description: Name of the person associated with the deal
+            type:
+              - "null"
+              - string
+          org_name:
+            description: Name of the organization associated with the deal
+            type:
+              - "null"
+              - string
+          next_activity_subject:
+            description: Subject of the next planned activity for the deal
+            type:
+              - "null"
+              - string
+          next_activity_type:
+            description: Type of the next planned activity for the deal
+            type:
+              - "null"
+              - string
+          next_activity_duration:
+            description: Duration of the next planned activity for the deal
+            type:
+              - "null"
+              - string
+          next_activity_note:
+            description: Note for the next planned activity for the deal
+            type:
+              - "null"
+              - string
+          formatted_value:
+            description: Formatted value of the deal
+            type:
+              - "null"
+              - string
+          weighted_value:
+            description: Weighted value of the deal
+            type:
+              - "null"
+              - number
+          formatted_weighted_value:
+            description: Formatted weighted value of the deal
+            type:
+              - "null"
+              - string
+          weighted_value_currency:
+            description: Currency used for weighted value calculation
+            type:
+              - "null"
+              - string
+          rotten_time:
+            description: Timestamp when the deal was marked as rotten
+            type:
+              - "null"
+              - string
+          owner_name:
+            description: Name of the owner of the deal
+            type:
+              - "null"
+              - string
+          cc_email:
+            description:
+              Email address for CC'ing in communications related to the
+              deal
+            type:
+              - "null"
+              - string
+          org_hidden:
+            description:
+              Indicates if the organization associated with the deal is
+              hidden
+            type:
+              - "null"
+              - boolean
+          person_hidden:
+            description: Indicates if the person associated with the deal is hidden
+            type:
+              - "null"
+              - boolean
   deal_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "deal_fields"
     $parameters:
       path: "/dealFields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the deal field
+            type:
+              - "null"
+              - integer
+          key:
+            description: Key of the deal field
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the deal field
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number of the deal field
+            type:
+              - "null"
+              - integer
+          group_id:
+            description: ID of the group to which the deal field belongs
+            type:
+              - "null"
+              - integer
+          field_type:
+            description: Type of the deal field
+            type:
+              - "null"
+              - string
+          projects_detail_visible_flag:
+            description:
+              Flag indicating if the deal field details are visible in
+              projects
+            type:
+              - "null"
+              - boolean
+          json_column_flag:
+            description: Flag indicating if the deal field is a JSON column
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Date and time when the deal field was added
+            format: "%Y-%m-%d %H:%M:%S"
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Date and time when the deal field was last updated
+            format: "%Y-%m-%d %H:%M:%S"
+            type:
+              - "null"
+              - string
+          use_field:
+            description: Field used in conjunction with the deal field
+            type:
+              - "null"
+              - string
+          last_updated_by_user_id:
+            description: ID of the user who last updated the deal field
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Flag indicating if the deal field is currently active
+            type:
+              - "null"
+              - boolean
+          edit_flag:
+            description: Flag indicating if the deal field can be edited
+            type:
+              - "null"
+              - boolean
+          index_visible_flag:
+            description: Flag indicating if the deal field is visible in index
+            type:
+              - "null"
+              - boolean
+          details_visible_flag:
+            description: Flag indicating if the deal field details are visible
+            type:
+              - "null"
+              - boolean
+          add_visible_flag:
+            description:
+              Flag indicating if the deal field is visible when adding
+              a new deal
+            type:
+              - "null"
+              - boolean
+          important_flag:
+            description: Flag indicating if the deal field is important
+            type:
+              - "null"
+              - boolean
+          bulk_edit_allowed:
+            description: Flag indicating if the deal field can be edited in bulk
+            type:
+              - "null"
+              - boolean
+          searchable_flag:
+            description: Flag indicating if the deal field is searchable
+            type:
+              - "null"
+              - boolean
+          filtering_allowed:
+            description: Flag indicating if the deal field can be used for filtering
+            type:
+              - "null"
+              - boolean
+          sortable_flag:
+            description: Flag indicating if the deal field is sortable
+            type:
+              - "null"
+              - boolean
+          parent_id:
+            description: ID of the parent field
+            type:
+              - "null"
+              - integer
+          id_suffix:
+            description: Suffix used in the ID of the deal field
+            type:
+              - "null"
+              - string
+          link:
+            description: Link associated with the deal field
+            type:
+              - "null"
+              - string
+          is_subfield:
+            description: Flag indicating if the field is a subfield
+            type:
+              - "null"
+              - boolean
+          options:
+            description: Options available for the deal field
+            type:
+              - "null"
+              - array
+            items:
+              description: Option for the deal field
+              type: object
+              additionalProperties: true
+          show_in_pipelines:
+            description: Visibility settings of the deal field in pipelines
+            type:
+              - "null"
+              - object
+            items:
+              description: Pipeline visibility settings of the deal field
+              show_in_all:
+                description: Flag indicating if the deal field is visible in all pipelines
+                type:
+                  - "null"
+                  - boolean
+              pipeline_ids:
+                description: IDs of the pipelines where the deal field is visible
+                type:
+                  - "null"
+                  - array
+          mandatory_flag:
+            description: Flag indicating if the deal field is mandatory
+            type:
+              - "null"
+              - object
+              - boolean
+              - integer
   files_stream:
     $ref: "#/definitions/base_stream"
     name: "files"
@@ -95,6 +576,169 @@ definitions:
       path_extractor: "file"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the file
+            type:
+              - "null"
+              - integer
+          user_id:
+            description: ID of the user associated with the file
+            type:
+              - "null"
+              - integer
+          log_id:
+            description: ID of the log associated with the file
+            type:
+              - "null"
+              - integer
+          add_time:
+            description: Timestamp when the file was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of the last update made to the file
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          file_name:
+            description: Name of the file
+            type:
+              - "null"
+              - string
+          file_size:
+            description: Size of the file in bytes
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Flag indicating if the file is currently active or not
+            type:
+              - "null"
+              - boolean
+          inline_flag:
+            description: Flag indicating if the file should be displayed inline
+            type:
+              - "null"
+              - boolean
+          remote_location:
+            description: Location of the remote storage
+            type:
+              - "null"
+              - string
+          remote_id:
+            description: ID of the remote location associated with the file
+            type:
+              - "null"
+              - string
+          s3_bucket:
+            description: Name of the AWS S3 bucket where the file is stored
+            type:
+              - "null"
+              - string
+          url:
+            description: URL where the file can be accessed
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the file
+            type:
+              - "null"
+              - string
+          description:
+            description: Brief description of the file content
+            type:
+              - "null"
+              - string
+          deal_id:
+            description: ID of the deal associated with the file
+            type:
+              - "null"
+              - integer
+          lead_id:
+            description: ID of the lead associated with the file
+            type:
+              - "null"
+              - integer
+          person_id:
+            description: ID of the person associated with the file
+            type:
+              - "null"
+              - integer
+          org_id:
+            description: ID of the organization associated with the file
+            type:
+              - "null"
+              - integer
+          product_id:
+            description: ID of the product associated with the file
+            type:
+              - "null"
+              - integer
+          activity_id:
+            description: ID of the activity associated with the file
+            type:
+              - "null"
+              - integer
+          deal_name:
+            description: Name of the deal associated with the file
+            type:
+              - "null"
+              - string
+          lead_name:
+            description: Name of the lead associated with the file
+            type:
+              - "null"
+              - string
+          person_name:
+            description: Name of the person associated with the file
+            type:
+              - "null"
+              - string
+          people_name:
+            description: Name of the people associated with the file
+            type:
+              - "null"
+              - string
+          org_name:
+            description: Name of the organization associated with the file
+            type:
+              - "null"
+              - string
+          product_name:
+            description: Name of the product associated with the file
+            type:
+              - "null"
+              - string
+          mail_message_id:
+            description: ID of the mail message associated with the file
+            type:
+              - "null"
+              - integer
+          mail_template_id:
+            description: ID of the mail template associated with the file
+            type:
+              - "null"
+              - integer
+          cid:
+            description: Customer ID associated with the file
+            type:
+              - "null"
+              - integer
+          file_type:
+            description: Type of the file
+            type:
+              - "null"
+              - string
   filters_stream:
     $ref: "#/definitions/base_stream"
     name: "filters"
@@ -107,6 +751,64 @@ definitions:
       path_extractor: "filter"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the filter
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the filter
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if the filter is active or not
+            type:
+              - "null"
+              - boolean
+          type:
+            description: Type of the filter
+            type:
+              - "null"
+              - string
+          temporary_flag:
+            description: Flag indicating if the filter is temporary
+            type:
+              - "null"
+              - string
+          user_id:
+            description: ID of the user who created the filter
+            type:
+              - "null"
+              - integer
+          add_time:
+            description: The time when the filter was added in the system
+            type:
+              - "null"
+              - string
+          update_time:
+            description: The last time the filter was updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          visible_to:
+            description: Accessibility level of the filter to other users
+            type:
+              - "null"
+              - string
+          custom_view_id:
+            description: ID of the custom view associated with the filter
+            type:
+              - "null"
+              - integer
   lead_labels_stream:
     # Does not support pagination
     $ref: "#/definitions/base_stream"
@@ -118,12 +820,137 @@ definitions:
     $parameters:
       path: "/leadLabels"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the label.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the lead label.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color associated with the label.
+            type:
+              - "null"
+              - string
+          add_time:
+            description: The timestamp when the label was added.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: The timestamp when the label was last updated.
+            type:
+              - "null"
+              - string
   leads_stream:
     $ref: "#/definitions/base_stream"
     name: "leads"
     $parameters:
       path: "/leads"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique ID of this lead.
+            type:
+              - "null"
+              - string
+          title:
+            description: The title or name of this lead.
+            type:
+              - "null"
+              - string
+          owner_id:
+            description: The ID of the user who owns this lead.
+            type:
+              - "null"
+              - integer
+          creator_id:
+            description: The ID of the user who created this lead.
+            type:
+              - "null"
+              - integer
+          label_ids:
+            description: An array of IDs of labels assigned to this lead.
+            type:
+              - "null"
+              - array
+          person_id:
+            description: The ID of the person associated with this lead.
+            type:
+              - "null"
+              - integer
+          organization_id:
+            description: The ID of the organization associated with this lead.
+            type:
+              - "null"
+              - integer
+          source_name:
+            description: The source of this lead, e.g., website, referral, etc.
+            type:
+              - "null"
+              - string
+          is_archived:
+            description: Indicates if this lead is archived or not.
+            type:
+              - "null"
+              - boolean
+          was_seen:
+            description: Indicates if this lead has been viewed by a user.
+            type:
+              - "null"
+              - boolean
+          value:
+            description: Represents the lead value data
+            type:
+              - "null"
+              - object
+            properties:
+              amount:
+                description: The value amount associated with this lead.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: The currency in which the value amount is specified.
+                type:
+                  - "null"
+                  - string
+          expected_close_date:
+            description: The expected closing date for this lead.
+            type:
+              - "null"
+              - string
+            format: date
+          next_activity_id:
+            description: The ID of the next activity related to this lead.
+            type:
+              - "null"
+              - integer
+          add_time:
+            description: The time when this lead was added to the system.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: The time when this lead was last updated.
+            type:
+              - "null"
+              - string
   goals_stream:
     $ref: "#/definitions/base_stream"
     name: "goals"
@@ -140,6 +967,138 @@ definitions:
       paginator:
         type: "NoPagination"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Goals schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            description: Unique identifier of the goal
+            type:
+              - string
+              - "null"
+          owner_id:
+            description: Unique identifier of the owner of the goal
+            type:
+              - number
+              - "null"
+          title:
+            description: Title of the goal
+            type:
+              - string
+              - "null"
+          type:
+            description: Type details of the goal
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              name:
+                description: Name of the goal type
+                type:
+                  - string
+                  - "null"
+              params:
+                description: Parameters specific to the goal type
+                type:
+                  - object
+                  - "null"
+                properties:
+                  pipeline_id:
+                    description: Identifier of the pipeline associated
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      description: Individual pipeline identifier
+                      type:
+                        - number
+                        - "null"
+                  activity_type_id:
+                    description: Identifier of the activity type associated
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      description: Individual activity type identifier
+                      type:
+                        - number
+                        - "null"
+          assignee:
+            description: Details of the user assigned to the goal
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              type:
+                description: Type of the assignee
+                type:
+                  - string
+                  - "null"
+              id:
+                description: Unique identifier of the assignee
+                type:
+                  - number
+                  - "null"
+          interval:
+            description: Interval at which the goal is measured
+            type:
+              - string
+              - "null"
+          duration:
+            description: Duration of the goal timeframe
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              start:
+                description: Start date of the goal duration
+                type:
+                  - string
+                  - "null"
+              end:
+                description: End date of the goal duration
+                type:
+                  - string
+                  - "null"
+          expected_outcome:
+            description: Expected outcome details
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              target:
+                description: Target value of the outcome
+                type:
+                  - number
+                  - "null"
+              tracking_metric:
+                description: Metric used for tracking the outcome
+                type:
+                  - string
+                  - "null"
+          is_active:
+            description: Indicates if the goal is currently active
+            type: boolean
+          report_ids:
+            description: Identifiers of reports related to the goal
+            type:
+              - array
+              - "null"
+            items:
+              description: Individual report identifier
+              type:
+                - string
+                - "null"
   notes_stream:
     $ref: "#/definitions/base_stream"
     name: "notes"
@@ -152,6 +1111,149 @@ definitions:
       path_extractor: "note"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the note
+            type:
+              - "null"
+              - integer
+          user_id:
+            description: ID of the user who created the note
+            type:
+              - "null"
+              - integer
+          deal_id:
+            description: ID of the deal connected to the note
+            type:
+              - "null"
+              - integer
+          person_id:
+            description: ID of the person connected to the note
+            type:
+              - "null"
+              - integer
+          org_id:
+            description: ID of the organization associated with the note
+            type:
+              - "null"
+              - integer
+          lead_id:
+            description: ID of the lead connected to the note
+            type:
+              - "null"
+              - integer
+          content:
+            description: Content of the note
+            type:
+              - "null"
+              - string
+          add_time:
+            description: Timestamp of when the note was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of when the note was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          active_flag:
+            description: Flag indicating if the note is active or not
+            type:
+              - "null"
+              - boolean
+          pinned_to_deal_flag:
+            description: Flag indicating if the note is pinned to a deal
+            type:
+              - "null"
+              - boolean
+          pinned_to_person_flag:
+            description: Flag indicating if the note is pinned to a person
+            type:
+              - "null"
+              - boolean
+          pinned_to_organization_flag:
+            description: Flag indicating if the note is pinned to an organization
+            type:
+              - "null"
+              - boolean
+          pinned_to_lead_flag:
+            description: Flag indicating if the note is pinned to a lead
+            type:
+              - "null"
+              - boolean
+          last_update_user_id:
+            description: ID of the user who last updated the note
+            type:
+              - "null"
+              - integer
+          organization:
+            description: Organization related to the note
+            type: object
+            properties:
+              name:
+                description: Name of the organization
+                type:
+                  - "null"
+                  - string
+          person:
+            description: Person related to the note
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the person
+                type:
+                  - "null"
+                  - string
+          deal:
+            description: Deal related to the note
+            type:
+              - "null"
+              - object
+            properties:
+              title:
+                description: Title of the deal
+                type:
+                  - "null"
+                  - string
+          lead:
+            description: Lead related to the note
+            type:
+              - "null"
+              - object
+          user:
+            description: User who created the note
+            type: object
+            properties:
+              email:
+                description: Email of the user
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the user
+                type:
+                  - "null"
+                  - string
+              icon_url:
+                description: URL to the user's icon
+                type:
+                  - "null"
+                  - string
+              is_you:
+                description: Flag indicating if the user is the current user
+                type:
+                  - "null"
+                  - boolean
   activities_stream:
     $ref: "#/definitions/base_stream"
     name: "activities"
@@ -164,6 +1266,397 @@ definitions:
       path_extractor: "activity"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique ID of the activity
+            type:
+              - "null"
+              - integer
+          company_id:
+            description: ID of the company associated with the activity
+            type:
+              - "null"
+              - integer
+          user_id:
+            description: User ID associated with the activity
+            type:
+              - "null"
+              - integer
+          done:
+            description: Flag indicating if the activity has been completed
+            type:
+              - "null"
+              - boolean
+          type:
+            description: Type of the activity
+            type:
+              - "null"
+              - string
+          reference_type:
+            description: Type of the reference related to the activity
+            type:
+              - "null"
+              - string
+          reference_id:
+            description: ID of the reference related to the activity
+            type:
+              - "null"
+              - integer
+          conference_meeting_client:
+            description: Client of the conference meeting
+            type:
+              - "null"
+              - string
+          conference_meeting_url:
+            description: URL of the conference meeting
+            type:
+              - "null"
+              - string
+          conference_meeting_id:
+            description: ID of the conference meeting
+            type:
+              - "null"
+              - string
+          due_date:
+            description: Due date of the activity
+            type:
+              - "null"
+              - string
+          due_time:
+            description: Due time of the activity
+            type:
+              - "null"
+              - string
+          duration:
+            description: Duration of the activity
+            type:
+              - "null"
+              - string
+          busy_flag:
+            description:
+              Flag indicating the availability status of the user for the
+              activity
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Timestamp of when the activity was added
+            type:
+              - "null"
+              - string
+          marked_as_done_time:
+            description: Timestamp when the activity was marked as done
+            type:
+              - "null"
+              - string
+          last_notification_time:
+            description: Timestamp of the last notification sent
+            type:
+              - "null"
+              - string
+          last_notification_user_id:
+            description: User ID of the last notification recipient
+            type:
+              - "null"
+              - integer
+          notification_language_id:
+            description: Language ID for notifications
+            type:
+              - "null"
+              - integer
+          subject:
+            description: Subject of the activity
+            type:
+              - "null"
+              - string
+          public_description:
+            description: Public description of the activity
+            type:
+              - "null"
+              - string
+          calendar_sync_include_context:
+            description: Flag indicating if the calendar sync includes context
+            type:
+              - "null"
+              - boolean
+          location:
+            description: Location of the activity
+            type:
+              - "null"
+              - string
+          org_id:
+            description: ID of the organization associated with the activity
+            type:
+              - "null"
+              - integer
+          person_id:
+            description: ID of the person associated with the activity
+            type:
+              - "null"
+              - integer
+          deal_id:
+            description: ID of the deal associated with the activity
+            type:
+              - "null"
+              - integer
+          lead_id:
+            description: ID of the lead associated with the activity
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if the activity is active or not
+            type:
+              - "null"
+              - boolean
+          update_time:
+            description: Timestamp of the last update made to the activity
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          update_user_id:
+            description: User ID of the last user who updated the activity
+            type:
+              - "null"
+              - integer
+          gcal_event_id:
+            description: Google Calendar event ID
+            type:
+              - "null"
+              - string
+          google_calendar_id:
+            description: ID of the Google Calendar related to the activity
+            type:
+              - "null"
+              - string
+          google_calendar_etag:
+            description: ETag associated with Google Calendar
+            type:
+              - "null"
+              - string
+          source_timezone:
+            description: Timezone of the source for the activity
+            type:
+              - "null"
+              - string
+          rec_rule:
+            description: Recurrence rule for the activity
+            type:
+              - "null"
+              - string
+          rec_rule_extension:
+            description: Extension of the recurrence rule
+            type:
+              - "null"
+              - string
+          rec_master_activity_id:
+            description: Master activity ID for recurring activities
+            type:
+              - "null"
+              - integer
+          series:
+            description: Series related to the activity
+            type:
+              - "null"
+              - string
+          note:
+            description: Note related to the activity
+            type:
+              - "null"
+              - string
+          created_by_user_id:
+            description: User ID of the creator of the activity
+            type:
+              - "null"
+              - integer
+          location_subpremise:
+            description: Subpremise of the location
+            type:
+              - "null"
+              - string
+          location_street_number:
+            description: Street number of the location
+            type:
+              - "null"
+              - string
+          location_route:
+            description: Route of the location
+            type:
+              - "null"
+              - string
+          location_sublocality:
+            description: Sublocality of the location
+            type:
+              - "null"
+              - string
+          location_locality:
+            description: Locality of the location
+            type:
+              - "null"
+              - string
+          location_lat:
+            description: Latitude of the location
+            type:
+              - "null"
+              - number
+          location_long:
+            description: Longitude of the location
+            type:
+              - "null"
+              - number
+          location_admin_area_level_1:
+            description: Admin area level 1 of the location
+            type:
+              - "null"
+              - string
+          location_admin_area_level_2:
+            description: Admin area level 2 of the location
+            type:
+              - "null"
+              - string
+          location_country:
+            description: Country of the location
+            type:
+              - "null"
+              - string
+          location_postal_code:
+            description: Postal code of the location
+            type:
+              - "null"
+              - string
+          location_formatted_address:
+            description: Formatted address of the location
+            type:
+              - "null"
+              - string
+          attendees:
+            description: List of attendees associated with the activity
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                email_address:
+                  description: Email address of the attendee
+                  type:
+                    - "null"
+                    - string
+                is_organizer:
+                  description: Flag indicating if the attendee is the organizer
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description: Name of the attendee
+                  type:
+                    - "null"
+                    - string
+                person_id:
+                  description: ID of the person associated with the attendee
+                  type:
+                    - "null"
+                    - integer
+                status:
+                  description: Status of the attendee
+                  type:
+                    - "null"
+                    - string
+                user_id:
+                  description: User ID related to the attendee
+                  type:
+                    - "null"
+                    - integer
+          participants:
+            description: List of participants involved in the activity
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                person_id:
+                  description: ID of the person associated as a participant
+                  type:
+                    - "null"
+                    - integer
+                primary_flag:
+                  description: Flag indicating if the participant is the primary one
+                  type:
+                    - "null"
+                    - boolean
+          org_name:
+            description: Name of the organization associated with the activity
+            type:
+              - "null"
+              - string
+          person_name:
+            description: Name of the person associated with the activity
+            type:
+              - "null"
+              - string
+          deal_title:
+            description: Title of the deal associated with the activity
+            type:
+              - "null"
+              - string
+          owner_name:
+            description: Name of the activity owner
+            type:
+              - "null"
+              - string
+          person_dropbox_bcc:
+            description: Dropbox BCC related to the person
+            type:
+              - "null"
+              - string
+          deal_dropbox_bcc:
+            description: Dropbox BCC related to the deal
+            type:
+              - "null"
+              - string
+          assigned_to_user_id:
+            description: User ID of the assigned user for the activity
+            type:
+              - "null"
+              - integer
+          type_name:
+            description: Name of the type of activity
+            type:
+              - "null"
+              - string
+          file:
+            description: Details of any file attached to the activity
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the file attached to the activity
+                type:
+                  - "null"
+                  - string
+              clean_name:
+                description: Clean name of the file attached to the activity
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL of the file attached to the activity
+                type:
+                  - "null"
+                  - string
   activity_types_stream:
     # This stream didnt have limit as query_parameter
     $ref: "#/definitions/base_stream"
@@ -175,12 +1668,213 @@ definitions:
     $parameters:
       path: "/activityTypes"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the activity type.
+            type:
+              - "null"
+              - integer
+          order_nr:
+            description: Numeric order value for sorting the activity types.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name or title of the activity type.
+            type:
+              - "null"
+              - string
+          key_string:
+            description: Key string identifier for the activity type.
+            type:
+              - "null"
+              - string
+          icon_key:
+            description: Key representing the icon associated with the activity type.
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if activity type is currently active or not.
+            type:
+              - "null"
+              - boolean
+          color:
+            description: Color associated with the activity type.
+            type:
+              - "null"
+              - string
+          is_custom_flag:
+            description: Flag indicating if the activity type is custom or system-defined.
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Timestamp for when the activity type was added.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp for when the activity type was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
   activity_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "activity_fields"
     $parameters:
       path: "/activityFields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the activity field
+            type:
+              - "null"
+              - integer
+          key:
+            description: Key used to access the field data
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the activity field
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number for the field display
+            type:
+              - "null"
+              - integer
+          field_type:
+            description: Type of the field data (e.g., text, date, number, etc.)
+            type:
+              - "null"
+              - string
+          add_time:
+            description: Timestamp for when the activity field was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp for when the field was last updated
+            type:
+              - "null"
+              - string
+          last_updated_by_user_id:
+            description: User ID of the last user who updated the field
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Flag indicating if the activity field is active or not
+            type:
+              - "null"
+              - boolean
+          edit_flag:
+            description: Flag indicating if the field is editable
+            type:
+              - "null"
+              - boolean
+          index_visible_flag:
+            description: Flag indicating if the field should be visible in the index
+            type:
+              - "null"
+              - boolean
+          details_visible_flag:
+            description: Flag indicating if the field should be visible in details
+            type:
+              - "null"
+              - boolean
+          add_visible_flag:
+            description: Flag indicating if the field should be visible during addition
+            type:
+              - "null"
+              - boolean
+          important_flag:
+            description: Flag indicating if the field is marked as important
+            type:
+              - "null"
+              - boolean
+          bulk_edit_allowed:
+            description: Flag indicating if bulk editing is allowed for this field
+            type:
+              - "null"
+              - boolean
+          searchable_flag:
+            description: Flag indicating if the field is searchable
+            type:
+              - "null"
+              - boolean
+          filtering_allowed:
+            description: Flag indicating if filtering is allowed based on this field
+            type:
+              - "null"
+              - boolean
+          sortable_flag:
+            description: Flag indicating if sorting is allowed on this field
+            type:
+              - "null"
+              - boolean
+          json_column_flag:
+            description: Flag indicating if the field data is stored as JSON
+            type:
+              - "null"
+              - boolean
+          parent_id:
+            description: ID of the parent field if this is a subfield
+            type:
+              - "null"
+              - integer
+          id_suffix:
+            description: Suffix added to the field ID for uniqueness
+            type:
+              - "null"
+              - string
+          is_subfield:
+            description: Flag indicating if the field is a subfield of another field
+            type:
+              - "null"
+              - boolean
+          options:
+            description: List of options available for the field
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the option
+                  type:
+                    - "null"
+                    - integer
+                    - string
+                    - boolean
+                label:
+                  description: Display label for the option
+                  type:
+                    - "null"
+                    - string
+          mandatory_flag:
+            description: Flag indicating if the field is mandatory
+            type:
+              - "null"
+              - boolean
   currencies_stream:
     $ref: "#/definitions/base_stream"
     name: "currencies"
@@ -191,6 +1885,47 @@ definitions:
     $parameters:
       path: "/currencies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the currency.
+            type:
+              - "null"
+              - integer
+          code:
+            description: The unique code representing the currency.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the currency.
+            type:
+              - "null"
+              - string
+          symbol:
+            description: The symbol used to represent the currency.
+            type:
+              - "null"
+              - string
+          decimal_points:
+            description: The number of decimal points used for the currency.
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Whether the currency is currently active or not.
+            type:
+              - "null"
+              - boolean
+          is_custom_flag:
+            description: Flag indicating if the currency is custom or not.
+            type:
+              - "null"
+              - boolean
   mail_stream:
     $ref: "#/definitions/base_stream"
     name: mail
@@ -226,6 +1961,206 @@ definitions:
     $parameters:
       path: "mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique ID of the mail
+            type:
+              - "null"
+              - integer
+          from:
+            description: Sender information
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: ID of the sender
+                  type:
+                    - "null"
+                    - integer
+                email_address:
+                  description: Email address of the sender
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the sender
+                  type:
+                    - "null"
+                    - string
+                linked_person_id:
+                  description: ID of the person linked to the sender
+                  type:
+                    - "null"
+                    - integer
+                linked_person_name:
+                  description: Name of the person linked to the sender
+                  type:
+                    - "null"
+                    - string
+                mail_message_party_id:
+                  description: ID of the party associated with the mail message
+                  type:
+                    - "null"
+                    - integer
+          to:
+            description: Recipient information
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: ID of the recipient
+                  type:
+                    - "null"
+                    - integer
+                email_address:
+                  description: Email address of the recipient
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the recipient
+                  type:
+                    - "null"
+                    - string
+                linked_person_id:
+                  description: ID of the person linked to the recipient
+                  type:
+                    - "null"
+                    - integer
+                linked_person_name:
+                  description: Name of the person linked to the recipient
+                  type:
+                    - "null"
+                    - string
+                mail_message_party_id:
+                  description: ID of the party associated with the mail message
+                  type:
+                    - "null"
+                    - integer
+          body_url:
+            description: URL of the body content of the mail
+            type:
+              - "null"
+              - string
+          account_id:
+            description: ID of the account associated with the mail
+            type:
+              - "null"
+              - string
+          user_id:
+            description: ID of the user associated with the mail
+            type:
+              - "null"
+              - integer
+          mail_thread_id:
+            description: ID of the mail thread
+            type:
+              - "null"
+              - integer
+          subject:
+            description: Subject of the mail
+            type:
+              - "null"
+              - string
+          snippet:
+            description: Short preview of the mail content
+            type:
+              - "null"
+              - string
+          mail_link_tracking_enabled_flag:
+            description: Flag indicating if mail tracking is enabled
+            type:
+              - "null"
+              - integer
+          read_flag:
+            description: Flag indicating if the mail has been read
+            type:
+              - "null"
+              - integer
+          draft_flag:
+            description: Flag indicating if the mail is a draft
+            type:
+              - "null"
+              - integer
+          synced_flag:
+            description: Flag indicating if the mail has been synced
+            type:
+              - "null"
+              - integer
+          deleted_flag:
+            description: Flag indicating if the mail has been deleted
+            type:
+              - "null"
+              - integer
+          has_body_flag:
+            description: Flag indicating if the mail has body content
+            type:
+              - "null"
+              - integer
+          sent_flag:
+            description: Flag indicating if the mail has been sent
+            type:
+              - "null"
+              - integer
+          sent_from_pipedrive_flag:
+            description: Flag indicating if the mail was sent from Pipedrive
+            type:
+              - "null"
+              - integer
+          smart_bcc_flag:
+            description: Flag indicating if smart BCC is enabled
+            type:
+              - "null"
+              - integer
+          message_time:
+            description: Time when the mail message was sent
+            type:
+              - "null"
+              - string
+            format: date-time
+          add_time:
+            description: Time when the mail was added
+            type:
+              - "null"
+              - string
+            format: date-time
+          update_time:
+            description: Time when the mail was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          has_attachments_flag:
+            description: Flag indicating if the mail has attachments
+            type:
+              - "null"
+              - integer
+          has_inline_attachments_flag:
+            description: Flag indicating if the mail has inline attachments
+            type:
+              - "null"
+              - integer
+          has_real_attachments_flag:
+            description: Flag indicating if the mail has real attachments
+            type:
+              - "null"
+              - integer
   organization_stream:
     $ref: "#/definitions/base_stream"
     name: "organizations"
@@ -236,12 +2171,538 @@ definitions:
       path_extractor: "organization"
       path: "/organizations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the organization
+            type:
+              - "null"
+              - number
+          company_id:
+            description: ID of the parent company the organization is associated with
+            type:
+              - "null"
+              - number
+          owner_id:
+            description: Unique identifier of the owner of the organization
+            type:
+              - "null"
+              - object
+              - number
+            properties:
+              id:
+                description: Unique identifier of the owner
+                type:
+                  - "null"
+                  - number
+              name:
+                description: Name of the owner
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the owner
+                type:
+                  - "null"
+                  - string
+              has_pic:
+                description: Flag indicating if the owner has a profile picture
+                type:
+                  - "null"
+                  - number
+              pic_hash:
+                description: Hash value of the owner's profile picture
+                type:
+                  - "null"
+                  - string
+              active_flag:
+                description: Flag indicating if the owner is currently active
+                type:
+                  - "null"
+                  - boolean
+              value:
+                description: Value associated with the owner
+                type:
+                  - "null"
+                  - number
+          name:
+            description: Name of the organization
+            type:
+              - "null"
+              - string
+          open_deals_count:
+            description: Total count of open deals involving the organization
+            type:
+              - "null"
+              - number
+          related_open_deals_count:
+            description: Total count of related open deals involving the organization
+            type:
+              - "null"
+              - number
+          closed_deals_count:
+            description: Total count of closed deals involving the organization
+            type:
+              - "null"
+              - number
+          related_closed_deals_count:
+            description: Total count of related closed deals involving the organization
+            type:
+              - "null"
+              - number
+          email_messages_count:
+            description: Total count of email messages linked to the organization
+            type:
+              - "null"
+              - number
+          people_count:
+            description: Total count of people associated with the organization
+            type:
+              - "null"
+              - number
+          activities_count:
+            description: Total count of activities associated with the organization
+            type:
+              - "null"
+              - number
+          done_activities_count:
+            description: Total count of completed activities associated with the organization
+            type:
+              - "null"
+              - number
+          undone_activities_count:
+            description:
+              Total count of activities associated with the organization
+              that are yet to be completed
+            type:
+              - "null"
+              - number
+          files_count:
+            description: Total count of files related to the organization
+            type:
+              - "null"
+              - number
+          notes_count:
+            description: Total count of notes associated with the organization
+            type:
+              - "null"
+              - number
+          followers_count:
+            description: Total count of followers of the organization
+            type:
+              - "null"
+              - number
+          won_deals_count:
+            description: Total count of won deals involving the organization
+            type:
+              - "null"
+              - number
+          related_won_deals_count:
+            description: Total count of related won deals involving the organization
+            type:
+              - "null"
+              - number
+          lost_deals_count:
+            description: Total count of lost deals involving the organization
+            type:
+              - "null"
+              - number
+          related_lost_deals_count:
+            description: Total count of related lost deals involving the organization
+            type:
+              - "null"
+              - number
+          active_flag:
+            description: Flag indicating if the organization is currently active
+            type:
+              - "null"
+              - boolean
+          picture_id:
+            description: ID of the picture associated with the organization
+            type:
+              - "null"
+              - object
+            properties:
+              item_type:
+                description: Type of the item associated with the picture
+                type:
+                  - "null"
+                  - string
+              item_id:
+                description: ID of the item associated with the picture
+                type:
+                  - "null"
+                  - number
+              active_flag:
+                description: Flag indicating if the picture is currently active
+                type:
+                  - "null"
+                  - boolean
+              add_time:
+                description: Timestamp when the picture was added
+                type:
+                  - "null"
+                  - string
+              update_time:
+                description: Timestamp when the picture was last updated
+                type:
+                  - "null"
+                  - string
+              added_by_user_id:
+                description: ID of the user who added the picture
+                type:
+                  - "null"
+                  - number
+              pictures:
+                description: Different sizes of the picture URLs
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "128":
+                    description: URL of the picture with 128px size
+                    type:
+                      - "null"
+                      - string
+                  "512":
+                    description: URL of the picture with 512px size
+                    type:
+                      - "null"
+                      - string
+              value:
+                description: Value associated with the picture
+                type:
+                  - "null"
+                  - number
+          country_code:
+            description: Country code of the organization's address
+            type:
+              - "null"
+              - string
+          first_char:
+            description: First character of the organization name
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp when the organization data was last updated
+            type:
+              - "null"
+              - string
+          add_time:
+            description: Timestamp when the organization was added
+            type:
+              - "null"
+              - string
+          visible_to:
+            description: Visibility setting for the organization
+            type:
+              - "null"
+              - number
+              - string
+          next_activity_date:
+            description: Date of the next scheduled activity involving the organization
+            type:
+              - "null"
+              - string
+          next_activity_time:
+            description: Time of the next scheduled activity involving the organization
+            type:
+              - "null"
+              - string
+          next_activity_id:
+            description: ID of the next scheduled activity involving the organization
+            type:
+              - "null"
+              - number
+          last_activity_id:
+            description: ID of the last activity involving the organization
+            type:
+              - "null"
+              - number
+          last_activity_date:
+            description: Date of the last activity involving the organization
+            type:
+              - "null"
+              - string
+          label:
+            description: Label associated with the organization
+            type:
+              - "null"
+              - number
+          address:
+            description: Primary address of the organization
+            type:
+              - "null"
+              - string
+          address_subpremise:
+            description: Subpremise of the organization's address
+            type:
+              - "null"
+              - string
+          address_street_number:
+            description: Street number of the organization's address
+            type:
+              - "null"
+              - string
+          address_route:
+            description: Route of the organization's address
+            type:
+              - "null"
+              - string
+          address_sublocality:
+            description: Sublocality of the organization's address
+            type:
+              - "null"
+              - string
+          address_locality:
+            description: Locality of the organization's address
+            type:
+              - "null"
+              - string
+          address_admin_area_level_1:
+            description: Administrative area level 1 of the organization's address
+            type:
+              - "null"
+              - string
+          address_admin_area_level_2:
+            description: Administrative area level 2 of the organization's address
+            type:
+              - "null"
+              - string
+          address_country:
+            description: Country of the organization's address
+            type:
+              - "null"
+              - string
+          address_postal_code:
+            description: Postal code of the organization's address
+            type:
+              - "null"
+              - string
+          address_formatted_address:
+            description: Formatted address of the organization
+            type:
+              - "null"
+              - string
+          owner_name:
+            description: Name of the owner of the organization
+            type:
+              - "null"
+              - string
+          cc_email:
+            description: Email address for CC'ing communication related to the organization
+            type:
+              - "null"
+              - string
+          category_id:
+            description: ID of the category the organization belongs to
+            type:
+              - "null"
+              - integer
+          delete_time:
+            description: Timestamp when the organization was deleted
+            type:
+              - "null"
+              - string
   organization_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "organization_fields"
     $parameters:
       path: "/organizationFields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the organization field.
+            type:
+              - "null"
+              - integer
+          key:
+            description: Key used to identify the organization field.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the organization field.
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number of the organization field.
+            type:
+              - "null"
+              - integer
+          field_type:
+            description: Type of the organization field (e.g., text, number, date).
+            type:
+              - "null"
+              - string
+          add_time:
+            description: Timestamp of when the organization field was added.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of when the organization field was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          last_updated_by_user_id:
+            description:
+              Identifier of the user who last updated the organization
+              field.
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Indicates whether the organization field is currently active.
+            type:
+              - "null"
+              - boolean
+          edit_flag:
+            description: Flag to indicate whether the field can be edited.
+            type:
+              - "null"
+              - boolean
+          index_visible_flag:
+            description:
+              Flag to determine if the organization field is visible in
+              indexes.
+            type:
+              - "null"
+              - boolean
+          details_visible_flag:
+            description: Indicates if the organization field details are visible.
+            type:
+              - "null"
+              - boolean
+          add_visible_flag:
+            description:
+              Indicates if the organization field is visible for adding
+              new data.
+            type:
+              - "null"
+              - boolean
+          important_flag:
+            description: Flag to indicate the importance of the organization field.
+            type:
+              - "null"
+              - boolean
+          bulk_edit_allowed:
+            description:
+              Flag to determine if bulk editing is allowed for this organization
+              field.
+            type:
+              - "null"
+              - boolean
+          searchable_flag:
+            description: Indicates if the organization field is searchable.
+            type:
+              - "null"
+              - boolean
+          filtering_allowed:
+            description:
+              Indicates if filtering is allowed based on this organization
+              field.
+            type:
+              - "null"
+              - boolean
+          sortable_flag:
+            description: Indicates that the organization field can be used for sorting.
+            type:
+              - "null"
+              - boolean
+          parent_id:
+            description: ID of the parent field if this is a subfield.
+            type:
+              - "null"
+              - integer
+          id_suffix:
+            description: Additional identifier for the organization field.
+            type:
+              - "null"
+              - string
+          is_subfield:
+            description:
+              Flag to signify if the field is a subfield of another organization
+              field.
+            type:
+              - "null"
+              - boolean
+          json_column_flag:
+            description: Flag to show if the organization field is in JSON format.
+            type:
+              - "null"
+              - boolean
+          group_id:
+            description: ID of the group to which the organization field belongs.
+            type:
+              - "null"
+              - integer
+          options:
+            description: List of options to choose from for the organization field.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the option.
+                  type:
+                    - "null"
+                    - integer
+                    - string
+                    - boolean
+                label:
+                  description: Label representing the option.
+                  type:
+                    - "null"
+                    - string
+          mandatory_flag:
+            description: Flag to indicate whether the organization field is mandatory.
+            type:
+              - "null"
+              - boolean
+          display_name:
+            description: Name used for displaying the organization field.
+            type:
+              - "null"
+              - string
+          use_field:
+            description:
+              Flag to determine if the organization field is in use or
+              not.
+            type:
+              - "null"
+              - string
+          display_field:
+            description: Flag to indicate if the field should be displayed or not.
+            type:
+              - "null"
+              - string
+          link:
+            description: URL link associated with the organization field.
+            type:
+              - "null"
+              - string
   permission_sets_stream:
     $ref: "#/definitions/base_stream"
     name: "permission_sets"
@@ -252,6 +2713,37 @@ definitions:
     $parameters:
       path: "/permissionSets"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the permission set.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the permission set.
+            type:
+              - "null"
+              - string
+          assignment_count:
+            description: The count of users assigned to this permission set.
+            type:
+              - "null"
+              - integer
+          app:
+            description: The application associated with the permission set.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type or category of the permission set.
+            type:
+              - "null"
+              - string
   persons_stream:
     $ref: "#/definitions/base_stream"
     name: "persons"
@@ -264,12 +2756,484 @@ definitions:
       path_extractor: "person"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the person
+            type:
+              - "null"
+              - integer
+          company_id:
+            description: ID of the company associated with the person
+            type:
+              - "null"
+              - integer
+          owner_id:
+            description: ID of the owner of the person
+            type:
+              - "null"
+              - integer
+          org_id:
+            description: ID of the organization associated with the person
+            type:
+              - "null"
+              - integer
+          name:
+            description: Full name of the person
+            type:
+              - "null"
+              - string
+          first_name:
+            description: First name of the person
+            type:
+              - "null"
+              - string
+          last_name:
+            description: Last name of the person
+            type:
+              - "null"
+              - string
+          open_deals_count:
+            description: Total count of open deals for the person
+            type:
+              - "null"
+              - integer
+          related_open_deals_count:
+            description: Total count of open deals involving related parties
+            type:
+              - "null"
+              - integer
+          closed_deals_count:
+            description: Total count of deals that are closed for the person
+            type:
+              - "null"
+              - integer
+          related_closed_deals_count:
+            description: Total count of deals closed by related parties
+            type:
+              - "null"
+              - integer
+          participant_open_deals_count:
+            description: Total count of open deals involving the person
+            type:
+              - "null"
+              - integer
+          participant_closed_deals_count:
+            description: Total count of deals closed by the person
+            type:
+              - "null"
+              - integer
+          email_messages_count:
+            description: Total count of email messages sent/received
+            type:
+              - "null"
+              - integer
+          activities_count:
+            description: Total count of activities associated with the person
+            type:
+              - "null"
+              - integer
+          done_activities_count:
+            description: Total count of completed activities
+            type:
+              - "null"
+              - integer
+          undone_activities_count:
+            description: Total count of incomplete activities
+            type:
+              - "null"
+              - integer
+          files_count:
+            description: Total count of files associated with the person
+            type:
+              - "null"
+              - integer
+          notes_count:
+            description: Total count of notes associated with the person
+            type:
+              - "null"
+              - integer
+          followers_count:
+            description: Total count of followers for the person
+            type:
+              - "null"
+              - integer
+          won_deals_count:
+            description: Total count of deals won by the person
+            type:
+              - "null"
+              - integer
+          related_won_deals_count:
+            description: Total count of deals won by related parties
+            type:
+              - "null"
+              - integer
+          lost_deals_count:
+            description: Total count of deals that are lost for the person
+            type:
+              - "null"
+              - integer
+          related_lost_deals_count:
+            description: Total count of deals lost by related parties
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Indicates if the person is currently active
+            type:
+              - "null"
+              - boolean
+          phone:
+            description: Phone numbers associated with the person
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                label:
+                  description: Label for the phone number
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Phone number of the person
+                  type:
+                    - "null"
+                    - string
+                primary:
+                  description: Indicates if the phone number is primary
+                  type:
+                    - "null"
+                    - boolean
+          email:
+            description: Email addresses associated with the person
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                label:
+                  description: Label for the email address
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: Email address of the person
+                  type:
+                    - "null"
+                    - string
+                primary:
+                  description: Indicates if the email address is primary
+                  type:
+                    - "null"
+                    - boolean
+          first_char:
+            description: First character of the person's name
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of the last update to the person data
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          add_time:
+            description: Timestamp when the person was added
+            type:
+              - "null"
+              - string
+          visible_to:
+            description: Visibility settings for the person
+            type:
+              - "null"
+              - string
+          picture_id:
+            description: ID of the picture associated with the person
+            type:
+              - "null"
+              - object
+            properties:
+              item_type:
+                description: Type of the item the picture is associated with
+                type:
+                  - "null"
+                  - string
+              item_id:
+                description: ID of the item (person) the picture is associated with
+                type:
+                  - "null"
+                  - integer
+              active_flag:
+                description: Indicates if the picture is active
+                type:
+                  - "null"
+                  - boolean
+              add_time:
+                description: Timestamp when the picture was added
+                type:
+                  - "null"
+                  - string
+              update_time:
+                description: Timestamp of the last update to the picture
+                type:
+                  - "null"
+                  - string
+              added_by_user_id:
+                description: ID of the user who added the picture
+                type:
+                  - "null"
+                  - integer
+              pictures:
+                description:
+                  Additional details about the pictures associated with
+                  the person
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "128":
+                    description: URL of the picture (128px)
+                    type:
+                      - "null"
+                      - string
+                  "512":
+                    description: URL of the picture (512px)
+                    type:
+                      - "null"
+                      - string
+              value:
+                description: Value of the picture ID
+                type:
+                  - "null"
+                  - integer
+          next_activity_date:
+            description: Date of the next activity for the person
+            type:
+              - "null"
+              - string
+            format: date
+          next_activity_time:
+            description: Time of the next activity for the person
+            type:
+              - "null"
+              - string
+            format: time
+          next_activity_id:
+            description: ID of the next activity for the person
+            type:
+              - "null"
+              - integer
+          last_activity_id:
+            description: ID of the last activity for the person
+            type:
+              - "null"
+              - integer
+          last_activity_date:
+            description: Date of the last activity associated with the person
+            type:
+              - "null"
+              - string
+          last_incoming_mail_time:
+            description: Timestamp of the last incoming mail
+            type:
+              - "null"
+              - string
+          last_outgoing_mail_time:
+            description: Timestamp of the last outgoing mail
+            type:
+              - "null"
+              - string
+          label:
+            description: Label associated with the person
+            type:
+              - "null"
+              - integer
+          org_name:
+            description: Name of the organization associated with the person
+            type:
+              - "null"
+              - string
+          owner_name:
+            description: Name of the owner of the person
+            type:
+              - "null"
+              - string
+          cc_email:
+            description: Email address for CC'ing the person
+            type:
+              - "null"
+              - string
+          picture_128_url:
+            description: URL of the person's profile picture (128px)
+            type:
+              - "null"
+              - string
+          delete_time:
+            description: Timestamp when the person was deleted
+            type:
+              - "null"
+              - string
   person_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "person_fields"
     $parameters:
       path: "/personFields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the person field
+            type:
+              - "null"
+              - integer
+          key:
+            description: Key associated with the person field
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the person field
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number of the person field
+            type:
+              - "null"
+              - integer
+          field_type:
+            description: Type of the person field (e.g., text, number, etc.)
+            type:
+              - "null"
+              - string
+          json_column_flag:
+            description: Flag indicating if the person field represents a JSON column
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Timestamp of when the person field was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of when the person field was last updated
+            type:
+              - "null"
+              - string
+          last_updated_by_user_id:
+            description: ID of the user who last updated the person field
+            type:
+              - "null"
+              - integer
+          edit_flag:
+            description: Flag indicating if the person field is editable
+            type:
+              - "null"
+              - boolean
+          details_visible_flag:
+            description: Flag indicating if the person field details are visible
+            type:
+              - "null"
+              - boolean
+          add_visible_flag:
+            description:
+              Flag indicating if the person field is visible during adding
+              a person
+            type:
+              - "null"
+              - boolean
+          important_flag:
+            description: Flag indicating if the person field is important
+            type:
+              - "null"
+              - boolean
+          bulk_edit_allowed:
+            description: Flag indicating if bulk editing of this person field is allowed
+            type:
+              - "null"
+              - boolean
+          filtering_allowed:
+            description: Flag indicating if filtering by this person field is allowed
+            type:
+              - "null"
+              - boolean
+          sortable_flag:
+            description: Flag indicating if the person field is sortable
+            type:
+              - "null"
+              - boolean
+          mandatory_flag:
+            description: Flag indicating if the person field is mandatory
+            type:
+              - "null"
+              - boolean
+          link:
+            description: Link associated with the person field
+            type:
+              - "null"
+              - string
+          use_field:
+            description: Field indicating the usage of the person field
+            type:
+              - "null"
+              - string
+          display_field:
+            description: Flag indicating if the person field should be displayed
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if the person field is currently active
+            type:
+              - "null"
+              - boolean
+          index_visible_flag:
+            description: Flag indicating if the person field is visible in the index
+            type:
+              - "null"
+              - boolean
+          searchable_flag:
+            description: Flag indicating if the person field is searchable
+            type:
+              - "null"
+              - boolean
+          options:
+            description: Options available for the person field
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier of the option
+                  type:
+                    - "null"
+                    - boolean
+                    - integer
+                label:
+                  description: Label associated with the option
+                  type:
+                    - "null"
+                    - string
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     name: "pipelines"
@@ -282,6 +3246,59 @@ definitions:
       path_extractor: "pipeline"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the pipeline.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the pipeline.
+            type:
+              - "null"
+              - string
+          url_title:
+            description: The URL title of the pipeline.
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: The order number of the pipeline.
+            type:
+              - "null"
+              - integer
+          active:
+            description: Indicates if the pipeline is active or not.
+            type:
+              - "null"
+              - boolean
+          deal_probability:
+            description: The probability of a deal closing in this pipeline.
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: The time the pipeline was added.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: The time the pipeline was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          selected:
+            description: Indicates if the pipeline is selected or not.
+            type:
+              - "null"
+              - boolean
   products_stream:
     $ref: "#/definitions/base_stream"
     name: "products"
@@ -294,18 +3311,335 @@ definitions:
       path_extractor: "product"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the product
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the product
+            type:
+              - "null"
+              - string
+          code:
+            description: Unique code assigned to the product
+            type:
+              - "null"
+              - string
+          description:
+            description: Detailed description of the product
+            type:
+              - "null"
+              - string
+          unit:
+            description: Unit of measurement for the product
+            type:
+              - "null"
+              - string
+          tax:
+            description: Tax details applicable to the product
+            type:
+              - "null"
+              - integer
+          category:
+            description: Category under which the product is classified
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if the product is active or not
+            type:
+              - "null"
+              - boolean
+          selectable:
+            description: Flag indicating if the product is selectable or not
+            type:
+              - "null"
+              - boolean
+          first_char:
+            description: First character of the product name
+            type:
+              - "null"
+              - string
+          visible_to:
+            description: Visibility settings for the product
+            type:
+              - "null"
+              - string
+          owner_id:
+            description: Unique identifier of the owner of the product
+            type:
+              - "null"
+              - integer
+          files_count:
+            description: Number of files associated with the product
+            type:
+              - "null"
+              - integer
+          add_time:
+            description: Timestamp when the product was added
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp when the product was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          prices:
+            description: Represents the pricing details of the products
+            type: array
+            items:
+              description: Individual pricing information for a product
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the price
+                  type:
+                    - "null"
+                    - integer
+                product_id:
+                  description: Identifier of the product to which the price belongs
+                  type:
+                    - "null"
+                    - integer
+                price:
+                  description: Selling price of the product
+                  type:
+                    - "null"
+                    - integer
+                currency:
+                  description: Currency in which the prices are denoted
+                  type:
+                    - "null"
+                    - string
+                cost:
+                  description: Cost price of the product
+                  type:
+                    - "null"
+                    - integer
+                overhead_cost:
+                  description: Overhead cost associated with the product
+                  type:
+                    - "null"
+                    - integer
+          owner_name:
+            description: Name of the owner of the product
+            type:
+              - "null"
+              - string
   product_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "product_fields"
     $parameters:
       path: "/productFields"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the product field.
+            type:
+              - "null"
+              - integer
+          key:
+            description: Key representing the product field.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the product field.
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number of the product field.
+            type:
+              - "null"
+              - integer
+          field_type:
+            description: Type of the product field (e.g., text, number, date).
+            type:
+              - "null"
+              - string
+          json_column_flag:
+            description: Flag indicating whether the field is a JSON column.
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Timestamp for when the product field was added.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp for when the product field was last updated.
+            type:
+              - "null"
+              - string
+          last_updated_by_user_id:
+            description: ID of the user who last updated the product field.
+            type:
+              - "null"
+              - integer
+          edit_flag:
+            description: Flag to indicate if the field is editable.
+            type:
+              - "null"
+              - boolean
+          details_visible_flag:
+            description: Flag indicating if the details of the product field are visible.
+            type:
+              - "null"
+              - boolean
+          add_visible_flag:
+            description:
+              Flag to show if the product field is visible when adding
+              a new product.
+            type:
+              - "null"
+              - boolean
+          important_flag:
+            description: Flag indicating if the product field is important.
+            type:
+              - "null"
+              - boolean
+          bulk_edit_allowed:
+            description: Flag indicating if bulk editing is allowed for this field.
+            type:
+              - "null"
+              - boolean
+          filtering_allowed:
+            description: Flag to show if filtering is allowed on this field.
+            type:
+              - "null"
+              - boolean
+          sortable_flag:
+            description: Flag indicating if the product field is sortable.
+            type:
+              - "null"
+              - boolean
+          mandatory_flag:
+            description: Flag indicating if the field is mandatory.
+            type:
+              - "null"
+              - boolean
+          link:
+            description: Link associated with the product field.
+            type:
+              - "null"
+              - string
+          use_field:
+            description: Field used for a specific purpose.
+            type:
+              - "null"
+              - string
+          display_field:
+            description: Field used for display purposes.
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Indicates whether the product field is active or not.
+            type:
+              - "null"
+              - boolean
+          index_visible_flag:
+            description:
+              Flag to show if the product field is visible in the index
+              view.
+            type:
+              - "null"
+              - boolean
+          searchable_flag:
+            description: Flag indicating if the product field is searchable.
+            type:
+              - "null"
+              - boolean
+          options:
+            description: List of options available for the product field.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for an option.
+                  type:
+                    - "null"
+                    - string
+                    - boolean
+                    - integer
+                label:
+                  description: Label for the option.
+                  type:
+                    - "null"
+                    - string
   roles_stream:
     $ref: "#/definitions/base_stream"
     name: "roles"
     $parameters:
       path: "/roles"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the role.
+            type:
+              - "null"
+              - integer
+          parent_role_id:
+            description: ID of the parent role if this role has any.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the role.
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Flag indicating if the role is currently active or not.
+            type:
+              - "null"
+              - boolean
+          assignment_count:
+            description: The count of assignments associated with this role.
+            type:
+              - "null"
+              - string
+          sub_role_count:
+            description: The count of sub-roles under this role.
+            type:
+              - "null"
+              - string
+          level:
+            description: The level or hierarchy of the role.
+            type:
+              - "null"
+              - integer
+          description:
+            description: Description or details of the role.
+            type:
+              - "null"
+              - string
   stages_stream:
     $ref: "#/definitions/base_stream"
     name: "stages"
@@ -318,6 +3652,76 @@ definitions:
       path_extractor: "stage"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the stage.
+            type:
+              - "null"
+              - integer
+          order_nr:
+            description: Numerical order of the stage in the pipeline.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the stage.
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Indicates if the stage is active or not.
+            type:
+              - "null"
+              - boolean
+          deal_probability:
+            description: Percentage indicating the likelihood of a deal at this stage.
+            type:
+              - "null"
+              - integer
+          pipeline_id:
+            description: Unique identifier for the pipeline to which the stage belongs.
+            type:
+              - "null"
+              - integer
+          rotten_flag:
+            description: Flag indicating if a deal in this stage is 'rotten'.
+            type:
+              - "null"
+              - boolean
+          rotten_days:
+            description: Number of days after which a deal in this stage becomes 'rotten'.
+            type:
+              - "null"
+              - integer
+          add_time:
+            description: Timestamp when the stage was created.
+            type:
+              - "null"
+              - string
+          update_time:
+            description: Timestamp of the last update made to the stage.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
+          pipeline_name:
+            description: Name of the pipeline to which the stage belongs.
+            type:
+              - "null"
+              - string
+          pipeline_deal_probability:
+            description:
+              Aggregated deal probability across all deals in the pipeline
+              at this stage.
+            type:
+              - "null"
+              - boolean
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
@@ -331,7 +3735,9 @@ definitions:
       cursor_field: "modified"
       datetime_format: "%Y-%m-%d %H:%M:%S"
       start_datetime:
-        datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S') }}"
+        datetime:
+          "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d
+          %H:%M:%S') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S"
       start_time_option:
         field_name: "since_timestamp"
@@ -340,6 +3746,112 @@ definitions:
       path_extractor: "user"
       path: "/recents"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the user.
+            type:
+              - "null"
+              - string
+          default_currency:
+            description: The default currency used by the user.
+            type:
+              - "null"
+              - string
+          locale:
+            description: Locale setting of the user.
+            type:
+              - "null"
+              - string
+          lang:
+            description: Preferred language chosen by the user.
+            type:
+              - "null"
+              - integer
+          email:
+            description: Email address associated with the user.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number of the user.
+            type:
+              - "null"
+              - string
+          activated:
+            description: Indicates if the user account is activated or not.
+            type:
+              - "null"
+              - boolean
+          last_login:
+            description: Timestamp for the user's last login.
+            type:
+              - "null"
+              - string
+          created:
+            description: Timestamp for when the user account was created.
+            type:
+              - "null"
+              - string
+          modified:
+            description: Timestamp for when the user account was last modified.
+            type:
+              - "null"
+              - string
+          signup_flow_variation:
+            description: Variation of the signup flow experienced by the user.
+            type:
+              - "null"
+              - string
+          has_created_company:
+            description: Flag indicating if the user has created a company.
+            type:
+              - "null"
+              - boolean
+          is_admin:
+            description: Flag indicating if the user is an administrator.
+            type:
+              - "null"
+              - integer
+          active_flag:
+            description: Flag to show the active status of the user.
+            type:
+              - "null"
+              - boolean
+          timezone_name:
+            description: Name of the timezone set for the user.
+            type:
+              - "null"
+              - string
+          timezone_offset:
+            description: Offset from UTC timezone configured for the user.
+            type:
+              - "null"
+              - string
+          role_id:
+            description: Identifier for the role assigned to the user.
+            type:
+              - "null"
+              - integer
+          icon_url:
+            description: URL to the user's profile picture or icon.
+            type:
+              - "null"
+              - string
+          is_you:
+            description: Flag indicating if the user is the authenticated user.
+            type:
+              - "null"
+              - boolean
   deal_products_stream:
     name: "deal_products"
     retriever:
@@ -354,6 +3866,124 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the deal product
+            type:
+              - "null"
+              - integer
+          deal_id:
+            description: Unique identifier of the deal associated with the product
+            type:
+              - "null"
+              - integer
+          product_id:
+            description:
+              Unique identifier of the product associated with the deal
+              product
+            type:
+              - "null"
+              - integer
+          product_variation_id:
+            description: Unique identifier of the product variation
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the deal product
+            type:
+              - "null"
+              - string
+          order_nr:
+            description: Order number of the deal product
+            type:
+              - "null"
+              - integer
+          item_price:
+            description: Price of a single item of the deal product
+            type:
+              - "null"
+              - integer
+          quantity:
+            description: Quantity of the deal product
+            type:
+              - "null"
+              - integer
+          discount_percentage:
+            description: Percentage value of discount applied to the deal product
+            type:
+              - "null"
+              - integer
+          duration:
+            description: Duration of the deal product
+            type:
+              - "null"
+              - integer
+          duration_unit:
+            description: Unit of measurement for the duration (e.g., days, months)
+            type:
+              - "null"
+              - string
+          sum_no_discount:
+            description: Total sum of the deal product without any discounts applied
+            type:
+              - "null"
+              - integer
+          sum:
+            description: Total sum of the deal product after discounts and taxes
+            type:
+              - "null"
+              - integer
+          currency:
+            description: Currency used for the deal product pricing
+            type:
+              - "null"
+              - string
+          active_flag:
+            description: Indicates if the deal product is currently active
+            type:
+              - "null"
+              - boolean
+          enabled_flag:
+            description: Flag indicating if the deal product is enabled
+            type:
+              - "null"
+              - boolean
+          add_time:
+            description: Timestamp of when the deal product was added
+            type:
+              - "null"
+              - string
+          last_edit:
+            description: Timestamp of the last edit made to the deal product
+            type:
+              - "null"
+              - string
+          comments:
+            description: Additional comments or notes related to the deal product
+            type:
+              - "null"
+              - string
+          tax:
+            description: Tax amount applied to the deal product
+            type:
+              - "null"
+              - number
+          quantity_formatted:
+            description: Formatted quantity of the deal product
+            type:
+              - "null"
+              - string
+          sum_formatted:
+            description: Formatted total sum of the deal product
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/deals_stream"
   - "#/definitions/deal_fields_stream"
