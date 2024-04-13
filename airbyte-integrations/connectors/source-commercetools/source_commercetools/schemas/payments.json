@@ -4,104 +4,132 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the payment",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "A key associated with the payment",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version of the payment data",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "The date and time when the payment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
+      "description": "The user who created the payment",
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
+      "description": "The date and time when the payment was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
+      "description": "The user who last modified the payment",
       "$ref": "last_modified_by.json"
     },
     "customer": {
+      "description": "The customer associated with the payment",
       "$ref": "reference.json"
     },
     "anonymousId": {
+      "description": "An ID representing an anonymous user",
       "type": ["null", "string"]
     },
     "interfaceId": {
+      "description": "The ID of the payment interface",
       "type": ["null", "string"]
     },
     "amountPlanned": {
+      "description": "The amount planned for the payment",
       "$ref": "money.json"
     },
     "paymentMethodInfo": {
+      "description": "Information about the payment method",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "paymentInterface": {
+          "description": "The interface used for the payment method",
           "type": ["null", "string"]
         },
         "method": {
+          "description": "The payment method used",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the payment method",
           "$ref": "localized_string.json"
         }
       }
     },
     "paymentStatus": {
+      "description": "Status information of the payment",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "interfaceCode": {
+          "description": "The code provided by the payment interface",
           "type": ["null", "string"]
         },
         "interfaceText": {
+          "description": "The text message provided by the payment interface",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "The state of the payment",
           "$ref": "reference.json"
         }
       }
     },
     "transactions": {
+      "description": "The transactions associated with the payment",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "id": {
+            "description": "The unique identifier of the transaction",
             "type": ["null", "string"]
           },
           "timestamp": {
+            "description": "The timestamp of the transaction",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "The type of the transaction",
             "type": ["null", "string"]
           },
           "amount": {
+            "description": "The amount of the transaction",
             "$ref": "money.json"
           },
           "interactionId": {
+            "description": "The ID of the interaction related to the transaction",
             "type": ["null", "string"]
           },
           "state": {
+            "description": "The state of the transaction",
             "type": ["null", "string"]
           }
         }
       }
     },
     "interfaceInteractions": {
+      "description": "Interactions related to the payment",
       "type": ["null", "array"],
       "items": {
         "$ref": "custom.json"
       }
     },
     "custom": {
+      "description": "Custom data associated with the payment",
       "$ref": "custom.json"
     }
   }
