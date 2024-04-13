@@ -4,42 +4,54 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the project membership.",
       "type": ["null", "integer"]
     },
     "kind": {
+      "description": "The type of the project membership.",
       "type": ["null", "string"]
     },
     "last_viewed_at": {
+      "description": "The date and time when the project membership was last viewed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the project membership was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the project membership was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "project_id": {
+      "description": "Unique identifier for the project associated with the membership.",
       "type": ["null", "integer"]
     },
     "favorite": {
+      "description": "Indicates if the project membership is marked as favorite.",
       "type": ["null", "boolean"]
     },
     "project_color": {
+      "description": "The color associated with the project.",
       "type": ["null", "string"]
     },
     "role": {
+      "description": "The role of the person within the project.",
       "type": ["null", "string"]
     },
     "wants_comment_notification_emails": {
+      "description": "Indicates if the person wants to receive comment notification emails.",
       "type": ["null", "boolean"]
     },
     "will_receive_mention_notifications_or_emails": {
+      "description": "Indicates if the person will receive mention notifications or emails.",
       "type": ["null", "boolean"]
     },
     "person": {
+      "description": "Information about the person associated with the project membership.",
       "$ref": "person.json"
     }
   }

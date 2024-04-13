@@ -3,95 +3,125 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the project.",
       "type": ["null", "integer"]
     },
     "kind": {
+      "description": "The type or category of the project.",
       "type": ["null", "string"]
     },
     "show_priority_icon": {
+      "description": "Determines if priority icons are shown within the project.",
       "type": ["null", "boolean"]
     },
     "show_priority_icon_in_all_panels": {
+      "description": "Specifies if priority icons are displayed in all panels of the project.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the project was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the project was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "project_id": {
+      "description": "The unique identifier of the project.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the project.",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "The unique identifier of the account associated with the project.",
       "type": ["null", "integer"]
     },
     "version": {
+      "description": "The version or release of the project.",
       "type": ["null", "integer"]
     },
     "iteration_length": {
+      "description": "The duration of each iteration in the project.",
       "type": ["null", "integer"]
     },
     "current_iteration_number": {
+      "description": "The number assigned to the current iteration of the project.",
       "type": ["null", "integer"]
     },
     "week_start_day": {
+      "description": "Specifies the starting day of the week for the project.",
       "type": ["null", "string"]
     },
     "point_scale": {
+      "description": "Defines the scale used for assigning points in the project.",
       "type": ["null", "string"]
     },
     "point_scale_is_custom": {
+      "description": "Specifies if the point scale is custom for the project.",
       "type": ["null", "boolean"]
     },
     "bugs_and_chores_are_estimatable": {
+      "description": "Indicates whether bugs and chores are estimatable within the project.",
       "type": ["null", "boolean"]
     },
     "automatic_planning": {
+      "description": "Specifies if automatic planning is enabled for the project.",
       "type": ["null", "boolean"]
     },
     "enable_tasks": {
+      "description": "Indicates if tasks are enabled within the project.",
       "type": ["null", "boolean"]
     },
     "time_zone": {
+      "description": "The time zone setting for the project.",
       "type": ["null", "object"]
     },
     "velocity_averaged_over": {
+      "description": "Specifies the method used to average velocity in the project.",
       "type": ["null", "integer"]
     },
     "number_of_done_iterations_to_show": {
+      "description": "The number of done iterations displayed in the project.",
       "type": ["null", "integer"]
     },
     "has_google_domain": {
+      "description": "Denotes if the project is associated with a Google domain.",
       "type": ["null", "boolean"]
     },
     "enable_incoming_emails": {
+      "description": "Specifies if incoming emails are enabled for the project.",
       "type": ["null", "boolean"]
     },
     "initial_velocity": {
+      "description": "The initial velocity set for the project.",
       "type": ["null", "integer"]
     },
     "public": {
+      "description": "Indicates whether the project is public or not.",
       "type": ["null", "boolean"]
     },
     "atom_enabled": {
+      "description": "Indicates if Atom feeds are enabled for the project.",
       "type": ["null", "boolean"]
     },
     "enable_following": {
+      "description": "Determines if following is enabled for the project.",
       "type": ["null", "boolean"]
     },
     "show_story_priority": {
+      "description": "Denotes if story priority is shown in the project.",
       "type": ["null", "boolean"]
     },
     "project_type": {
+      "description": "The type of project (e.g., software development, marketing, etc.).",
       "type": ["null", "string"]
     },
     "start_time": {
+      "description": "The start date and time of the project.",
       "type": ["null", "string"],
       "format": "date-time"
     }
