@@ -3,8 +3,10 @@
   "additionalProperties": true,
   "properties": {
     "note_attributes": {
+      "description": "Additional notes or attributes associated with the checkout",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each note attribute",
         "type": ["null", "object"],
         "properties": {
           "name": {
@@ -40,6 +42,7 @@
       "type": ["null", "string"]
     },
     "billing_address": {
+      "description": "Information about the billing address associated with the checkout",
       "type": ["null", "object"],
       "properties": {
         "phone": {
@@ -109,8 +112,10 @@
       "type": ["null", "string"]
     },
     "discount_codes": {
+      "description": "List of discount codes applied to the checkout",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each discount code",
         "type": ["null", "object"],
         "properties": {
           "type": {
@@ -159,12 +164,16 @@
       "type": ["null", "integer"]
     },
     "tax_lines": {
+      "description": "List of tax lines associated with the checkout",
       "items": {
+        "description": "Details of each tax line",
         "properties": {
           "price_set": {
+            "description": "Price details of the tax line",
             "type": ["null", "object"],
             "properties": {
               "shop_money": {
+                "description": "Tax amount in the shop's currency",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -178,6 +187,7 @@
                 }
               },
               "presentment_money": {
+                "description": "Tax amount in the currency of presentation",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -263,7 +273,9 @@
       "type": ["null", "number"]
     },
     "line_items": {
+      "description": "List of purchased items in the checkout",
       "items": {
+        "description": "Details of each purchased item",
         "properties": {
           "sku": {
             "description": "SKU of the product",
@@ -335,8 +347,10 @@
       "type": ["null", "string"]
     },
     "shipping_lines": {
+      "description": "List of shipping methods selected for the checkout",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each selected shipping method",
         "type": ["null", "object"],
         "properties": {
           "applied_discounts": {
@@ -383,12 +397,16 @@
             "type": ["null", "string"]
           },
           "tax_lines": {
+            "description": "List of tax lines associated with the shipping method",
             "items": {
+              "description": "Details of each tax line",
               "properties": {
                 "price_set": {
+                  "description": "Price details of the tax line",
                   "type": ["null", "object"],
                   "properties": {
                     "shop_money": {
+                      "description": "Tax amount in the shop's currency",
                       "type": ["null", "object"],
                       "properties": {
                         "amount": {
@@ -402,6 +420,7 @@
                       }
                     },
                     "presentment_money": {
+                      "description": "Tax amount in the currency of presentation",
                       "type": ["null", "object"],
                       "properties": {
                         "amount": {
@@ -478,6 +497,7 @@
       "type": ["null", "string"]
     },
     "shipping_address": {
+      "description": "Information about the shipping address for the checkout",
       "type": ["null", "object"],
       "properties": {
         "phone": {
@@ -551,6 +571,7 @@
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "Details of the customer who initiated the checkout",
       "type": "object",
       "properties": {
         "last_order_name": {
@@ -570,6 +591,7 @@
           "type": ["null", "string"]
         },
         "default_address": {
+          "description": "Default shipping address of the customer",
           "type": ["null", "object"],
           "properties": {
             "city": {
@@ -684,8 +706,10 @@
           "type": ["null", "string"]
         },
         "addresses": {
+          "description": "List of addresses associated with the customer",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual address details",
             "type": ["null", "object"],
             "properties": {
               "city": {
@@ -768,6 +792,7 @@
           "type": ["null", "string"]
         },
         "tax_exemptions": {
+          "description": "Any tax exemptions applicable to the customer",
           "type": ["null", "array"],
           "items": {
             "description": "List of tax exemptions",

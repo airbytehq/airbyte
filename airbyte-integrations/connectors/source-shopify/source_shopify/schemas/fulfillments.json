@@ -32,6 +32,7 @@
       "type": ["null", "integer"]
     },
     "origin_address": {
+      "description": "Address information for the origin of the fulfillment",
       "type": ["null", "object"],
       "properties": {
         "address1": {
@@ -61,6 +62,7 @@
       }
     },
     "receipt": {
+      "description": "Receipt details for the fulfillment",
       "type": ["null", "object"],
       "properties": {
         "testcase": {
@@ -90,6 +92,7 @@
       "type": ["null", "string"]
     },
     "tracking_numbers": {
+      "description": "Tracking numbers associated with the fulfillment",
       "type": ["null", "array"],
       "items": {
         "description": "List of tracking numbers associated with the shipment.",
@@ -97,6 +100,7 @@
       }
     },
     "tracking_urls": {
+      "description": "Tracking URLs for tracking the fulfillment",
       "type": ["null", "array"],
       "items": {
         "description": "List of tracking URLs associated with the shipment.",
@@ -121,6 +125,7 @@
       "type": ["null", "string"]
     },
     "line_items": {
+      "description": "Information about line items included in the fulfillment",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -146,9 +151,11 @@
             "type": ["null", "string"]
           },
           "price_set": {
+            "description": "Set of prices for the line item",
             "type": ["null", "object"],
             "properties": {
               "shop_money": {
+                "description": "Price in shop's currency",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -162,6 +169,7 @@
                 }
               },
               "presentment_money": {
+                "description": "Price in presentment currency",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -221,6 +229,7 @@
             "type": ["null", "string"]
           },
           "properties": {
+            "description": "Other properties related to the line item",
             "type": ["null", "array"],
             "items": {
               "description": "Additional properties associated with the line item.",
@@ -240,9 +249,11 @@
             "type": ["null", "string"]
           },
           "total_discount_set": {
+            "description": "Set of total discounts for the line item",
             "type": ["null", "object"],
             "properties": {
               "shop_money": {
+                "description": "Total discount amount in shop's currency",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -256,6 +267,7 @@
                 }
               },
               "presentment_money": {
+                "description": "Total discount amount in presentment currency",
                 "type": ["null", "object"],
                 "properties": {
                   "amount": {
@@ -279,6 +291,7 @@
             "type": ["null", "integer"]
           },
           "tax_lines": {
+            "description": "Tax lines related to the line item",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -292,6 +305,7 @@
                   "type": ["null", "number"]
                 },
                 "price_set": {
+                  "description": "Set of prices for tax lines",
                   "type": ["null", "object"],
                   "properties": {
                     "shop_money": {
@@ -332,6 +346,7 @@
             }
           },
           "duties": {
+            "description": "Information about duties associated with the line item",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -349,6 +364,7 @@
                   "type": ["null", "string"]
                 },
                 "shop_money": {
+                  "description": "Duties amount in shop's currency",
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
@@ -362,6 +378,7 @@
                   }
                 },
                 "presentment_money": {
+                  "description": "Duties amount in presentment currency",
                   "type": ["null", "object"],
                   "properties": {
                     "amount": {
@@ -375,6 +392,7 @@
                   }
                 },
                 "tax_lines": {
+                  "description": "Tax lines related to duties",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "object"],
@@ -392,6 +410,7 @@
                         "type": ["null", "number"]
                       },
                       "price_set": {
+                        "description": "Set of prices for tax lines",
                         "type": ["null", "object"],
                         "properties": {
                           "shop_money": {
@@ -431,6 +450,7 @@
             }
           },
           "discount_allocations": {
+            "description": "List of discount allocations associated with the line item",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -457,6 +477,7 @@
                   "type": ["null", "number"]
                 },
                 "amount_set": {
+                  "description": "Set of amounts for discount allocations",
                   "type": ["null", "object"],
                   "properties": {
                     "shop_money": {
@@ -500,6 +521,7 @@
       }
     },
     "duties": {
+      "description": "Information about duties associated with the fulfillment",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -517,6 +539,7 @@
             "type": ["null", "string"]
           },
           "shop_money": {
+            "description": "Duties amount in shop's currency",
             "type": ["null", "object"],
             "properties": {
               "amount": {
@@ -530,6 +553,7 @@
             }
           },
           "presentment_money": {
+            "description": "Duties amount in presentment currency",
             "type": ["null", "object"],
             "properties": {
               "amount": {
@@ -543,6 +567,7 @@
             }
           },
           "tax_lines": {
+            "description": "Tax lines related to duties",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
@@ -560,6 +585,7 @@
                   "type": ["null", "number"]
                 },
                 "price_set": {
+                  "description": "Set of prices for tax lines",
                   "type": ["null", "object"],
                   "properties": {
                     "shop_money": {

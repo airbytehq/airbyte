@@ -23,6 +23,7 @@
       "type": ["null", "string"]
     },
     "default_address": {
+      "description": "Customer's default address",
       "type": ["null", "object"],
       "properties": {
         "city": {
@@ -96,6 +97,7 @@
       }
     },
     "email_marketing_consent": {
+      "description": "Indicates if the customer has consented to receive marketing emails",
       "type": ["null", "object"],
       "properties": {
         "consent_updated_at": {
@@ -155,6 +157,7 @@
       "type": ["null", "string"]
     },
     "addresses": {
+      "description": "List of addresses associated with the customer",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -271,6 +274,7 @@
       "format": "date-time"
     },
     "sms_marketing_consent": {
+      "description": "Indicates if the customer has consented to receive marketing SMS messages",
       "type": ["null", "object"],
       "properties": {
         "consent_collected_from": {

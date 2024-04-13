@@ -62,9 +62,11 @@
       "type": ["null", "string"]
     },
     "total_unsettled_set": {
+      "description": "Total unsettled amount of the transaction",
       "type": ["null", "object"],
       "properties": {
         "shop_money": {
+          "description": "Amount in the shop currency",
           "type": ["null", "object"],
           "properties": {
             "amount": {
@@ -82,6 +84,7 @@
           }
         },
         "presentment_money": {
+          "description": "Amount in the presentment currency",
           "type": ["null", "object"],
           "properties": {
             "amount": {
@@ -105,6 +108,7 @@
       "type": ["null", "string"]
     },
     "payment_details": {
+      "description": "Details of the payment transaction",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
