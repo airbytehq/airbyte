@@ -48,6 +48,220 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          activeWorkspace:
+            description: The ID of the active workspace for the user.
+            type:
+              - "null"
+              - string
+          customFields:
+            description: Any custom fields associated with the user's profile.
+            type:
+              - "null"
+              - array
+          defaultWorkspace:
+            description: The default workspace ID for the user.
+            type:
+              - "null"
+              - string
+          email:
+            description: The email address of the user.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the user.
+            type:
+              - "null"
+              - string
+          memberships:
+            description: List of memberships the user belongs to.
+            type:
+              - "null"
+              - array
+          name:
+            description: The name of the user.
+            type:
+              - "null"
+              - string
+          profilePicture:
+            description: URL to the user's profile picture.
+            type:
+              - "null"
+              - string
+          settings:
+            description: User-specific settings for the user account.
+            properties:
+              alerts:
+                description: User's alerts settings.
+                type:
+                  - "null"
+                  - boolean
+              approval:
+                description: User's approval settings.
+                type:
+                  - "null"
+                  - boolean
+              collapseAllProjectLists:
+                description: User's preference for collapsing all project lists.
+                type:
+                  - "null"
+                  - boolean
+              dashboardPinToTop:
+                description: User's preference for pinning dashboard to the top.
+                type:
+                  - "null"
+                  - boolean
+              dashboardSelection:
+                description: User's dashboard selection.
+                type:
+                  - "null"
+                  - string
+              dashboardViewType:
+                description: User's preferred dashboard view type.
+                type:
+                  - "null"
+                  - string
+              dateFormat:
+                description: User's preferred date format.
+                type:
+                  - "null"
+                  - string
+              groupSimilarEntriesDisabled:
+                description: User's preference for grouping similar entries.
+                type:
+                  - "null"
+                  - boolean
+              isCompactViewOn:
+                description: User's preference for compact view.
+                type:
+                  - "null"
+                  - boolean
+              lang:
+                description: User's preferred language.
+                type:
+                  - "null"
+                  - string
+              longRunning:
+                description: User's long running settings.
+                type:
+                  - "null"
+                  - boolean
+              multiFactorEnabled:
+                description: Whether multi-factor authentication is enabled.
+                type:
+                  - "null"
+                  - boolean
+              myStartOfDay:
+                description: User's start of day setting.
+                type:
+                  - "null"
+                  - string
+              onboarding:
+                description: User's onboarding settings.
+                type:
+                  - "null"
+                  - boolean
+              projectListCollapse:
+                description: User's project list collapse setting.
+                type:
+                  - "null"
+                  - integer
+              projectPickerTaskFilter:
+                description: User's task filter for project picker.
+                type:
+                  - "null"
+                  - boolean
+              pto:
+                description: User's PTO settings.
+                type:
+                  - "null"
+                  - boolean
+              reminders:
+                description: User's reminder settings.
+                type:
+                  - "null"
+                  - boolean
+              scheduledReports:
+                description: User's scheduled reports settings.
+                type:
+                  - "null"
+                  - boolean
+              scheduling:
+                description: User's scheduling settings.
+                type:
+                  - "null"
+                  - boolean
+              sendNewsletter:
+                description: User's preference for receiving newsletters.
+                type:
+                  - "null"
+                  - boolean
+              showOnlyWorkingDays:
+                description: User's preference for showing only working days.
+                type:
+                  - "null"
+                  - boolean
+              summaryReportSettings:
+                description: Settings for summary report.
+                properties:
+                  group:
+                    description: Group setting for summary report.
+                    type:
+                      - "null"
+                      - string
+                  subgroup:
+                    description: Subgroup setting for summary report.
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+              theme:
+                description: User's preferred theme.
+                type:
+                  - "null"
+                  - string
+              timeFormat:
+                description: User's preferred time format.
+                type:
+                  - "null"
+                  - string
+              timeTrackingManual:
+                description: User's manual time tracking settings.
+                type:
+                  - "null"
+                  - boolean
+              timeZone:
+                description: User's preferred time zone.
+                type:
+                  - "null"
+                  - string
+              weekStart:
+                description: User's preferred start of the week.
+                type:
+                  - "null"
+                  - string
+              weeklyUpdates:
+                description: User's settings for receiving weekly updates.
+                type:
+                  - "null"
+                  - boolean
+            type:
+              - "null"
+              - object
+          status:
+            description: User's status.
+            type:
+              - "null"
+              - string
+        type: object
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
@@ -55,6 +269,225 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          archived:
+            description: Indicates if the project is archived or not.
+            type:
+              - "null"
+              - boolean
+          billable:
+            description: Indicates if the project is billable or not.
+            type:
+              - "null"
+              - boolean
+          budgetEstimate:
+            description: The estimated budget for the project.
+            anyOf:
+              - type: "null"
+              - type: integer
+              - properties:
+                  estimate:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  resetOption:
+                    type:
+                      - "null"
+                      - string
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                type:
+                  - "null"
+                  - object
+          clientId:
+            description: The ID of the client associated with the project.
+            type:
+              - "null"
+              - string
+          clientName:
+            description: The name of the client associated with the project.
+            type:
+              - "null"
+              - string
+          color:
+            description: Color code used to visually identify the project.
+            type:
+              - "null"
+              - string
+          costRate:
+            description: Cost rate for the project.
+            anyOf:
+              - type: "null"
+              - type: string
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - string
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          duration:
+            description: Total duration tracked for the project.
+            type:
+              - "null"
+              - string
+          estimate:
+            description: Project estimation details.
+            properties:
+              estimate:
+                description: Estimated time for the project.
+                type: string
+              type:
+                description: Type of estimation (e.g., hours, days).
+                type: string
+            type:
+              - "null"
+              - object
+          hourlyRate:
+            description: Hourly rate for the project.
+            properties:
+              amount:
+                description: Hourly rate amount.
+                type:
+                  - "null"
+                  - integer
+              currency:
+                description: Currency of the hourly rate.
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          id:
+            description: Unique identifier for the project.
+            type:
+              - "null"
+              - string
+          memberships:
+            description: List of project memberships.
+            items:
+              properties:
+                costRate:
+                  description: Cost rate for the membership.
+                  type:
+                    - "null"
+                hourlyRate:
+                  description: Hourly rate for the membership.
+                  anyOf:
+                    - type: "null"
+                    - properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                membershipStatus:
+                  description: Status of the membership.
+                  type:
+                    - "null"
+                    - string
+                membershipType:
+                  description: Type of membership.
+                  type:
+                    - "null"
+                    - string
+                targetId:
+                  description: ID of the target associated with the membership.
+                  type:
+                    - "null"
+                    - string
+                userId:
+                  description: ID of the user associated with the membership.
+                  type:
+                    - "null"
+                    - string
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          name:
+            description: Name of the project.
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes or comments related to the project.
+            type:
+              - "null"
+              - string
+          public:
+            description: Indicates if the project is public or private.
+            type:
+              - "null"
+              - boolean
+          template:
+            description: Indicates if the project is a template or not.
+            type:
+              - "null"
+              - boolean
+          timeEstimate:
+            description: Time estimation details for the project.
+            properties:
+              active:
+                description: Indicates if the time estimate is active or not.
+                type:
+                  - "null"
+                  - boolean
+              estimate:
+                description: Estimated time for the project.
+                type:
+                  - "null"
+                  - string
+              includeNonBillable:
+                description: Indicates if non-billable time is included in the estimate.
+                type:
+                  - "null"
+                  - boolean
+              resetOption:
+                description: Option to reset the time estimate.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of time estimation (e.g., hours, days).
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          workspaceId:
+            description: ID of the workspace to which the project belongs.
+            type:
+              - "null"
+              - string
+        type: object
   clients_stream:
     $ref: "#/definitions/base_stream"
     name: "clients"
@@ -62,6 +495,48 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/clients"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          address:
+            description: Client's physical address.
+            type:
+              - "null"
+              - string
+          archived:
+            description: Indicates if the client is archived (true) or active (false).
+            type:
+              - "null"
+              - boolean
+          id:
+            description: Unique identifier for the client.
+            type:
+              - "null"
+              - string
+          email:
+            description: Client's contact email address.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the client.
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes related to the client.
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description: Identifier for the workspace to which the client belongs.
+            type:
+              - "null"
+              - string
+        type: object
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
@@ -69,6 +544,33 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/tags"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          archived:
+            description: Indicates if the tag is archived or active.
+            type:
+              - "null"
+              - boolean
+          id:
+            description: Unique identifier for the tag.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the tag.
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description: Identifier of the workspace to which the tag belongs.
+            type:
+              - "null"
+              - string
+        type: object
   user_groups_stream:
     $ref: "#/definitions/base_stream"
     name: "user_groups"
@@ -76,6 +578,38 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/user-groups"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the user group.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the user group.
+            type:
+              - "null"
+              - string
+          userIds:
+            description: List of user IDs belonging to the user group.
+            items:
+              description: User ID of a member in the group.
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          workspaceId:
+            description: Identifier for the workspace to which the user group belongs.
+            type:
+              - "null"
+              - string
+        type: object
   users_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -88,12 +622,108 @@ definitions:
     $parameters:
       name: "time_entries"
       primary_key: "id"
-      path: "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id }}/time-entries"
+      path:
+        "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id
+        }}/time-entries"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         $ref: "#/definitions/users_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          billable:
+            description: Indicates if the time entry is billable or not
+            type:
+              - "null"
+              - boolean
+          customFieldValues:
+            description: Values for custom fields related to the time entry
+            type:
+              - "null"
+              - array
+          description:
+            description: Description or notes about the time entry
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the time entry
+            type:
+              - "null"
+              - string
+          isLocked:
+            description: Indicates if the time entry is locked or not
+            type:
+              - "null"
+              - boolean
+          kioskId:
+            description: Identifier for the kiosk associated with the time entry
+            type:
+              - "null"
+              - string
+          projectId:
+            description: Unique identifier for the project related to the time entry
+            type:
+              - "null"
+              - string
+          tagIds:
+            description: Identifiers of tags associated with the time entry
+            anyOf:
+              - type: "null"
+              - items:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  - "null"
+                  - array
+          taskId:
+            description: Unique identifier for the task related to the time entry
+            type:
+              - "null"
+              - string
+          timeInterval:
+            description: Represents the time interval for the time entry
+            properties:
+              duration:
+                description: Duration of the time entry
+                type:
+                  - "null"
+                  - string
+              end:
+                description: End timestamp of the time entry
+                type:
+                  - "null"
+                  - string
+              start:
+                description: Start timestamp of the time entry
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          type:
+            description: Type of the time entry (e.g., time, leave, holiday)
+            type:
+              - "null"
+              - string
+          userId:
+            description: Unique identifier for the user associated with the time entry
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description: Unique identifier for the workspace of the time entry
+            type:
+              - "null"
+              - string
+        type: object
   projects_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -106,12 +736,117 @@ definitions:
     $parameters:
       name: "tasks"
       primary_key: "id"
-      path: "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id }}/tasks"
+      path:
+        "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id
+        }}/tasks"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          budgetEstimate:
+            description: Estimated budget for the task.
+            type:
+              - "null"
+              - number
+          assigneeId:
+            description: The unique identifier of the user assigned to the task.
+            type:
+              - "null"
+              - string
+          assigneeIds:
+            description: The list of unique identifiers of users assigned to the task.
+            items:
+              description: Unique identifier of a user.
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          billable:
+            description: Indicates whether the task is billable or not.
+            type:
+              - "null"
+              - boolean
+          costRate:
+            description: Cost rate associated with the task.
+            anyOf:
+              - type: "null"
+              - type: string
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - string
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          duration:
+            description: Total duration of the task.
+            type:
+              - "null"
+              - string
+          estimate:
+            description: Estimated time required to complete the task.
+            type:
+              - "null"
+              - string
+          hourlyRate:
+            description: Hourly rate for billing purposes.
+            anyOf:
+              - type: "null"
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          id:
+            description: Unique identifier of the task.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the task.
+            type:
+              - "null"
+              - string
+          projectId:
+            description: Unique identifier of the project the task belongs to.
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the task.
+            type:
+              - "null"
+              - string
+          userGroupIds:
+            description:
+              List of unique identifiers of user groups associated with
+              the task.
+            type:
+              - "null"
+              - array
+        type: object
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/projects_stream"
