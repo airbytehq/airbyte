@@ -132,6 +132,7 @@
       "type": ["null", "string"]
     },
     "dailyBudget": {
+      "description": "The daily budget set for the campaign.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
