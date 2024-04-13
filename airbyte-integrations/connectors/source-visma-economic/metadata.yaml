@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-visma-economic
   githubIssueLabel: source-visma-economic
   icon: visma-economic.svg
