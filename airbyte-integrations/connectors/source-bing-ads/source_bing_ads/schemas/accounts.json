@@ -35,6 +35,7 @@
       "type": ["null", "string"]
     },
     "LinkedAgencies": {
+      "description": "The agencies linked to the account for management purposes.",
       "type": ["null", "object"],
       "properties": {
         "Id": {
@@ -60,6 +61,7 @@
       "type": ["null", "string"]
     },
     "BusinessAddress": {
+      "description": "The business address associated with the account.",
       "type": ["null", "object"],
       "properties": {
         "City": {

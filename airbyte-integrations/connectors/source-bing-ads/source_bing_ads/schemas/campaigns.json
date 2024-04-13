@@ -15,6 +15,7 @@
       "type": ["null", "number"]
     },
     "BiddingScheme": {
+      "description": "Details of the bidding scheme for the campaign",
       "type": ["null", "object"],
       "properties": {
         "Type": {
@@ -22,6 +23,7 @@
           "type": ["null", "string"]
         },
         "MaxCpc": {
+          "description": "Details of the maximum cost-per-click bid",
           "type": ["null", "object"],
           "properties": {
             "Amount": {
@@ -53,6 +55,7 @@
       "type": ["null", "string"]
     },
     "ForwardCompatibilityMap": {
+      "description": "Forward compatibility map for potential future enhancements",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -93,9 +96,11 @@
       "type": ["null", "string"]
     },
     "UrlCustomParameters": {
+      "description": "Custom parameters for campaign URLs",
       "type": ["null", "object"],
       "properties": {
         "Parameters": {
+          "description": "Specific URL parameters",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -118,9 +123,11 @@
       "type": ["null", "string"]
     },
     "Settings": {
+      "description": "Settings related to the campaign",
       "type": ["null", "object"],
       "properties": {
         "Setting": {
+          "description": "Specific setting details",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -130,9 +137,11 @@
                 "type": ["null", "string"]
               },
               "Details": {
+                "description": "Specific details of the setting",
                 "type": ["null", "object"],
                 "properties": {
                   "TargetSettingDetail": {
+                    "description": "Specific target setting details",
                     "type": ["null", "array"],
                     "items": {
                       "type": ["null", "object"],
@@ -160,6 +169,7 @@
       "type": ["null", "number"]
     },
     "Languages": {
+      "description": "Languages targeted in the campaign",
       "type": ["null", "object"],
       "properties": {
         "string": {
