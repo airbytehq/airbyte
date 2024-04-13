@@ -71,6 +71,29 @@ definitions:
           - path: ["airbyte_cursor"]
             value: "{{ record['timestamp'] | int / 1000 }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          timestamp:
+            description: The timestamp indicating when the data was recorded or updated.
+            type: integer
+          thing:
+            description:
+              Represents the specific thing being measured or recorded
+              in the dataset.
+            type: string
+          id:
+            description: The unique identifier corresponding to the dataset data.
+            type:
+              - "null"
+              - string
+          airbyte_cursor:
+            description: A cursor token received from Airbyte for pagination purposes.
+            type: number
 streams:
   - "#/definitions/dataset_stream"
 
