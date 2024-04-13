@@ -50,4 +50,5 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.1 | 2024-04-12 | [37245](https://github.com/airbytehq/airbyte/pull/37245) | schema descriptions |
 | 0.1.0   | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671)   | New Source: Recruitee                                |
