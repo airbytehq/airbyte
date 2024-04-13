@@ -46,6 +46,95 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user
+            type:
+              - "null"
+              - string
+          emailAddress:
+            description: The primary email address associated with the user
+            type:
+              - "null"
+              - string
+          trustedEmailAddress:
+            description: An email address that is considered trusted for the user
+            type:
+              - "null"
+              - string
+          created:
+            description: The timestamp denoting when the user account was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          active:
+            description: Indicates if the user is currently active or not
+            type:
+              - "null"
+              - boolean
+          emailAliases:
+            description:
+              Additional email addresses that can be used to reach the
+              user
+            type:
+              - "null"
+              - array
+          firstName:
+            description: The first name of the user
+            type:
+              - "null"
+              - string
+          lastName:
+            description: The last name of the user
+            type:
+              - "null"
+              - string
+          title:
+            description: The job title or position of the user
+            type:
+              - "null"
+              - string
+          phoneNumber:
+            description: The phone number associated with the user
+            type:
+              - "null"
+              - string
+          extension:
+            description: The phone extension number for the user
+            type:
+              - "null"
+              - string
+          personalMeetingUrls:
+            description: URLs for personal meeting rooms assigned to the user
+            type:
+              - "null"
+              - array
+          settings:
+            description: User-specific settings and configurations
+            type:
+              - "null"
+              - object
+          managerId:
+            description: The ID of the user's manager
+            type:
+              - "null"
+              - string
+          meetingConsentPageUrl:
+            description: URL for the consent page related to meetings
+            type:
+              - "null"
+              - string
+          spokenLanguages:
+            description: Languages spoken by the user
+            type:
+              - "null"
+              - array
   calls_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -53,6 +142,116 @@ definitions:
       primary_key: "id"
       path: "/calls"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the call.
+            type:
+              - "null"
+              - string
+          url:
+            description: URL associated with the call.
+            type:
+              - "null"
+              - string
+          title:
+            description: Title or headline of the call.
+            type:
+              - "null"
+              - string
+          scheduled:
+            description: Scheduled date and time of the call.
+            type:
+              - "null"
+              - string
+            format: date-time
+          started:
+            description: Start date and time of the call.
+            type:
+              - "null"
+              - string
+            format: date-time
+          duration:
+            description: Duration of the call in seconds.
+            type:
+              - "null"
+              - integer
+          primaryUserId:
+            description: Unique identifier for the primary user involved in the call.
+            type:
+              - "null"
+              - string
+          direction:
+            description: Direction of the call (inbound/outbound).
+            type:
+              - "null"
+              - string
+          system:
+            description: System information related to the call.
+            type:
+              - "null"
+              - string
+          scope:
+            description: Scope or extent of the call.
+            type:
+              - "null"
+              - string
+          media:
+            description: Media type used for communication (voice, video, etc.).
+            type:
+              - "null"
+              - string
+          language:
+            description: Language used in the call.
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description: Identifier for the workspace to which the call belongs.
+            type:
+              - "null"
+              - string
+          sdrDisposition:
+            description: Disposition set by the sales development representative.
+            type:
+              - "null"
+              - string
+          clientUniqueId:
+            description: Unique identifier for the client related to the call.
+            type:
+              - "null"
+              - string
+          customData:
+            description: Custom data associated with the call.
+            type:
+              - "null"
+              - string
+          purpose:
+            description: Purpose or topic of the call.
+            type:
+              - "null"
+              - string
+          meetingUrl:
+            description: URL for accessing the meeting associated with the call.
+            type:
+              - "null"
+              - string
+          isPrivate:
+            description: Indicates if the call is private or not.
+            type:
+              - "null"
+              - boolean
+          calendarEventId:
+            description:
+              Unique identifier for the calendar event associated with
+              the call.
+            type:
+              - "null"
+              - string
   scorecards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -60,6 +259,98 @@ definitions:
       primary_key: "scorecardId"
       path: "/settings/scorecards"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          scorecardId:
+            description: The unique identifier of the scorecard
+            type:
+              - "null"
+              - string
+          scorecardName:
+            description: The name of the scorecard
+            type:
+              - "null"
+              - string
+          workspaceId:
+            description:
+              The unique identifier of the workspace associated with the
+              scorecard
+            type:
+              - "null"
+              - string
+          enabled:
+            description: Indicates if the scorecard is enabled or disabled
+            type:
+              - "null"
+              - boolean
+          updaterUserId:
+            description: The user ID of the person who last updated the scorecard
+            type:
+              - "null"
+              - string
+          created:
+            description: The timestamp when the scorecard was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated:
+            description: The timestamp when the scorecard was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          questions:
+            description: An array of questions related to the scorecard
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  description: The unique identifier of the question
+                  type:
+                    - "null"
+                    - string
+                questionRevisionId:
+                  description: The revision identifier of the question
+                  type:
+                    - "null"
+                    - string
+                questionText:
+                  description: The text of the question
+                  type:
+                    - "null"
+                    - string
+                isOverall:
+                  description: Indicates if the question is an overall score or not
+                  type:
+                    - "null"
+                    - boolean
+                updaterUserId:
+                  description: The user ID of the person who last updated the question
+                  type:
+                    - "null"
+                    - string
+                created:
+                  description: The timestamp when the question was created
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                updated:
+                  description: The timestamp when the question was last updated
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
   answered_scorecards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -83,6 +374,111 @@ definitions:
         request_body_json:
           filter: '{"callFromDate": "{{ config["start_date"] }}"}'
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          answeredScorecardId:
+            description: Unique identifier for the answered scorecard instance.
+            type:
+              - "null"
+              - string
+          scorecardId:
+            description: Unique identifier for the scorecard template used.
+            type:
+              - "null"
+              - string
+          scorecardName:
+            description: Name or title of the scorecard template used.
+            type:
+              - "null"
+              - string
+          callId:
+            description:
+              Unique identifier for the call associated with the answered
+              scorecard.
+            type:
+              - "null"
+              - string
+          callStartTime:
+            description: Timestamp indicating the start time of the call.
+            type:
+              - "null"
+              - string
+            format: date-time
+          reviewedUserId:
+            description: Unique identifier for the user whose performance was reviewed.
+            type:
+              - "null"
+              - string
+          reviewerUserId:
+            description: Unique identifier for the user who performed the review.
+            type:
+              - "null"
+              - string
+          reviewTime:
+            description:
+              Timestamp indicating when the review of the answered scorecard
+              was completed.
+            type:
+              - "null"
+              - string
+            format: date-time
+          visibilityType:
+            description:
+              Type indicating the visibility permissions for the answered
+              scorecard.
+            type:
+              - "null"
+              - string
+          answers:
+            description: Contains the answered questions in the scorecards
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  description: Unique identifier for the question answered.
+                  type:
+                    - "null"
+                    - string
+                questionRevisionId:
+                  description:
+                    Unique identifier for the revision of the question
+                    answered.
+                  type:
+                    - "null"
+                    - string
+                isOverall:
+                  description:
+                    Boolean flag indicating if the answer is for an overall
+                    evaluation.
+                  type:
+                    - "null"
+                    - boolean
+                score:
+                  description: Numeric score assigned to the answer.
+                  type:
+                    - "null"
+                    - integer
+                answerText:
+                  description: Text containing the answer given.
+                  type:
+                    - "null"
+                    - string
+                notApplicable:
+                  description:
+                    Boolean flag indicating if the question is marked as
+                    not applicable.
+                  type:
+                    - "null"
+                    - boolean
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/calls_stream"
