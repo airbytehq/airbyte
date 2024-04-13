@@ -42,5 +42,6 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.2 | 2024-04-12 | [37204](https://github.com/airbytehq/airbyte/pull/37204) | schema descriptions |
 | 0.1.1   | 2023-02-13 | [22925](https://github.com/airbytehq/airbyte/pull/22925) | Specified date formatting in specification                  |
 | 0.1.0   | 2022-11-01 | [18746](https://github.com/airbytehq/airbyte/pull/18746) | 🎉 New Source: New York Times                   |
