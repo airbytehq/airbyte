@@ -9,12 +9,13 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://app.avniproject.org/api"
+    url_base: "{{config['url_base']}}/api"
     http_method: "GET"
     authenticator:
       class_name: source_avni.components.CustomAuthenticator
       username: "{{config['username']}}"
       password: "{{config['password']}}"
+      idp_base: "{{config['url_base']}}"
 
   retriever:
     type: SimpleRetriever
@@ -123,6 +124,7 @@ spec:
     required:
       - username
       - password
+      - url_base
       - start_date
     additionalProperties: true
     properties:
@@ -135,6 +137,10 @@ spec:
         description: Your avni platform password
         title: Password
         airbyte_secret: true
+      url_base:
+        type: string
+        description: Your avni platform base url, with no trailing slash (/)
+        title: Base URL (no trailing /)
       start_date:
         type: string
         default: "2000-06-23T01:30:00.000Z"
