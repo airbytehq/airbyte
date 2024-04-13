@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "cases7Days": {
+      "description": "The total number of reported COVID-19 cases over a period of 7 days",
       "type": "integer"
     },
     "incidence7Days": {
+      "description": "The incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "date": {
+      "description": "The date associated with the data",
       "type": ["string", "null"]
     },
     "fixedCases7Days": {
+      "description": "The fixed number of reported COVID-19 cases over a period of 7 days",
       "type": ["integer", "null"]
     },
     "updatedCases7Days": {
+      "description": "The updated number of reported COVID-19 cases over a period of 7 days",
       "type": ["integer", "null"]
     },
     "adjustedLowerCases7Days": {
+      "description": "The lower bound of adjusted COVID-19 cases over a period of 7 days",
       "type": ["integer", "null"]
     },
     "adjustedCases7Days": {
+      "description": "The number of COVID-19 cases adjusted over a period of 7 days",
       "type": ["integer", "null"]
     },
     "adjustedUpperCases7Days": {
+      "description": "The upper bound of adjusted COVID-19 cases over a period of 7 days",
       "type": ["integer", "null"]
     },
     "fixedIncidence7Days": {
+      "description": "The fixed incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "updatedIncidence7Days": {
+      "description": "The updated incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "adjustedLowerIncidence7Days": {
+      "description": "The lower bound of adjusted incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "adjustedIncidence7Days": {
+      "description": "The adjusted incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "adjustedUpperIncidence7Days": {
+      "description": "The upper bound of adjusted incidence rate of COVID-19 cases over a period of 7 days",
       "type": ["number", "null"]
     },
     "name": {
+      "description": "The name of the state",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation of the state",
       "type": ["string", "null"]
     }
   },

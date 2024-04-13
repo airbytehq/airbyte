@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "weekIncidence": {
+      "description": "The weekly incidence rate of COVID-19 cases per 100,000 population",
       "type": ["number", "null"]
     },
     "date": {
+      "description": "The date for which the incidence data is recorded",
       "type": ["string", "null"]
     },
     "dataSource": {
+      "description": "The source of the data for the incidence information",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The full name of the state for which the data is recorded",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation of the state representing the data",
       "type": ["string", "null"]
     }
   },

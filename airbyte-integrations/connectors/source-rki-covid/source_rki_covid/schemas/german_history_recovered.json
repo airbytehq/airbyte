@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "recovered": {
+      "description": "The number of individuals who have recovered from COVID-19 on the specified date.",
       "type": "integer"
     },
     "date": {
+      "description": "The date when the recovery data was reported.",
       "type": "string"
     }
   },

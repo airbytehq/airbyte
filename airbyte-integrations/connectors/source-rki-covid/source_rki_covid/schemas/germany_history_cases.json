@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "cases": {
+      "description": "The number of confirmed COVID-19 cases on a specific date in Germany.",
       "type": "integer"
     },
     "date": {
+      "description": "The date for which the COVID-19 cases are reported in the format YYYY-MM-DD.",
       "type": "string"
     }
   },

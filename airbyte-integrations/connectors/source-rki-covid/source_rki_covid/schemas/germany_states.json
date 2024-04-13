@@ -3,69 +3,90 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the state data entry.",
       "type": ["integer", "null"]
     },
     "name": {
+      "description": "The name of the German state.",
       "type": ["string", "null"]
     },
     "population": {
+      "description": "Total population of the state.",
       "type": ["integer", "null"]
     },
     "cases": {
+      "description": "Total number of confirmed COVID-19 cases in the state.",
       "type": ["integer", "null"]
     },
     "deaths": {
+      "description": "Total number of COVID-19 related deaths in the state.",
       "type": ["integer", "null"]
     },
     "casesPerWeek": {
+      "description": "Number of cases reported in the state in the current week.",
       "type": ["integer", "null"]
     },
     "deathsPerWeek": {
+      "description": "Number of deaths reported in the state in the current week.",
       "type": ["integer", "null"]
     },
     "recovered": {
+      "description": "Total number of recovered COVID-19 cases in the state.",
       "type": ["integer", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation or code representing a specific German state.",
       "type": ["string", "null"]
     },
     "weekIncidence": {
+      "description": "Weekly incidence rate of COVID-19 cases per 100,000 people in the state.",
       "type": ["number", "null"]
     },
     "casesPer100k": {
+      "description": "Number of COVID-19 cases per 100,000 people in the state.",
       "type": ["number", "null"]
     },
     "delta": {
+      "description": "Represents the changes or variations in the data compared to the previous values.",
       "type": "object",
       "properties": {
         "cases": {
+          "description": "Change in the number of cases compared to the previous data update.",
           "type": ["integer", "null"]
         },
         "deaths": {
+          "description": "Change in the number of deaths compared to the previous data update.",
           "type": ["integer", "null"]
         },
         "recovered": {
+          "description": "Change in the number of recovered cases compared to the previous data update.",
           "type": ["integer", "null"]
         },
         "weekIncidence": {
+          "description": "Weekly incidence rate of COVID-19 cases in the state.",
           "type": ["number", "null"]
         }
       },
       "required": ["cases", "deaths", "recovered", "weekIncidence"]
     },
     "hospitalization": {
+      "description": "Provides information related to hospitalization cases in the specific Germany state.",
       "type": "object",
       "properties": {
         "cases7Days": {
+          "description": "Number of COVID-19 cases in the past 7 days requiring hospitalization.",
           "type": ["integer", "null"]
         },
         "incidence7Days": {
+          "description": "Incidence rate of hospitalization cases in the past 7 days.",
           "type": ["number", "null"]
         },
         "date": {
+          "description": "The date of the hospitalization data report.",
           "type": ["string", "null"]
         },
         "lastUpdate": {
+          "description": "The date and time of the last update of hospitalization data.",
           "type": ["string", "null"]
         }
       },

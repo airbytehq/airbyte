@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "deaths": {
+      "description": "The number of deaths reported for the corresponding state and date.",
       "type": ["integer", "null"]
     },
     "date": {
+      "description": "The date when the death data was recorded.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The full name of the state corresponding to the abbreviation.",
       "type": ["string", "null"]
     },
     "abbreviation": {
+      "description": "The abbreviation code representing the state where the data is recorded.",
       "type": ["string", "null"]
     }
   },

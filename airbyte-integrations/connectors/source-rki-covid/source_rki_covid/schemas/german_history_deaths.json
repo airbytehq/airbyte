@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "deaths": {
+      "description": "The number of deaths reported on the given date.",
       "type": "integer"
     },
     "date": {
+      "description": "The date for which the recorded deaths are being reported.",
       "type": "string"
     }
   },
