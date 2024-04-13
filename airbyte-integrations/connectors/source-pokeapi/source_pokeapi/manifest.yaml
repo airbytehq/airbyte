@@ -31,6 +31,478 @@ definitions:
     $parameters:
       path: "/{{config['pokemon_name']}}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The ID of the Pokemon.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the Pokemon.
+            type:
+              - "null"
+              - string
+          base_experience:
+            description: The base experience gained when defeating the Pokemon.
+            type:
+              - "null"
+              - integer
+          height:
+            description: The height of the Pokemon.
+            type:
+              - "null"
+              - integer
+          is_default:
+            description: Indicates if the Pokemon is the default form.
+            type:
+              - "null"
+              - boolean
+          order:
+            description: The order of the Pokemon.
+            type:
+              - "null"
+              - integer
+          weight:
+            description: The weight of the Pokemon.
+            type:
+              - "null"
+              - integer
+          abilities:
+            description: A list of abilities for the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                is_hidden:
+                  description: Indicates if the ability is hidden.
+                  type:
+                    - "null"
+                    - boolean
+                slot:
+                  description: The slot where the ability is located.
+                  type:
+                    - "null"
+                    - integer
+                ability:
+                  description: The name and URL of the ability.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the ability.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the ability.
+                      type:
+                        - "null"
+                        - string
+          forms:
+            description: A list of forms the Pokemon can take.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                name:
+                  description: The name of the form.
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: The URL of the form.
+                  type:
+                    - "null"
+                    - string
+          game_indices:
+            description: A list of game indices for the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                game_index:
+                  description: The game index of the Pokemon.
+                  type:
+                    - "null"
+                    - integer
+                version:
+                  description: The version of the game.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the version.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the version.
+                      type:
+                        - "null"
+                        - string
+          held_items:
+            description: A list of items held by the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                item:
+                  description: The name and URL of the item.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the item.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the item.
+                      type:
+                        - "null"
+                        - string
+                version_details:
+                  description: Details about the item version.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      version:
+                        description: The version of the item.
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          name:
+                            description: The name of the version.
+                            type:
+                              - "null"
+                              - string
+                          url:
+                            description: The URL of the version.
+                            type:
+                              - "null"
+                              - string
+                      rarity:
+                        description: The rarity of the item.
+                        type:
+                          - "null"
+                          - integer
+          location_area_encounters:
+            description: The locations where the Pokemon can be encountered.
+            type:
+              - "null"
+              - string
+          moves:
+            description: A list of moves a Pokemon can learn.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                move:
+                  description: The name and URL of the move.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the move.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the move.
+                      type:
+                        - "null"
+                        - string
+                version_group_details:
+                  description: Details about the move version group.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      move_learn_method:
+                        description: The method through which the move is learned.
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          name:
+                            description: The name of the learn method.
+                            type:
+                              - "null"
+                              - string
+                          url:
+                            description: The URL of the learn method.
+                            type:
+                              - "null"
+                              - string
+                      version_group:
+                        description: The version group of the move.
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          name:
+                            description: The name of the version group.
+                            type:
+                              - "null"
+                              - string
+                          url:
+                            description: The URL of the version group.
+                            type:
+                              - "null"
+                              - string
+                      level_learned_at:
+                        description: The level at which the move is learned.
+                        type:
+                          - "null"
+                          - integer
+          sprites:
+            description: The sprite images of the Pokemon.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              front_default:
+                description: The URL of the front default sprite.
+                type:
+                  - "null"
+                  - string
+              front_shiny:
+                description: The URL of the front shiny sprite.
+                type:
+                  - "null"
+                  - string
+              front_female:
+                description: The URL of the front female sprite.
+                type:
+                  - "null"
+                  - string
+              front_shiny_female:
+                description: The URL of the front shiny female sprite.
+                type:
+                  - "null"
+                  - string
+              back_default:
+                description: The URL of the back default sprite.
+                type:
+                  - "null"
+                  - string
+              back_shiny:
+                description: The URL of the back shiny sprite.
+                type:
+                  - "null"
+                  - string
+              back_female:
+                description: The URL of the back female sprite.
+                type:
+                  - "null"
+                  - string
+              back_shiny_female:
+                description: The URL of the back shiny female sprite.
+                type:
+                  - "null"
+                  - string
+          species:
+            description: The species of the Pokemon.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              name:
+                description: The name of the species.
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL of the species.
+                type:
+                  - "null"
+                  - string
+          stats:
+            description: The stats of the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                stat:
+                  description: The name and URL of the stat.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the stat.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the stat.
+                      type:
+                        - "null"
+                        - string
+                effort:
+                  description: The effort value.
+                  type:
+                    - "null"
+                    - integer
+                base_stat:
+                  description: The base stat value.
+                  type:
+                    - "null"
+                    - integer
+          types:
+            description: A list of types of the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                slot:
+                  description: The slot of the type.
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  description: The name and URL of the type.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      description: The name of the type.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the type.
+                      type:
+                        - "null"
+                        - string
+          past_types:
+            description: The previous types of the Pokemon.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                generation:
+                  description: The generation of the previous type.
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    name:
+                      description: The name of the generation.
+                      type:
+                        - "null"
+                        - string
+                    url:
+                      description: The URL of the generation.
+                      type:
+                        - "null"
+                        - string
+                types:
+                  description: A list of types for the previous generation.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      slot:
+                        description: The slot of the type.
+                        type:
+                          - "null"
+                          - integer
+                      type:
+                        description: The name and URL of the type.
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          name:
+                            description: The name of the type.
+                            type:
+                              - "null"
+                              - string
+                          url:
+                            description: The URL of the type.
+                            type:
+                              - "null"
+                              - string
 streams:
   - "#/definitions/pokemon_stream"
 
