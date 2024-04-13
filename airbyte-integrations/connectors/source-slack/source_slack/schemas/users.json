@@ -8,6 +8,7 @@
       "type": "string"
     },
     "profile": {
+      "description": "User's profile information containing detailed details.",
       "type": "object",
       "additionalProperties": true,
       "properties": {
