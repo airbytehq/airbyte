@@ -45,4 +45,5 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------|
+| 0.1.1 | 2024-04-12 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | schema descriptions |
 | 0.1.0   | 2022-10-21 | [18576](https://github.com/airbytehq/airbyte/pull/18576) | 🎉 New Source: Newsdata |
