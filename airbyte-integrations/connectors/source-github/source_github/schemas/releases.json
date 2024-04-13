@@ -77,8 +77,10 @@
       "$ref": "user.json"
     },
     "assets": {
+      "description": "List of assets (e.g., downloadable files) associated with the release",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of an individual asset",
         "type": ["null", "object"],
         "properties": {
           "url": {

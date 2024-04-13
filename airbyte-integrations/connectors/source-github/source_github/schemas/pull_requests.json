@@ -325,6 +325,7 @@
       }
     },
     "_links": {
+      "description": "Object containing links related to the pull request.",
       "type": ["null", "object"],
       "properties": {
         "self": {

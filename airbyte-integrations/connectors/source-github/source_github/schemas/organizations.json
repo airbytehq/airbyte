@@ -198,6 +198,7 @@
       "type": ["null", "boolean"]
     },
     "plan": {
+      "description": "Information about the subscription plan of the organization.",
       "type": ["null", "object"],
       "properties": {
         "name": {

@@ -36,9 +36,11 @@
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Information about the commit including author, committer, tree, and verification details.",
       "type": ["null", "object"],
       "properties": {
         "author": {
+          "description": "Information about the author of the commit.",
           "type": ["null", "object"],
           "properties": {
             "name": {
@@ -57,6 +59,7 @@
           }
         },
         "committer": {
+          "description": "Information about the committer who applied the commit.",
           "type": ["null", "object"],
           "properties": {
             "name": {
@@ -79,6 +82,7 @@
           "type": ["null", "string"]
         },
         "tree": {
+          "description": "Details about the tree object associated with the commit.",
           "type": ["null", "object"],
           "properties": {
             "sha": {
@@ -100,6 +104,7 @@
           "type": ["null", "integer"]
         },
         "verification": {
+          "description": "Verification status of the commit.",
           "type": ["null", "object"],
           "properties": {
             "verified": {
@@ -131,8 +136,10 @@
       "$ref": "user.json"
     },
     "parents": {
+      "description": "List of parent commits of the current commit.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details about each parent commit.",
         "type": ["null", "object"],
         "properties": {
           "sha": {

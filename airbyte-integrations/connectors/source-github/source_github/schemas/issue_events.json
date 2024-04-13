@@ -3,37 +3,48 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Details about a repository",
       "type": "string"
     },
     "id": {
+      "description": "The unique ID of the event",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The unique node ID of the event",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL of the event",
       "type": ["null", "string"]
     },
     "actor": {
+      "description": "The user who performed the event",
       "$ref": "user.json"
     },
     "event": {
+      "description": "The type of event that occurred",
       "type": ["null", "string"]
     },
     "commit_id": {
+      "description": "The ID of the commit related to the event",
       "type": ["null", "string"]
     },
     "commit_url": {
+      "description": "The URL to the commit related to the event",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the event was created",
       "type": "string",
       "format": "date-time"
     },
     "state_reason": {
+      "description": "The reason associated with the change in state of the issue event.",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "Details about a label",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -45,45 +56,57 @@
       }
     },
     "review_requester": {
+      "description": "The user who requested a review",
       "$ref": "user.json"
     },
     "issue": {
+      "description": "Information about the associated issue",
       "type": ["null", "object"],
       "properties": {
         "active_lock_reason": {
+          "description": "The reason the issue is locked",
           "type": ["null", "string"]
         },
         "assignee": {
+          "description": "The user assigned to the issue",
           "$ref": "user.json"
         },
         "assignees": {
+          "description": "List of users assigned to the issue",
           "type": ["null", "array"],
           "items": {
             "$ref": "user.json"
           }
         },
         "author_association": {
+          "description": "The association of the event creator to the issue",
           "type": ["null", "string"]
         },
         "closed_at": {
+          "description": "The timestamp when the issue was closed",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "The timestamp when the issue was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "comments": {
+          "description": "Number of comments on the issue",
           "type": ["null", "integer"]
         },
         "draft": {
+          "description": "Indicates if the issue is a draft",
           "type": ["null", "boolean"]
         },
         "created_at": {
+          "description": "The timestamp when the issue was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "labels": {
+          "description": "List of labels attached to the issue",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -113,6 +136,7 @@
           }
         },
         "locked": {
+          "description": "Indicates if the issue is locked",
           "type": ["null", "boolean"]
         },
         "milestone": {
@@ -125,58 +149,81 @@
           "type": ["null", "string"]
         },
         "pull_request": {
+          "description": "Details of the pull request linked to the issue",
           "type": ["null", "object"],
           "properties": {
             "merged_at": {
+              "description": "The timestamp when the pull request was merged",
               "type": ["string", "null"],
               "format": "date-time"
             },
-            "diff_url": { "type": ["string", "null"] },
-            "html_url": { "type": ["string", "null"] },
-            "patch_url": { "type": ["string", "null"] },
-            "url": { "type": ["string", "null"] }
+            "diff_url": {
+              "type": ["string", "null"]
+            },
+            "html_url": {
+              "type": ["string", "null"]
+            },
+            "patch_url": {
+              "type": ["string", "null"]
+            },
+            "url": {
+              "type": ["string", "null"]
+            }
           }
         },
         "timeline_url": {
+          "description": "The URL to view the issue timeline",
           "type": ["null", "string"]
         },
         "reactions": {
           "$ref": "reactions.json"
         },
         "id": {
+          "description": "The unique ID of the issue",
           "type": ["null", "integer"]
         },
         "node_id": {
+          "description": "The unique node ID of the issue",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "The URL of the issue",
           "type": ["null", "string"]
         },
         "repository_url": {
+          "description": "The URL of the repository the issue is in",
           "type": ["null", "string"]
         },
         "labels_url": {
+          "description": "The URL to view labels on the issue",
           "type": ["null", "string"]
         },
         "comments_url": {
+          "description": "The URL to view comments on the issue",
           "type": ["null", "string"]
         },
         "events_url": {
+          "description": "The URL to view events related to the issue",
           "type": ["null", "string"]
         },
         "html_url": {
+          "description": "The URL to view the issue on GitHub",
           "type": ["null", "string"]
         },
         "number": {
+          "description": "The issue number",
           "type": ["null", "integer"]
         },
         "state": {
+          "description": "The state of the issue (open, closed, etc.)",
           "type": ["null", "string"]
         },
         "title": {
+          "description": "The title of the issue",
           "type": ["null", "string"]
         },
         "body": {
+          "description": "The body content of the issue",
           "type": ["null", "string"]
         },
         "user": {
@@ -185,6 +232,7 @@
       }
     },
     "performed_via_github_app": {
+      "description": "Information about the GitHub App that triggered the event",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -209,17 +257,21 @@
           "type": ["null", "string"]
         },
         "html_url": {
+          "description": "The URL to view the app on GitHub",
           "type": ["null", "string"]
         },
         "created_at": {
+          "description": "The timestamp when the app was created",
           "type": "string",
           "format": "date-time"
         },
         "updated_at": {
+          "description": "The timestamp when the app was last updated",
           "type": "string",
           "format": "date-time"
         },
         "permissions": {
+          "description": "Permissions of the app",
           "type": ["null", "object"],
           "properties": {
             "actions": {
@@ -276,6 +328,7 @@
           }
         },
         "events": {
+          "description": "List of events related to the app",
           "type": "array",
           "items": {
             "type": ["null", "string"]
@@ -284,6 +337,7 @@
       }
     },
     "milestone": {
+      "description": "Details about a milestone",
       "type": ["null", "object"],
       "properties": {
         "title": {
@@ -292,12 +346,15 @@
       }
     },
     "assignee": {
+      "description": "The user assigned to the issue",
       "$ref": "user.json"
     },
     "assigner": {
+      "description": "The user who assigned the assignee to the issue",
       "$ref": "user.json"
     },
     "project_card": {
+      "description": "Details about a project card",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -321,20 +378,25 @@
       }
     },
     "dismissed_review": {
+      "description": "Details about a dismissed review",
       "type": ["null", "object"],
       "properties": {
         "state": {
+          "description": "The state of the review dismissal",
           "type": ["null", "string"]
         },
         "review_id": {
+          "description": "The ID of the review that was dismissed",
           "type": ["null", "integer"]
         },
         "dismissal_message": {
+          "description": "The message explaining the dismissal of the review",
           "type": ["null", "string"]
         }
       }
     },
     "requested_team": {
+      "description": "Details about a team requested for review",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -371,6 +433,7 @@
           "type": ["null", "string"]
         },
         "parent": {
+          "description": "Details about the parent team",
           "type": ["null", "object"],
           "properties": {
             "name": {
@@ -411,6 +474,7 @@
       }
     },
     "rename": {
+      "description": "Details about a rename action",
       "type": ["null", "object"],
       "properties": {
         "from": {
@@ -422,6 +486,7 @@
       }
     },
     "requested_reviewer": {
+      "description": "The user requested to review",
       "$ref": "user.json"
     }
   }

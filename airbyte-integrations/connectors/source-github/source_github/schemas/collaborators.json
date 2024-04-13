@@ -83,6 +83,7 @@
       "type": ["null", "string"]
     },
     "permissions": {
+      "description": "The permissions assigned to the collaborators",
       "type": ["null", "object"],
       "properties": {
         "admin": {

@@ -81,9 +81,11 @@
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Contains links to related resources for the review comment",
       "type": ["null", "object"],
       "properties": {
         "self": {
+          "description": "URL for the review comment itself",
           "type": ["null", "object"],
           "properties": {
             "href": {
@@ -93,6 +95,7 @@
           }
         },
         "html": {
+          "description": "URL for the HTML representation of the review comment",
           "type": ["null", "object"],
           "properties": {
             "href": {
@@ -102,6 +105,7 @@
           }
         },
         "pull_request": {
+          "description": "URL for the pull request associated with the review comment",
           "type": ["null", "object"],
           "properties": {
             "href": {
