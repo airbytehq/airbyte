@@ -57,6 +57,7 @@
       "type": ["null", "string"]
     },
     "user": {
+      "description": "Details of the user associated with the pipeline",
       "type": "object",
       "properties": {
         "id": {

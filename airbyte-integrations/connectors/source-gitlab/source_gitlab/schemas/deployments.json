@@ -67,9 +67,11 @@
       "type": ["null", "integer"]
     },
     "deployable": {
+      "description": "Details of the deployment job",
       "type": ["null", "object"],
       "properties": {
         "commit": {
+          "description": "Information about the commit associated with the deployment",
           "type": ["null", "object"],
           "properties": {
             "author_email": {
@@ -151,6 +153,7 @@
           "type": ["null", "boolean"]
         },
         "project": {
+          "description": "Details of the project where the deployment occurred",
           "type": ["null", "object"],
           "properties": {
             "ci_job_token_scope_enabled": {
@@ -227,6 +230,7 @@
           }
         },
         "pipeline": {
+          "description": "Details of the pipeline used for the deployment",
           "type": ["null", "object"],
           "properties": {
             "created_at": {

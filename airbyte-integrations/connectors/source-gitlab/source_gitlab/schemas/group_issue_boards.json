@@ -23,8 +23,10 @@
       "type": ["null", "integer"]
     },
     "lists": {
+      "description": "A collection of lists on the issue board.",
       "type": ["null", "array"],
       "items": {
+        "description": "Information about a specific list in the issue board.",
         "type": ["null", "object"],
         "properties": {
           "id": {
@@ -32,6 +34,7 @@
             "type": ["null", "integer"]
           },
           "label": {
+            "description": "The label or title of the list.",
             "type": ["null", "object"],
             "properties": {
               "id": {
@@ -72,6 +75,7 @@
       "type": ["null", "integer"]
     },
     "group": {
+      "description": "Details of the group to which the issue board belongs.",
       "type": ["null", "object"],
       "properties": {
         "id": {
