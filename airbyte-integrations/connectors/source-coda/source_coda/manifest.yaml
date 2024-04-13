@@ -53,7 +53,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_record['href'] }}"
+      cursor_value: "{{ last_records['href'] }}"
     page_token_option:
       type: "RequestPath"
       field_name: "from"
@@ -70,6 +70,247 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the document.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the document.
+            type:
+              - "null"
+              - string
+          href:
+            description: Hyperlink to access the document.
+            type:
+              - "null"
+              - string
+          browserLink:
+            description: Link to view the document in a web browser.
+            type:
+              - "null"
+              - string
+          icon:
+            description: Icon representing the document
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the icon.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of the icon (e.g., file icon, folder icon).
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view the icon in a web browser.
+                type:
+                  - "null"
+                  - string
+          name:
+            description: Name of the document.
+            type:
+              - "null"
+              - string
+          owner:
+            description: Owner of the document.
+            type:
+              - "null"
+              - string
+          ownerName:
+            description: Name of the document owner.
+            type:
+              - "null"
+              - string
+          docSize:
+            description: Size of the document in bytes
+            type:
+              - "null"
+              - object
+            properties:
+              totalRowCount:
+                description: Total number of rows across all tables in the document.
+                type:
+                  - "null"
+                  - integer
+              tableViewCount:
+                description: Total number of tables/views in the document.
+                type:
+                  - "null"
+                  - integer
+              pageCount:
+                description: Total number of pages in the document.
+                type:
+                  - "null"
+                  - integer
+              overApiSizeLimit:
+                description: Indicates if the document size exceeds API limit.
+                type:
+                  - "null"
+                  - boolean
+          sourceDoc:
+            description: Source document from which this document originated
+            type:
+              - "null"
+              - object
+            properties:
+              totalRowCount:
+                description: Total number of rows in the source document.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of the source document.
+                type:
+                  - "null"
+                  - string
+              href:
+                description: Hyperlink to access the source document.
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view the source document in a web browser.
+                type:
+                  - "null"
+                  - string
+          createdAt:
+            description: Timestamp when the document was created.
+            type:
+              - "null"
+              - string
+          updatedAt:
+            description: Timestamp when the document was last updated.
+            type:
+              - "null"
+              - string
+          published:
+            description: Publication status of the document
+            type:
+              - "null"
+              - object
+            properties:
+              description:
+                description: Description of the published document.
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view the published document in a web browser.
+                type:
+                  - "null"
+                  - string
+              imageLink:
+                description: Link to the image associated with the published document.
+                type:
+                  - "null"
+                  - string
+              discoverable:
+                description: Indicates if the document is discoverable by others.
+                type:
+                  - "null"
+                  - boolean
+              earnCredit:
+                description:
+                  Indicates if credits can be earned by interacting with
+                  the document.
+                type:
+                  - "null"
+                  - boolean
+              mode:
+                description: Mode of publication (e.g., public, private).
+                type:
+                  - "null"
+                  - string
+              categories:
+                description: Categories associated with the published document.
+                type:
+                  - "null"
+                  - string
+                items:
+                  type:
+                    - "null"
+                    - string
+          folder:
+            description: Folder where the document is stored
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the folder.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of the folder (e.g., personal, shared).
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view the folder in a web browser.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the folder.
+                type:
+                  - "null"
+                  - string
+          workspace:
+            description: Workspace to which the document belongs
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the workspace.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of the workspace.
+                type:
+                  - "null"
+                  - string
+              organizationId:
+                description: Identifier of the organization associated with the workspace.
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view the workspace in a web browser.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the workspace.
+                type:
+                  - "null"
+                  - string
+          workspaceId:
+            description: Identifier of the workspace where the document is located.
+            type:
+              - "null"
+              - string
+          folderId:
+            description: Identifier of the folder where the document is located.
+            type:
+              - "null"
+              - string
   categories_stream:
     $ref: "#/definitions/parent_base_stream"
     $parameters:
@@ -77,6 +318,20 @@ definitions:
       primary_key: "name"
       path: "categories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          name:
+            description: The name of the category.
+            type:
+              - "null"
+              - string
   permissions_stream:
     $parameters:
       name: "permissions"
@@ -90,6 +345,45 @@ definitions:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_partition.doc_id }}/acl/permissions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for this permission entry.
+            type:
+              - "null"
+              - string
+          access:
+            description:
+              Specifies the type of access granted for this permission
+              (e.g., read, write, admin).
+            type:
+              - "null"
+              - string
+          principal:
+            description:
+              Information about the principal (user/account) associated
+              with this permission entry.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: Type of the principal (e.g., user, group, service account).
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the principal.
+                type:
+                  - "null"
+                  - string
   pages_stream:
     $parameters:
       name: "pages"
@@ -103,6 +397,262 @@ definitions:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_partition.doc_id }}/pages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the page.
+            type: string
+          type:
+            description: The type of the page.
+            type: string
+          href:
+            description: The URL of the page.
+            type: string
+          browserLink:
+            description: A link to view the page in a browser.
+            type: string
+          name:
+            description: The name of the page.
+            type: string
+          subtitle:
+            description: The subtitle of the page.
+            type: string
+          createdBy:
+            description: The user who created the page.
+            type: object
+            properties:
+              "@context":
+                description: The context in which the creator information is defined.
+                type: string
+              "@type":
+                description: The type of the creator.
+                type: string
+              additionalType:
+                description: Any additional type information about the creator.
+                type: string
+              name:
+                description: The name of the creator.
+                type: string
+              email:
+                description: The email address of the creator.
+                type: string
+          createdAt:
+            description: The creation date of the page.
+            type:
+              - "null"
+              - string
+          updatedBy:
+            description: The user who last updated the page.
+            type:
+              - "null"
+              - object
+            properties:
+              "@context":
+                description: The context in which the updater information is defined.
+                type: string
+              "@type":
+                description: The type of the updater.
+                type: string
+              additionalType:
+                description: Any additional type information about the updater.
+                type: string
+              name:
+                description: The name of the updater.
+                type: string
+              email:
+                description: The email address of the updater.
+                type: string
+          updatedAt:
+            description: The last date the page was updated.
+            type:
+              - "null"
+              - string
+          icon:
+            description: The icon associated with the page.
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: The name of the icon.
+                type: string
+              type:
+                description: The type of the icon.
+                type: string
+              browserLink:
+                description: A link to view the icon in a browser.
+                type: string
+          image:
+            description: The image associated with the page.
+            type:
+              - "null"
+              - object
+            properties:
+              width:
+                description: The width of the image.
+                type: number
+              height:
+                description: The height of the image.
+                type: number
+              type:
+                description: The type of the image.
+                type: string
+              browserLink:
+                description: A link to view the image in a browser.
+                type: string
+          parent:
+            description: The parent page of the current page.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the parent page.
+                type: string
+              type:
+                description: The type of the parent page.
+                type: string
+              href:
+                description: The URL of the parent page.
+                type: string
+              browserLink:
+                description: A link to view the parent page in a browser.
+                type: string
+              name:
+                description: The name of the parent page.
+                type: string
+          children:
+            description: The child elements of the page.
+            type: array
+            items:
+              description: The list of child items.
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the child item.
+                  type: string
+                type:
+                  description: The type of the child item.
+                  type: string
+                href:
+                  description: The URL of the child item.
+                  type: string
+                browserLink:
+                  description: A link to view the child item in a browser.
+                  type: string
+                name:
+                  description: The name of the child item.
+                  type: string
+            authors:
+              type: array
+              items:
+                description: The list of child items.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    description:
+                      The context in which the child item information is
+                      defined.
+                    type: string
+                  "@type":
+                    description: The type of the child item.
+                    type: string
+                  additionalType:
+                    description: Any additional type information about the child item.
+                    type: string
+                  name:
+                    description: The name of the child item.
+                    type: string
+                  email:
+                    description: The email address associated with the child item.
+                    type: string
+              createdAt:
+                description: The creation date of the child author.
+                type: string
+              updatedBy:
+                description: The last user who updated the child element.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    description: The context in which the updater information is defined.
+                    type: string
+                  "@type":
+                    description: The type of the updater.
+                    type: string
+                  additionalType:
+                    description: Any additional type information about the updater.
+                    type: string
+                  name:
+                    description: The name of the updater.
+                    type: string
+                  email:
+                    description: The email address of the updater.
+                    type: string
+              createdBy:
+                description: The creator of the child element.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  "@context":
+                    description: The context in which the creator information is defined.
+                    type: string
+                  "@type":
+                    description: The type of the creator.
+                    type: string
+                  additionalType:
+                    description: Any additional type information about the creator.
+                    type: string
+                  name:
+                    description: The name of the creator.
+                    type: string
+                  email:
+                    description: The email address of the creator.
+                    type: string
+          contentType:
+            description: The type of content that the page represents.
+            type:
+              - "null"
+              - string
+            enum:
+              - canvas
+              - embed
+          authors:
+            description: The list of authors associated with the page.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                "@context":
+                  description: The context in which the author information is defined.
+                  type: string
+                "@type":
+                  description: The type of the author.
+                  type: string
+                additionalType:
+                  description: Any additional type information about the author.
+                  type: string
+                name:
+                  description: The name of the author.
+                  type: string
+                email:
+                  description: The email address of the author.
+                  type: string
   tables_stream:
     $parameters:
       name: "tables"
@@ -116,6 +666,76 @@ definitions:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_partition.doc_id }}/tables"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the table.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the table data (e.g., data, metadata).
+            type:
+              - "null"
+              - string
+          tableType:
+            description: Type of the table (e.g., relational, non-relational).
+            type:
+              - "null"
+              - string
+          href:
+            description: Endpoint URL to access this table data.
+            type:
+              - "null"
+              - string
+          browserLink:
+            description: Link to view this table data in a web browser.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the table.
+            type:
+              - "null"
+              - string
+          parent:
+            description: Represents the parent table containing related data
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the parent table.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of the parent table.
+                type:
+                  - "null"
+                  - string
+              href:
+                description: Endpoint URL to access parent table data.
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: Link to view parent table data in a web browser.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the parent table.
+                type:
+                  - "null"
+                  - string
   formulas_stream:
     $parameters:
       name: "formulas"
@@ -129,6 +749,68 @@ definitions:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_partition.doc_id }}/formulas"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the formula.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the formula.
+            type:
+              - "null"
+              - string
+          href:
+            description: The URL link to access the detailed information of the formula.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the formula.
+            type:
+              - "null"
+              - string
+          parent:
+            description: The parent object that this formula is associated with.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the parent object.
+                type:
+                  - "null"
+                  - string
+              id:
+                description: The unique identifier of the parent object.
+                type:
+                  - "null"
+                  - string
+              href:
+                description:
+                  The URL link to access the detailed information of the
+                  parent object.
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: The link to open up the formula in the browser.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the parent object.
+                type:
+                  - "null"
+                  - string
   controls_stream:
     $parameters:
       name: "controls"
@@ -142,6 +824,66 @@ definitions:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_partition.doc_id }}/controls"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the control
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the control
+            type:
+              - "null"
+              - string
+          href:
+            description: The URL reference of the control
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the control
+            type:
+              - "null"
+              - string
+          parent:
+            description: The parent control which contains other controls or data.
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the parent control
+                type:
+                  - "null"
+                  - string
+              id:
+                description: The unique identifier of the parent control
+                type:
+                  - "null"
+                  - string
+              href:
+                description: The URL reference of the parent control
+                type:
+                  - "null"
+                  - string
+              browserLink:
+                description: A link relating to the parent control in a browser
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the parent control
+                type:
+                  - "null"
+                  - string
   rows_stream:
     $parameters:
       name: "rows"
@@ -155,8 +897,53 @@ definitions:
         $ref: "#/definitions/base_paginator"
       requester:
         $ref: "#/definitions/requester"
-        path: "docs/{{ stream_partition.parent_slice.doc_id }}/tables/{{ stream_partition.table_id }}/rows"
+        path:
+          "docs/{{ stream_partition.parent_slice.doc_id }}/tables/{{ stream_partition.table_id
+          }}/rows"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the row.
+            type: string
+          type:
+            description: The type/category of the row data.
+            type: string
+          href:
+            description: The hyperlink of the row data.
+            type: string
+          name:
+            description: The name or title of the row.
+            type: string
+          index:
+            description: The position index of the row in the table.
+            type: number
+          createdAt:
+            description: Timestamp when the row was created.
+            type: string
+          updatedAt:
+            description: Timestamp when the row was last updated.
+            type: string
+          browserLink:
+            description: The link to open the data in a browser for view/edit.
+            type: string
+          values:
+            description: The actual values of the row.
+            type: object
+            properties:
+              ^c-_:
+                description: Specific value within the row data structure.
+                type:
+                  - string
+                  - number
+                  - object
+                  - array
+                  - boolean
+                  - "null"
 streams:
   - "#/definitions/docs_stream"
   - "#/definitions/permissions_stream"
