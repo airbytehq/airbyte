@@ -29,6 +29,37 @@ definitions:
       name: "catalogs"
       path: "/catalog"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          data:
+            description: The main data container for catalogs
+            type: array
+            items:
+              description: An individual catalog entry
+              type: object
+              properties:
+                id:
+                  description: The unique identifier for the catalog data
+                  type: string
+                path:
+                  description: The path to access the catalog data
+                  type: array
+                type:
+                  description: The type/classification of the catalog data
+                  type: string
+                tag:
+                  description: The tag associated with the catalog data
+                  type: string
+                containerType:
+                  description: The type of container holding the catalog data
+                  type: string
+                createdAt:
+                  description: The timestamp when the catalog data was created
+                  type: string
 streams:
   - "#/definitions/catalogs_stream"
 
