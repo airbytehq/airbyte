@@ -6,24 +6,28 @@
   "type": "object",
   "properties": {
     "page": {
+      "description": "The current page number of the fetched videos.",
       "$id": "#root/page",
       "title": "Page",
       "type": "integer",
       "default": 0
     },
     "per_page": {
+      "description": "Number of videos per page in the fetched result.",
       "$id": "#root/per_page",
       "title": "Per_page",
       "type": "integer",
       "default": 0
     },
     "total_results": {
+      "description": "Total number of videos matching the query criteria.",
       "$id": "#root/total_results",
       "title": "Total_results",
       "type": "integer",
       "default": 0
     },
     "url": {
+      "description": "The URL of the video.",
       "$id": "#root/url",
       "title": "Url",
       "type": "string",
@@ -31,6 +35,7 @@
       "pattern": "^.*$"
     },
     "videos": {
+      "description": "Contains information about the video resource.",
       "$id": "#root/videos",
       "title": "Videos",
       "type": "array",
@@ -41,24 +46,28 @@
         "type": "object",
         "properties": {
           "id": {
+            "description": "Unique identifier of the video.",
             "$id": "#root/videos/items/id",
             "title": "Id",
             "type": "integer",
             "default": 0
           },
           "width": {
+            "description": "Width of the video in pixels.",
             "$id": "#root/videos/items/width",
             "title": "Width",
             "type": ["number", "integer", "null"],
             "default": 0
           },
           "height": {
+            "description": "Height of the video in pixels.",
             "$id": "#root/videos/items/height",
             "title": "Height",
             "type": ["number", "integer", "null"],
             "default": 0
           },
           "url": {
+            "description": "URL of the video content.",
             "$id": "#root/videos/items/url",
             "title": "Url",
             "type": "string",
@@ -66,6 +75,7 @@
             "pattern": "^.*$"
           },
           "image": {
+            "description": "URL of the thumbnail image for the video.",
             "$id": "#root/videos/items/image",
             "title": "Image",
             "type": "string",
@@ -73,23 +83,27 @@
             "pattern": "^.*$"
           },
           "duration": {
+            "description": "Duration of the video in seconds.",
             "$id": "#root/videos/items/duration",
             "title": "Duration",
             "type": "integer",
             "default": 0
           },
           "user": {
+            "description": "Details about the user who uploaded the video.",
             "$id": "#root/videos/items/user",
             "title": "User",
             "type": "object",
             "properties": {
               "id": {
+                "description": "Unique identifier of the user who uploaded the video.",
                 "$id": "#root/videos/items/user/id",
                 "title": "Id",
                 "type": "integer",
                 "default": 0
               },
               "name": {
+                "description": "Name of the user who uploaded the video.",
                 "$id": "#root/videos/items/user/name",
                 "title": "Name",
                 "type": "string",
@@ -97,6 +111,7 @@
                 "pattern": "^.*$"
               },
               "url": {
+                "description": "URL of the user profile.",
                 "$id": "#root/videos/items/user/url",
                 "title": "Url",
                 "type": "string",
@@ -106,6 +121,7 @@
             }
           },
           "video_files": {
+            "description": "List of video files available for the video.",
             "$id": "#root/videos/items/video_files",
             "title": "Video_files",
             "type": "array",
@@ -116,12 +132,14 @@
               "type": "object",
               "properties": {
                 "id": {
+                  "description": "Unique identifier of the video file.",
                   "$id": "#root/videos/items/video_files/items/id",
                   "title": "Id",
                   "type": "integer",
                   "default": 0
                 },
                 "quality": {
+                  "description": "Quality of the video file.",
                   "$id": "#root/videos/items/video_files/items/quality",
                   "title": "Quality",
                   "type": "string",
@@ -129,6 +147,7 @@
                   "pattern": "^.*$"
                 },
                 "file_type": {
+                  "description": "Type of the video file (e.g., mp4).",
                   "$id": "#root/videos/items/video_files/items/file_type",
                   "title": "File_type",
                   "type": "string",
@@ -136,18 +155,21 @@
                   "pattern": "^.*$"
                 },
                 "width": {
+                  "description": "Width of the video file in pixels.",
                   "$id": "#root/videos/items/video_files/items/width",
                   "title": "Width",
                   "type": ["number", "integer", "null"],
                   "default": 0
                 },
                 "height": {
+                  "description": "Height of the video file in pixels.",
                   "$id": "#root/videos/items/video_files/items/height",
                   "title": "Height",
                   "type": ["number", "integer", "null"],
                   "default": 0
                 },
                 "link": {
+                  "description": "URL to download the video file.",
                   "$id": "#root/videos/items/video_files/items/link",
                   "title": "Link",
                   "type": "string",
@@ -158,6 +180,7 @@
             }
           },
           "video_pictures": {
+            "description": "List of pictures associated with the video.",
             "$id": "#root/videos/items/video_pictures",
             "title": "Video_pictures",
             "type": "array",
@@ -168,12 +191,14 @@
               "type": "object",
               "properties": {
                 "id": {
+                  "description": "Unique identifier of the video picture.",
                   "$id": "#root/videos/items/video_pictures/items/id",
                   "title": "Id",
                   "type": "integer",
                   "default": 0
                 },
                 "picture": {
+                  "description": "URL of the video picture.",
                   "$id": "#root/videos/items/video_pictures/items/picture",
                   "title": "Picture",
                   "type": "string",
@@ -181,6 +206,7 @@
                   "pattern": "^.*$"
                 },
                 "nr": {
+                  "description": "Order number of the video picture.",
                   "$id": "#root/videos/items/video_pictures/items/nr",
                   "title": "Nr",
                   "type": "integer",
