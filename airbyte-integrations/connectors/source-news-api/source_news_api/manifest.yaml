@@ -26,8 +26,12 @@ definitions:
       # present on the stream. This is because News API does not allow
       # these parameters if they're not required for the endpoint. Also,
       # these parameters cannot be mixed with the 'sources' parameter.
-      country: "{{ config['country'] if parameters['use_country'] is defined and not config.get('sources') else None }}"
-      category: "{{ config['category'] if parameters['use_category'] is defined and not config.get('sources') else None }}"
+      country:
+        "{{ config['country'] if parameters['use_country'] is defined and not
+        config.get('sources') else None }}"
+      category:
+        "{{ config['category'] if parameters['use_category'] is defined and
+        not config.get('sources') else None }}"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -61,30 +65,37 @@ definitions:
         type: object
         properties:
           title:
+            description: The title of the news article.
             type:
               - "null"
               - string
           author:
+            description: The author of the news article.
             type:
               - "null"
               - string
           publishedAt:
+            description: The date and time when the news article was published.
             type:
               - "null"
               - string
             format: date-time
           source:
+            description: The source of the news article.
             type: object
             properties:
               Name:
+                description: The name of the news source.
                 type:
                   - "null"
                   - string
               Id:
+                description: The unique identifier of the news source.
                 type:
                   - "null"
                   - string
           url:
+            description: The URL link to access the full news article.
             type:
               - "null"
               - string
@@ -103,30 +114,37 @@ definitions:
         type: object
         properties:
           title:
+            description: The title of the news article.
             type:
               - "null"
               - string
           author:
+            description: The author or authors of the news article.
             type:
               - "null"
               - string
           publishedAt:
+            description: The date and time when the news article was published.
             type:
               - "null"
               - string
             format: date-time
           source:
+            description: The source of the news article.
             type: object
             properties:
               Name:
+                description: The name of the news source.
                 type:
                   - "null"
                   - string
               Id:
+                description: The unique identifier of the news source.
                 type:
                   - "null"
                   - string
           url:
+            description: The URL to the full news article.
             type:
               - "null"
               - string
