@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier assigned to the popup.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "The title or name of the popup displayed to users.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp indicating when the popup was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp indicating when the popup was last updated.",
       "type": ["null", "string"]
     },
     "conversion_identifier": {
+      "description": "The identifier associated with the conversion event triggered by the popup.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the popup (e.g., active, inactive, expired).",
       "type": ["null", "string"]
     },
     "trigger": {
+      "description": "The event or action that triggers the display of the popup.",
       "type": ["null", "string"]
     }
   }

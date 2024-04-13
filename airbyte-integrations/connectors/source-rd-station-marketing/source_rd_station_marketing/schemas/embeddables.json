@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the embeddable data entry.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title or name associated with the embeddable data entry.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp for the creation date of the embeddable data entry.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp for the last update of the embeddable data entry.",
       "type": ["null", "string"]
     },
     "conversion_identifier": {
+      "description": "Unique identifier for the conversion associated with the embeddable data.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the embeddable data.",
       "type": ["null", "string"]
     }
   }

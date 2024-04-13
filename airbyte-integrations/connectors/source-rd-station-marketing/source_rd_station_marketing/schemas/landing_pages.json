@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the landing page",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the landing page",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the landing page was created",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the landing page was last updated",
       "type": ["null", "string"]
     },
     "conversion_identifier": {
+      "description": "Identifier for the conversion action associated with this landing page",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the landing page (e.g., active, inactive)",
       "type": ["null", "string"]
     },
     "has_active_experiment": {
+      "description": "Flag to indicate if the landing page has an active experiment running",
       "type": ["null", "boolean"]
     },
     "had_experiment": {
+      "description": "Flag to indicate if the landing page had an experiment associated with it",
       "type": ["null", "boolean"]
     }
   }

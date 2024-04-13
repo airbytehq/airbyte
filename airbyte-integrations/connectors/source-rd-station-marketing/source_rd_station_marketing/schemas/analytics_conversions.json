@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "asset_id": {
+      "description": "The unique identifier of the asset.",
       "type": ["null", "integer"]
     },
     "asset_identifier": {
+      "description": "A specific identifier associated with the asset.",
       "type": ["null", "string"]
     },
     "asset_created_at": {
+      "description": "The timestamp when the asset was created.",
       "type": ["null", "string"]
     },
     "asset_updated_at": {
+      "description": "The timestamp when the asset was last updated.",
       "type": ["null", "string"]
     },
     "asset_type": {
+      "description": "The type or category of the asset.",
       "type": ["null", "string"]
     },
     "conversion_count": {
+      "description": "The total number of conversions associated with the asset.",
       "type": ["null", "integer"]
     },
     "visits_count": {
+      "description": "The total number of visits or interactions with the asset.",
       "type": ["null", "integer"]
     },
     "conversion_rate": {
+      "description": "The conversion rate calculated as a percentage.",
       "type": ["null", "number"]
     }
   }
