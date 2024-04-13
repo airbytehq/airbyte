@@ -53,11 +53,134 @@ definitions:
 
   user_business_hours_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/business-hours"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/business-hours"
       extractorPath: "schedule"
     $ref: "#/definitions/base_stream_without_pagination"
     name: "user_business_hours"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User business hours Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          weeklyRanges:
+            description: User's business hours for each day of the week
+            type:
+              - "null"
+              - object
+            properties:
+              monday:
+                description: Business hours for Monday
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Time range within business hours
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Start time of business hours on Monday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: End time of business hours on Monday
+                      type:
+                        - "null"
+                        - string
+              tuesday:
+                description: Business hours for Tuesday
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Time range within business hours
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Start time of business hours on Tuesday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: End time of business hours on Tuesday
+                      type:
+                        - "null"
+                        - string
+              wednesday:
+                description: Business hours for Wednesday
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Time range within business hours
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Start time of business hours on Wednesday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: End time of business hours on Wednesday
+                      type:
+                        - "null"
+                        - string
+              thursday:
+                description: Business hours for Thursday
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Time range within business hours
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Start time of business hours on Thursday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: End time of business hours on Thursday
+                      type:
+                        - "null"
+                        - string
+              friday:
+                description: Business hours for Friday
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Time range within business hours
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Start time of business hours on Friday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: End time of business hours on Friday
+                      type:
+                        - "null"
+                        - string
   company_business_hours_stream:
     $parameters:
       path: "/account/{{ config['account_id'] }}/business-hours"
@@ -65,29 +188,266 @@ definitions:
     $ref: "#/definitions/base_stream_without_pagination"
     name: "company_business_hours"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Business hours Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          weeklyRanges:
+            description: Schedule for the weekly business hours
+            type:
+              - "null"
+              - object
+            properties:
+              monday:
+                description: Business hours for Monday
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Starting time of business hours on Monday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: Ending time of business hours on Monday
+                      type:
+                        - "null"
+                        - string
+              tuesday:
+                description: Business hours for Tuesday
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Starting time of business hours on Tuesday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: Ending time of business hours on Tuesday
+                      type:
+                        - "null"
+                        - string
+              wednesday:
+                description: Business hours for Wednesday
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Starting time of business hours on Wednesday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: Ending time of business hours on Wednesday
+                      type:
+                        - "null"
+                        - string
+              thursday:
+                description: Business hours for Thursday
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Starting time of business hours on Thursday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: Ending time of business hours on Thursday
+                      type:
+                        - "null"
+                        - string
+              friday:
+                description: Business hours for Friday
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    from:
+                      description: Starting time of business hours on Friday
+                      type:
+                        - "null"
+                        - string
+                    to:
+                      description: Ending time of business hours on Friday
+                      type:
+                        - "null"
+                        - string
   callblock_settings_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/caller-blocking"
       extractorPath: "greetings"
     $ref: "#/definitions/base_stream_without_pagination"
     name: "callblock_settings"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Callblock settings Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            description: The type of call block setting
+            type:
+              - "null"
+              - string
+          preset:
+            description: Information about the preset for call block settings
+            type:
+              - "null"
+              - object
+            properties:
+              uri:
+                description: The URI for retrieving more details about the preset
+                type:
+                  - "null"
+                  - string
+              id:
+                description: The unique identifier for the preset
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the preset configuration
+                type:
+                  - "null"
+                  - string
   blocked_allowed_phonenumbers_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking/phone-numbers"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/caller-blocking/phone-numbers"
       extractorPath: "records"
     $ref: "#/definitions/base_stream_without_pagination"
     primary_key: "id"
     name: "blocked_allowed_phonenumbers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Blocked_Allowed phoneNumber Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          uri:
+            description: The URI that points to the specific phone number resource.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the phone number record.
+            type:
+              - "null"
+              - string
+          phoneNumber:
+            description: The actual phone number that is either blocked or allowed.
+            type:
+              - "null"
+              - string
+          status:
+            description: Indicates if the phone number is blocked or allowed.
+            type:
+              - "null"
+              - string
+          label:
+            description: A descriptive label for the phone number.
+            type:
+              - "null"
+              - string
   forwarding_numbers_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/forwarding-number"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/forwarding-number"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     name: "forwarding_numbers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Forwarding numbers Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the forwarding number
+            type:
+              - "null"
+              - string
+          phoneNumber:
+            description: Phone number to which calls will be forwarded
+            type:
+              - "null"
+              - string
+          label:
+            description: Custom label assigned to the forwarding number
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of forwarding number (e.g., mobile, office)
+            type:
+              - "null"
+              - string
+          features:
+            description: List of features associated with the forwarding number
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          flipNumber:
+            description: Boolean indicating if the flip number feature is enabled
+            type:
+              - "null"
+              - string
   company_call_handling_rules_stream:
     $parameters:
       path: "/account/{{ config['account_id'] }}/answering-rule"
@@ -96,22 +456,299 @@ definitions:
     primary_key: "id"
     name: "company_call_handling_rules"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Company call handling rules
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          uri:
+            description:
+              URI that can be used to access more details about the call
+              handling rule.
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for the call handling rule.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type or category of the call handling rule.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title associated with the call handling rule.
+            type:
+              - "null"
+              - string
+          enabled:
+            description:
+              Indicates whether the call handling rule is currently enabled
+              or not.
+            type:
+              - "null"
+              - boolean
   user_call_records_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/call-log"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/call-log"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     name: "user_call_records"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Call Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          uri:
+            description: The URI of the call record.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the call record.
+            type:
+              - "null"
+              - string
+          sessionId:
+            description: The session ID associated with the call record.
+            type:
+              - "null"
+              - string
+          telephonySessionId:
+            description: The telephony session ID associated with the call record.
+            type:
+              - "null"
+              - string
+          startTime:
+            description: The start time of the call.
+            type:
+              - "null"
+              - string
+          duration:
+            description: The duration of the call in seconds.
+            type:
+              - "null"
+              - number
+          type:
+            description: The type of call record, e.g., 'voice', 'fax'.
+            type:
+              - "null"
+              - string
+          direction:
+            description: The direction of the call, e.g., 'inbound' or 'outbound'.
+            type:
+              - "null"
+              - string
+          action:
+            description:
+              The action associated with the call record, e.g., 'outbound',
+              'inbound', 'missed'.
+            type:
+              - "null"
+              - string
+          result:
+            description: The result of the call, e.g., 'answered', 'voicemail', 'missed'.
+            type:
+              - "null"
+              - string
+          to:
+            description: The recipient of the call or message
+            type:
+              - "null"
+              - object
+            properties:
+              phoneNumber:
+                description: The phone number of the call recipient.
+                type:
+                  - "null"
+                  - string
+              location:
+                description: The location of the call recipient.
+                type:
+                  - "null"
+                  - string
+          from:
+            description: The sender of the call or message
+            type:
+              - "null"
+              - object
+            properties:
+              phoneNumber:
+                description: The phone number of the caller.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the caller.
+                type:
+                  - "null"
+                  - string
+          message:
+            description: The content of the message
+            type:
+              - "null"
+              - object
+            properties:
+              uri:
+                description: The URI of the message associated with the call record.
+                type:
+                  - "null"
+                  - string
+              id:
+                description:
+                  The unique identifier of the message associated with
+                  the call record.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of message associated with the call record.
+                type:
+                  - "null"
+                  - string
   user_active_calls_stream:
     $parameters:
-      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/active-calls"
+      path:
+        "/account/{{ config['account_id'] }}/extension/{{ config['extension_id']
+        }}/active-calls"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     name: "user_active_calls"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Call Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          uri:
+            description: The URI of the call.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the call.
+            type:
+              - "null"
+              - string
+          sessionId:
+            description: The session ID of the call.
+            type:
+              - "null"
+              - string
+          telephonySessionId:
+            description: The telephony session ID of the call.
+            type:
+              - "null"
+              - string
+          startTime:
+            description: The start time of the call.
+            type:
+              - "null"
+              - string
+          duration:
+            description: The duration of the call in seconds.
+            type:
+              - "null"
+              - number
+          type:
+            description: The type of call (e.g., 'voice', 'video').
+            type:
+              - "null"
+              - string
+          direction:
+            description: The direction of the call (e.g., 'inbound', 'outbound').
+            type:
+              - "null"
+              - string
+          action:
+            description:
+              The type of action associated with the call (e.g., 'start',
+              'end', 'join').
+            type:
+              - "null"
+              - string
+          result:
+            description: The result of the call (e.g., 'completed', 'failed').
+            type:
+              - "null"
+              - string
+          to:
+            description: Represents the receiver who is receiving the call.
+            type:
+              - "null"
+              - object
+            properties:
+              phoneNumber:
+                description: The phone number of the recipient.
+                type:
+                  - "null"
+                  - string
+              location:
+                description: The location of the recipient.
+                type:
+                  - "null"
+                  - string
+          from:
+            description: Represents the caller who initiated the call.
+            type:
+              - "null"
+              - object
+            properties:
+              phoneNumber:
+                description: The phone number of the caller.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the caller.
+                type:
+                  - "null"
+                  - string
+          message:
+            description: Provides any relevant message or notes related to the call.
+            type:
+              - "null"
+              - object
+            properties:
+              uri:
+                description: The URI of the message.
+                type:
+                  - "null"
+                  - string
+              id:
+                description:
+                  The unique identifier of the message associated with
+                  the call.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: The type of message associated with the call.
+                type:
+                  - "null"
+                  - string
   call_monitoring_groups_stream:
     $parameters:
       path: "/account/{{ config['account_id'] }}/call-monitoring-groups"
@@ -120,6 +757,24 @@ definitions:
     primary_key: "id"
     name: "call_monitoring_groups"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Call Monitoring Groups Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the call monitoring group.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the call monitoring group.
+            type:
+              - "null"
+              - string
   call_queues_stream:
     $parameters:
       path: "/account/{{ config['account_id'] }}/call-queues"
@@ -128,6 +783,34 @@ definitions:
     primary_key: "id"
     name: "call_queues"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Call Queues Schema
+        additionalProperties: true
+        type: object
+        properties:
+          uri:
+            description: The URI for accessing the call queue details.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the call queue.
+            type:
+              - "null"
+              - string
+          extensionNumber:
+            description: The extension number associated with the call queue.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the call queue.
+            type:
+              - "null"
+              - string
   call_record_settings_stream:
     $parameters:
       path: "/account/{{ config['account_id'] }}/call-recording"
@@ -135,6 +818,28 @@ definitions:
     $ref: "#/definitions/base_stream_without_pagination"
     name: "call_record_settings"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Call Record Settings Schema
+        additionalProperties: true
+        type: object
+        properties:
+          type:
+            description:
+              The type of call record settings. Specifies the recording
+              type such as 'voice' or 'video'.
+            type:
+              - "null"
+              - string
+          mode:
+            description:
+              The mode of the call record settings. Can be set to 'automatic'
+              or 'manual'.
+            type:
+              - "null"
+              - string
   greetings_stream:
     $parameters:
       path: "/dictionary/greeting"
@@ -143,6 +848,58 @@ definitions:
     primary_key: "id"
     name: "greetings"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Greetings Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          uri:
+            description: The URI to access the greeting.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier of the greeting.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name associated with the greeting.
+            type:
+              - "null"
+              - string
+          usageType:
+            description:
+              The intended usage type of the greeting (e.g., internal,
+              external).
+            type:
+              - "null"
+              - string
+          contentUri:
+            description: The URI to access the content of the greeting.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of the greeting (e.g., voicemail, busy, after hours).
+            type:
+              - "null"
+              - string
+          category:
+            description: The category that the greeting belongs to.
+            type:
+              - "null"
+              - string
+          text:
+            description: The actual text content of the greeting.
+            type:
+              - "null"
+              - string
   ivr_prompts_stream:
     $parameters:
       path: "/dictionary/greeting"
@@ -151,6 +908,66 @@ definitions:
     primary_key: "id"
     name: "ivr_prompts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: IVR Prompts
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the IVR prompt.
+            type:
+              - "null"
+              - string
+          uri:
+            description: The URI pointing to the IVR prompt.
+            type:
+              - "null"
+              - string
+          contentType:
+            description: The type of content in the IVR prompt.
+            type:
+              - "null"
+              - string
+          filename:
+            description: The name of the file representing the IVR prompt.
+            type:
+              - "null"
+              - string
+          contentUri:
+            description: The URI pointing to the content of the IVR prompt.
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of IVR prompt.
+            type:
+              - "null"
+              - string
+          text:
+            description: The actual text content of the IVR prompt.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the IVR prompt.
+            type:
+              - "null"
+              - string
+          usageType:
+            description: The way in which the IVR prompt is used.
+            type:
+              - "null"
+              - string
+          category:
+            description: The category to which the IVR prompt belongs.
+            type:
+              - "null"
+              - string
   fax_cover_stream:
     $parameters:
       path: "/dictionary/fax-cover-page"
@@ -159,6 +976,24 @@ definitions:
     primary_key: "id"
     name: "fax_cover"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Fax Cover Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the fax cover sheet.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title associated with the fax cover sheet.
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/user_business_hours_stream"
   - "#/definitions/company_business_hours_stream"
