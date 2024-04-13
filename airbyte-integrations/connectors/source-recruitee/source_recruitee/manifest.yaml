@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
       field_path:
@@ -31,12 +28,391 @@ definitions:
     $parameters:
       name: "candidates"
       path: "/candidates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          rating:
+            description: Overall rating of the candidate.
+            type: integer
+          created_at:
+            description: The timestamp representing when the candidate was created.
+            type: string
+          phones:
+            description: Phone numbers associated with the candidate.
+            type: array
+            items:
+              description: Phone number
+              type: string
+          placements:
+            description: Details of placements related to the candidate.
+            type: array
+            items:
+              description: Placement details
+              type: object
+              properties:
+                stage_id:
+                  description: Unique identifier of the stage in the placement process.
+                  type:
+                    - "null"
+                    - integer
+                job_starts_at:
+                  description: Timestamp when the job starts for the candidate.
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  description: Placement creation timestamp.
+                  type: string
+                language:
+                  description: Language associated with the placement.
+                  type:
+                    - "null"
+                    - string
+                hired_at:
+                  description: Timestamp when the candidate was hired.
+                  type:
+                    - "null"
+                    - string
+                offer_id:
+                  description:
+                    Unique identifier of the offer associated with the
+                    placement.
+                  type: integer
+                candidate_id:
+                  description:
+                    The unique identifier of the candidate associated with
+                    the placement.
+                  type:
+                    - "null"
+                    - integer
+                overdue_diff:
+                  description: Difference in time for the placement to be overdue.
+                  type:
+                    - "null"
+                    - string
+                updated_at:
+                  description: Timestamp of the last update to the placement.
+                  type: string
+                ratings:
+                  description: Ratings received for the placement.
+                  type: object
+                overdue_at:
+                  description: Timestamp when the placement is overdue.
+                  type:
+                    - "null"
+                    - string
+                positive_ratings:
+                  description: Number of positive ratings for the placement.
+                  type:
+                    - "null"
+                    - integer
+                id:
+                  description: The unique identifier of the placement.
+                  type: integer
+                position:
+                  description: Position/title associated with the placement.
+                  type:
+                    - "null"
+                    - integer
+          source:
+            description: The source from where the candidate originated.
+            type:
+              - "null"
+              - string
+          adminapp_url:
+            description: The URL link to the admin application for the candidate.
+            type:
+              - "null"
+              - string
+          example:
+            description: An example field for demonstration purpose.
+            type: boolean
+          emails:
+            description: Email addresses associated with the candidate.
+            type: array
+            items:
+              description: Email address
+              type: string
+          pending_result_request:
+            description: Pending result request for the candidate.
+            type: boolean
+          has_avatar:
+            description: Indicates if the candidate has an avatar image.
+            type: boolean
+          updated_at:
+            description: Timestamp of the last update to the candidate record.
+            type: string
+          ratings:
+            description: Ratings associated with the candidate.
+            type: object
+            properties:
+              yes:
+                description: Positive rating value
+                type: integer
+          viewed:
+            description: Whether the candidate profile has been viewed or not.
+            type: boolean
+          positive_ratings:
+            description: Number of positive ratings received by the candidate.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier of the candidate.
+            type: integer
+          ratings_count:
+            description: Total count of ratings received by the candidate.
+            type: integer
+          tasks_count:
+            description: Number of tasks associated with the candidate.
+            type: integer
+          upcoming_event:
+            description: Details of the upcoming event for the candidate.
+            type: boolean
+          unread_notifications:
+            description: Count of unread notifications related to the candidate.
+            type: boolean
+          photo_thumb_url:
+            description: URL link to the thumbnail photo of the candidate.
+            type:
+              - "null"
+              - string
+          initials:
+            description: Initials representing the candidate's name.
+            type:
+              - "null"
+              - string
+          followed:
+            description: Whether the candidate is being followed or not.
+            type: boolean
+          my_upcoming_event:
+            description: Upcoming event related to the user.
+            type: boolean
+          referrer:
+            description: Referrer information associated with the candidate.
+            type:
+              - "null"
+              - string
+          my_pending_result_request:
+            description: Pending result request specific to the user.
+            type: boolean
+          admin_id:
+            description: The unique identifier of the admin associated with the candidate.
+            type:
+              - "null"
+              - integer
+          my_last_rating:
+            description: The last rating given by the user.
+            type:
+              - "null"
+              - string
+          notes_count:
+            description: Number of notes associated with the candidate.
+            type: integer
+          name:
+            description: The full name of the candidate.
+            type: string
+          last_message_at:
+            description: Timestamp of the last message received from the candidate.
+            type:
+              - "null"
+              - string
   offers_stream:
     # Docs: https://docs.recruitee.com/reference/offers-get
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "offers"
       path: "/offers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          has_active_campaign:
+            description:
+              Indicates if there is an active campaign associated with
+              the offer
+            type: boolean
+          employment_type:
+            description: The type of employment (full-time, part-time, contract, etc.)
+            type:
+              - "null"
+              - string
+          eeo_settings:
+            description: Equal Employment Opportunity settings for the offer
+            type:
+              - "null"
+              - string
+          city:
+            description: The city where the offer is located
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the offer was created
+            type: string
+          title:
+            description: The title or name of the offer
+            type: string
+          adminapp_url:
+            description: The URL link to access the offer in the admin application
+            type:
+              - "null"
+              - string
+          example:
+            description: An example field (please provide specific details)
+            type: boolean
+          mailbox_email:
+            description: The email address associated with the offer
+            type:
+              - "null"
+              - string
+          pipeline_template:
+            description: The template used for setting up the recruitment pipeline
+            type:
+              - "null"
+              - object
+          careers_url:
+            description: The URL link to view the offer on the careers page
+            type: string
+          disqualified_candidates_count:
+            description: The number of candidates disqualified from the offer
+            type: integer
+          updated_at:
+            description: The date and time when the offer was last updated
+            type: string
+          state_name:
+            description: The state name where the offer is located
+            type:
+              - "null"
+              - string
+          street:
+            description: The street address of the offer location
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique ID of the offer
+            type: integer
+          hiring_manager_id:
+            description: The unique ID of the hiring manager for the offer
+            type:
+              - "null"
+              - integer
+          department:
+            description: The department associated with the offer
+            type:
+              - "null"
+              - string
+          published_at:
+            description: The date and time when the offer was published
+            type:
+              - "null"
+              - string
+          slug:
+            description: The slug for the offer URL
+            type: string
+          closed_at:
+            description: The date and time when the offer was closed
+            type:
+              - "null"
+              - string
+          department_id:
+            description: The unique ID of the department associated with the offer
+            type: integer
+          qualified_candidates_count:
+            description: The number of candidates qualified for the offer
+            type: integer
+          kind:
+            description: The type or category of the offer
+            type: string
+          recruiter_id:
+            description: The unique ID of the recruiter managing the offer
+            type:
+              - "null"
+              - integer
+          enabled_languages:
+            description: List of languages enabled for the offer
+            type: array
+            items:
+              type: object
+              properties:
+                code:
+                  description: The language code
+                  type: string
+                name:
+                  description: The name of the language
+                  type: string
+                native_name:
+                  description: The native name of the language
+                  type: string
+          followed:
+            description: Indicates if the offer is being followed by a user
+            type: boolean
+          url:
+            description: The URL link to access the offer
+            type: string
+          pipeline:
+            description: Information related to the recruitment pipeline for the offer
+            type: boolean
+          country_code:
+            description: The country code where the offer is located
+            type:
+              - "null"
+              - string
+          followers:
+            description: The number of users following the offer
+            type: array
+          number_of_openings:
+            description: The total number of openings available for the offer
+            type:
+              - "null"
+              - integer
+          candidates_count:
+            description: The total number of candidates associated with the offer
+            type: integer
+          hired_candidates_count:
+            description: The number of candidates hired for the offer
+            type: integer
+          job_scheduler:
+            description: Details about job scheduling related to the offer
+            type:
+              - "null"
+              - string
+          guid:
+            description: Globally Unique Identifier for the offer
+            type: string
+          enabled_for_referrals:
+            description: Indicates if the offer is enabled for employee referrals
+            type: boolean
+          location:
+            description: The detailed location of the offer
+            type: string
+          position:
+            description: The position title for the offer
+            type:
+              - "null"
+              - integer
+          postal_code:
+            description: The postal code of the offer location
+            type:
+              - "null"
+              - string
+          state_code:
+            description: The state code where the offer is located
+            type:
+              - "null"
+              - string
+          offer_tags:
+            description: Tags associated with the offer for better categorization
+            type: array
+          status:
+            description: The status of the offer (e.g., open, closed, in progress)
+            type: string
   departments_stream:
     # Docs: https://docs.recruitee.com/reference/departments-get
     $ref: "#/definitions/base_stream"
@@ -44,6 +420,37 @@ definitions:
       name: "departments"
       path: "/departments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          name:
+            description: The name of the department.
+            type: string
+          offers_count:
+            description: The number of job offers available in this department.
+            type: integer
+          grouped_translations:
+            description: Translations of the department name in different languages.
+            type: object
+            properties:
+              en:
+                description: English translation of the department name.
+                type: object
+                properties:
+                  name:
+                    description: The name of the department in English.
+                    type: string
+          id:
+            description: The unique identifier of the department.
+            type: integer
+          status:
+            description: The status of the department (active/inactive).
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/candidates_stream"
   - "#/definitions/offers_stream"
