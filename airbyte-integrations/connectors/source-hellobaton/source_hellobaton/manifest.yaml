@@ -7,10 +7,6 @@ check:
     - activity
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_hellobaton/schemas/{{ parameters.path }}.json"
-
   selector:
     type: RecordSelector
     extractor:
@@ -62,8 +58,6 @@ definitions:
     # name: '{{ parameters.name }}'
     primary_key:
       - id
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
 
@@ -73,66 +67,1243 @@ definitions:
     $parameters:
       path: "activity"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the activity
+            type:
+              - integer
+              - "null"
+          _self:
+            description: The URL to access details of this activity
+            type:
+              - string
+              - "null"
+          type:
+            description: The type or category of the activity
+            type:
+              - string
+              - "null"
+          group:
+            description: The group to which the activity belongs
+            type:
+              - string
+              - "null"
+          parent:
+            description: The parent entity related to the activity
+            type:
+              - string
+              - "null"
+          child:
+            description: The child entity involved in the activity
+            type:
+              - string
+              - "null"
+          actor:
+            description: The entity performing the activity
+            type:
+              - string
+              - "null"
+          project:
+            description: The project associated with the activity
+            type:
+              - string
+              - "null"
+          parent_type:
+            description: The type of the parent entity
+            type:
+              - string
+              - "null"
+          child_type:
+            description: The type of the child entity
+            type:
+              - string
+              - "null"
+          meta:
+            description: Additional metadata related to the activity
+            type:
+              - object
+              - "null"
+          created:
+            description: The timestamp when the activity was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: The timestamp when the activity was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
   companies_stream:
     $ref: "#/definitions/base_stream"
     name: "companies"
     $parameters:
       path: "companies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for this company.
+            type:
+              - integer
+              - "null"
+          _self:
+            description: The URL for this company's specific API resource.
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the company.
+            type:
+              - string
+              - "null"
+          type:
+            description: The type or category to which this company belongs.
+            type:
+              - string
+              - "null"
+          created:
+            description: The date and time when this company entry was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: The date and time when this company entry was last modified.
+            type:
+              - string
+              - "null"
+            format: date-time
   milestones_stream:
     $ref: "#/definitions/base_stream"
     name: "milestones"
     $parameters:
       path: "milestones"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the milestone
+            type:
+              - integer
+              - "null"
+          _self:
+            description: Link to the resource itself
+            type:
+              - string
+              - "null"
+          title:
+            description: Title or name of the milestone
+            type:
+              - string
+              - "null"
+          description:
+            description: Brief overview or details of the milestone
+            type:
+              - string
+              - "null"
+          project:
+            description: Project associated with the milestone
+            type:
+              - string
+              - "null"
+          task_list:
+            description: List of tasks associated with the milestone
+            type:
+              - string
+              - "null"
+          phase:
+            description: Phase information related to the milestone
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the phase
+                type:
+                  - integer
+                  - "null"
+              _self:
+                description: Link to the phase resource itself
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the phase
+                type:
+                  - string
+                  - "null"
+              created:
+                description: Date and time when the phase was created
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                description: Date and time when the phase was last modified
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          deadline_fixed:
+            description: Indicator if the deadline is fixed or flexible
+            type:
+              - boolean
+              - "null"
+          deadline_datetime:
+            description: Date and time deadline for the milestone
+            type:
+              - string
+              - "null"
+            format: date-time
+          risk_profiles:
+            description: Profiles indicating risks associated with the milestone
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  description: Unique identifier for the risk profile
+                  type:
+                    - integer
+                    - "null"
+                risk_level:
+                  description: Level of risk associated with the milestone
+                  type:
+                    - string
+                    - "null"
+                formula:
+                  description: Formula used to calculate risk
+                  type:
+                    - string
+                    - "null"
+                over_run:
+                  description: Indicator if the milestone is at risk of overrun
+                  type:
+                    - integer
+                    - "null"
+          start_datetime:
+            description: Date and time when the milestone is expected to start
+            type:
+              - string
+              - "null"
+          finish_datetime:
+            description: Date and time when the milestone was completed
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_from:
+            description: Placeholder for data on creation source
+            type:
+              - string
+              - "null"
+          duration:
+            description: Duration or estimated time to complete the milestone
+            type:
+              - integer
+              - "null"
+          feedback_list:
+            description: List of feedback related to the milestone
+            type:
+              - string
+              - "null"
+          created:
+            description: Date and time when the milestone was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: Date and time when the milestone was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
   phases_stream:
     $ref: "#/definitions/base_stream"
     name: "phases"
     $parameters:
       path: "phases"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the phase
+            type:
+              - integer
+              - "null"
+          _self:
+            description: The URL to access the details of the phase
+            type:
+              - string
+              - "null"
+          name:
+            description: The name of the phase
+            type:
+              - string
+              - "null"
+          order:
+            description: The order in which the phase appears
+            type:
+              - integer
+              - "null"
+          created:
+            description: The date and time when the phase was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: The date and time when the phase was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
   project_attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "project_attachments"
     $parameters:
       path: "project_attachments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the project attachment
+            type:
+              - integer
+              - "null"
+          _self:
+            description: The reference URL for the project attachment
+            type:
+              - string
+              - "null"
+          project:
+            description: The project to which the attachment is linked
+            type:
+              - string
+              - "null"
+          url:
+            description: The URL where the project attachment can be accessed
+            type:
+              - string
+              - "null"
+          label:
+            description: A user-friendly label or name for the project attachment
+            type:
+              - string
+              - "null"
+          created_by:
+            description: The user who created the project attachment
+            type:
+              - string
+              - "null"
+          type:
+            description: The type of the project attachment
+            type:
+              - string
+              - "null"
+          is_sow:
+            description:
+              Flag indicating if the attachment is related to a Statement
+              of Work
+            type:
+              - boolean
+              - "null"
+          original_filename:
+            description: The original filename of the attachment
+            type:
+              - string
+              - "null"
+          created:
+            description: The date and time when the project attachment was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: The date and time when the project attachment was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
     $parameters:
       path: "projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          _self:
+            description: Link to the project endpoint
+            type:
+              - string
+              - "null"
+          annual_contract_value:
+            description: The annual contract value of the project
+            type:
+              - string
+              - "null"
+          archived:
+            description: Flag indicating if the project is archived
+            type:
+              - boolean
+              - "null"
+          attachment_list:
+            description: List of attachments related to the project
+            type:
+              - string
+              - "null"
+          client_systems:
+            description: Systems used by the client for the project
+            type:
+              - string
+              - "null"
+          companies:
+            description: List of companies associated with the project
+            type:
+              - array
+              - "null"
+            items:
+              description: Company details
+              type:
+                - string
+                - "null"
+          completed_datetime:
+            description: Date and time when the project was completed
+            type:
+              - string
+              - "null"
+            format: date-time
+          cost:
+            description: Cost incurred for the project
+            type:
+              - integer
+              - "null"
+          created:
+            description: Date and time when the project was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          created_from:
+            description: Source from which the project was created
+            type:
+              - string
+              - "null"
+          created_from_template:
+            description: Template used for creating the project
+            type:
+              - string
+              - "null"
+          creator:
+            description: Creator of the project
+            type:
+              - string
+              - "null"
+          custom_field_list:
+            description: List of custom fields related to the project
+            type:
+              - string
+              - "null"
+          deadline_datetime:
+            description: Deadline date and time for the project
+            type:
+              - string
+              - "null"
+            format: date-time
+          estimated_duration:
+            description: Estimated duration of the project
+            type:
+              - integer
+              - "null"
+          id:
+            description: Unique identifier for the project
+            type:
+              - integer
+              - "null"
+          implementation_budget:
+            description: Budget allocated for project implementation
+            type:
+              - string
+              - "null"
+          milestone_feedback_list:
+            description: Feedback received on project milestones
+            type:
+              - string
+              - "null"
+          milestone_list:
+            description: List of milestones in the project
+            type:
+              - string
+              - "null"
+          modified:
+            description: Date and time when the project was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
+          phase:
+            description: Details of the project phase
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the phase
+                type:
+                  - integer
+                  - "null"
+              _self:
+                description: Link to the phase endpoint
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the phase
+                type:
+                  - string
+                  - "null"
+              order:
+                description: Order in which the phase occurs
+                type:
+                  - integer
+                  - "null"
+              created:
+                description: Date and time when the phase was created
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                description: Date and time when the phase was last modified
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          project_phases_list:
+            description: List of project phases
+            type:
+              - string
+              - "null"
+          project_user_list:
+            description: Users associated with the project
+            type:
+              - string
+              - "null"
+          risk_profiles:
+            description: Risk profiles associated with the project
+            type:
+              - array
+              - "null"
+            items:
+              description: Risk profile details
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  description: Unique identifier for the risk profile
+                  type:
+                    - integer
+                    - "null"
+                risk_score:
+                  description: Risk score associated with the profile
+                  type:
+                    - number
+                    - "null"
+                level:
+                  description: Level of risk
+                  type:
+                    - string
+                    - "null"
+                variance:
+                  description: Variance in risk score
+                  type:
+                    - integer
+                    - "null"
+                formula:
+                  description: Formula used for risk calculation
+                  type:
+                    - string
+                    - "null"
+                projected_golive_datetime:
+                  description: Projected go-live date and time
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+          start_datetime:
+            description: Start date and time of the project
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            description: Date and time when the project started
+            type:
+              - string
+              - "null"
+            format: date-time
+          status:
+            description: Current status of the project
+            type:
+              - string
+              - "null"
+          task_list:
+            description: List of tasks associated with the project
+            type:
+              - string
+              - "null"
+          time_entry_list:
+            description: List of time entries recorded for the project
+            type:
+              - string
+              - "null"
+          title:
+            description: Title of the project
+            type:
+              - string
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
     $parameters:
       path: "tasks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for this task
+            type:
+              - integer
+              - "null"
+          _self:
+            description: URL to access this specific task data
+            type:
+              - string
+              - "null"
+          title:
+            description: Title or name of the task
+            type:
+              - string
+              - "null"
+          description:
+            description: Description of the task details
+            type:
+              - string
+              - "null"
+          project:
+            description: Project to which this task belongs
+            type:
+              - string
+              - "null"
+          status:
+            description: Current status of the task (e.g., in progress, completed)
+            type:
+              - string
+              - "null"
+          dependencies:
+            description: List of tasks that this task depends on
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          start_datetime:
+            description: Scheduled start date and time for this task
+            type:
+              - string
+              - "null"
+            format: date-time
+          due_datetime:
+            description: Deadline or due date and time for this task
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            description: Actual start date and time when the task was initiated
+            type:
+              - string
+              - "null"
+            format: date-time
+          finished_datetime:
+            description: Timestamp when the task was completed
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_overridden_datetime:
+            description: Manually set start date and time for the task
+            type:
+              - string
+              - "null"
+            format: date-time
+          finished_overridden_datetime:
+            description: Manually set completion date and time for the task
+            type:
+              - string
+              - "null"
+            format: date-time
+          estimated_duration:
+            description: Expected time needed to complete this task
+            type:
+              - integer
+              - "null"
+          milestone:
+            description: Milestone associated with this task
+            type:
+              - string
+              - "null"
+          created_by:
+            description: User who created this task
+            type:
+              - string
+              - "null"
+          assigned_to:
+            description: User or team assigned to this task
+            type:
+              - string
+              - "null"
+          created_from:
+            description: Source or platform where the task was created
+            type:
+              - string
+              - "null"
+          risk_profiles:
+            description: List of risk profiles associated with this task
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  description: Unique identifier for the risk profile
+                  type:
+                    - integer
+                    - "null"
+                risk_level:
+                  description: Level of risk associated with the profile
+                  type:
+                    - string
+                    - "null"
+                formula:
+                  description: Formula used to calculate risk level
+                  type:
+                    - string
+                    - "null"
+                over_run:
+                  description: Indicates if the risk event has occurred
+                  type:
+                    - integer
+                    - "null"
+                task_variance:
+                  description: Variance in task completion due to the risk
+                  type:
+                    - integer
+                    - "null"
+                cool_down:
+                  description: Cool down period for the risk profile
+                  type:
+                    - integer
+                    - "null"
+                reason:
+                  description: Reason for the risk event
+                  type:
+                    - integer
+                    - "null"
+                duration:
+                  description: Duration of the risk event
+                  type:
+                    - integer
+                    - "null"
+                estimated_duration:
+                  description: Expected time for the risk event to occur
+                  type:
+                    - integer
+                    - "null"
+          time_entry_list:
+            description: List of time entries logged for this task
+            type:
+              - string
+              - "null"
+          attachment_list:
+            description: List of attachments associated with this task
+            type:
+              - string
+              - "null"
+          created:
+            description: Timestamp when the task was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: Timestamp when the task was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
   task_attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "task_attachments"
     $parameters:
       path: "task_attachments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the task attachment
+            type:
+              - integer
+              - "null"
+          _self:
+            description: Link to the self resource for the task attachment
+            type:
+              - string
+              - "null"
+          task:
+            description: Related task for the attachment
+            type:
+              - string
+              - "null"
+          url:
+            description: URL to access/download the task attachment
+            type:
+              - string
+              - "null"
+          type:
+            description: Type or format of the task attachment
+            type:
+              - string
+              - "null"
+          label:
+            description: Label or name for the task attachment
+            type:
+              - string
+              - "null"
+          deliverable:
+            description: Related deliverable for the task attachment
+            type:
+              - boolean
+              - "null"
+          requires_approval:
+            description: Indicates if the task attachment requires approval
+            type:
+              - boolean
+              - "null"
+          approved:
+            description: Indicates if the task attachment has been approved
+            type:
+              - boolean
+              - "null"
+          revision_task:
+            description: Task for which this attachment is a revision
+            type:
+              - string
+              - "null"
+          original_filename:
+            description: Original filename of the attached file
+            type:
+              - string
+              - "null"
+          created_by:
+            description: User who created the task attachment
+            type:
+              - string
+              - "null"
+          created:
+            description: Timestamp of when the task attachment was created
+            type:
+              - string
+              - "null"
+          modified:
+            description: Timestamp of when the task attachment was last modified
+            type:
+              - string
+              - "null"
   templates_stream:
     $ref: "#/definitions/base_stream"
     name: "templates"
     $parameters:
       path: "templates"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the template
+            type:
+              - integer
+              - "null"
+          _self:
+            description: URL of the template resource
+            type:
+              - string
+              - "null"
+          title:
+            description: Title or name of the template
+            type:
+              - string
+              - "null"
+          status:
+            description: Current status of the template
+            type:
+              - string
+              - "null"
+          cost:
+            description: Cost related to the template
+            type:
+              - string
+              - "null"
+          annual_contract_value:
+            description: The annual contract value associated with the template
+            type:
+              - string
+              - "null"
+          implementation_budget:
+            description: Budget allocated for implementing the template
+            type:
+              - string
+              - "null"
+          estimated_duration:
+            description: Approximate duration required for template completion
+            type:
+              - integer
+              - "null"
+          created_from_template:
+            description:
+              Name or ID of the original template used for the creation
+              of this template
+            type:
+              - string
+              - "null"
+          created_from:
+            description: Details of the template from which this template was created
+            type:
+              - string
+              - "null"
+          start_datetime:
+            description: Date and time when the template should start
+            type:
+              - string
+              - "null"
+            format: date-time
+          started_datetime:
+            description: Date and time when the template was started
+            type:
+              - string
+              - "null"
+            format: date-time
+          deadline_datetime:
+            description: Deadline date and time for the template
+            type:
+              - string
+              - "null"
+            format: date-time
+          completed_datetime:
+            description: Date and time when the template was completed
+            type:
+              - string
+              - "null"
+            format: date-time
+          client_systems:
+            description: List of client systems using the template
+            type:
+              - string
+              - "null"
+          phase:
+            description: Details about the phase of the template
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the phase
+                type:
+                  - integer
+                  - "null"
+              _self:
+                description: URL of the phase resource
+                type:
+                  - string
+                  - "null"
+              order:
+                description: Order in which the phase appears in the template
+                type:
+                  - integer
+                  - "null"
+              created:
+                description: Date and time when the phase was created
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              modified:
+                description: Date and time when the phase was last modified
+                type:
+                  - string
+                  - "null"
+                format: date-time
+          creator:
+            description: Creator or author of the template
+            type:
+              - string
+              - "null"
+          task_list:
+            description: List of tasks associated with the template
+            type:
+              - string
+              - "null"
   time_entries_stream:
     $ref: "#/definitions/base_stream"
     name: "time_entries"
     $parameters:
       path: "time_entries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the time entry
+            type:
+              - integer
+              - "null"
+          _self:
+            description: URL to the time entry resource
+            type:
+              - string
+              - "null"
+          user:
+            description: User who logged the time entry
+            type:
+              - string
+              - "null"
+          created_by:
+            description: User who created the time entry
+            type:
+              - string
+              - "null"
+          project:
+            description: Project associated with the time entry
+            type:
+              - string
+              - "null"
+          task:
+            description: Task associated with the time entry
+            type:
+              - string
+              - "null"
+          rate:
+            description: Rate information for the time entry
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the rate
+                type:
+                  - integer
+                  - "null"
+              hourly_rate:
+                description: Hourly rate for the time entry
+                type:
+                  - string
+                  - "null"
+          started_at:
+            description: Date and time when the time entry started
+            type:
+              - string
+              - "null"
+            format: date-time
+          ended_at:
+            description: Date and time when the time entry ended
+            type:
+              - string
+              - "null"
+            format: date-time
+          reference_date:
+            description: Date the time entry refers to
+            type:
+              - string
+              - "null"
+            format: date-time
+          billable:
+            description: Indicates if the time entry is billable
+            type:
+              - boolean
+              - "null"
+          calculated_duration:
+            description:
+              Automatically calculated duration based on start and end
+              times
+            type:
+              - integer
+              - "null"
+          inputted_duration:
+            description: Manually inputted duration for the time entry
+            type:
+              - integer
+              - "null"
+          notes:
+            description: Additional notes or comments for the time entry
+            type:
+              - string
+              - "null"
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
     $parameters:
       path: "users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the user
+            type:
+              - integer
+              - "null"
+          _self:
+            description: A self-referencing URL for the user's data
+            type:
+              - string
+              - "null"
+          first_name:
+            description: User's first name
+            type:
+              - string
+              - "null"
+          last_name:
+            description: User's last name
+            type:
+              - string
+              - "null"
+          capacity:
+            description: Capacity or storage limit associated with the user's account
+            type:
+              - integer
+              - "null"
+          department:
+            description:
+              Department or division within the company where the user
+              works
+            type:
+              - object
+              - "null"
+          email:
+            description: User's email address
+            type:
+              - string
+              - "null"
+          account_type:
+            description: Type of the user's account (e.g., admin, regular user)
+            type:
+              - string
+              - "null"
+          job_title:
+            description: User's job title or role within the company
+            type:
+              - string
+              - "null"
+          company:
+            description: Name of the company the user is associated with
+            type:
+              - string
+              - "null"
+          avatar_url:
+            description: URL to the user's avatar image
+            type:
+              - string
+              - "null"
+          created_by:
+            description: User ID or name who created this user account
+            type:
+              - string
+              - "null"
+          signed_up_at:
+            description: Date and time when the user signed up or registered
+            type:
+              - string
+              - "null"
+            format: date-time
+          created:
+            description: Date and time when the user account was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          modified:
+            description: Date and time when the user record was last modified
+            type:
+              - string
+              - "null"
+            format: date-time
 streams:
   - "#/definitions/activity_stream"
   - "#/definitions/companies_stream"
