@@ -2,13 +2,16 @@
   "type": ["null", "object"],
   "properties": {
     "Date": {
+      "description": "The date and time of the allocation.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Amount": {
+      "description": "The amount of the allocation.",
       "type": ["null", "number"]
     },
     "Invoice": {
+      "description": "The invoice associated with the allocation.",
       "$ref": "nested_invoice.json"
     }
   },

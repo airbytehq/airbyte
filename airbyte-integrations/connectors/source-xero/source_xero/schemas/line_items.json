@@ -2,37 +2,49 @@
   "type": ["null", "object"],
   "properties": {
     "Description": {
+      "description": "The description or name of the line item.",
       "type": ["null", "string"]
     },
     "Quantity": {
+      "description": "The quantity of the item in the line item.",
       "type": ["null", "number"]
     },
     "UnitAmount": {
+      "description": "The unit price or amount for a single item in the line item.",
       "type": ["null", "number"]
     },
     "AccountCode": {
+      "description": "The code identifying the account the line item belongs to.",
       "type": ["null", "string"]
     },
     "ItemCode": {
+      "description": "The code identifying the specific item in the line item.",
       "type": ["null", "string"]
     },
     "LineItemID": {
+      "description": "The unique identifier for the line item.",
       "type": ["string"]
     },
     "TaxType": {
+      "description": "The type of tax applied to the line item.",
       "type": ["null", "string"]
     },
     "LineAmount": {
+      "description": "The total amount for the line item.",
       "type": ["null", "number"]
     },
     "TaxAmount": {
+      "description": "The amount of tax applied to the line item.",
       "type": ["null", "number"]
     },
     "DiscountRate": {
+      "description": "The discount rate applied to the line item.",
       "type": ["null", "number"]
     },
     "Tracking": {
+      "description": "Custom tracking categories associated with the line item.",
       "items": {
+        "description": "An individual tracking category item.",
         "$ref": "tracking_categories.json"
       },
       "type": ["null", "array"]

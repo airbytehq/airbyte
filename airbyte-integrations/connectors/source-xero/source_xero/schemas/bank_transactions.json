@@ -2,75 +2,97 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "The type of the transaction.",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "Details about the contact associated with the transaction.",
       "$ref": "contacts.json"
     },
     "LineItems": {
+      "description": "List of line items in the transaction.",
       "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "BankAccount": {
+      "description": "The bank account associated with the transaction.",
       "$ref": "accounts.json"
     },
     "IsReconciled": {
+      "description": "Indicates if the transaction is reconciled.",
       "type": ["null", "boolean"]
     },
     "Date": {
+      "description": "The date and time of the transaction.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "DateString": {
+      "description": "The formatted date of the transaction.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Reference": {
+      "description": "Reference information for the transaction.",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code for the transaction.",
       "type": ["null", "string"]
     },
     "CurrencyRate": {
+      "description": "The exchange rate at the time of the transaction.",
       "type": ["null", "number"]
     },
     "Url": {
+      "description": "The URL of the transaction.",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the transaction.",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "Types of line amounts in the transaction.",
       "type": ["null", "string"]
     },
     "SubTotal": {
+      "description": "The subtotal amount for the transaction.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount for the transaction.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount for the transaction.",
       "type": ["null", "number"]
     },
     "BankTransactionID": {
+      "description": "The unique identifier for the bank transaction.",
       "type": ["string"]
     },
     "PrepaymentID": {
+      "description": "The ID for prepayment associated with the transaction.",
       "type": ["null", "string"]
     },
     "OverpaymentID": {
+      "description": "The ID for overpayment associated with the transaction.",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "The last updated date and time in UTC.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "HasAttachments": {
+      "description": "Indicates if the transaction has attachments.",
       "type": ["null", "boolean"]
     },
     "ExternalLinkProviderName": {
+      "description": "Name of the external link provider for the transaction.",
       "type": ["null", "string"]
     }
   },

@@ -2,138 +2,175 @@
   "type": ["null", "object"],
   "properties": {
     "Type": {
+      "description": "The type of the invoice.",
       "type": ["null", "string"]
     },
     "Contact": {
+      "description": "Information about the contact associated with the invoice.",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "The date when the invoice was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "DueDate": {
+      "description": "The due date by which the payment for the invoice is expected.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "Status": {
+      "description": "The status of the invoice.",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "Details about the line amount types in the invoice.",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "List of line items included in the invoice.",
       "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "SubTotal": {
+      "description": "The subtotal amount for the invoice.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount included in the invoice.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount including taxes and discounts for the invoice.",
       "type": ["null", "number"]
     },
     "TotalDiscount": {
+      "description": "The total discount amount applied to the invoice.",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the invoice was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used for the invoice.",
       "type": ["null", "string"]
     },
     "CurrencyRate": {
+      "description": "The currency exchange rate applied to the invoice.",
       "type": ["null", "number"]
     },
     "InvoiceID": {
+      "description": "The unique identifier of the invoice.",
       "type": ["string"]
     },
     "InvoiceNumber": {
+      "description": "The unique invoice number.",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "Any reference information associated with the invoice.",
       "type": ["null", "string"]
     },
     "BrandingThemeID": {
+      "description": "The unique identifier of the branding theme associated with the invoice.",
       "type": ["null", "string"]
     },
     "Url": {
+      "description": "The URL link to access the invoice.",
       "type": ["null", "string"]
     },
     "SentToContact": {
+      "description": "Indicates if the invoice has been sent to the contact.",
       "type": ["null", "boolean"]
     },
     "ExpectedPaymentDate": {
+      "description": "The expected payment date for the invoice.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ExpectedPaymentDateString": {
+      "description": "The expected payment date for the invoice in string format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "PlannedPaymentDate": {
+      "description": "The planned payment date for the invoice.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "PlannedPaymentDateString": {
+      "description": "The planned payment date for the invoice in string format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "HasAttachments": {
+      "description": "Indicates if the invoice has attachments.",
       "type": ["null", "boolean"]
     },
     "Payments": {
+      "description": "List of payments associated with the invoice.",
       "type": ["null", "array"],
       "items": {
         "$ref": "payments.json"
       }
     },
     "CreditNotes": {
+      "description": "List of credit notes related to the invoice.",
       "type": ["null", "array"],
       "items": {
         "$ref": "credit_notes.json"
       }
     },
     "Prepayments": {
+      "description": "List of prepayments made for the invoice.",
       "type": ["null", "array"],
       "items": {
         "$ref": "prepayments.json"
       }
     },
     "Overpayments": {
+      "description": "List of overpayments if any on the invoice.",
       "type": ["null", "array"],
       "items": {
         "$ref": "overpayments.json"
       }
     },
     "AmountDue": {
+      "description": "The amount still due to be paid for the invoice.",
       "type": ["null", "number"]
     },
     "AmountPaid": {
+      "description": "The amount already paid for the invoice.",
       "type": ["null", "number"]
     },
     "FullyPaidOnDate": {
+      "description": "The date on which the invoice was fully paid.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "AmountCredited": {
+      "description": "The amount credited for the invoice.",
       "type": ["null", "number"]
     },
     "DueDateString": {
+      "description": "The due date in string format by which the payment for the invoice is expected.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "IsDiscounted": {
+      "description": "Indicates if the invoice is discounted.",
       "type": ["null", "boolean"]
     },
     "HasErrors": {
+      "description": "Indicates if there are errors associated with the invoice.",
       "type": ["null", "boolean"]
     },
     "DateString": {
+      "description": "The date when the invoice was created in string format.",
       "format": "date-time",
       "type": ["null", "string"]
     }

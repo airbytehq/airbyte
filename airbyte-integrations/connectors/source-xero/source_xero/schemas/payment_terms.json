@@ -2,24 +2,30 @@
   "type": ["null", "object"],
   "properties": {
     "Sales": {
+      "description": "Payment terms for sales",
       "type": ["null", "object"],
       "properties": {
         "Day": {
+          "description": "Number of days for payment terms of sales",
           "type": ["null", "integer"]
         },
         "Type": {
+          "description": "Type of payment terms for sales",
           "type": ["null", "string"]
         }
       },
       "additionalProperties": true
     },
     "Bills": {
+      "description": "Payment terms for bills",
       "type": ["null", "object"],
       "properties": {
         "Day": {
+          "description": "Number of days for payment terms of bills",
           "type": ["null", "integer"]
         },
         "Type": {
+          "description": "Type of payment terms for bills",
           "type": ["null", "string"]
         }
       },

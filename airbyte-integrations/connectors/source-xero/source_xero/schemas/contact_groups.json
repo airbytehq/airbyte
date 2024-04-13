@@ -2,15 +2,19 @@
   "type": ["null", "object"],
   "properties": {
     "Status": {
+      "description": "The status of the contact group (e.g., Active, Inactive).",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "The name of the contact group.",
       "type": ["null", "string"]
     },
     "ContactGroupID": {
+      "description": "Unique identifier for the contact group.",
       "type": ["string"]
     },
     "HasValidationErrors": {
+      "description": "Indicates if there are validation errors associated with this contact group.",
       "type": ["null", "boolean"]
     }
   },

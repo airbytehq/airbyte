@@ -2,33 +2,43 @@
   "type": ["null", "object"],
   "properties": {
     "LinkedTransactionID": {
+      "description": "Unique identifier for the linked transaction.",
       "type": ["string"]
     },
     "Status": {
+      "description": "Current status of the linked transaction.",
       "type": ["null", "string"]
     },
     "Type": {
+      "description": "Type of the linked transaction.",
       "type": ["null", "string"]
     },
     "SourceTransactionID": {
+      "description": "Identifier of the source transaction linked to this transaction.",
       "type": ["null", "string"]
     },
     "SourceLineItemID": {
+      "description": "Identifier of the line item in the source transaction.",
       "type": ["null", "string"]
     },
     "SourceTransactionTypeCode": {
+      "description": "Type code of the source transaction.",
       "type": ["null", "string"]
     },
     "ContactID": {
+      "description": "Identifier of the contact linked to this transaction.",
       "type": ["null", "string"]
     },
     "TargetTransactionID": {
+      "description": "Identifier of the target transaction linked to this transaction.",
       "type": ["null", "string"]
     },
     "TargetLineItemID": {
+      "description": "Identifier of the line item in the target transaction.",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "Date and time when the transaction was last updated in UTC.",
       "type": ["null", "string"],
       "format": "date-time"
     }

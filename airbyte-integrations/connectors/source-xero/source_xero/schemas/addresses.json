@@ -2,33 +2,43 @@
   "type": ["null", "object"],
   "properties": {
     "Region": {
+      "description": "The region or state of the address",
       "type": ["null", "string"]
     },
     "AddressLine1": {
+      "description": "The first line of the address",
       "type": ["null", "string"]
     },
     "AddressLine2": {
+      "description": "The second line of the address",
       "type": ["null", "string"]
     },
     "AddressLine3": {
+      "description": "The third line of the address",
       "type": ["null", "string"]
     },
     "AddressLine4": {
+      "description": "The fourth line of the address",
       "type": ["null", "string"]
     },
     "AttentionTo": {
+      "description": "Name or department to whom the address is directed",
       "type": ["null", "string"]
     },
     "City": {
+      "description": "The city or locality of the address",
       "type": ["null", "string"]
     },
     "PostalCode": {
+      "description": "The postal or ZIP code of the address",
       "type": ["null", "string"]
     },
     "Country": {
+      "description": "The country of the address",
       "type": ["null", "string"]
     },
     "AddressType": {
+      "description": "Type of address (e.g., residential, business)",
       "type": ["null", "string"]
     }
   },

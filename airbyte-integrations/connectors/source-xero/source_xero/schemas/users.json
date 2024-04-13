@@ -2,28 +2,36 @@
   "type": ["null", "object"],
   "properties": {
     "UserID": {
+      "description": "The unique identifier for the user.",
       "type": ["string"]
     },
     "EmailAddress": {
+      "description": "The email address of the user.",
       "type": ["null", "string"]
     },
     "FirstName": {
+      "description": "The first name of the user.",
       "type": ["null", "string"]
     },
     "LastName": {
+      "description": "The last name of the user.",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the user data was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "IsSubscriber": {
+      "description": "Indicates if the user is a subscriber or not.",
       "type": ["null", "boolean"]
     },
     "OrganisationRole": {
+      "description": "The role of the user within the organization.",
       "type": ["null", "string"]
     },
     "ValidationErrors": {
+      "description": "Any validation errors associated with the user data.",
       "$ref": "validation_errors.json"
     }
   },

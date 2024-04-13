@@ -2,72 +2,93 @@
   "type": ["null", "object"],
   "properties": {
     "Contact": {
+      "description": "The contact information related to the quote.",
       "$ref": "contacts.json"
     },
     "Date": {
+      "description": "The date of the quote creation.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ExpiryDate": {
+      "description": "The expiry date of the quote.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Status": {
+      "description": "The current status of the quote.",
       "type": ["null", "string"]
     },
     "LineAmountTypes": {
+      "description": "The type of line amount used in the quote calculation.",
       "type": ["null", "string"]
     },
     "LineItems": {
+      "description": "The individual line items included in the quote.",
       "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "SubTotal": {
+      "description": "The subtotal amount of the quote.",
       "type": ["null", "number"]
     },
     "TotalTax": {
+      "description": "The total tax amount included in the quote.",
       "type": ["null", "number"]
     },
     "Total": {
+      "description": "The total amount of the quote including all charges.",
       "type": ["null", "number"]
     },
     "TotalDiscount": {
+      "description": "The total discount amount applied to the quote.",
       "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the quote was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CurrencyCode": {
+      "description": "The currency code used for the quote.",
       "type": ["null", "string"]
     },
     "CurrencyRate": {
+      "description": "The exchange rate applied to the quote currency.",
       "type": ["null", "number"]
     },
     "QuoteID": {
+      "description": "The unique identifier for the quote.",
       "type": ["null", "string"]
     },
     "QuoteNumber": {
+      "description": "The unique number assigned to the quote.",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "Any reference information associated with the quote.",
       "type": ["null", "string"]
     },
     "BrandingThemeID": {
+      "description": "The unique identifier for the branding theme associated with the quote.",
       "type": ["null", "string"]
     },
     "Title": {
+      "description": "The title or subject of the quote.",
       "type": ["null", "string"]
     },
     "Summary": {
+      "description": "A summary or notes related to the quote.",
       "type": ["null", "string"]
     },
     "Terms": {
+      "description": "The payment terms specified for the quote.",
       "type": ["null", "string"]
     },
     "TrackingCategory": {
+      "description": "The tracking category associated with the quote.",
       "type": ["null", "array"],
       "items": {
         "$ref": "tracking_categories.json"

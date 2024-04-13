@@ -2,44 +2,55 @@
   "type": ["null", "object"],
   "properties": {
     "User": {
+      "description": "The user associated with the expense claim.",
       "$ref": "users.json"
     },
     "Receipts": {
+      "description": "List of receipts submitted as part of the expense claim.",
       "type": ["null", "array"],
       "items": {
         "$ref": "receipts.json"
       }
     },
     "ExpenseClaimID": {
+      "description": "Unique identifier for the expense claim.",
       "type": ["string"]
     },
     "Payments": {
+      "description": "List of payments associated with the expense claim.",
       "type": ["null", "array"],
       "items": {
         "$ref": "payments.json"
       }
     },
     "Status": {
+      "description": "The current status of the expense claim.",
       "type": ["null", "string"]
     },
     "UpdatedDateUTC": {
+      "description": "The date and time when the expense claim was last updated in UTC timezone.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "Total": {
+      "description": "The total sum of the expense claim.",
       "type": ["null", "number"]
     },
     "AmountDue": {
+      "description": "The total amount due for the expense claim.",
       "type": ["null", "number"]
     },
     "AmountPaid": {
+      "description": "The total amount paid for the expense claim.",
       "type": ["null", "number"]
     },
     "PaymentDueDate": {
+      "description": "The date and time by which payment for the expense claim is due.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ReportingDate": {
+      "description": "The date and time when the expense claim was reported.",
       "type": ["null", "string"],
       "format": "date-time"
     }

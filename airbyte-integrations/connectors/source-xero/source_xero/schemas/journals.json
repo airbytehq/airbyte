@@ -2,65 +2,85 @@
   "type": ["null", "object"],
   "properties": {
     "JournalID": {
+      "description": "The unique identifier of the journal entry.",
       "type": ["string"]
     },
     "JournalDate": {
+      "description": "The date of the journal entry.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "JournalNumber": {
+      "description": "The journal number identifying the journal entry.",
       "type": ["null", "integer"]
     },
     "CreatedDateUTC": {
+      "description": "The date and time when the journal entry was created in UTC format.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "Reference": {
+      "description": "A reference associated with the journal entry.",
       "type": ["null", "string"]
     },
     "SourceID": {
+      "description": "The unique identifier of the source associated with this journal entry.",
       "type": ["null", "string"]
     },
     "SourceType": {
+      "description": "The type of the source associated with this journal entry.",
       "type": ["null", "string"]
     },
     "JournalLines": {
+      "description": "An array containing details of individual journal lines.",
       "items": {
         "properties": {
           "JournalLineID": {
+            "description": "The unique identifier of the journal line.",
             "type": ["null", "string"]
           },
           "AccountType": {
+            "description": "The type of account for this journal line.",
             "type": ["null", "string"]
           },
           "AccountID": {
+            "description": "The unique identifier of the account for this journal line.",
             "type": ["null", "string"]
           },
           "AccountCode": {
+            "description": "The code of the account for this journal line.",
             "type": ["null", "string"]
           },
           "TaxName": {
+            "description": "The name of the tax applied to this journal line.",
             "type": ["null", "string"]
           },
           "TaxType": {
+            "description": "The type of tax applied to this journal line.",
             "type": ["null", "string"]
           },
           "Description": {
+            "description": "A description of the journal line.",
             "type": ["null", "string"]
           },
           "GrossAmount": {
+            "description": "The gross amount for this journal line.",
             "type": ["null", "number"]
           },
           "NetAmount": {
+            "description": "The net amount for this journal line.",
             "type": ["null", "number"]
           },
           "AccountName": {
+            "description": "The name of the account for this journal line.",
             "type": ["null", "string"]
           },
           "TaxAmount": {
+            "description": "The tax amount for this journal line.",
             "type": ["null", "number"]
           },
           "TrackingCategories": {
+            "description": "An array containing the tracking categories associated with this journal line.",
             "items": {
               "$ref": "tracking_categories.json"
             },

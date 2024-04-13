@@ -2,46 +2,60 @@
   "type": ["null", "object"],
   "properties": {
     "Status": {
+      "description": "The status of the tracking category or option.",
       "type": ["null", "string"]
     },
     "TrackingCategoryID": {
+      "description": "The unique ID of the tracking category.",
       "type": ["string"]
     },
     "Option": {
+      "description": "The tracking option associated with the category.",
       "type": ["null", "string"]
     },
     "TrackingCategoryName": {
+      "description": "The name of the tracking category.",
       "type": ["null", "string"]
     },
     "TrackingOptionID": {
+      "description": "The unique ID of the tracking option.",
       "type": ["null", "string"]
     },
     "TrackingOptionName": {
+      "description": "The name of the tracking option.",
       "type": ["null", "string"]
     },
     "Options": {
+      "description": "List of options available for tracking categories",
       "items": {
         "type": ["null", "object"],
         "properties": {
           "IsActive": {
+            "description": "Specifies if the tracking option is currently active.",
             "type": ["null", "boolean"]
           },
           "IsDeleted": {
+            "description": "Specifies if the tracking option has been deleted.",
             "type": ["null", "boolean"]
           },
           "TrackingOptionID": {
+            "description": "The unique ID of the tracking option.",
             "type": ["null", "string"]
           },
           "IsArchived": {
+            "description": "Indicates if the tracking option is archived.",
             "type": ["null", "boolean"]
           },
           "Status": {
+            "description": "The status of the tracking option.",
             "type": ["null", "string"]
           },
           "Name": {
+            "description": "The name of the tracking option.",
             "type": ["null", "string"]
           },
           "HasValidationErrors": {
+            "description": "Indicates if there are validation errors for the option.",
             "type": ["null", "boolean"]
           }
         },
@@ -50,6 +64,7 @@
       "type": ["null", "array"]
     },
     "Name": {
+      "description": "The name of the tracking category or option.",
       "type": ["null", "string"]
     }
   },
