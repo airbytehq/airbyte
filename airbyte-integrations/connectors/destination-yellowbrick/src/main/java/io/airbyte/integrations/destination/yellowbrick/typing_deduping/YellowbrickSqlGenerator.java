@@ -250,7 +250,10 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
    * Extract a raw field, leaving it as json
    */
   private Field<Object> extractColumnAsJson(final ColumnId column, final AirbyteType type) {
-    if (type != null && type instanceof Array) {
+    if (type != null && type instanceof Struct) {
+      String objectPattern = String.format("({.*?})");
+      return field("SUBSTRING({0} FROM {1})", name(COLUMN_NAME_DATA), objectPattern);
+    } else if (type != null && type instanceof Array) {
       String arrayPattern = String.format(":\\s*(\\[.*?\\])");
       return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.originalName()), arrayPattern);
     } else {
@@ -259,7 +262,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   }
 
   private Field<String> jsonTypeof(Field<?> jsonField) {
-    Field<String> field = jsonField.cast(String.class);
+    Field<String> field = cast(jsonField, SQLDataType.VARCHAR(YellowbrickSqlOperations.YELLOWBRICK_VARCHAR_MAX_BYTE_SIZE));
     return case_()
         .when(field.like("{%}"), val("object"))
         .when(field.like("[%]"), val("array"))
