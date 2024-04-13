@@ -5,7 +5,9 @@ definitions:
     extractor:
       field_path: []
   requester:
-    url_base: "https://{{ 'api' if not config['api_key'] else 'pro-api' }}.coingecko.com/api/v3/coins/{{ config['coin_id'] }}"
+    url_base:
+      "https://{{ 'api' if not config['api_key'] else 'pro-api' }}.coingecko.com/api/v3/coins/{{
+      config['coin_id'] }}"
     http_method: "GET"
     request_parameters:
       x_cg_pro_api_key: "{{ config['api_key'] }}"
@@ -53,18 +55,27 @@ definitions:
         type: object
         properties:
           prices:
+            description:
+              An array of price data, showing the value of the coins in
+              the market over time
             type: array
             items:
               type: array
               items:
                 type: number
           market_caps:
+            description:
+              An array of market capitalization data, showing the value
+              of the coins in the market over time
             type: array
             items:
               type: array
               items:
                 type: number
           total_volumes:
+            description:
+              An array of total volume data, showing the total trading
+              volume of the coins in the market over time
             type: array
             items:
               type: array
@@ -82,18 +93,22 @@ definitions:
         type: object
         properties:
           id:
+            description: Unique identifier for the coin/token.
             type:
               - string
               - "null"
           symbol:
+            description: Symbol of the coin/token.
             type:
               - string
               - "null"
           name:
+            description: Name of the coin/token.
             type:
               - string
               - "null"
           localization:
+            description: Localization data for different languages.
             type: object
             properties:
               en:
@@ -233,20 +248,25 @@ definitions:
                   - string
                   - "null"
           image:
+            description: Images of the coin/token.
             type: object
             properties:
               thumb:
+                description: URL of the thumbnail image.
                 type:
                   - string
                   - "null"
               small:
+                description: URL of the small image.
                 type:
                   - string
                   - "null"
           market_data:
+            description: Data related to market prices and volumes of the coin/token.
             type: object
             properties:
               current_price:
+                description: Current prices in various currencies.
                 type: object
                 properties:
                   aed:
@@ -494,6 +514,7 @@ definitions:
                       - number
                       - "null"
               market_cap:
+                description: Market capitalization in various currencies.
                 type: object
                 properties:
                   aed:
@@ -741,6 +762,7 @@ definitions:
                       - number
                       - "null"
               total_volume:
+                description: Total trading volume in various currencies.
                 type: object
                 properties:
                   aed:
@@ -988,77 +1010,101 @@ definitions:
                       - number
                       - "null"
           community_data:
+            description: Data related to the community engagement of the coin/token.
             type: object
             properties:
-              facebook_likes: {}
-              twitter_followers: {}
+              facebook_likes:
+                description: Number of likes on Facebook.
+              twitter_followers:
+                description: Number of followers on Twitter.
               reddit_average_posts_48h:
+                description: Average number of posts on Reddit in the last 48 hours.
                 type:
                   - number
                   - "null"
               reddit_average_comments_48h:
+                description: Average number of comments on Reddit in the last 48 hours.
                 type:
                   - number
                   - "null"
               reddit_subscribers:
+                description: Number of subscribers on the coin/token's Reddit page.
                 type:
                   - number
                   - "null"
               reddit_accounts_active_48h:
+                description: Number of active accounts on Reddit in the last 48 hours.
                 type:
                   - string
                   - "null"
           developer_data:
+            description: Data related to the development activity of the coin/token.
             type: object
             properties:
               forks:
+                description: Number of forks.
                 type:
                   - number
                   - "null"
               stars:
+                description: Number of stars on the project's repository.
                 type:
                   - number
                   - "null"
               subscribers:
+                description: Number of subscribers to the project's repository.
                 type:
                   - number
                   - "null"
               total_issues:
+                description: Total number of issues opened.
                 type:
                   - number
                   - "null"
               closed_issues:
+                description: Number of closed issues.
                 type:
                   - number
                   - "null"
               pull_requests_merged:
+                description: Number of pull requests merged.
                 type:
                   - number
                   - "null"
               pull_request_contributors:
+                description: Number of contributors to pull requests.
                 type:
                   - number
                   - "null"
               code_additions_deletions_4_weeks:
+                description:
+                  Number of code lines added and deleted in the last 4
+                  weeks.
                 type: object
                 properties:
                   additions:
+                    description: Number of lines of code added.
                     type:
                       - number
                       - "null"
                   deletions:
+                    description: Number of lines of code deleted.
                     type:
                       - number
                       - "null"
               commit_count_4_weeks:
+                description: Number of commits made in the last 4 weeks.
                 type:
                   - number
                   - "null"
           public_interest_stats:
+            description: Stats related to public interest on the coin/token.
             type: object
             properties:
-              alexa_rank: {}
-              bing_matches: {}
+              alexa_rank:
+                description: Alexa rank of the coin/token.
+              bing_matches:
+                description: Number of matches related to the coin/token on Bing.
     transformations:
       - type: AddFields
         fields:
