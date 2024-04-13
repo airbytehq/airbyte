@@ -49,12 +49,605 @@ definitions:
       name: "domestic"
       primary_key: "id"
       path: "/schedule"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the episode
+            type:
+              - number
+              - "null"
+          url:
+            description: URL of the episode
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the episode
+            type:
+              - string
+              - "null"
+          season:
+            description: Season number of the episode
+            type:
+              - number
+              - "null"
+          number:
+            description: Episode number in the season
+            type:
+              - number
+              - "null"
+          type:
+            description: Type of the episode
+            type:
+              - string
+              - "null"
+          airdate:
+            description: The date when the episode will air
+            type:
+              - string
+              - "null"
+          airtime:
+            description: The time when the episode will air
+            type:
+              - string
+              - "null"
+          airstamp:
+            description: The timestamp when the episode will air
+            type:
+              - string
+              - "null"
+          runtime:
+            description: Duration of the episode in minutes
+            type:
+              - number
+              - "null"
+          rating:
+            description: Rating information of the show
+            type: object
+            properties:
+              average:
+                description: Average rating of the episode
+                type:
+                  - number
+                  - "null"
+          image:
+            description: Information about the show's image
+            type:
+              - object
+              - "null"
+            properties:
+              medium:
+                description: URL to the medium-sized image for the episode
+                type:
+                  - string
+                  - "null"
+              original:
+                description: URL to the original-sized image for the episode
+                type:
+                  - string
+                  - "null"
+          summary:
+            description: Summary of the episode
+            type:
+              - string
+              - "null"
+          show:
+            description: Details of the show
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the show
+                type:
+                  - number
+                  - "null"
+              url:
+                description: URL to the show's page
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the show
+                type:
+                  - string
+                  - "null"
+              type:
+                description: Type of the show
+                type:
+                  - string
+                  - "null"
+              language:
+                description: Language of the show
+                type:
+                  - string
+                  - "null"
+              genres:
+                description: Genres of the show
+                type: array
+                items:
+                  description: List of genres the show belongs to
+                  type:
+                    - string
+                    - "null"
+              status:
+                description: Current status of the show
+                type:
+                  - string
+                  - "null"
+              runtime:
+                description: Average runtime of episodes in the show
+                type:
+                  - number
+                  - "null"
+              averageRuntime:
+                description: Average runtime of episodes in the show
+                type:
+                  - number
+                  - "null"
+              premiered:
+                description: Date when the show premiered
+                type:
+                  - string
+                  - "null"
+              ended:
+                description: Flag indicating if the show has ended
+                type:
+                  - string
+                  - "null"
+              officialSite:
+                description: URL to the official site of the show
+                type:
+                  - string
+                  - "null"
+              schedule:
+                description: Show airing schedule
+                type: object
+                properties:
+                  time:
+                    description: Time when the show airs
+                    type:
+                      - string
+                      - "null"
+                  days:
+                    description: Days the show airs on
+                    type: array
+                    items:
+                      description: List of days the show airs on
+                      type:
+                        - string
+                        - "null"
+              rating:
+                description: Rating information of the show
+                type: object
+                properties:
+                  average:
+                    description: Average rating of the show
+                    type:
+                      - number
+                      - "null"
+              weight:
+                description: Weight of the show
+                type:
+                  - number
+                  - "null"
+              network:
+                description: Details of the network airing the show
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    description: Unique identifier for the network
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    description: Name of the network
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    description: Country details of the network
+                    type: object
+                    properties:
+                      name:
+                        description: Country name of the network
+                        type:
+                          - string
+                          - "null"
+                      code:
+                        description: Country code of the network
+                        type:
+                          - string
+                          - "null"
+                      timezone:
+                        description: Timezone of the network
+                        type:
+                          - string
+                          - "null"
+                  officialSite:
+                    description: URL to the official site of the network
+              webChannel:
+                description: Web channel the show is available on
+              dvdCountry:
+                description: Country where the DVD version of the show is distributed
+              externals:
+                description: External IDs of the show
+                type: object
+                properties:
+                  tvrage:
+                    description: TV Rage ID of the show
+                    type:
+                      - number
+                      - "null"
+                  thetvdb:
+                    description: TheTVDB ID of the show
+                    type:
+                      - number
+                      - "null"
+                  imdb:
+                    description: IMDb ID of the show
+                    type:
+                      - string
+                      - "null"
+              image:
+                description: Information about the show's image
+                type:
+                  - object
+                  - "null"
+                properties:
+                  medium:
+                    description: URL to the medium-sized image for the show
+                    type:
+                      - string
+                      - "null"
+                  original:
+                    description: URL to the original-sized image for the show
+                    type:
+                      - string
+                      - "null"
+              summary:
+                description: Summary of the show
+                type:
+                  - string
+                  - "null"
+              updated:
+                description: Last updated timestamp of the show
+                type:
+                  - number
+                  - "null"
+              _links:
+                description: Links related to the show details
+                type: object
+                properties:
+                  self:
+                    description: Link to the show's detailed information
+                    type: object
+                    properties:
+                      href:
+                        description: URL to the show itself
+                        type:
+                          - string
+                          - "null"
+                  previousepisode:
+                    description: Link to the previous episode information
+                    type: object
+                    properties:
+                      href:
+                        description: URL to the previous episode
+                        type:
+                          - string
+                          - "null"
+          _links:
+            description: Links related to the show's schedule
+            type: object
+            properties:
+              self:
+                description: Link to the current schedule information
+                type: object
+                properties:
+                  href:
+                    description: The URL of the current schedule item
+                    type:
+                      - string
+                      - "null"
   web_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "web"
       primary_key: "id"
       path: "/schedule"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the episode
+            type:
+              - number
+              - "null"
+          url:
+            description: URL of the episode
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the episode
+            type:
+              - string
+              - "null"
+          season:
+            description: Season number to which the episode belongs
+            type:
+              - number
+              - "null"
+          number:
+            description: Episode number within the season
+            type:
+              - number
+              - "null"
+          type:
+            description: Type of the episode
+            type:
+              - string
+              - "null"
+          airdate:
+            description: Scheduled airdate of the episode
+            type:
+              - string
+              - "null"
+          airtime:
+            description: Scheduled airtime of the episode
+            type:
+              - string
+              - "null"
+          airstamp:
+            description: Timestamp of the scheduled airtime
+            type:
+              - string
+              - "null"
+          runtime:
+            description: Duration of the episode in minutes
+            type:
+              - number
+              - "null"
+          rating:
+            description: Rating information
+            type: object
+            properties:
+              average:
+                description: Average rating for the episode
+                type:
+                  - number
+                  - "null"
+          image:
+            description: Image related to the episode
+            type:
+              - object
+              - "null"
+          summary:
+            description: Brief summary of the episode
+            type:
+              - string
+              - "null"
+          show:
+            description: Details about the TV show related to the episode
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                description: Unique identifier for the TV show
+                type:
+                  - number
+                  - "null"
+              url:
+                description: URL of the TV show
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the TV show
+                type:
+                  - string
+                  - "null"
+              type:
+                description: Type of the TV show
+                type:
+                  - string
+                  - "null"
+              language:
+                description: Language of the TV show
+                type:
+                  - string
+                  - "null"
+              genres:
+                description: Genres the TV show belongs to
+                type: array
+                items:
+                  description: Genre of the TV show
+                  type:
+                    - string
+                    - "null"
+              status:
+                description: Current status of the TV show
+                type:
+                  - string
+                  - "null"
+              runtime:
+                description: Average runtime of episodes of the TV show in minutes
+                type:
+                  - number
+                  - "null"
+              averageRuntime:
+                description: Average runtime of episodes of the TV show in minutes
+                type:
+                  - number
+                  - "null"
+              premiered:
+                description: Premiere date of the TV show
+                type:
+                  - string
+                  - "null"
+              ended:
+                description: Indicates whether the TV show has ended
+                type:
+                  - string
+                  - "null"
+              officialSite:
+                description: Official website of the TV show
+              schedule:
+                description: Weekly schedule of the TV show
+                type: object
+                properties:
+                  time:
+                    description: Time the TV show airs
+                    type:
+                      - string
+                      - "null"
+                  days:
+                    description: Days the TV show airs
+                    type: array
+                    items:
+                      description: Day of the week
+                      type:
+                        - string
+                        - "null"
+              rating:
+                description: Rating information about the TV show
+                type: object
+                properties:
+                  average:
+                    description: Average rating of the TV show
+                    type:
+                      - number
+                      - "null"
+              weight:
+                description: Weightage of the TV show
+                type:
+                  - number
+                  - "null"
+              network:
+                description: Network broadcasting the TV show
+                type: object
+                properties:
+                  id:
+                    description: Unique identifier for the network
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    description: Name of the network
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    description: Country details of the network
+                    type: object
+                    properties:
+                      name:
+                        description: Country name
+                        type:
+                          - string
+                          - "null"
+                      code:
+                        description: Country code
+                        type:
+                          - string
+                          - "null"
+                      timezone:
+                        description: Timezone of the country
+                        type:
+                          - string
+                          - "null"
+                  officialSite:
+                    description: Official website of the network
+              webChannel:
+                description: Web channel broadcasting the TV show
+              dvdCountry:
+                description: Country where the DVD of the TV show is available
+              externals:
+                description: External reference IDs
+                type: object
+                properties:
+                  tvrage:
+                    description: TVRage ID of the TV show
+                  thetvdb:
+                    description: TheTVDB ID of the TV show
+                    type:
+                      - number
+                      - "null"
+                  imdb:
+                    description: IMDb ID of the TV show
+                    type:
+                      - string
+                      - "null"
+              image:
+                description: Image related to the TV show
+                type:
+                  - object
+                  - "null"
+                properties:
+                  medium:
+                    description: Medium-sized image
+                    type:
+                      - string
+                      - "null"
+                  original:
+                    description: Original-sized image
+                    type:
+                      - string
+                      - "null"
+              summary:
+                description: Brief summary of the TV show
+                type:
+                  - string
+                  - "null"
+              updated:
+                description: Last update timestamp of the TV show
+                type:
+                  - number
+                  - "null"
+              _links:
+                description: Links related to the TV show
+                type: object
+                properties:
+                  self:
+                    description: Link to the TV show
+                    type: object
+                    properties:
+                      href:
+                        description: URL of the TV show
+                        type:
+                          - string
+                          - "null"
+                  previousepisode:
+                    description: Link to the previous episode of the TV show
+                    type: object
+                    properties:
+                      href:
+                        description: URL of the previous episode of the TV show
+                        type:
+                          - string
+                          - "null"
+          _links:
+            description: Links related to this TV show schedule
+            type: object
+            properties:
+              self:
+                description: Link to the current TV show schedule
+                type: object
+                properties:
+                  href:
+                    description: URL of the current TV show schedule
+                    type:
+                      - string
+                      - "null"
   future_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -62,6 +655,281 @@ definitions:
       primary_key: "id"
       path: "/schedule/full"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the episode
+            type:
+              - number
+              - "null"
+          url:
+            description: URL of the episode
+            type:
+              - string
+              - "null"
+          name:
+            description: Name of the episode
+            type:
+              - string
+              - "null"
+          season:
+            description: Season number of the episode
+            type:
+              - number
+              - "null"
+          number:
+            description: Episode number within the season
+            type:
+              - number
+              - "null"
+          type:
+            description: Type of the episode
+            type:
+              - string
+              - "null"
+          airdate:
+            description: Date on which the episode airs
+            type:
+              - string
+              - "null"
+          airtime:
+            description: Time of day when the episode airs
+            type:
+              - string
+              - "null"
+          airstamp:
+            description: Date and time stamp of when the episode airs
+            type:
+              - string
+              - "null"
+          runtime:
+            description: Duration of the episode in minutes
+            type:
+              - number
+              - "null"
+          rating:
+            description: Rating information for the episode
+            type: object
+            properties:
+              average:
+                description: Average rating of the episode
+          image:
+            description: Episode image details
+          summary:
+            description: Summary of the episode
+            type:
+              - string
+              - "null"
+          show:
+            description: Details about the TV show to which the episode belongs
+            type: object
+            properties:
+              id:
+                description: Unique identifier of the show
+                type:
+                  - number
+                  - "null"
+              url:
+                description: URL of the show
+                type:
+                  - string
+                  - "null"
+              name:
+                description: Name of the show
+                type:
+                  - string
+                  - "null"
+              type:
+                description: Type of the show
+                type:
+                  - string
+                  - "null"
+              language:
+                description: Primary language of the show
+                type:
+                  - string
+                  - "null"
+              genres:
+                description: Genres of the show
+                type: array
+                items:
+                  description: Genre
+                  type:
+                    - string
+                    - "null"
+              status:
+                description: Current status of the show
+                type:
+                  - string
+                  - "null"
+              runtime:
+                description: Average runtime of the show in minutes
+                type:
+                  - number
+                  - "null"
+              averageRuntime:
+                description: Average runtime of the show's episodes
+                type:
+                  - number
+                  - "null"
+              premiered:
+                description: Date when the show first premiered
+                type:
+                  - string
+                  - "null"
+              ended:
+                description: Indicates if the show has ended
+                type:
+                  - string
+                  - "null"
+              officialSite:
+                description: Official website of the show
+              schedule:
+                description: Weekly schedule details of the show
+                type: object
+                properties:
+                  time:
+                    description: Time of day when the show airs
+                    type:
+                      - string
+                      - "null"
+                  days:
+                    description: Days on which the show airs
+                    type: array
+                    items:
+                      description: Day of the week
+                      type:
+                        - string
+                        - "null"
+              rating:
+                description: Rating information for the show
+                type: object
+                properties:
+                  average:
+                    description: Average rating of the show
+              weight:
+                description: Show's weight based on relevance
+                type:
+                  - number
+                  - "null"
+              network:
+                description: Network details of the show
+                type: object
+                properties:
+                  id:
+                    description: Unique identifier of the network
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    description: Name of the network
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    description: Country details of the network
+                    type: object
+                    properties:
+                      name:
+                        description: Country name
+                        type:
+                          - string
+                          - "null"
+                      code:
+                        description: Country code
+                        type:
+                          - string
+                          - "null"
+                      timezone:
+                        description: Time zone of the country
+                        type:
+                          - string
+                          - "null"
+                  officialSite:
+                    description: Official website of the network
+              webChannel:
+                description: Web channel details of the show
+              dvdCountry:
+                description: Country where the show's DVDs are released
+              externals:
+                description: External identifiers for the show
+                type: object
+                properties:
+                  tvrage:
+                    description: TVRage ID of the show
+                  thetvdb:
+                    description: TheTVDB ID of the show
+                    type:
+                      - number
+                      - "null"
+                  imdb:
+                    description: IMDb ID of the show
+                    type:
+                      - string
+                      - "null"
+              image:
+                description: Show image details
+                type: object
+                properties:
+                  medium:
+                    description: URL to the medium-sized show image
+                    type:
+                      - string
+                      - "null"
+                  original:
+                    description: URL to the original-sized show image
+                    type:
+                      - string
+                      - "null"
+              summary:
+                description: Summary of the show
+                type:
+                  - string
+                  - "null"
+              updated:
+                description: Last update timestamp of the show
+                type:
+                  - number
+                  - "null"
+              _links:
+                description: Hypermedia links for related show resources
+                type: object
+                properties:
+                  self:
+                    description: Link to the current show details
+                    type: object
+                    properties:
+                      href:
+                        description: URL of the current show details
+                        type:
+                          - string
+                          - "null"
+                  previousepisode:
+                    description: Link to the previous episode of the show
+                    type: object
+                    properties:
+                      href:
+                        description: URL of the previous episode
+                        type:
+                          - string
+                          - "null"
+          _links:
+            description: Hypermedia links for related resources
+            type: object
+            properties:
+              self:
+                description: Link to the current TV show schedule
+                type: object
+                properties:
+                  href:
+                    description: URL of the current TV show schedule
+                    type:
+                      - string
+                      - "null"
 streams:
   - "#/definitions/domestic_stream"
   - "#/definitions/web_stream"
