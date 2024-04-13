@@ -22,17 +22,110 @@ definitions:
     $parameters:
       name: "auctions_data"
       path: "/auctions_data/?format=json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          dt:
+            description: Date and time of the auction data.
+            type: string
+          all_auctions_lots_count:
+            description: Total number of lots (items) across all auctions.
+            type: integer
+          auction_slug:
+            description: Unique identifier or slug for the auction.
+            type: string
+          auction_lots_count:
+            description: Number of lots (items) in the specific auction.
+            type: integer
+          auction_name:
+            description: Name of the auction.
+            type: string
+          winning_bid_min:
+            description: Minimum winning bid amount in the auction.
+            type: number
+          auction_trading_volume:
+            description: Total trading volume in the auction.
+            type: number
+          winning_bid_max:
+            description: Maximum winning bid amount in the auction.
+            type: number
+          winning_bid_mean:
+            description: Mean (average) winning bid amount in the auction.
+            type: number
   auctions_info_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "auctions_info"
       path: "/auctions_info?format=json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          base_currency:
+            description: The currency in which transactions are processed.
+            type: string
+          buyers_fee:
+            description:
+              The additional fee charged to buyers on top of the winning
+              bid.
+            type: number
+          reserve_fee:
+            description:
+              The fee charged to sellers to set a reserve price for an
+              auction.
+            type: number
+          listing_fee:
+            description: The fee charged to sellers for listing an item in the auction.
+            type: number
+          name:
+            description: The name or title of the auction.
+            type: string
+          sellers_fee:
+            description:
+              The fee charged to sellers on the final sale price of an
+              item.
+            type: number
+          slug:
+            description: A unique identifier for the auction.
+            type: string
+          url:
+            description: The URL link to access detailed information about the auction.
+            type: string
   distilleries_info_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "distilleries_info"
       path: "/distilleries_info/?format=json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          whiskybase_votes:
+            description: The number of votes the distillery has received on Whiskybase.
+            type: string
+          country:
+            description: The country in which the distillery is located.
+            type: string
+          whiskybase_whiskies:
+            description: The number of whiskies from this distillery listed on Whiskybase.
+            type: string
+          name:
+            description: The name of the distillery.
+            type: string
+          slug:
+            description: A unique identifier for the distillery.
+            type: string
+          whiskybase_rating:
+            description: The rating of the distillery on Whiskybase.
+            type: string
 streams:
   - "#/definitions/auctions_data_stream"
   - "#/definitions/auctions_info_stream"
