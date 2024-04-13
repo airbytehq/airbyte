@@ -54,6 +54,260 @@ definitions:
       primary_key: "key_id"
       path: "/api2/projects/{{ config['project_id'] }}/keys"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          key_id:
+            description: Unique ID of the key.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: Creation date of the key.
+            type:
+              - "null"
+              - string
+          created_at_timestamp:
+            description: Timestamp of the creation date of the key.
+            type:
+              - "null"
+              - number
+          key_name:
+            description: Name of the key.
+            type: object
+            properties:
+              ios:
+                description: Key name for iOS platform.
+                type:
+                  - "null"
+                  - string
+              android:
+                description: Key name for Android platform.
+                type:
+                  - "null"
+                  - string
+              web:
+                description: Key name for web platform.
+                type:
+                  - "null"
+                  - string
+              other:
+                description: Key name for other platforms.
+                type:
+                  - "null"
+                  - string
+          filenames:
+            description: File names associated with the key.
+            type: object
+            properties:
+              ios:
+                description: File name for iOS platform.
+                type:
+                  - "null"
+                  - string
+              android:
+                description: File name for Android platform.
+                type:
+                  - "null"
+                  - string
+              web:
+                description: File name for web platform.
+                type:
+                  - "null"
+                  - string
+              other:
+                description: File name for other platforms.
+                type:
+                  - "null"
+                  - string
+          description:
+            description: Description of the key.
+            type:
+              - "null"
+              - string
+          platforms:
+            description: Platforms where the key is used.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          tags:
+            description: Tags associated with the key.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          comments:
+            description: Comments related to the key.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                comment_id:
+                  description: Unique ID of the comment.
+                  type: number
+                comment:
+                  description: Content of the comment.
+                  type: string
+                added_by:
+                  description: User who added the comment.
+                  type: number
+                added_by_email:
+                  description: Email of the user who added the comment.
+                  type: string
+                added_at:
+                  description: Timestamp when the comment was added.
+                  type: string
+                added_at_timestamp:
+                  description: Timestamp when the comment was added.
+                  type: number
+          screenshots:
+            description: Screenshots associated with the key.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                screenshot_id:
+                  description: Unique ID of the screenshot.
+                  type: number
+                key_ids:
+                  description: IDs of keys associated with the screenshot.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: number
+                url:
+                  description: URL of the screenshot.
+                  type: string
+                title:
+                  description: Title of the screenshot.
+                  type: string
+                description:
+                  description: Description of the screenshot.
+                  type: string
+                screenshot_tags:
+                  description: Tags associated with the screenshot.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type: string
+                width:
+                  description: Width of the screenshot.
+                  type:
+                    - "null"
+                    - number
+                height:
+                  description: Height of the screenshot.
+                  type:
+                    - "null"
+                    - number
+                created_at:
+                  description: Creation date of the screenshot.
+                  type:
+                    - "null"
+                    - string
+                created_at_timestamp:
+                  description: Timestamp of the creation date of the screenshot.
+                  type:
+                    - "null"
+                    - number
+          translations:
+            description: Translations of the key.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                translation_id:
+                  description: Unique ID of the translation.
+                  type: number
+                key_id:
+                  description: Unique ID of the key associated with the translation.
+                  type: number
+                language_iso:
+                  description: ISO code of the language for the translation.
+                  type: string
+                translation:
+                  description: Content of the translation.
+                  type: string
+                modified_by:
+                  description: User who last modified the translation.
+                  type: number
+                modified_by_email:
+                  description: Email of the user who last modified the translation.
+                  type: string
+                modified_at:
+                  description: Last modification date of the translation.
+                  type: string
+                modified_at_timestamp:
+                  description: Timestamp of the last modification date of the translation.
+                  type: number
+                is_reviewed:
+                  description: Flag indicating if the translation is reviewed.
+                  type: boolean
+                is_unverified:
+                  description: Flag indicating if the translation is unverified.
+                  type: boolean
+                verified_by:
+                  description: User who verified the translation.
+                  type: number
+                words:
+                  description: Number of words in the translation.
+                  type: number
+                custom_translation_statuses:
+                  description: Custom statuses of the translations.
+                  type: string
+                task_id:
+                  description: ID of the task associated with the translation.
+                  type: number
+          is_plural:
+            description: Flag indicating if the key represents a plural form.
+            type: boolean
+          plural_name:
+            description: Name of the key in its plural form.
+            type: string
+          is_hidden:
+            description: Flag indicating if the key is hidden.
+            type: boolean
+          is_archived:
+            description: Flag indicating if the key is archived.
+            type: boolean
+          context:
+            description: Context information for the key.
+            type: string
+          base_words:
+            description: The base words associated with the key.
+            type: number
+          char_limit:
+            description: Character limit for the key.
+            type: number
+          custom_attributes:
+            description: Custom attributes associated with the key.
+            type: string
+          modified_at:
+            description: Last modification date of the key.
+            type: string
+          modified_at_timestamp:
+            description: Timestamp of the last modification date of the key.
+            type: number
+          translations_modified_at:
+            description: Last modification date of the translations.
+            type: string
+          translations_modified_at_timestamp:
+            description: Timestamp of the last modification date of the translations.
+            type: number
   languages_stream:
     # https://developers.lokalise.com/reference/list-all-keys
     $ref: "#/definitions/base_stream"
@@ -69,6 +323,42 @@ definitions:
       primary_key: "lang_id"
       path: "/api2/projects/{{ config['project_id'] }}/languages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          lang_id:
+            description: Unique identifier for the language
+            type:
+              - "null"
+              - number
+          lang_iso:
+            description: ISO code for the language (e.g. en for English, fr for French)
+            type:
+              - "null"
+              - string
+          lang_name:
+            description: Full name of the language (e.g. English, French)
+            type:
+              - "null"
+              - string
+          is_rtl:
+            description:
+              Indicates if the language is written from right to left (e.g.
+              Arabic, Hebrew)
+            type:
+              - "null"
+              - boolean
+          plural_forms:
+            description: Rules governing how plurals are formed in the language
+            type:
+              - "null"
+              - array
+            items:
+              description: Details about each plural form supported by the language
+              type: string
   comments_stream:
     # https://developers.lokalise.com/reference/list-project-comments
     $ref: "#/definitions/base_stream"
@@ -84,6 +374,33 @@ definitions:
       primary_key: "comment_id"
       path: "/api2/projects/{{ config['project_id'] }}/comments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          added_at_timestamp:
+            description: Timestamp of the moment the comment was added
+            type: integer
+          added_at:
+            description: Date and time when the comment was added
+            type: string
+          added_by_email:
+            description: Email address of the user who added the comment
+            type: string
+          key_id:
+            description: Identifier for the corresponding key in lokalise
+            type: integer
+          added_by:
+            description: Name of the user who added the comment
+            type: integer
+          comment:
+            description: The actual text content of the comment
+            type: string
+          comment_id:
+            description: Unique identifier for the comment
+            type: integer
   contributors_stream:
     # https://developers.lokalise.com/reference/list-all-contributors
     $ref: "#/definitions/base_stream"
@@ -99,6 +416,58 @@ definitions:
       primary_key: "user_id"
       path: "/api2/projects/{{ config['project_id'] }}/contributors"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          is_admin:
+            description: Flag indicating if the user has administrative privileges.
+            type: boolean
+          is_reviewer:
+            description: Flag indicating if the user has reviewer rights.
+            type: boolean
+          languages:
+            description: List of languages the user is associated with.
+            type: array
+            items:
+              type: object
+              properties:
+                lang_name:
+                  description: Name of the language.
+                  type: string
+                lang_id:
+                  description: Language ID used internally by the system.
+                  type: integer
+                is_writable:
+                  description:
+                    Flag indicating if the user can modify translations
+                    for this language.
+                  type: boolean
+                lang_iso:
+                  description: ISO code of the language.
+                  type: string
+          user_id:
+            description: Unique identifier for the user account.
+            type: integer
+          created_at_timestamp:
+            description: Timestamp of when the user account was created.
+            type: integer
+          created_at:
+            description: Date and time when the user account was created.
+            type: string
+          admin_rights:
+            description: User's administrative rights within the platform.
+            type: array
+            items:
+              type: string
+          fullname:
+            description: User's full name or display name.
+            type: string
+          email:
+            description: User's email address associated with the account.
+            type: string
   translations_stream:
     # https://developers.lokalise.com/reference/list-all-translations
     $ref: "#/definitions/base_stream"
@@ -114,6 +483,60 @@ definitions:
       primary_key: "translation_id"
       path: "/api2/projects/{{ config['project_id'] }}/translations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          modified_at_timestamp:
+            description: Timestamp for the last modification of the translation.
+            type: integer
+          translation_id:
+            description: Identifier for the translation entry.
+            type: integer
+          reviewed_by:
+            description: User who reviewed the translation.
+            type: integer
+          key_id:
+            description: Identifier for the key associated with the translation.
+            type: integer
+          words:
+            description: Number of words in the translated text.
+            type: integer
+          custom_translation_statuses:
+            description: Custom statuses associated with the translation.
+            type: array
+          segment_number:
+            description: Number identifying the segment in the translation.
+            type: integer
+          task_id:
+            description: ID of the task related to the translation, if applicable.
+            type: "null"
+          language_iso:
+            description: ISO code for the language of the translation.
+            type: string
+          is_fuzzy:
+            description: Flag indicating if the translation is fuzzy.
+            type: boolean
+          modified_by_email:
+            description: Email of the user who last modified the translation.
+            type: string
+          is_reviewed:
+            description: Flag indicating if the translation has been reviewed.
+            type: boolean
+          is_unverified:
+            description: Flag indicating if the translation is unverified.
+            type: boolean
+          translation:
+            description: The translated text content.
+            type: string
+          modified_by:
+            description: Creator of the last modification to the translation.
+            type: integer
+          modified_at:
+            description: Date and time when the translation was last modified.
+            type: string
 streams:
   - "#/definitions/keys_stream"
   - "#/definitions/languages_stream"
