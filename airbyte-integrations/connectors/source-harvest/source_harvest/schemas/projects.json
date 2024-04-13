@@ -83,6 +83,7 @@
       "type": ["null", "string"]
     },
     "client": {
+      "description": "Details of the client associated with the project.",
       "type": ["null", "object"],
       "properties": {
         "id": {

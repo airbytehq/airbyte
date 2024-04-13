@@ -118,6 +118,7 @@
       "type": ["null", "string"]
     },
     "client": {
+      "description": "Details of the client associated with the invoice",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -139,6 +140,7 @@
       "type": ["null", "string"]
     },
     "creator": {
+      "description": "Information about the creator of the invoice",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -152,6 +154,7 @@
       }
     },
     "line_items": {
+      "description": "List of line items containing the services/products included in the invoice",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -189,6 +192,7 @@
             "type": ["null", "boolean"]
           },
           "project": {
+            "description": "Details of the project related to the line item",
             "type": ["null", "object"],
             "properties": {
               "code": {

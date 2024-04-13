@@ -37,6 +37,7 @@
       "type": ["null", "number"]
     },
     "project": {
+      "description": "Details of the project the user is assigned to.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -54,6 +55,7 @@
       }
     },
     "user": {
+      "description": "Details of the user assignment.",
       "type": ["null", "object"],
       "properties": {
         "id": {

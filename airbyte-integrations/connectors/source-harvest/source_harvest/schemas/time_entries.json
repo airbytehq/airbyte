@@ -12,6 +12,7 @@
       "format": "date"
     },
     "user": {
+      "description": "The user who created the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -25,6 +26,7 @@
       }
     },
     "client": {
+      "description": "The client associated with the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -42,6 +44,7 @@
       }
     },
     "project": {
+      "description": "The project where the time entry was tracked",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -59,6 +62,7 @@
       }
     },
     "task": {
+      "description": "The task performed during the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -72,6 +76,7 @@
       }
     },
     "user_assignment": {
+      "description": "The user assignment details for the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -107,6 +112,7 @@
       }
     },
     "task_assignment": {
+      "description": "The task assignment details for the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -200,6 +206,7 @@
       "type": ["null", "boolean"]
     },
     "invoice": {
+      "description": "The invoice related to the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
