@@ -79,6 +79,7 @@
       ]
     },
     "bookmark": {
+      "description": "Represents a bookmark within the block",
       "type": "object",
       "properties": {
         "url": {
@@ -103,6 +104,7 @@
       "$ref": "text_element.json"
     },
     "callout": {
+      "description": "Describes a callout message or content in the block",
       "type": "object",
       "properties": {
         "color": {
@@ -131,6 +133,7 @@
       "$ref": "child.json"
     },
     "code": {
+      "description": "Contains code snippets or blocks in the block content",
       "type": "object",
       "properties": {
         "caption": {
@@ -239,6 +242,7 @@
       "type": "object"
     },
     "embed": {
+      "description": "Contains embedded content such as videos, tweets, etc.",
       "type": "object",
       "properties": {
         "url": {
@@ -248,6 +252,7 @@
       }
     },
     "equation": {
+      "description": "Represents an equation or mathematical formula in the block",
       "type": "object",
       "properties": {
         "expression": {
@@ -277,6 +282,7 @@
       "$ref": "file.json"
     },
     "link_preview": {
+      "description": "Displays a preview of an external link within the block",
       "type": "object",
       "properties": {
         "url": {
@@ -286,6 +292,7 @@
       }
     },
     "link_to_page": {
+      "description": "Provides a link to another page within the block",
       "type": "object",
       "properties": {
         "page_id": {
@@ -315,9 +322,11 @@
       "$ref": "text_element.json"
     },
     "synced_block": {
+      "description": "Represents a block synced from another source",
       "type": "object",
       "properties": {
         "synced_from": {
+          "description": "Details about the source block being synced from",
           "type": ["null", "object"],
           "properties": {
             "type": {
@@ -342,6 +351,7 @@
       }
     },
     "table": {
+      "description": "Represents a table within the block",
       "type": "object",
       "properties": {
         "table_width": {
@@ -359,6 +369,7 @@
       }
     },
     "table_of_contents": {
+      "description": "Contains information regarding the table of contents",
       "type": "object",
       "properties": {
         "color": {
@@ -368,9 +379,11 @@
       }
     },
     "table_row": {
+      "description": "Represents a row in a table within the block",
       "type": "object",
       "properties": {
         "cells": {
+          "description": "Contains the cell data for the row",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "array"],
@@ -383,6 +396,7 @@
       }
     },
     "template": {
+      "description": "Specifies a template used within the block",
       "type": "object",
       "properties": {
         "rich_text": {
@@ -395,9 +409,11 @@
       }
     },
     "to_do": {
+      "description": "Represents a to-do list or task content",
       "type": "object",
       "properties": {
         "rich_text": {
+          "description": "Rich text associated with the to-do item",
           "type": "array",
           "items": {
             "description": "Rich text content within the to-do block.",
@@ -413,6 +429,7 @@
           "type": "string"
         },
         "children": {
+          "description": "Child elements within the to-do list",
           "type": "array",
           "items": {
             "description": "Nested child items of the to-do block.",
