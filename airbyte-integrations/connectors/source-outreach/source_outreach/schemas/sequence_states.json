@@ -4,141 +4,174 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the sequence state",
       "type": "integer"
     },
     "activeAt": {
+      "description": "Timestamp when the sequence state became active",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "bounceCount": {
+      "description": "Number of bounced emails for the sequence state",
       "type": ["null", "integer"]
     },
     "callCompletedAt": {
+      "description": "Timestamp when the call was completed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "clickCount": {
+      "description": "Number of link clicks in emails sent",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "Timestamp when the sequence state was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deliverCount": {
+      "description": "Number of successfully delivered emails",
       "type": ["null", "integer"]
     },
     "errorReason": {
+      "description": "Reason for any errors encountered",
       "type": ["null", "string"]
     },
     "failureCount": {
+      "description": "Count of failed activities",
       "type": ["null", "integer"]
     },
     "negativeReplyCount": {
+      "description": "Count of negative replies received",
       "type": ["null", "integer"]
     },
     "neutralReplyCount": {
+      "description": "Count of neutral replies received",
       "type": ["null", "integer"]
     },
     "openCount": {
+      "description": "Count of email opens",
       "type": ["null", "integer"]
     },
     "optOutCount": {
+      "description": "Count of opt-outs",
       "type": ["null", "integer"]
     },
     "pauseReason": {
+      "description": "Reason for pausing the sequence state",
       "type": ["null", "string"]
     },
     "positiveReplyCount": {
+      "description": "Count of positive replies received",
       "type": ["null", "integer"]
     },
     "repliedAt": {
+      "description": "Timestamp when a reply was sent",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "replyCount": {
+      "description": "Total number of replies received",
       "type": ["null", "integer"]
     },
     "scheduleCount": {
+      "description": "Count of scheduled activities",
       "type": ["null", "integer"]
     },
     "state": {
+      "description": "Current state of the sequence",
       "type": ["null", "string"]
     },
     "stateChangedAt": {
+      "description": "Timestamp when the state changed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Timestamp when the sequence state was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "account": {
+      "description": "Account associated with the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "activeStepMailings": {
+      "description": "Mailings related to the currently active step",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "activeStepTasks": {
+      "description": "Tasks related to the currently active step",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "calls": {
+      "description": "Calls made in relation to the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "creator": {
+      "description": "Person who created the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "mailbox": {
+      "description": "Mailbox associated with the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "mailings": {
+      "description": "Mailings sent in the sequence",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "opportunity": {
+      "description": "Opportunity linked to the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "prospect": {
+      "description": "Prospect associated with the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequence": {
+      "description": "Sequence that the state is part of",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequenceStep": {
+      "description": "Current step within the sequence",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "tasks": {
+      "description": "Tasks associated with the sequence state",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
