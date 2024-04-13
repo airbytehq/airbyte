@@ -89,12 +89,385 @@ definitions:
       extractor_path: "links"
       path: "links"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          lcpath:
+            description: LC path for the link
+            type:
+              - "null"
+              - string
+          passwordContact:
+            description: Contact information for password retrieval
+            type:
+              - "null"
+              - string
+          hasPassword:
+            description: Indicates if the link is password-protected
+            type:
+              - "null"
+              - boolean
+          OwnerId:
+            description: ID of the owner of the link
+            type:
+              - "null"
+              - integer
+          id:
+            description: Unique ID of the link
+            type:
+              - "null"
+              - string
+          path:
+            description: Path component of the short URL
+            type:
+              - "null"
+              - string
+          title:
+            description: Title of the link
+            type:
+              - "null"
+              - string
+          icon:
+            description: Icon associated with the link
+            type:
+              - "null"
+              - string
+          archived:
+            description: Indicates if the link is archived
+            type:
+              - "null"
+              - boolean
+          originalURL:
+            description: Original long URL of the link
+            type: string
+          iphoneURL:
+            description: URL for iPhone devices
+            type:
+              - "null"
+              - string
+          androidURL:
+            description: URL for Android devices
+            type:
+              - "null"
+              - string
+          password:
+            description: Password set for accessing the link
+            type:
+              - "null"
+              - string
+          utmSource:
+            description: Source for UTM tracking
+            type:
+              - "null"
+              - string
+          utmMedium:
+            description: Medium for UTM tracking
+            type:
+              - "null"
+              - string
+          utmCampaign:
+            description: Campaign name for UTM tracking
+            type:
+              - "null"
+              - string
+          utmCampaignId:
+            description: Campaign ID for UTM tracking
+            type:
+              - "null"
+              - string
+          utmTerm:
+            description: Term for UTM tracking
+            type:
+              - "null"
+              - string
+          utmContent:
+            description: Content for UTM tracking
+            type:
+              - "null"
+              - string
+          splitURL:
+            description: URL for split testing
+            type:
+              - "null"
+              - string
+          splitPercent:
+            description: Percentage split for A/B testing
+            type:
+              - "null"
+              - string
+          expiresAt:
+            description: The datetime when the link expires
+            type:
+              - "null"
+              - string
+          expiredURL:
+            description: URL to redirect once the link expires
+            type:
+              - "null"
+              - string
+          redirectType:
+            description: Type of redirect used for the link
+            type:
+              - "null"
+              - string
+          clicksLimit:
+            description: Limit on the number of clicks allowed for the link
+            type:
+              - "null"
+              - string
+          cloaking:
+            description: Indicates if cloaking is enabled for the link
+            type:
+              - "null"
+              - boolean
+          source:
+            description: Source of the link creation
+            type:
+              - "null"
+              - string
+          integrationGA:
+            description: Integration with Google Analytics for the link
+            type:
+              - "null"
+              - string
+          integrationFB:
+            description: Integration with Facebook for the link
+            type:
+              - "null"
+              - string
+          integrationAdroll:
+            description: Integration with Adroll for the link
+            type:
+              - "null"
+              - string
+          integrationGTM:
+            description: Integration with Google Tag Manager for the link
+            type:
+              - "null"
+              - string
+          AutodeletedAt:
+            description: The datetime when the link will be automatically deleted
+            type:
+              - "null"
+              - string
+            format: date-time
+          createdAt:
+            description: The datetime when the link was created
+            type: string
+            format: date-time
+          updatedAt:
+            description: The datetime when the link was last updated
+            type: string
+            format: date-time
+          DomainId:
+            description: The ID of the domain associated with the link
+            type: integer
+          Owner:
+            description: Information about the owner of the link
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the owner
+                type: integer
+              name:
+                description: Name of the owner
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the owner
+                type:
+                  - "null"
+                  - string
+              photoURL:
+                description: URL to the photo of the owner
+                type:
+                  - "null"
+                  - string
+          tags:
+            description: Tags associated with the link
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          secureShortURL:
+            description: Secure short URL for the link
+            type:
+              - "null"
+              - string
+          idString:
+            description: String representation of the link ID
+            type: string
+          shortURL:
+            description: Shortened URL generated for the link
+            type: string
+          User:
+            description: Information about the user who created the link
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the user
+                type: integer
+              name:
+                description: Name of the user
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the user
+                type:
+                  - "null"
+                  - string
+              photoURL:
+                description: URL to the photo of the user
+                type:
+                  - "null"
+                  - string
   clicks_stream:
     $ref: "#/definitions/v2_base_stream"
     name: "clicks"
     $parameters:
       path: "domain/{{ config['domain_id'] }}/link_clicks"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        default_cursor_field:
+          - dt
+        additionalProperties: true
+        properties:
+          host:
+            description: The hostname of the URL where the click originated
+            type:
+              - "null"
+              - string
+          path:
+            description: The path of the URL where the click originated
+            type:
+              - "null"
+              - string
+          method:
+            description: The HTTP method used in the request
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL from where the click event originated
+            type:
+              - "null"
+              - string
+          dt:
+            description: The date and time of the click event
+            type:
+              - "null"
+              - string
+            format: date-time
+          st:
+            description: Stands for status
+            type:
+              - "null"
+              - integer
+          ip:
+            description: The IP address of the user who triggered the click event
+            type:
+              - "null"
+              - string
+          proto:
+            description: The protocol used for the URL where the click originated
+            type:
+              - "null"
+              - string
+          ref:
+            description: The referring URL that led to the click event
+            type:
+              - "null"
+              - string
+          ua:
+            description: User-agent string identifying the user's device and browser
+            type:
+              - "null"
+              - string
+          human:
+            description: Human-readable explanation of the click event
+            type:
+              - "null"
+              - boolean
+          browser:
+            description: The type of browser used by the user
+            type:
+              - "null"
+              - string
+          browser_version:
+            description: The version of the browser used by the user
+            type:
+              - "null"
+              - string
+          country:
+            description: The country from where the click event originated
+            type:
+              - "null"
+              - string
+          city:
+            description: The city from where the click event originated
+            type:
+              - "null"
+              - string
+          social:
+            description: Indicates if the traffic source is social media
+            type:
+              - "null"
+              - string
+          refhost:
+            description: The hostname of the referring URL
+            type:
+              - "null"
+              - string
+          os:
+            description: The operating system of the user's device
+            type:
+              - "null"
+              - string
+          utm_source:
+            description: The source identifier in the URL
+            type:
+              - "null"
+              - string
+          utm_medium:
+            description: The medium identifier in the URL
+            type:
+              - "null"
+              - string
+          utm_campaign:
+            description: The campaign identifier in the URL
+            type:
+              - "null"
+              - string
+          goal_completed:
+            description: Indicates if a goal was completed
+            type:
+              - "null"
+              - string
+          ab_path:
+            description: The path used for A/B testing
+            type:
+              - "null"
+              - string
+          lcpath:
+            description: The localized path of the URL where the click originated
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/links_stream"
   - "#/definitions/clicks_stream"
