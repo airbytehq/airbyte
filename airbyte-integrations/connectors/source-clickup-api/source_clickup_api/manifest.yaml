@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_clickup_api/schemas/{{ parameters['name'] }}.json"
   singleSelector:
     type: RecordSelector
     extractor:
@@ -32,8 +29,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "user"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -43,11 +38,39 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/singleSelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          user:
+            description: Represents information about a user
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the user.
+                type:
+                  - "null"
+                  - integer
+              username:
+                description: The username chosen by the user.
+                type:
+                  - "null"
+                  - string
+              color:
+                description: The color associated with the user.
+                type:
+                  - "null"
+                  - string
+              profilePicture:
+                description: The URL of the user's profile picture.
+                type:
+                  - "null"
+                  - string
   - type: DeclarativeStream
     $parameters:
       name: "team"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -57,11 +80,61 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the team.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the team.
+            type:
+              - "null"
+              - string
+          color:
+            description: Color associated with the team for visual identification.
+            type:
+              - "null"
+              - string
+          avatar:
+            description: URL of the team's avatar image.
+            type:
+              - "null"
+              - string
+          members:
+            description: List of team members.
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the member.
+                  type:
+                    - "null"
+                    - integer
+                username:
+                  description: Username of the member.
+                  type:
+                    - "null"
+                    - string
+                color:
+                  description: Color associated with the member for visual identification.
+                  type:
+                    - "null"
+                    - string
+                profilePicture:
+                  description: URL of the member's profile picture.
+                  type:
+                    - "null"
+                    - string
   - type: DeclarativeStream
     $parameters:
       name: "list"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -71,11 +144,128 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the list
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the list
+            type:
+              - "null"
+              - string
+          orderindex:
+            description: Index order of the list
+            type:
+              - "null"
+              - integer
+          content:
+            description: Description or content of the list
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the list
+            type:
+              - "null"
+              - string
+              - object
+          priority:
+            description: Priority level of the list
+            type:
+              - "null"
+              - string
+          assignee:
+            description: Assignee of the list
+            type:
+              - "null"
+              - string
+          task_count:
+            description: Total count of tasks in the list
+            type:
+              - "null"
+              - integer
+          due_date:
+            description: Due date associated with the list
+            type:
+              - "null"
+              - string
+          start_date:
+            description: Start date associated with the list
+            type:
+              - "null"
+              - string
+          archived:
+            description: Flag indicating whether the list is archived or active
+            type:
+              - "null"
+              - boolean
+          override_statuses:
+            description: Overridden statuses for list items
+            type:
+              - "null"
+              - boolean
+          permission_level:
+            description: Permission level associated with the list
+            type:
+              - "null"
+              - string
+          folder:
+            description: Folder details containing the list
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the folder
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the folder
+                type:
+                  - "null"
+                  - string
+              hidden:
+                description: Flag indicating whether the folder is hidden or visible
+                type:
+                  - "null"
+                  - boolean
+              access:
+                description: Access level to the folder
+                type:
+                  - "null"
+                  - boolean
+          space:
+            description: Space details containing the list
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the space
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the space
+                type:
+                  - "null"
+                  - string
+              access:
+                description: Access level to the space
+                type:
+                  - "null"
+                  - boolean
   - type: DeclarativeStream
     $parameters:
       name: "space"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -85,11 +275,142 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for this space
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the space
+            type:
+              - "null"
+              - string
+          statuses:
+            description: List of statuses available in this space
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                status:
+                  description: Name of the status
+                  type:
+                    - "null"
+                    - string
+                color:
+                  description: Color associated with this status
+                  type:
+                    - "null"
+                    - string
+                orderindex:
+                  description: Index representing the order of this status
+                  type:
+                    - "null"
+                    - integer
+                type:
+                  description: Type of the status
+                  type:
+                    - "null"
+                    - string
+          private:
+            description: Indicates if the space is private
+            type:
+              - "null"
+              - boolean
+          multiple_assignees:
+            description: Support for assigning multiple users to tasks
+            type:
+              - "null"
+              - boolean
+          assignees:
+            description: List of users assigned to this space
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          features:
+            description: Additional features available in this space
+            type:
+              - "null"
+              - object
+            properties:
+              due_dates:
+                description: Configuration related to due dates
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+                  start_date:
+                    type:
+                      - "null"
+                      - boolean
+                  remap_due_dates:
+                    type:
+                      - "null"
+                      - boolean
+                  remap_closed_due_date:
+                    type:
+                      - "null"
+                      - boolean
+              time_tracking:
+                description: Whether time tracking is enabled in this space
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              tags:
+                description: Whether tags are enabled in this space
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              time_estimates:
+                description: Whether time estimates are enabled in this space
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+              checklists:
+                description: Whether checklists are enabled in this space
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
   - type: DeclarativeStream
     $parameters:
       name: "folder"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -99,11 +420,76 @@ streams:
         $ref: "#/definitions/paginator"
       record_selector:
         $ref: "#/definitions/arraySelector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the folder.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the folder.
+            type:
+              - "null"
+              - string
+          orderindex:
+            description: Index for ordering the folders.
+            type:
+              - "null"
+              - integer
+          override_statuses:
+            description: Custom status overrides for the folder.
+            type:
+              - "null"
+              - boolean
+          hidden:
+            description: Flag indicating if the folder is hidden or not.
+            type:
+              - "null"
+              - boolean
+          task_count:
+            description: Total count of tasks within the folder.
+            type:
+              - "null"
+              - string
+          lists:
+            description: An array of lists associated with the folder.
+            type:
+              - "null"
+              - array
+            items:
+              description: Details of each list within the folder.
+              type:
+                - "null"
+                - object
+          space:
+            description: Information about the space where the folder belongs
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the space containing the folder.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the space containing the folder.
+                type:
+                  - "null"
+                  - string
+              access:
+                description: Access level for the space containing the folder.
+                type:
+                  - "null"
+                  - boolean
   - type: DeclarativeStream
     $parameters:
       name: "task"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -126,6 +512,185 @@ streams:
           field_name: "page"
           inject_into: "request_parameter"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: ID of the task
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or title of the task
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the task
+            type:
+              - "null"
+              - object
+            properties:
+              status:
+                description: Current status of the task
+                type:
+                  - "null"
+                  - string
+              color:
+                description: Color associated with the status
+                type:
+                  - "null"
+                  - string
+              orderindex:
+                description: Index indicating the order of the status
+                type:
+                  - "null"
+                  - integer
+              type:
+                description: Type of status
+                type:
+                  - "null"
+                  - string
+          orderindex:
+            description: Index indicating the order of the task
+            type:
+              - "null"
+              - string
+          date_created:
+            description: Date when the task was created
+            type:
+              - "null"
+              - string
+          date_updated:
+            description: Date when the task was last updated
+            type:
+              - "null"
+              - string
+          date_closed:
+            description: Date when the task was closed
+            type:
+              - "null"
+              - string
+          creator:
+            description: Task creator's information
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the creator
+                type:
+                  - "null"
+                  - integer
+              username:
+                description: Username of the creator
+                type:
+                  - "null"
+                  - string
+              color:
+                description: Color associated with the creator
+                type:
+                  - "null"
+                  - string
+              profilePicture:
+                description: URL of the creator's profile picture
+                type:
+                  - "null"
+                  - string
+          assignees:
+            description: List of users assigned to the task
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          checklists:
+            description: List of checklists associated with the task
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          tags:
+            description: Tags associated with the task
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+          parent:
+            description: Parent task of the current task if it exists
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority level of the task
+            type:
+              - "null"
+              - object
+          due_date:
+            description: Due date of the task
+            type:
+              - "null"
+              - string
+          start_date:
+            description: Start date of the task
+            type:
+              - "null"
+              - string
+          time_estimate:
+            description: Estimated time required to complete the task
+            type:
+              - "null"
+              - string
+          time_spent:
+            description: Time spent on the task so far
+            type:
+              - "null"
+              - string
+          url:
+            description: URL of the task
+            type:
+              - "null"
+              - string
+          folder:
+            description: Folder to which the task belongs
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the folder
+                type:
+                  - "null"
+                  - string
+          space:
+            description: Space to which the task belongs
+            type: object
+            properties:
+              id:
+                description: ID of the space
+                type:
+                  - "null"
+                  - string
+          list:
+            description: List to which the task belongs
+            type: object
+            properties:
+              id:
+                description: ID of the list
+                type:
+                  - "null"
+                  - string
 check:
   type: CheckStream
   stream_names: ["user", "team", "space", "folder", "list", "task"]
