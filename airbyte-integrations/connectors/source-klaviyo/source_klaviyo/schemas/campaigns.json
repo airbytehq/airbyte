@@ -37,6 +37,7 @@
           "type": "string"
         },
         "audiences": {
+          "description": "List of audiences targeted in the campaign",
           "type": ["null", "object"],
           "additionalProperties": true,
           "included": {
@@ -55,6 +56,7 @@
           }
         },
         "send_options": {
+          "description": "Options for sending the campaign",
           "type": ["null", "object"],
           "properties": {
             "ignore_unsubscribes": {
@@ -72,6 +74,7 @@
           "type": "string"
         },
         "tracking_options": {
+          "description": "Options for tracking campaign performance",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -88,6 +91,7 @@
               "type": ["null", "boolean"]
             },
             "utm_params": {
+              "description": "UTM parameters for tracking campaign URLs",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
@@ -106,6 +110,7 @@
           }
         },
         "send_strategy": {
+          "description": "Strategy used for sending the campaign",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -114,6 +119,7 @@
               "type": "string"
             },
             "options_static": {
+              "description": "Static send options for the campaign",
               "type": ["null", "object"],
               "properties": {
                 "datetime": {
@@ -133,6 +139,7 @@
               }
             },
             "options_throttled": {
+              "description": "Throttled sending options for the campaign",
               "type": ["null", "object"],
               "properties": {
                 "datetime": {
@@ -148,6 +155,7 @@
               }
             },
             "options_sto": {
+              "description": "Send Time Optimization options for the campaign",
               "type": ["null", "object"],
               "properties": {
                 "date": {
@@ -182,6 +190,7 @@
       }
     },
     "links": {
+      "description": "Links associated with the campaign",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -192,13 +201,16 @@
       }
     },
     "relationships": {
+      "description": "Relationships associated with the campaign",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "tags": {
+          "description": "Tags related to the campaign",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data related to the tags",
               "type": "array",
               "items": {
                 "type": ["null", "object"],
@@ -215,6 +227,7 @@
               }
             },
             "links": {
+              "description": "Links related to the tags",
               "type": ["null", "object"],
               "properties": {
                 "self": {

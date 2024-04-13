@@ -17,6 +17,7 @@
       "format": "date-time"
     },
     "attributes": {
+      "description": "Contains the metric attributes data",
       "type": ["null", "object"],
       "properties": {
         "name": {
@@ -41,6 +42,7 @@
       }
     },
     "links": {
+      "description": "Contains links related to the metric data",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
