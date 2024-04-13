@@ -51,6 +51,7 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                         | Subject |
 |:--------|:-----------|:-----------------------------------------------------| :--- |
+| 0.3.2 | 2024-04-12 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | schema descriptions |
 | 0.3.1   | 2024-02-14 | [35269](https://github.com/airbytehq/airbyte/pull/35269) | Fix parsing of updated_at timestamps in alerts |
 | 0.3.0   | 2023-10-19 | [31552](https://github.com/airbytehq/airbyte/pull/31552) | Migrated to Low Code |
 | 0.2.0   | 2023-10-24 | [31777](https://github.com/airbytehq/airbyte/pull/31777) | Fix schema |
