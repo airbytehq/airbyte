@@ -101,6 +101,7 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.2.4 | 2024-04-12 | [37289](https://github.com/airbytehq/airbyte/pull/37289) | schema descriptions |
 | 0.2.3   | 2023-06-02 | [26955](https://github.com/airbytehq/airbyte/pull/26955) | Added `block_context` and `author` properties to the `Products` stream |
 | 0.2.2   | 2023-03-03 | [23599](https://github.com/airbytehq/airbyte/pull/23599) | Fix pagination and removed lookback window                             |
 | 0.2.1   | 2023-02-10 | [22821](https://github.com/airbytehq/airbyte/pull/22821) | Specified date formatting in specification                             |
