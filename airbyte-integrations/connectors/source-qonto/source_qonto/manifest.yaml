@@ -10,8 +10,9 @@ definitions:
   requester:
     type: HttpRequester
     url_base: >-
-      {{ 'https://thirdparty.qonto.com/v2/' if config['endpoint'] == 'Production' 
-      else ('https://stoplight.io/mocks/qonto-next/business-api/8419419/v2' if config['endpoint'] == 'Test Mocked API Server'
+      {{ 'https://thirdparty.qonto.com/v2/' if config['endpoint'] == 'Production'  else
+      ('https://stoplight.io/mocks/qonto-next/business-api/8419419/v2' if config['endpoint']
+      == 'Test Mocked API Server'
       else '') }}
     http_method: "GET"
     authenticator:
@@ -50,12 +51,83 @@ definitions:
     $parameters:
       path: "labels"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the label.
+            type: string
+          name:
+            description: Name of the label.
+            type:
+              - "null"
+              - string
+          parent_id:
+            description: Identifier of the parent label if applicable.
+            type:
+              - "null"
+              - string
   memberships_stream:
     $ref: "#/definitions/base_stream"
     name: "memberships"
     $parameters:
       path: "memberships"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the membership.
+            type: string
+          first_name:
+            description: The first name of the member.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: The last name of the member.
+            type:
+              - "null"
+              - string
+          birth_country:
+            description: The country where the member was born.
+            type:
+              - "null"
+              - string
+          birthdate:
+            description: The date of birth of the member.
+            type:
+              - "null"
+              - string
+          nationality:
+            description: The nationality of the member.
+            type:
+              - "null"
+              - string
+          residence_country:
+            description: The country where the member currently resides.
+            type:
+              - "null"
+              - string
+          role:
+            description: The role or position held by the member.
+            type:
+              - "null"
+              - string
+          ubo:
+            description:
+              Ultimate Beneficial Owner - the individual who owns or controls
+              a certain percentage of the company.
+            type:
+              - "null"
+              - boolean
   transactions_stream:
     $ref: "#/definitions/base_stream"
     name: "transactions"
@@ -65,6 +137,180 @@ definitions:
         iban: "{{ config['iban'] }}"
         settled_at_from: "{{ config['start_date'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          transaction_id:
+            description: ID of the transaction
+            type:
+              - "null"
+              - string
+          subject_type:
+            description: Type of subject (e.g., merchant, user)
+            type:
+              - "null"
+              - string
+          transfer:
+            description: Details of the transfer associated with the transaction
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          amount:
+            description: The amount of the transaction in human-readable format
+            type:
+              - "null"
+              - number
+          amount_cents:
+            description: The amount of the transaction in cents
+            type:
+              - "null"
+              - integer
+          settled_balance:
+            description: Settled balance after the transaction
+            type:
+              - "null"
+              - number
+          settled_balance_cents:
+            description: Settled balance in cents after the transaction
+            type:
+              - "null"
+              - integer
+          attachment_ids:
+            description: IDs of the attachments linked to this transaction
+            type:
+              - "null"
+              - array
+            items:
+              description: Attachment ID
+              type:
+                - "null"
+                - string
+          local_amount:
+            description: The amount of the transaction in local currency
+            type:
+              - "null"
+              - number
+          local_amount_cents:
+            description: The amount of the transaction in cents in local currency
+            type:
+              - "null"
+              - integer
+          side:
+            description: The side of the transaction (e.g., debit or credit)
+            type:
+              - "null"
+              - string
+          operation_type:
+            description: Type of operation (e.g., debit, credit)
+            type:
+              - "null"
+              - string
+          currency:
+            description: Currency of the transaction
+            type:
+              - "null"
+              - string
+          local_currency:
+            description: Local currency of the transaction
+            type:
+              - "null"
+              - string
+          label:
+            description: Label associated with the transaction
+            type:
+              - "null"
+              - string
+          settled_at:
+            description: Timestamp when the transaction was settled
+            type:
+              - "null"
+              - string
+          emitted_at:
+            description: Timestamp when the transaction was emitted
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Timestamp when the transaction was last updated
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the transaction
+            type:
+              - "null"
+              - string
+          note:
+            description: Additional notes related to the transaction
+            type:
+              - "null"
+              - string
+          reference:
+            description: Reference information for the transaction
+            type:
+              - "null"
+              - string
+          vat_amount:
+            description: VAT amount of the transaction
+            type:
+              - "null"
+              - number
+          vat_amount_cents:
+            description: VAT amount in cents of the transaction
+            type:
+              - "null"
+              - number
+          vat_rate:
+            description: VAT rate applied to the transaction
+            type:
+              - "null"
+              - number
+          initiator_id:
+            description: ID of the user who initiated the transaction
+            type:
+              - "null"
+              - string
+          label_ids:
+            description: IDs of the labels associated with this transaction
+            type:
+              - "null"
+              - array
+            items:
+              description: Label ID
+              type:
+                - "null"
+                - string
+          attachment_lost:
+            description: Indicates if any attachment is lost for this transaction
+            type:
+              - "null"
+              - boolean
+          attachment_required:
+            description: Indicates if attachment is required for this transaction
+            type:
+              - "null"
+              - boolean
+          card_last_digits:
+            description: Last 4 digits of the card used for the transaction
+            type:
+              - "null"
+              - string
+          category:
+            description: Category of the transaction
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier of the transaction
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/labels_stream"
   - "#/definitions/memberships_stream"
@@ -109,7 +355,9 @@ spec:
       iban:
         title: IBAN
         type: string
-        description: International Bank Account Number linked used with your Qonto Account
+        description:
+          International Bank Account Number linked used with your Qonto
+          Account
         pattern: ^[A-Z0-9]*$
         order: 2
       start_date:
