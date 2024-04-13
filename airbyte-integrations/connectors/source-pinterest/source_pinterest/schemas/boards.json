@@ -43,6 +43,7 @@
       "type": ["null", "integer"]
     },
     "media": {
+      "description": "Represents media content associated with the boards.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {

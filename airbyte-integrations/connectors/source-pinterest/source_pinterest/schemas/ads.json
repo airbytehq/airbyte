@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "carousel_android_deep_links": {
+      "description": "URLs that deep link Android users to specific content within the carousel ad.",
       "type": ["null", "array"],
       "items": {
         "description": "The deep link URLs for individual carousel items on Android devices.",
@@ -18,6 +19,7 @@
       }
     },
     "carousel_destination_urls": {
+      "description": "URLs that direct users to the landing pages of the advertised content.",
       "type": ["null", "array"],
       "items": {
         "description": "The destination URLs for individual carousel items.",
@@ -25,6 +27,7 @@
       }
     },
     "carousel_ios_deep_links": {
+      "description": "URLs that deep link iOS users to specific content within the carousel ad.",
       "type": ["null", "array"],
       "items": {
         "description": "The deep link URLs for individual carousel items on iOS devices.",
@@ -68,9 +71,11 @@
       "type": ["null", "string"]
     },
     "tracking_urls": {
+      "description": "Various tracking URLs used to monitor user interactions with the ad.",
       "type": ["null", "object"],
       "properties": {
         "impression": {
+          "description": "URL to track impressions of the ad.",
           "type": ["null", "array"],
           "items": {
             "description": "Tracking URLs for ad impressions.",
@@ -78,6 +83,7 @@
           }
         },
         "click": {
+          "description": "URL to track clicks on the ad.",
           "type": ["null", "array"],
           "items": {
             "description": "Tracking URLs for clicks on the ad.",
@@ -85,6 +91,7 @@
           }
         },
         "engagement": {
+          "description": "URL to track user engagements with the ad.",
           "type": ["null", "array"],
           "items": {
             "description": "Tracking URLs for ad engagement.",
@@ -92,6 +99,7 @@
           }
         },
         "buyable_button": {
+          "description": "URL to track clicks on the buyable button in the ad.",
           "type": ["null", "array"],
           "items": {
             "description": "Tracking URLs for buyable buttons.",
@@ -99,6 +107,7 @@
           }
         },
         "audience_verification": {
+          "description": "URL to track audience verification events.",
           "type": ["null", "array"],
           "items": {
             "description": "Tracking URLs for audience verification.",
@@ -136,6 +145,7 @@
       "type": ["null", "string"]
     },
     "rejected_reasons": {
+      "description": "Reasons for rejecting the ad.",
       "type": ["null", "array"],
       "items": {
         "description": "Reasons for rejection of the ad.",
@@ -143,6 +153,7 @@
       }
     },
     "rejection_labels": {
+      "description": "Labels applied to the ad when it is rejected.",
       "type": ["null", "array"],
       "items": {
         "description": "Labels for the rejected ad.",

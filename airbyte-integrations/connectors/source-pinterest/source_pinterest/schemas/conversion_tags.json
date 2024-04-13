@@ -35,6 +35,7 @@
       "type": ["null", "string"]
     },
     "configs": {
+      "description": "Contains configurations related to conversion tags",
       "type": ["null", "object"],
       "properties": {
         "aem_enabled": {
