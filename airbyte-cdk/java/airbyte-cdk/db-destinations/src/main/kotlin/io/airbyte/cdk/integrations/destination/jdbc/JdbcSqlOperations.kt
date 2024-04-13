@@ -155,10 +155,6 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    protected fun formatData(data: JsonNode): JsonNode {
-        return data
-    }
-
     override fun truncateTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
