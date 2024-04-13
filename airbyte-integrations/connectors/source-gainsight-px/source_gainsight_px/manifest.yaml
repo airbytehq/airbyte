@@ -63,6 +63,120 @@ definitions:
     name: "accounts"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Accounts Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the account
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the account
+            type:
+              - "null"
+              - string
+          trackedSubscriptionId:
+            description: ID of the tracked subscription related to the account
+            type:
+              - "null"
+              - string
+          sfdcId:
+            description: Salesforce ID associated with the account
+            type:
+              - "null"
+              - string
+          lastSeenDate:
+            description: Date when the account was last seen
+            type:
+              - "null"
+              - string
+          dunsNumber:
+            description: D-U-N-S number identifier for the account
+            type:
+              - "null"
+              - string
+          industry:
+            description: Industry to which the account belongs
+            type:
+              - "null"
+              - string
+          numberOfEmployees:
+            description: Number of employees associated with the account
+            type:
+              - "null"
+              - string
+          sicCode:
+            description: Standard Industrial Classification code for the account
+            type:
+              - "null"
+              - string
+          website:
+            description: Website URL of the account
+            type:
+              - "null"
+              - string
+          naicsCode:
+            description:
+              North American Industry Classification System code for the
+              account
+            type:
+              - "null"
+              - string
+          plan:
+            description: Subscription plan of the account
+            type:
+              - "null"
+              - string
+          location:
+            description: Location of the account
+            type:
+              - "null"
+              - string
+          numberOfUsers:
+            description: Number of users associated with the account
+            type:
+              - "null"
+              - string
+          propertyKeys:
+            description: Keys associated with specific properties
+            type:
+              - "null"
+              - array
+            items:
+              location:
+                description: Location specific to each property key
+                type:
+                  - "null"
+                  - string
+          createDate:
+            description: Date when the account was created
+            type:
+              - "null"
+              - string
+          lastModifiedDate:
+            description: Date when the account was last modified
+            type:
+              - "null"
+              - string
+          customAttributes:
+            description: Custom attributes specific to the account
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          parentGroupId:
+            description: ID of the parent group to which the account belongs
+            type:
+              - "null"
+              - string
   admin_attributes_stream:
     $parameters:
       path: "admin/model/account/attributes"
@@ -70,6 +184,71 @@ definitions:
     name: "admin_attributes"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Attributes Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the admin attribute record
+            type:
+              - "null"
+              - string
+          name:
+            description: The name associated with the admin attribute
+            type:
+              - "null"
+              - string
+          apiName:
+            description: The API name associated with the admin attribute
+            type:
+              - "null"
+              - string
+          internalName:
+            description: The internal name used for referencing the admin attribute
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the admin attribute and its usage
+            type:
+              - "null"
+              - string
+          type:
+            description: The data type of the admin attribute value
+            type:
+              - "null"
+              - string
+          state:
+            description: The current state or status of the admin attribute
+            type:
+              - "null"
+              - string
+          origin:
+            description: The origin or source of the admin attribute data
+            type:
+              - "null"
+              - string
+          createdDate:
+            description: The date when the admin attribute was created
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            description: The date when the admin attribute was last modified
+            type:
+              - "null"
+              - number
+          defaultValue:
+            description: The default value set for the admin attribute
+            type:
+              - "null"
+              - string
   articles_stream:
     $parameters:
       path: "articles"
@@ -80,6 +259,99 @@ definitions:
     name: "articles"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Articles Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the article
+            type:
+              - "null"
+              - string
+          modifiedBy:
+            description: User who last modified the article
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                description: Unique identifier of the user
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the user who last modified
+                type:
+                  - "null"
+                  - string
+          articleKCs:
+            description: Key Concepts associated with the article
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                kcId:
+                  description: Unique identifier for the Key Concept
+                  type:
+                    - "null"
+                    - string
+                kcName:
+                  description: Name of the Key Concept
+                  type:
+                    - "null"
+                    - string
+          articleName:
+            description: Name or title of the article
+            type:
+              - "null"
+              - string
+          author:
+            description: Author of the article
+            type:
+              - "null"
+              - string
+          createdDate:
+            description: Date when the article was created
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            description: Date when the article was last modified
+            type:
+              - "null"
+              - number
+          productId:
+            description: Identifier of the product associated with the article
+            type:
+              - "null"
+              - string
+          productName:
+            description: Name of the product associated with the article
+            type:
+              - "null"
+              - string
+          releaseDate:
+            description: Date when the article was released
+            type:
+              - "null"
+              - string
+          viewType:
+            description: Type of view for the article (e.g., public, private)
+            type:
+              - "null"
+              - string
   feature_stream:
     $parameters:
       path: "feature"
@@ -90,6 +362,74 @@ definitions:
     name: "feature"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Feature Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the feature
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the feature
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the feature
+            type:
+              - "null"
+              - string
+            enum:
+              - FEATURE
+              - MODULE
+          parentFeatureId:
+            description: Identifier of the parent feature, if applicable
+            type:
+              - "null"
+              - string
+          propertyKey:
+            description: Key associated with specific property or attribute
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the feature
+            type:
+              - "null"
+              - string
+            enum:
+              - ACTIVATED
+              - DELETED
+          featureLabels:
+            description: Information about the labels associated with the feature
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                description: Unique identifier for the feature label
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the feature label
+                type:
+                  - "null"
+                  - string
+              color:
+                description: Color associated with the feature label
+                type:
+                  - "null"
+                  - string
   segments_stream:
     $parameters:
       path: "segment"
@@ -99,6 +439,26 @@ definitions:
       $ref: "#/definitions/custom_retriever"
     name: "segments"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Segment Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the segment data.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the segment.
+            type:
+              - "null"
+              - string
   kcbot_stream:
     $parameters:
       path: "kcbot"
@@ -109,6 +469,105 @@ definitions:
     name: "kcbot"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: KCBot Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          createdBy:
+            description: The user who created the kcbot data
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                description: The ID of the user who created the data
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the user who created the data
+                type:
+                  - "null"
+                  - string
+          createdDate:
+            description: The date when the data was created
+            type:
+              - "null"
+              - number
+          description:
+            description: A brief description of the data
+            type:
+              - "null"
+              - string
+          environments:
+            description: The environmental details related to the kcbot data
+            type:
+              - "null"
+              - array
+            items:
+              description: List of environments associated with the data
+              type:
+                - "null"
+                - string
+          id:
+            description: Unique identifier of the data
+            type:
+              - "null"
+              - string
+          modifiedBy:
+            description: The user who modified the kcbot data
+            additionalProperties: true
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The ID of the user who last modified the data
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The name of the user who last modified the data
+                type:
+                  - "null"
+                  - string
+          modifiedDate:
+            description: The date when the data was last modified
+            type:
+              - "null"
+              - number
+          name:
+            description: The name or title of the data
+            type:
+              - "null"
+              - string
+          priority:
+            description: The priority level of the data
+            type:
+              - "null"
+              - number
+          productId:
+            description: The ID of the product associated with the data
+            type:
+              - "null"
+              - string
+          productName:
+            description: The name of the product associated with the data
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the data
+            type:
+              - "null"
+              - string
   user_attributes_stream:
     $parameters:
       path: "admin/model/user/attributes"
@@ -116,6 +575,71 @@ definitions:
     name: "user_attributes"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: User Attributes Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the attribute.
+            type:
+              - "null"
+              - string
+          name:
+            description: The display name of the attribute.
+            type:
+              - "null"
+              - string
+          apiName:
+            description: The name of the attribute used in the API calls.
+            type:
+              - "null"
+              - string
+          internalName:
+            description: The internal name used for referencing the attribute.
+            type:
+              - "null"
+              - string
+          description:
+            description: A detailed description of the attribute.
+            type:
+              - "null"
+              - string
+          type:
+            description: The data type of the attribute values.
+            type:
+              - "null"
+              - string
+          state:
+            description: The current state or status of the attribute.
+            type:
+              - "null"
+              - string
+          origin:
+            description: The source or system where the attribute originates from.
+            type:
+              - "null"
+              - string
+          createdDate:
+            description: The date when the attribute was created.
+            type:
+              - "null"
+              - number
+          modifiedDate:
+            description: The date when the attribute was last modified.
+            type:
+              - "null"
+              - number
+          defaultValue:
+            description: The default value set for the attribute.
+            type:
+              - "null"
+              - string
   users_stream:
     $parameters:
       path: "users"
@@ -126,6 +650,281 @@ definitions:
     name: "users"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Users Schema
+        additionalProperties: true
+        type:
+          - "null"
+          - object
+        properties:
+          aptrinsicId:
+            description: Unique identifier for the user in the Aptrinsic system.
+            type:
+              - "null"
+              - string
+          identifyId:
+            description: Identification ID of the user.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type categorization of the user.
+            type:
+              - "null"
+              - string
+            enum:
+              - LEAD
+              - USER
+              - VISITOR
+              - EMPTY_USER_TYPE
+          gender:
+            description: Gender of the user.
+            type:
+              - "null"
+              - string
+            enum:
+              - MALE
+              - FEMALE
+              - OTHER
+              - EMPTY_GENDER
+          email:
+            description: Email address of the user.
+            type:
+              - "null"
+              - string
+          firstName:
+            description: First name of the user.
+            type:
+              - "null"
+              - string
+          lastName:
+            description: Last name of the user.
+            type:
+              - "null"
+              - string
+          lastSeenDate:
+            description: Timestamp representing when the user was last seen.
+            type:
+              - "null"
+              - integer
+            format: int64
+          signUpDate:
+            description: Timestamp representing when the user signed up.
+            type:
+              - "null"
+              - integer
+            format: int64
+          firstVisitDate:
+            description: Timestamp representing the user's first visit.
+            type:
+              - "null"
+              - integer
+            format: int64
+          title:
+            description: Title or designation of the user.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number of the user.
+            type:
+              - "null"
+              - string
+          score:
+            description: Score associated with the user.
+            type:
+              - "null"
+              - integer
+            format: int64
+          role:
+            description: Role or position of the user.
+            type:
+              - "null"
+              - string
+          subscriptionId:
+            description: ID related to user's subscription.
+            type:
+              - "null"
+              - string
+          accountId:
+            description: Unique identifier for the user's account.
+            type:
+              - "null"
+              - string
+          numberOfVisits:
+            description: Number of visits made by the user.
+            type:
+              - "null"
+              - integer
+            format: int32
+          location:
+            description: Location information related to the user.
+            type:
+              - "null"
+              - string
+          propertyKeys:
+            type:
+              - "null"
+              - array
+            description: Aptrinsic Tag Key, at least one is required
+            items:
+              type:
+                - "null"
+                - string
+            examples:
+              - - AP-XXXXXXXXXX-2
+          createDate:
+            description: Timestamp representing when the user was created.
+            type:
+              - "null"
+              - integer
+            format: int64
+          lastModifiedDate:
+            description: Timestamp representing when the user was last modified.
+            type:
+              - "null"
+              - integer
+            format: int64
+          globalUnsubscribe:
+            description: Boolean indicating if the user has globally unsubscribed.
+            type:
+              - "null"
+              - boolean
+          sfdcContactId:
+            description: Salesforce contact ID linked to the user.
+            type:
+              - "null"
+              - string
+          lastVisitedUserAgentData:
+            description: Data related to the user's last visited user agent.
+            type:
+              - "null"
+              - array
+            items:
+              propertyKey:
+                description: Key or property related to the user agent data.
+                type:
+                  - "null"
+                  - string
+              userAgent:
+                description: Details about the user agent.
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  rawUserAgent:
+                    description: Raw user agent string.
+                    type:
+                      - "null"
+                      - string
+                  device:
+                    description: Type of device used.
+                    type:
+                      - "null"
+                      - string
+                  platformType:
+                    description: Type of platform used.
+                    type:
+                      - "null"
+                      - string
+                  platformVersion:
+                    description: Version of the platform used.
+                    type:
+                      - "null"
+                      - string
+                  browserType:
+                    description: Type of browser used.
+                    type:
+                      - "null"
+                      - string
+                  browserVersion:
+                    description: Version of the browser used.
+                    type:
+                      - "null"
+                      - string
+          id:
+            type:
+              - "null"
+              - string
+            description: Synonym for identifyId, output only, not filterable
+          lastInferredLocation:
+            description: Details of the user's last inferred location.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              countryName:
+                description: Country name of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              countryCode:
+                description: Country code of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              stateName:
+                description: State name of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              stateCode:
+                description: State code of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street address of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              postalCode:
+                description: Postal code of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              continent:
+                description: Continent of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              regionName:
+                description: Region name of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              timeZone:
+                description: Time zone of the last inferred location.
+                type:
+                  - "null"
+                  - string
+              coordinates:
+                description: Coordinates of the last inferred location.
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  latitude:
+                    description: Latitude of the location.
+                    type:
+                      - "null"
+                      - number
+                  longitude:
+                    description: Longitude of the location.
+                    type:
+                      - "null"
+                      - number
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"
