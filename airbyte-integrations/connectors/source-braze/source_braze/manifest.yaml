@@ -67,24 +67,137 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the campaign.
+            type:
+              - "null"
+              - string
+          last_edited:
+            description: Timestamp of the last edit made to the campaign.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: Name or title of the campaign.
+            type:
+              - "null"
+              - string
+          is_api_campaign:
+            description: Indicates if the campaign was created via API.
+            type:
+              - "null"
+              - boolean
+          tags:
+            description: List of tags associated with the campaign.
+            type:
+              - "null"
+              - array
   canvases_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "canvases"
       primary_key: "id"
       path: "/canvas/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the canvas data
+            type:
+              - "null"
+              - string
+          last_edited:
+            description: Date and time when the canvas was last edited
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: Name of the canvas
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags associated with the canvas
+            type:
+              - "null"
+              - array
   cards_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "cards"
       primary_key: "id"
       path: "/feed/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the card data
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the card content
+            type:
+              - "null"
+              - string
+          title:
+            description: Title of the card
+            type:
+              - "null"
+              - string
+          tags:
+            description: List of tags associated with the card
+            type:
+              - "null"
+              - array
   segments_stream:
     $ref: "#/definitions/list_stream"
     $parameters:
       name: "segments"
       primary_key: "id"
       path: "/segments/list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the segment.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the segment.
+            type:
+              - "null"
+              - string
+          analytics_tracking_enabled:
+            description: Indicates if analytics tracking is enabled for this segment.
+            type:
+              - "null"
+              - boolean
+          tags:
+            description:
+              Tags associated with the segment for organizing and filtering
+              purposes.
+            type:
+              - "null"
+              - array
   custom_events_stream:
     retriever:
       $ref: "#/definitions/event_retriever"
@@ -92,7 +205,18 @@ definitions:
       name: "events"
       path: "/events/list"
 
-  # ----- Incremental Sync -----
+    # ----- Incremental Sync -----
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            description: The name of the event recorded in the system.
+            type:
+              - "null"
+              - string
   datetime_100d_incremental_sync:
     type: CustomIncrementalSync
     class_name: "source_braze.DatetimeIncrementalSyncComponent"
@@ -136,6 +260,26 @@ definitions:
     $parameters:
       name: "kpi_daily_new_users"
       path: "/kpi/new_users/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            description:
+              The timestamp representing the day for which the new user
+              data is reported.
+            type:
+              - "null"
+              - string
+          new_users:
+            description:
+              The number of new users that registered on the platform on
+              a specific day.
+            type:
+              - "null"
+              - integer
   kpi_daily_active_users_stream:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -144,6 +288,27 @@ definitions:
     $parameters:
       name: "kpi_daily_active_users"
       path: "/kpi/dau/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            description:
+              The timestamp representing the specific date and time when
+              the data was collected for the daily active users.
+            type:
+              - "null"
+              - string
+          dau:
+            description:
+              The number of daily active users, representing the total
+              count of unique users who have interacted with the application on a
+              given day.
+            type:
+              - "null"
+              - integer
   kpi_daily_app_uninstalls_stream:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -153,7 +318,25 @@ definitions:
       name: "kpi_daily_app_uninstalls"
       path: "/kpi/uninstalls/data_series"
 
-  # ----- Incremental sub-streams -----
+    # ----- Incremental sub-streams -----
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          time:
+            description: The date and time when the app uninstalls data was recorded.
+            type:
+              - "null"
+              - string
+          uninstalls:
+            description:
+              The number of app uninstalls that occurred on the given date
+              and time.
+            type:
+              - "null"
+              - integer
   campaigns_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -271,28 +454,268 @@ definitions:
     $parameters:
       name: "campaigns_analytics"
       path: "/campaigns/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          campaign_id:
+            description: The unique identifier for the campaign.
+            type:
+              - "null"
+              - string
+          time:
+            description: Timestamp for the campaign data.
+            type:
+              - "null"
+              - string
+          messages:
+            description:
+              Contains information related to messages sent as part of
+              campaigns.
+            type:
+              - "null"
+              - object
+            properties:
+              ios_push:
+                description: Number of iOS push messages sent.
+                type:
+                  - "null"
+                  - array
+              android_push:
+                description: Number of Android push messages sent.
+                type:
+                  - "null"
+                  - array
+              webhook:
+                description: Number of webhook messages sent.
+                type:
+                  - "null"
+                  - array
+              email:
+                description: Number of email messages sent.
+                type:
+                  - "null"
+                  - array
+              sms:
+                description: Number of SMS messages sent.
+                type:
+                  - "null"
+                  - array
+          conversions_by_send_time:
+            description: Conversions data tracked by send time across all sets.
+            type:
+              - "null"
+              - integer
+          conversions1_by_send_time:
+            description: Specific conversions tracked by send time.
+            type:
+              - "null"
+              - integer
+          conversions2_by_send_time:
+            description: Conversions tracked by send time for the second set.
+            type:
+              - "null"
+              - integer
+          conversions3_by_send_time:
+            description: Conversions tracked by send time for the third set.
+            type:
+              - "null"
+              - integer
+          conversions:
+            description: Total number of conversions for the campaign.
+            type:
+              - "null"
+              - integer
+          conversions1:
+            description: Additional conversions tracking for the campaign.
+            type:
+              - "null"
+              - integer
+          conversions2:
+            description: Second set of conversions data for the campaign.
+            type:
+              - "null"
+              - integer
+          conversions3:
+            description: Another set of conversions data for the campaign.
+            type:
+              - "null"
+              - integer
+          unique_recipients:
+            description: Number of unique recipients who received the campaign.
+            type:
+              - "null"
+              - integer
+          revenue:
+            description: Total revenue generated from the campaign.
+            type:
+              - "null"
+              - number
   canvases_analytics_stream:
     $ref: "#/definitions/canvases_analytics_substream_config"
     $parameters:
       name: "canvases_analytics"
       path: "/canvas/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          canvas_id:
+            description: The unique identifier for the canvas.
+            type:
+              - "null"
+              - string
+          time:
+            description: The timestamp when the analytics data was recorded.
+            type:
+              - "null"
+              - string
+          total_stats:
+            description: Overall statistics for the entire canvas.
+            type:
+              - "null"
+              - object
+            properties:
+              revenue:
+                description: Total revenue generated through the canvas.
+                type:
+                  - "null"
+                  - number
+              conversions:
+                description: Total number of conversions achieved.
+                type:
+                  - "null"
+                  - integer
+              conversions_by_entry_time:
+                description: Number of conversions based on entry time.
+                type:
+                  - "null"
+                  - integer
+              entries:
+                description: Total number of entries made into the canvas.
+                type:
+                  - "null"
+                  - integer
+          variant_stats:
+            description:
+              Statistics related to different variants or versions of the
+              canvas.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          step_stats:
+            description:
+              Statistics related to the individual steps or actions within
+              the canvas.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
   cards_analytics_stream:
     $ref: "#/definitions/cards_analytics_substream_config"
     $parameters:
       name: "cards_analytics"
       path: "/feed/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          card_id:
+            description: Unique identifier for the card in the analytics data.
+            type:
+              - "null"
+              - string
+          time:
+            description: Timestamp indicating when the analytics data was recorded.
+            type:
+              - "null"
+              - string
+          clicks:
+            description: Total number of clicks on the card.
+            type:
+              - "null"
+              - integer
+          impressions:
+            description: Total number of impressions (views) of the card.
+            type:
+              - "null"
+              - integer
+          unique_clicks:
+            description:
+              Total number of unique clicks on the card (each user counted
+              only once).
+            type:
+              - "null"
+              - integer
+          unique_impressions:
+            description:
+              Total number of unique impressions of the card (each view
+              counted only once per user).
+            type:
+              - "null"
+              - integer
   segments_analytics_stream:
     $ref: "#/definitions/segments_analytics_substream_config"
     $parameters:
       name: "segments_analytics"
       path: "/segments/data_series"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          segment_id:
+            description: The unique identifier for the segment.
+            type:
+              - "null"
+              - string
+          time:
+            description: The timestamp when the segment analytics data was generated.
+            type:
+              - "null"
+              - string
+          size:
+            description: The size of the segment, indicating the number of users included.
+            type:
+              - "null"
+              - number
   events_analytics_stream:
     $ref: "#/definitions/events_analytics_substream_config"
     $parameters:
       name: "events_analytics"
       path: "/events/data_series"
 
-  # -- Details streams
+    # -- Details streams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          event_name:
+            description: The name of the event that was tracked or occurred.
+            type:
+              - "null"
+              - string
+          time:
+            description: The timestamp when the event took place.
+            type:
+              - "null"
+              - string
+          count:
+            description: The numerical count of how many times the event occurred.
+            type:
+              - "null"
+              - integer
   segments_details_stream:
     retriever:
       record_selector:
@@ -319,6 +742,57 @@ definitions:
     $parameters:
       name: "segments_details"
       path: "/segments/details"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            description: Message associated with the segment
+            type: string
+          created_at:
+            description: Timestamp indicating when the segment was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: Timestamp indicating when the segment was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: The name of the segment
+            type:
+              - "null"
+              - string
+          description:
+            description: Additional information or notes about the segment
+            type:
+              - "null"
+              - string
+          text_description:
+            description: Textual description or details of the segment
+            type:
+              - "null"
+              - string
+          segment_id:
+            description: Unique identifier for the segment
+            type:
+              - "null"
+              - string
+          tags:
+            description: List of tags associated with the segment
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   campaigns_details_stream:
     retriever:
       record_selector:
@@ -345,6 +819,111 @@ definitions:
     $parameters:
       name: "campaigns_details"
       path: "/campaigns/details"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          message:
+            description: Content of the campaign message.
+            type: string
+          created_at:
+            description: Timestamp indicating when the campaign was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: Timestamp indicating when the campaign was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          archived:
+            description: Indicates whether the campaign is archived.
+            type:
+              - "null"
+              - boolean
+          draft:
+            description: Indicates whether the campaign is in draft mode.
+            type:
+              - "null"
+              - boolean
+          name:
+            description: Name or title of the campaign.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description of the campaign.
+            type:
+              - "null"
+              - string
+          schedule_type:
+            description: Type of schedule for sending the campaign.
+            type:
+              - "null"
+              - string
+          first_sent:
+            description: Timestamp of the first time the campaign was sent.
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_sent:
+            description: Timestamp of the most recent time the campaign was sent.
+            type:
+              - "null"
+              - string
+            format: date-time
+          campaign_id:
+            description: Unique identifier for the campaign.
+            type:
+              - "null"
+              - string
+          channels:
+            description: Channels associated with the campaign.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          conversion_behaviors:
+            description: Conversion behaviors linked to the campaign.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          messages:
+            description: Messages associated with the campaign.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          enabled:
+            description: Indicates whether the campaign is enabled or not.
+            type:
+              - "null"
+              - boolean
+          tags:
+            description: Tags associated with the campaign.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
   canvases_details_stream:
     retriever:
       record_selector:
@@ -372,6 +951,125 @@ definitions:
       name: "canvases_details"
       path: "/canvas/details"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          created_at:
+            description: Date and time when the canvas was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: Date and time when the canvas was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            description: Name or title of the canvas.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description of the canvas and its purpose.
+            type:
+              - "null"
+              - string
+          archived:
+            description: Indicates whether the canvas is archived or not.
+            type:
+              - "null"
+              - boolean
+          draft:
+            description: Indicates whether the canvas is in draft mode or not.
+            type:
+              - "null"
+              - boolean
+          schedule_type:
+            description: Type of scheduling applied to the canvas.
+            type:
+              - "null"
+              - string
+          first_entry:
+            description: Date and time of the first entry within the canvas.
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_entry:
+            description: Date and time of the last entry within the canvas.
+            type:
+              - "null"
+              - string
+            format: date-time
+          message:
+            description: The main message content of the canvas.
+            type: string
+          canvas_id:
+            description: Unique identifier for the canvas.
+            type:
+              - "null"
+              - string
+          channels:
+            description:
+              Contains information about the channels associated with the
+              canvas.
+            type:
+              - "null"
+              - array
+            items:
+              description: List of communication channels associated with the canvas.
+              type:
+                - "null"
+                - string
+          steps:
+            description: Describes the various steps or components of the canvas.
+            type:
+              - "null"
+              - array
+            items:
+              description: List of steps included in the canvas.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          variants:
+            description:
+              Provides details on different variations or versions of the
+              canvas.
+            type:
+              - "null"
+              - array
+            items:
+              description: List of variants or versions of the canvas.
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          enabled:
+            description: Indicates whether the canvas is enabled or not.
+            type:
+              - "null"
+              - boolean
+          tags:
+            description:
+              Specifies any tags assigned to the canvas for categorization
+              or filtering purposes.
+            type:
+              - "null"
+              - array
+            items:
+              description: List of tags associated with the canvas.
+              type:
+                - "null"
+                - string
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/campaigns_analytics_stream"
