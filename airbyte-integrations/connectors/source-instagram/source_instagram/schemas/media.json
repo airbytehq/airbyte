@@ -46,6 +46,7 @@
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "Contains information about the owner of the post.",
       "type": ["null", "object"],
       "properties": {
         "id": {
@@ -77,8 +78,10 @@
       "type": ["null", "string"]
     },
     "children": {
+      "description": "Contains an array of media items that are part of the post.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties of each media item like image, caption, etc.",
         "type": "object",
         "properties": {
           "id": {
@@ -98,6 +101,7 @@
             "type": ["null", "string"]
           },
           "owner": {
+            "description": "Contains information about the owner of the media item.",
             "type": ["null", "object"],
             "properties": {
               "id": {
