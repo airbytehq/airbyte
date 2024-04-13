@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "month": {
+      "description": "The month the comic was published.",
       "type": ["null", "string"]
     },
     "num": {
+      "description": "The unique identifier number of the comic strip.",
       "type": ["null", "integer"]
     },
     "link": {
+      "description": "URL to the page of the comic strip on the xkcd website.",
       "type": ["null", "string"]
     },
     "year": {
+      "description": "The year the comic was published.",
       "type": ["null", "string"]
     },
     "news": {
+      "description": "Additional news or information related to the comic.",
       "type": ["null", "string"]
     },
     "safe_title": {
+      "description": "A version of the comic strip title that is safe to display.",
       "type": ["null", "string"]
     },
     "transcript": {
+      "description": "Text representing the dialogue and actions in the comic strip.",
       "type": ["null", "string"]
     },
     "alt": {
+      "description": "Text providing an alternate description or context for the comic strip.",
       "type": ["null", "string"]
     },
     "img": {
+      "description": "URL of the image file for the comic strip.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title or caption of the comic strip.",
       "type": ["null", "string"]
     },
     "day": {
+      "description": "The day of the month the comic was published.",
       "type": ["null", "string"]
     }
   }
