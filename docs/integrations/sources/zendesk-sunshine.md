@@ -64,6 +64,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.1 | 2024-04-12 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | schema descriptions |
 | 0.2.0 | 2023-08-22 | [29310](https://github.com/airbytehq/airbyte/pull/29310) | Migrate Python CDK to Low Code |
 | 0.1.2 | 2023-08-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976) | Fix schemas and tests |
 | 0.1.1 | 2021-11-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976) | Add oauth2.0 support |
