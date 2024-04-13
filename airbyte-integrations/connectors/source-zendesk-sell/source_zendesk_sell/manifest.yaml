@@ -47,18 +47,191 @@ definitions:
     $parameters:
       name: "call_outcomes"
       path: "/call_outcomes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the call outcome.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The unique identifier of the user who created the call outcome.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name or title of the call outcome.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the call outcome was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the call outcome was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   calls_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "calls"
       path: "/calls"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the call.
+            type:
+              - "null"
+              - number
+          user_id:
+            description: The ID of the user associated with the call.
+            type:
+              - "null"
+              - number
+          summary:
+            description: A summary or notes related to the call.
+            type:
+              - "null"
+              - string
+          recording_url:
+            description: The URL for the recording of the call.
+            type:
+              - "null"
+              - string
+          outcome_id:
+            description: The outcome ID associated with the call.
+            type:
+              - "null"
+              - number
+          duration:
+            description: The duration of the call in seconds.
+            type:
+              - "null"
+              - number
+          phone_number:
+            description: The phone number involved in the call.
+            type:
+              - "null"
+              - string
+          incoming:
+            description: Indicates if the call is incoming (true) or outgoing (false).
+            type:
+              - "null"
+              - boolean
+          missed:
+            description: Indicates if the call was missed (true) or not (false).
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            description: The type of resource associated with the call.
+            type:
+              - "null"
+              - string
+          resource_id:
+            description: The ID of the resource associated with the call.
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            description: An array of deal IDs associated with the call.
+            type:
+              - "null"
+              - array
+          made_at:
+            description: The date and time when the call was made.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          created_at:
+            description: The date and time when the call was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the call was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   collaborations_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "collaborations"
       path: "/collaborations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the collaboration record.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The unique identifier of the user who created the collaboration.
+            type:
+              - "null"
+              - number
+          resource_type:
+            description:
+              The type of the resource being collaborated on (e.g., 'deal',
+              'contact').
+            type:
+              - "null"
+              - string
+          resource_id:
+            description:
+              The unique identifier of the resource (e.g., deal, contact)
+              that is being collaborated on.
+            type:
+              - "null"
+              - number
+          collaborator_id:
+            description:
+              The unique identifier of the collaborator involved in the
+              collaboration.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the collaboration was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the collaboration was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   contacts_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -66,18 +239,266 @@ definitions:
       name: "contacts"
       path: "/contacts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the contact.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: Unique identifier of the creator of the contact.
+            type:
+              - "null"
+              - number
+          owner_id:
+            description: Unique identifier of the owner of the contact.
+            type:
+              - "null"
+              - number
+          is_organization:
+            description: Flag indicating if the contact is an organization.
+            type:
+              - "null"
+              - boolean
+          contact_id:
+            description: Unique identifier for the contact.
+            type:
+              - "null"
+              - number
+          parent_organization_id:
+            description: Unique identifier of the parent organization.
+            type:
+              - "null"
+              - number
+          name:
+            description: Full name or name of the organization for the contact.
+            type:
+              - "null"
+              - string
+          first_name:
+            description: First name of the contact.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: Last name of the contact.
+            type:
+              - "null"
+              - string
+          customer_status:
+            description: Status of the contact as a customer.
+            type:
+              - "null"
+              - string
+          prospect_status:
+            description: Status of the contact as a prospect.
+            type:
+              - "null"
+              - string
+          title:
+            description: Title or position of the contact within the organization.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description or notes about the contact.
+            type:
+              - "null"
+              - string
+          industry:
+            description: Industry or sector the contact belongs to.
+            type:
+              - "null"
+              - string
+          website:
+            description: Website address of the contact.
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the contact.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Phone number of the contact.
+            type:
+              - "null"
+              - string
+          mobile:
+            description: Mobile phone number of the contact.
+            type:
+              - "null"
+              - string
+          fax:
+            description: Fax number of the contact.
+            type:
+              - "null"
+              - string
+          twitter:
+            description: Twitter handle of the contact.
+            type:
+              - "null"
+              - string
+          facebook:
+            description: Facebook profile link of the contact.
+            type:
+              - "null"
+              - string
+          linkedin:
+            description: LinkedIn profile link of the contact.
+            type:
+              - "null"
+              - string
+          skype:
+            description: Skype ID of the contact.
+            type:
+              - "null"
+              - string
+          address:
+            description: The primary address of the contact.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              description: Primary physical address of the contact.
+          billing_address:
+            description: The billing address of the contact.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              description: Billing address for the contact.
+          shipping_address:
+            description: The shipping address of the contact.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              description: Shipping address for the contact.
+          tags:
+            description: Tags associated with the contact for categorization.
+            type:
+              - "null"
+              - array
+          custom_fields:
+            description: Custom data fields associated with the contact.
+            type:
+              - "null"
+              - object
+          created_at:
+            description: Date and time when the contact was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: Date and time when the contact was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deal_sources_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "deal_sources"
       path: "/deal_sources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the deal source.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The ID of the user who created the deal source.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the deal source.
+            type:
+              - "null"
+              - string
+          resource_type:
+            description: The type of resource the deal source belongs to.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the deal source was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the deal source was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deal_unqualified_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "deal_unqualified_reasons"
       path: "/deal_unqualified_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the deal unqualified reason.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description:
+              The unique identifier of the user who created the deal unqualified
+              reason.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name or label associated with the deal unqualified reason.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the deal unqualified reason was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description:
+              The date and time when the deal unqualified reason was last
+              updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   deals_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -85,96 +506,1184 @@ definitions:
       name: "deals"
       path: "/deals"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the deal
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: ID of the user who created the deal
+            type:
+              - "null"
+              - number
+          owner_id:
+            description: ID of the user who owns or is responsible for the deal
+            type:
+              - "null"
+              - number
+          name:
+            description: Name or title of the deal
+            type:
+              - "null"
+              - string
+          value:
+            description: Monetary value of the deal
+            type:
+              - "null"
+              - number
+              - string
+          currency:
+            description: Currency used for the deal
+            type:
+              - "null"
+              - string
+          hot:
+            description: Indicator for the deal being hot
+            type:
+              - "null"
+              - boolean
+          stage_id:
+            description: ID of the stage the deal is currently at
+            type:
+              - "null"
+              - number
+          last_stage_change_at:
+            description: Date and time of the last stage change for the deal
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_stage_change_by_id:
+            description: ID of the user who last changed the stage of the deal
+            type:
+              - "null"
+              - number
+          last_activity_at:
+            description: Date and time of the last activity on the deal
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          source_id:
+            description: ID of the source of the deal
+            type:
+              - "null"
+              - number
+          loss_reason_id:
+            description: ID of the reason for deal loss
+            type:
+              - "null"
+              - number
+          unqualified_reason_id:
+            description: ID of the reason for disqualifying the deal
+            type:
+              - "null"
+              - number
+          dropbox_email:
+            description: Dropbox email linked to the deal
+            type:
+              - "null"
+              - string
+          contact_id:
+            description: ID of the contact associated with the deal
+            type:
+              - "null"
+              - number
+          organization_id:
+            description: ID of the organization associated with the deal
+            type:
+              - "null"
+              - number
+          estimated_close_date:
+            description: Estimated date for deal closure
+            type:
+              - "null"
+              - string
+          customized_win_likelihood:
+            description: Customized win likelihood percentage for the deal
+            type:
+              - "null"
+              - number
+          tags:
+            description: Tags associated with the deal
+            type:
+              - "null"
+              - array
+          custom_fields:
+            description: Any custom fields associated with the deal
+            type:
+              - "null"
+              - object
+          created_at:
+            description: Date and time when the deal was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: Date and time when the deal was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          added_at:
+            description: Date and time when the deal was added
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   leads_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "leads"
       path: "/leads"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the lead.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: Unique identifier of the user who created the lead.
+            type:
+              - "null"
+              - number
+          owner_id:
+            description:
+              Unique identifier of the user who owns or is responsible
+              for the lead.
+            type:
+              - "null"
+              - number
+          first_name:
+            description: Lead's first name.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: Lead's last name.
+            type:
+              - "null"
+              - string
+          organization_name:
+            description: Name of the organization associated with the lead.
+            type:
+              - "null"
+              - string
+          status:
+            description: Lead's current status in the sales pipeline.
+            type:
+              - "null"
+              - string
+          source_id:
+            description: Identifier of the source from which the lead originated.
+            type:
+              - "null"
+              - number
+          title:
+            description: Lead's job title or position within the organization.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description or additional notes about the lead.
+            type:
+              - "null"
+              - string
+          industry:
+            description: Lead's industry or sector.
+            type:
+              - "null"
+              - string
+          website:
+            description: Lead's website URL.
+            type:
+              - "null"
+              - string
+          email:
+            description: Lead's email address.
+            type:
+              - "null"
+              - string
+          phone:
+            description: Lead's phone number.
+            type:
+              - "null"
+              - string
+          mobile:
+            description: Lead's mobile or cell phone number.
+            type:
+              - "null"
+              - string
+          fax:
+            description: Lead's fax number.
+            type:
+              - "null"
+              - string
+          twitter:
+            description: Lead's Twitter account information.
+            type:
+              - "null"
+              - string
+          facebook:
+            description: Lead's Facebook account information.
+            type:
+              - "null"
+              - string
+          linkedin:
+            description: Lead's LinkedIn account information.
+            type:
+              - "null"
+              - string
+          skype:
+            description: Lead's Skype account information.
+            type:
+              - "null"
+              - string
+          address:
+            description: Lead's physical address details.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          unqualified_reason_id:
+            description: Identifier for the reason why the lead is considered unqualified.
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags or labels associated with the lead for categorization.
+            type:
+              - "null"
+              - array
+          custom_fields:
+            description: Additional custom fields associated with the lead.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          created_at:
+            description: Date and time when the lead was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: Date and time when the lead was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_conversions_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_conversions"
       path: "/lead_conversions"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the lead conversion.
+            type:
+              - "null"
+              - number
+          lead_id:
+            description: The unique identifier of the lead that was converted.
+            type:
+              - "null"
+              - number
+          individual_id:
+            description:
+              The unique identifier of the individual (contact) associated
+              with the lead conversion.
+            type:
+              - "null"
+              - number
+          organization_id:
+            description:
+              The unique identifier of the organization associated with
+              the lead conversion.
+            type:
+              - "null"
+              - number
+          deal_id:
+            description:
+              The unique identifier of the deal associated with the lead
+              conversion.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The unique identifier of the user who created the lead conversion.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The datetime when the lead conversion was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_sources_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_sources"
       path: "/lead_sources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the lead source.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The unique identifier of the user who created the lead source.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the lead source.
+            type:
+              - "null"
+              - string
+          resource_type:
+            description: The type of resource this lead source is associated with.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the lead source was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the lead source was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   lead_unqualified_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "lead_unqualified_reasons"
       path: "/lead_unqualified_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the lead unqualified reason
+            type:
+              - "null"
+              - number
+          name:
+            description: Name or description of the lead unqualified reason
+            type:
+              - "null"
+              - string
+          creator_id:
+            description: The ID of the user who created the lead unqualified reason
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the lead unqualified reason was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description:
+              The date and time when the lead unqualified reason was last
+              updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   loss_reasons_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "loss_reasons"
       path: "/loss_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the loss reason.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name or description of the loss reason.
+            type:
+              - "null"
+              - string
+          creator_id:
+            description: The unique identifier of the user who created the loss reason.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the loss reason was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the loss reason was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   notes_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "notes"
       path: "/notes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the note
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The ID of the user who created the note
+            type:
+              - "null"
+              - number
+          resource_type:
+            description: The type of the resource associated with the note
+            type:
+              - "null"
+              - string
+          resource_id:
+            description: The ID of the resource associated with the note
+            type:
+              - "null"
+              - number
+          content:
+            description: The text content of the note
+            type:
+              - "null"
+              - string
+          is_important:
+            description: Indicates if the note is marked as important
+            type:
+              - "null"
+              - boolean
+          tags:
+            description: Tags associated with the note
+            type:
+              - "null"
+              - array
+          created_at:
+            description: The date and time when the note was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the note was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          type:
+            description: The type of the note
+            type:
+              - "null"
+              - string
   orders_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "orders"
       path: "/orders"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the order
+            type:
+              - "null"
+              - number
+          deal_id:
+            description: The identifier of the deal associated with the order
+            type:
+              - "null"
+              - number
+          discount:
+            description: Any discount applied to the order
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the order was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the order was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "pipelines"
       path: "/pipelines"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the pipeline
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the pipeline
+            type:
+              - "null"
+              - string
+          locale_key:
+            description: The localization key associated with the pipeline
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the pipeline was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the pipeline was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          disabled:
+            description: Indicates if the pipeline is disabled or not
+            type:
+              - "null"
+              - boolean
   products_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "products"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the product
+            type:
+              - "null"
+              - number
+          name:
+            description: The name or title of the product
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the product
+            type:
+              - "null"
+              - string
+          sku:
+            description: The stock keeping unit (SKU) for the product
+            type:
+              - "null"
+              - string
+          active:
+            description: Flag indicating if the product is currently active or not
+            type:
+              - "null"
+              - boolean
+          max_discount:
+            description: The maximum discount allowed for the product
+            type:
+              - "null"
+              - number
+          max_markup:
+            description: The maximum markup allowed for the product
+            type:
+              - "null"
+              - number
+          cost:
+            description: The cost of the product
+            type:
+              - "null"
+              - string
+          version:
+            description: The version of the product
+            type:
+              - "null"
+              - integer
+          cost_currency:
+            description: The currency in which the cost is denominated
+            type:
+              - "null"
+              - string
+          prices:
+            description: Pricing information for the product
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          created_at:
+            description: The timestamp when the product was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The timestamp when the product was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   stages_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "stages"
       path: "/stages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the stage.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the stage.
+            type:
+              - "null"
+              - string
+          category:
+            description: The category to which the stage belongs.
+            type:
+              - "null"
+              - string
+          locale_key:
+            description: The key associated with the stage's locale.
+            type:
+              - "null"
+              - string
+          position_hash:
+            description: Hash value representing the position of the stage.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the stage is currently active or not.
+            type:
+              - "null"
+              - boolean
+          has_original_name:
+            description: Flag indicating if the stage has an original name or not.
+            type:
+              - "null"
+              - boolean
+          position:
+            description: The position of the stage within the pipeline.
+            type:
+              - "null"
+              - number
+          likelihood:
+            description: The likelihood associated with the stage.
+            type:
+              - "null"
+              - number
+          pipeline_id:
+            description: Unique identifier of the pipeline to which the stage belongs.
+            type:
+              - "null"
+              - number
+          created_at:
+            description: The date and time when the stage was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the stage was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   tags_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "tags"
       path: "/tags"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the tag.
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The ID of the user who created the tag.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the tag.
+            type:
+              - "null"
+              - string
+          resource_type:
+            description: The type of resource the tag is associated with.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the tag was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the tag was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   tasks_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "tasks"
       path: "/tasks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the task
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The ID of the user who created the task
+            type:
+              - "null"
+              - number
+          owner_id:
+            description:
+              The ID of the user who is responsible for completing the
+              task
+            type:
+              - "null"
+              - number
+          resource_type:
+            description: The type of resource that the task is associated with
+            type:
+              - "null"
+              - string
+          resource_id:
+            description: The ID of the associated resource for the task
+            type:
+              - "null"
+              - number
+          completed:
+            description: Indicates if the task has been completed or not
+            type:
+              - "null"
+              - boolean
+          completed_at:
+            description: The date and time when the task was marked as completed
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          due_date:
+            description: The date by which the task should be completed
+            type:
+              - "null"
+              - string
+          overdue:
+            description: Indicates if the task is overdue or not
+            type:
+              - "null"
+              - boolean
+          remind_at:
+            description:
+              The date and time when a reminder for the task should be
+              sent
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          content:
+            description: The description or content of the task
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the task was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the task was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   text_messages_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "text_messages"
       path: "/text_messages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the text message
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            description: A list of deal IDs associated with the text message
+            type:
+              - "null"
+              - array
+          content:
+            description: The text content of the message
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the text message was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          incoming:
+            description:
+              Indicates if the message was incoming (received) or outgoing
+              (sent)
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            description: The type of the related resource (deal, contact, etc.)
+            type:
+              - "null"
+              - string
+          resource_id:
+            description: The ID of the related resource (deal, contact, etc.)
+            type:
+              - "null"
+              - number
+          resource_phone_number:
+            description: The phone number associated with the related resource
+            type:
+              - "null"
+              - string
+          sent_at:
+            description: The timestamp when the text message was sent
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          user_id:
+            description: The ID of the user who sent/received the text message
+            type:
+              - "null"
+              - number
+          user_phone_number:
+            description: The phone number of the user who sent/received the text message
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The timestamp when the text message was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   users_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "users"
       path: "/users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the user account.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the user.
+            type:
+              - "null"
+              - string
+          email:
+            description: The email address associated with the user account.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the user account.
+            type:
+              - "null"
+              - string
+          invited:
+            description:
+              Indicates whether the user account was invited to join the
+              platform.
+            type:
+              - "null"
+              - boolean
+          detached:
+            description: Specifies if the user account is detached from any group.
+            type:
+              - "null"
+              - boolean
+          sell_login_disabled:
+            description:
+              Specifies whether the user can login to the Zendesk Sell
+              platform.
+            type:
+              - "null"
+              - boolean
+          confirmed:
+            description: Indicates whether the user account is confirmed or not.
+            type:
+              - "null"
+              - boolean
+          phone_number:
+            description: The phone number associated with the user account.
+            type:
+              - "null"
+              - string
+          role:
+            description: The role assigned to the user.
+            type:
+              - "null"
+              - string
+          roles:
+            description: The roles assigned to the user account.
+            type:
+              - "null"
+              - array
+          team_name:
+            description: The name of the team to which the user belongs.
+            type:
+              - "null"
+              - string
+          group:
+            description: The group to which the user belongs.
+            type:
+              - "null"
+              - object
+          reports_to:
+            description: The user to whom the current user reports to.
+            type:
+              - "null"
+              - number
+          system_tags:
+            description: The system tags associated with the user account.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timezone:
+            description: The timezone set for the user account.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the user account was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the user account was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted_at:
+            description: The date and time when the user account was deleted, if applicable.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          zendesk_user_id:
+            description: The Zendesk User ID associated with the user account.
+            type:
+              - "null"
+              - string
+          identity_type:
+            description: The type of identity associated with the user account.
+            type:
+              - "null"
+              - string
   visit_outcomes_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
     $parameters:
       name: "visit_outcomes"
       path: "/visit_outcomes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the visit outcome
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The ID of the user who created the visit outcome
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the visit outcome
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the visit outcome was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the visit outcome was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
   visits_stream:
     $ref: "#/definitions/base_stream"
     primary_key: "id"
@@ -182,6 +1691,77 @@ definitions:
       name: "visits"
       path: "/visits"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the visit record
+            type:
+              - "null"
+              - number
+          creator_id:
+            description: The unique identifier of the user who created the visit record
+            type:
+              - "null"
+              - number
+          outcome_id:
+            description:
+              The unique identifier of the outcome associated with the
+              visit
+            type:
+              - "null"
+              - number
+          resource_type:
+            description: The type of the visited resource
+            type:
+              - "null"
+              - string
+          resource_id:
+            description: The unique identifier of the visited resource
+            type:
+              - "null"
+              - number
+          visited_at:
+            description: The timestamp when the visit took place
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          resource_address:
+            description: The address of the visited resource
+            type:
+              - "null"
+              - string
+          rep_location_verification_status:
+            description:
+              The status of the representative's location verification
+              for the visit
+            type:
+              - "null"
+              - string
+          summary:
+            description: A summary or notes related to the visit
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the visit data was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The timestamp when the visit data was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
 streams:
   - "#/definitions/call_outcomes_stream"
   - "#/definitions/calls_stream"
