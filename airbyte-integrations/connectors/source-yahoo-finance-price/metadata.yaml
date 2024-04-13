@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 09a517d3-803f-448d-97bf-0b1ee64b90ef
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-yahoo-finance-price
   githubIssueLabel: source-yahoo-finance-price
   icon: yahoo-finance-price.svg
