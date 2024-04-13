@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   dockerRepository: airbyte/source-metabase
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   githubIssueLabel: source-metabase
@@ -25,7 +25,12 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "The `dashboard` stream's endpoint has been updated due to the previous endpoint being deprecated by the service. The new version no longer returns the `creator` field. After upgrading, please reset the schema for the stream. Additionally, the destination may require updating to handle the updated schema."
+        message:
+          "The `dashboard` stream's endpoint has been updated due to the previous
+          endpoint being deprecated by the service. The new version no longer returns
+          the `creator` field. After upgrading, please reset the schema for the stream.
+          Additionally, the destination may require updating to handle the updated
+          schema."
         upgradeDeadline: "2024-04-01"
         scopedImpact:
           - scopeType: stream
