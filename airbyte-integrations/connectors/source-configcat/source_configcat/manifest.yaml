@@ -27,12 +27,48 @@ definitions:
       name: "organizations"
       primary_key: "organizationId"
       path: "/organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          organizationId:
+            description: The unique identifier of the organization.
+            type: string
+          name:
+            description: The name of the organization.
+            type: string
   products_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "products"
       primary_key: "productId"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          organizationId:
+            description: The ID of the organization to which the product belongs.
+            type: object
+          name:
+            description: The name of the product.
+            type: string
+          productId:
+            description: The unique identifier for the product.
+            type: string
+          description:
+            description: A brief description of the product.
+            type: string
+          order:
+            description: The order in which the product appears.
+            type: integer
+          reasonRequired:
+            description: Indicates if a reason is required when accessing the product.
+            type: boolean
   product_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -53,6 +89,24 @@ definitions:
         $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          product:
+            description: The product that the tag is associated with.
+            type: object
+          name:
+            description: The name of the tag.
+            type: string
+          tagId:
+            description: The unique identifier for the tag.
+            type: integer
+          color:
+            description: The color associated with the tag.
+            type: string
   environments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -67,6 +121,47 @@ definitions:
         $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          product:
+            description: The product or service related to the environment.
+            type: object
+          environmentId:
+            description: The unique identifier for the environment.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the environment.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color associated with the environment.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the environment.
+            type:
+              - "null"
+              - string
+          order:
+            description: The numerical order in which the environment should appear.
+            type:
+              - "null"
+              - integer
+          reasonRequired:
+            description:
+              Indicates whether a reason is required for changes in the
+              environment.
+            type:
+              - "null"
+              - boolean
   organization_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -88,6 +183,21 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          userId:
+            description: The unique identifier of the organization member.
+            type: string
+          fullName:
+            description: The full name of the organization member.
+            type: string
+          email:
+            description: The email address of the organization member.
+            type: string
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/organization_members_stream"
