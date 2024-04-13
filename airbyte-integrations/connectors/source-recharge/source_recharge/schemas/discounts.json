@@ -23,9 +23,11 @@
       "type": ["null", "string"]
     },
     "channel_settings": {
+      "description": "Settings related to different channels for discounts",
       "type": ["null", "object"],
       "properties": {
         "api": {
+          "description": "Discount settings for API channel",
           "type": "object",
           "properties": {
             "can_apply": {
@@ -35,6 +37,7 @@
           }
         },
         "checkout_page": {
+          "description": "Discount settings for checkout page channel",
           "type": "object",
           "properties": {
             "can_apply": {
@@ -44,6 +47,7 @@
           }
         },
         "customer_portal": {
+          "description": "Discount settings for customer portal channel",
           "type": "object",
           "properties": {
             "can_apply": {
@@ -53,6 +57,7 @@
           }
         },
         "merchant_portal": {
+          "description": "Discount settings for merchant portal channel",
           "type": "object",
           "properties": {
             "can_apply": {
