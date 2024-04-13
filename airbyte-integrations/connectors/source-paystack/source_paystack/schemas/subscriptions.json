@@ -2,68 +2,88 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the subscription.",
       "type": ["null", "integer"]
     },
     "domain": {
+      "description": "The domain associated with the subscription.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the subscription.",
       "type": ["null", "string"]
     },
     "start": {
+      "description": "Start date of the subscription.",
       "type": ["null", "integer"]
     },
     "quantity": {
+      "description": "The quantity or number of units in the subscription.",
       "type": ["null", "integer"]
     },
     "subscription_code": {
+      "description": "Code uniquely identifying the subscription.",
       "type": ["null", "string"]
     },
     "email_token": {
+      "description": "Token for email verification linked to the subscription.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the subscription.",
       "type": ["null", "integer"]
     },
     "cron_expression": {
+      "description": "The cron expression for the subscription billing cycle.",
       "type": ["null", "string"]
     },
     "next_payment_date": {
+      "description": "Date for the next payment in the subscription cycle.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "open_invoice": {
+      "description": "Status of any open invoice for the subscription.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp when the subscription was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "integration": {
+      "description": "Integration details for the subscription.",
       "type": ["null", "integer"]
     },
     "plan": {
+      "description": "Details of the subscription plan chosen.",
       "type": ["null", "object"],
       "properties": {}
     },
     "authorization": {
+      "description": "Authorization details for the subscription.",
       "type": ["null", "object"],
       "properties": {}
     },
     "customer": {
+      "description": "Details of the customer who subscribed.",
       "type": ["null", "object"],
       "properties": {}
     },
     "invoice_limit": {
+      "description": "Limit on the number of invoices for the subscription.",
       "type": ["null", "integer"]
     },
     "split_code": {
+      "description": "Code for splitting payments associated with the subscription.",
       "type": ["null", "string"]
     },
     "payments_count": {
+      "description": "Total count of payments made for the subscription.",
       "type": ["null", "integer"]
     },
     "most_recent_invoice": {
+      "description": "Details of the most recent invoice related to the subscription.",
       "type": ["null", "object"],
       "properties": {}
     }

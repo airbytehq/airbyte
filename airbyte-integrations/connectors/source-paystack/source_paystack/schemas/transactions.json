@@ -2,88 +2,114 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the transaction.",
       "type": ["null", "integer"]
     },
     "domain": {
+      "description": "The domain associated with the transaction.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the transaction.",
       "type": ["null", "string"]
     },
     "reference": {
+      "description": "Reference identifier for the transaction.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The transaction amount in the specified currency.",
       "type": ["null", "integer"]
     },
     "message": {
+      "description": "Message associated with the transaction.",
       "type": ["null", "string"]
     },
     "gateway_response": {
+      "description": "Response from the payment gateway.",
       "type": ["null", "string"]
     },
     "paid_at": {
+      "description": "The timestamp when the transaction was marked as paid.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The timestamp when the transaction was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "channel": {
+      "description": "The payment channel used for the transaction.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency of the transaction.",
       "type": ["null", "string"]
     },
     "ip_address": {
+      "description": "IP address of the device initiating the transaction.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional metadata for the transaction.",
       "type": ["null", "object"],
       "properties": {
         "referrer": {
+          "description": "Referrer details for the transaction.",
           "type": ["null", "string"]
         }
       }
     },
     "log": {
+      "description": "Log details of the transaction.",
       "type": ["null", "object"],
       "properties": {
         "start_time": {
+          "description": "Start time of the transaction.",
           "type": ["null", "integer"]
         },
         "time_spent": {
+          "description": "Duration of the transaction.",
           "type": ["null", "integer"]
         },
         "attempts": {
+          "description": "Number of transaction attempts.",
           "type": ["null", "integer"]
         },
         "errors": {
+          "description": "Errors encountered during the transaction.",
           "type": ["null", "integer"]
         },
         "success": {
+          "description": "Success status of the transaction.",
           "type": ["null", "boolean"]
         },
         "mobile": {
+          "description": "Mobile details related to the transaction.",
           "type": ["null", "boolean"]
         },
         "input": {
+          "description": "Input data for the transaction.",
           "type": ["null", "array"],
           "items": {}
         },
         "history": {
+          "description": "History of transaction messages.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the message.",
                 "type": ["null", "string"]
               },
               "message": {
+                "description": "Content of the message in the history.",
                 "type": ["null", "string"]
               },
               "time": {
+                "description": "Timestamp of the message.",
                 "type": ["null", "integer"]
               }
             }
@@ -92,58 +118,74 @@
       }
     },
     "fees": {
+      "description": "Details of any fees associated with the transaction.",
       "type": ["null", "integer"]
     },
     "fees_split": {
+      "description": "Details of split fees for multiple beneficiaries.",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "Customer details related to the transaction.",
       "type": ["null", "object"],
       "properties": {}
     },
     "authorization": {
+      "description": "Authorization details for the transaction.",
       "type": ["null", "object"],
       "properties": {}
     },
     "plan": {
+      "description": "Plan details associated with the transaction.",
       "type": ["null", "object"],
       "properties": {}
     },
     "split": {
+      "description": "Details of any split transactions.",
       "type": ["null", "object"],
       "properties": {}
     },
     "subaccount": {
+      "description": "Subaccount details associated with the transaction.",
       "type": ["null", "object"],
       "properties": {}
     },
     "order_id": {
+      "description": "Order ID associated with the transaction.",
       "type": ["null", "integer"]
     },
     "paidAt": {
+      "description": "The timestamp when the transaction was marked as paid.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdAt": {
+      "description": "The timestamp when the transaction was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "requested_amount": {
+      "description": "Amount requested for the transaction.",
       "type": ["null", "integer"]
     },
     "source": {
+      "description": "Source details of the transaction.",
       "type": ["null", "object"],
       "properties": {
         "source": {
+          "description": "Source details of the transaction.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "Type of the transaction source.",
           "type": ["null", "string"]
         },
         "identifier": {
+          "description": "Identifier of the transaction source.",
           "type": ["null", "string"]
         },
         "entry_point": {
+          "description": "Entry point of the transaction source.",
           "type": ["null", "string"]
         }
       }

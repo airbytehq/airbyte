@@ -2,72 +2,93 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the dispute",
       "type": ["null", "integer"]
     },
     "refund_amount": {
+      "description": "Amount to be refunded in case of a dispute resolution in favor of the customer",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "Currency of the transaction",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the dispute",
       "type": ["null", "string"]
     },
     "resolution": {
+      "description": "Resolution status of the dispute",
       "type": ["null", "string"]
     },
     "domain": {
+      "description": "The domain involved in the transaction leading to the dispute",
       "type": ["null", "string"]
     },
     "transaction": {
+      "description": "Details of the original transaction associated with the dispute",
       "type": ["null", "object"],
       "properties": {}
     },
     "transaction_reference": {
+      "description": "Reference code for the original transaction",
       "type": ["null", "string"]
     },
     "category": {
+      "description": "The category of the dispute",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "Details of the customer involved in the dispute",
       "type": ["null", "object"],
       "properties": {}
     },
     "bin": {
+      "description": "The BIN (Bank Identification Number) associated with the payment method used",
       "type": ["null", "string"]
     },
     "last4": {
+      "description": "Last 4 digits of the payment method used in the transaction",
       "type": ["null", "string"]
     },
     "dueAt": {
+      "description": "Timestamp indicating when the dispute is due for resolution",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "resolvedAt": {
+      "description": "Timestamp indicating when the dispute was resolved",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "evidence": {
+      "description": "Any evidence provided to support the dispute",
       "type": ["null", "string"]
     },
     "attachments": {
+      "description": "Any relevant attachments or evidence related to the dispute",
       "type": ["null", "string"]
     },
     "note": {
+      "description": "Any additional notes or comments related to the dispute",
       "type": ["null", "string"]
     },
     "history": {
+      "description": "History of the dispute resolution process",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "status": {
+            "description": "Status of the action taken in the dispute resolution process",
             "type": ["null", "string"]
           },
           "by": {
+            "description": "User responsible for the action",
             "type": ["null", "string"]
           },
           "createdAt": {
+            "description": "Timestamp when the action was taken",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -75,17 +96,21 @@
       }
     },
     "messages": {
+      "description": "Messages exchanged during the dispute resolution process",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "sender": {
+            "description": "Sender of the message",
             "type": ["null", "string"]
           },
           "body": {
+            "description": "Content of the message",
             "type": ["null", "string"]
           },
           "createdAt": {
+            "description": "Timestamp when the message was sent",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -93,10 +118,12 @@
       }
     },
     "createdAt": {
+      "description": "Timestamp indicating when the dispute was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Timestamp indicating when the dispute information was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }
