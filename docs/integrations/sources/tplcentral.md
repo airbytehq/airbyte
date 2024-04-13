@@ -46,5 +46,6 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.2 | 2024-04-12 | [37274](https://github.com/airbytehq/airbyte/pull/37274) | schema descriptions |
 | 0.1.1   | 2022-11-01 | [18763](https://github.com/airbytehq/airbyte/pull/18763) | Check if `url_base` parameter is set to HTTPS URL. |
 | 0.1.0   | 2021-08-18 | [7322](https://github.com/airbytehq/airbyte/pull/7322)   | New Source: 3PL Central                            |
