@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "A unique identifier (UUID) for the company group.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "Text value representing the name or description of the company group.",
       "type": "string"
     }
   }

@@ -2,31 +2,39 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name or title of the skill.",
       "type": "string"
     },
     "uuid": {
+      "description": "Unique identifier for the skill.",
       "type": "string",
       "format": "uuid"
     },
     "level": {
+      "description": "The level of expertise associated with the skill.",
       "type": "integer"
     },
     "desc": {
+      "description": "Detailed description of the skill.",
       "type": "string"
     },
     "abstract": {
+      "description": "A brief overview or summary of the skill.",
       "type": "boolean"
     },
     "path": {
+      "description": "The path or location of the skill in the hierarchy.",
       "type": "string"
     },
     "ancestors": {
+      "description": "An array of ancestors related to the skill.",
       "type": "array",
       "items": {
         "type": ["null", "string"]
       }
     },
     "has_children": {
+      "description": "Flag indicating if the skill has children.",
       "type": ["null", "boolean"]
     }
   }

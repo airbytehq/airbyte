@@ -2,14 +2,18 @@
   "type": "object",
   "properties": {
     "project_url": {
+      "description": "The URL of the project.",
       "type": "string"
     },
     "project_id": {
+      "description": "The unique identifier for the project.",
       "type": "string"
     },
     "rag_ratings": {
+      "description": "The RAG (Red, Amber, Green) ratings associated with the project.",
       "type": "array",
       "items": {
+        "description": "Individual RAG rating details.",
         "type": ["null", "string"]
       }
     }

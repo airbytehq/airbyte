@@ -2,20 +2,25 @@
   "type": "object",
   "properties": {
     "text": {
+      "description": "Additional textual description or notes regarding the RAG scope.",
       "type": "string"
     },
     "rag_type": {
+      "description": "Type of RAG (Red, Amber, Green) category assigned to the organization.",
       "type": "integer",
       "enum": [1, 2]
     },
     "default_choice": {
+      "description": "The default choice for the organization's RAG (Red, Amber, Green) scope.",
       "type": "integer",
       "enum": [1, 2]
     },
     "allow_undefined": {
+      "description": "Specifies whether undefined values are allowed or not.",
       "type": "boolean"
     },
     "is_financial": {
+      "description": "Indicates if the RAG scope relates to financial aspects.",
       "type": "boolean"
     }
   }

@@ -2,85 +2,107 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Unique Universal Identifier (UUID) of the project",
       "type": "string",
       "format": "uuid"
     },
     "title": {
+      "description": "Title or name of the project",
       "type": ["null", "string"]
     },
     "hash_tag_ids": {
+      "description": "List of hash tag IDs linked to the project",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "start_date": {
+      "description": "Start date of the project",
       "type": ["null", "string"],
       "format": "date"
     },
     "end_date": {
+      "description": "End date of the project",
       "type": ["null", "string"],
       "format": "date"
     },
     "last_date": {
+      "description": "Last date related to the project",
       "type": ["null", "string"],
       "format": "date"
     },
     "tentative": {
+      "description": "Indicator whether the project is tentative or confirmed",
       "type": ["null", "boolean"]
     },
     "likelihood": {
+      "description": "Likelihood or probability assessment of project success",
       "type": ["null", "integer"]
     },
     "billing_model": {
+      "description": "The billing model used for the project",
       "type": ["null", "integer"]
     },
     "hour_rate_source": {
+      "description": "Source of the hourly rate for the project",
       "type": ["null", "integer"]
     },
     "customer_id": {
+      "description": "Unique ID of the customer associated with the project",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "Currency used for project transactions",
       "type": ["null", "string"]
     },
     "currency_rate": {
+      "description": "Exchange rate of the project's currency",
       "type": ["null", "string"]
     },
     "project_group_id": {
+      "description": "Group ID to which the project belongs",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the project",
       "type": ["null", "integer"]
     },
     "color": {
+      "description": "Color code associated with the project",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description or summary of the project",
       "type": ["null", "string"]
     },
     "assigned_manager_ids": {
+      "description": "List of unique IDs representing managers assigned to the project",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "assigned_manager_readonly_ids": {
+      "description": "List of unique IDs for assigned managers with read-only access to the project",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "is_public": {
+      "description": "Indicator whether the project is public or not",
       "type": ["null", "boolean"]
     },
     "integrations": {
+      "description": "List of integrations or APIs linked to the project",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "custom_attributes": {
+      "description": "Additional custom attributes or information related to the project",
       "$ref": "custom_attributes.json"
     }
   }

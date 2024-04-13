@@ -2,39 +2,50 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Universally unique identifier (UUID) for the worklog entry.",
       "type": "string",
       "format": "uuid"
     },
     "assignment_id": {
+      "description": "Unique identifier for the assignment associated with the worklog.",
       "type": ["null", "string"]
     },
     "project_id": {
+      "description": "Unique identifier for the project associated with the work performed.",
       "type": ["null", "string"]
     },
     "starts_at": {
+      "description": "Timestamp when the work associated with the worklog started.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "Timestamp when the worklog was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "work": {
+      "description": "Details of the work performed, such as hours worked, tasks completed, etc.",
       "type": ["null", "integer"]
     },
     "desc": {
+      "description": "Description or notes related to the work performed.",
       "type": ["null", "string"]
     },
     "in_progress": {
+      "description": "Indicates if the work is currently in progress or completed.",
       "type": ["null", "boolean"]
     },
     "billable": {
+      "description": "Indicates if the work logged is billable or not.",
       "type": ["null", "boolean"]
     },
     "developer_id": {
+      "description": "Unique identifier for the developer who logged the work.",
       "type": ["null", "string"]
     },
     "custom_attributes": {
+      "description": "Additional custom attributes or metadata related to the worklog.",
       "$ref": "custom_attributes.json"
     }
   }

@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier of the organization's time-off type.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The name or description of the organization's time-off type.",
       "type": "string"
     }
   }

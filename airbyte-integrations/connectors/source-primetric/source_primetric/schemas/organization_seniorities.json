@@ -2,13 +2,16 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Unique identifier for the seniority level.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The text representation of the seniority level.",
       "type": "string"
     },
     "level": {
+      "description": "The seniority level within the organization.",
       "type": "integer"
     }
   }

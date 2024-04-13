@@ -2,30 +2,38 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Universally Unique Identifier (UUID) for the project vacancy",
       "type": "string",
       "format": "uuid"
     },
     "project_id": {
+      "description": "Identifier for the project linked to the vacancy",
       "type": "string"
     },
     "start_date": {
+      "description": "Start date of the project vacancy",
       "type": ["null", "string"],
       "format": "date"
     },
     "end_date": {
+      "description": "End date of the project vacancy",
       "type": ["null", "string"],
       "format": "date"
     },
     "seniority_id": {
+      "description": "Identifier representing the seniority level required for the vacancy",
       "type": ["null", "string"]
     },
     "position_id": {
+      "description": "Identifier for the position associated with the project vacancy",
       "type": ["null", "string"]
     },
     "note": {
+      "description": "Any additional notes or comments for the project vacancy",
       "type": ["null", "string"]
     },
     "custom_attributes": {
+      "description": "Custom attributes related to the project vacancy",
       "$ref": "custom_attributes.json"
     }
   }

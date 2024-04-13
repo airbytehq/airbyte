@@ -2,55 +2,70 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Unique identifier (UUID) assigned to the employee",
       "type": "string",
       "format": "uuid"
     },
     "nick": {
+      "description": "Nickname of the employee",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the employee",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address of the employee",
       "type": ["null", "string"]
     },
     "assigned_manager_id": {
+      "description": "ID of the manager currently assigned to the employee",
       "type": ["null", "string"]
     },
     "assigned_finance_manager_ids": {
+      "description": "IDs of finance managers assigned to the employee",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "summary": {
+      "description": "Summary or brief description of the employee",
       "type": ["null", "string"]
     },
     "seniority_id": {
+      "description": "ID indicating the seniority level of the employee",
       "type": ["null", "string"]
     },
     "team_id": {
+      "description": "ID of the team to which the employee belongs",
       "type": ["null", "string"]
     },
     "department_id": {
+      "description": "ID of the department to which the employee belongs",
       "type": ["null", "string"]
     },
     "position_id": {
+      "description": "ID of the position held by the employee",
       "type": ["null", "string"]
     },
     "hash_tag_ids": {
+      "description": "IDs of hash tags associated with the employee",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "nationality": {
+      "description": "Nationality of the employee",
       "type": ["null", "string"]
     },
     "note": {
+      "description": "Additional notes or comments about the employee",
       "type": ["null", "string"]
     },
     "custom_attributes": {
+      "description": "Custom attributes associated with the employee",
       "$ref": "custom_attributes.json"
     }
   }

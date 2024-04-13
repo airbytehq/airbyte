@@ -2,10 +2,12 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier for the team in UUID format.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The name or title of the team within the organization.",
       "type": "string"
     }
   }

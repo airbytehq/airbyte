@@ -2,41 +2,51 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Unique identifier of the time off request",
       "type": "string",
       "format": "uuid"
     },
     "employee_id": {
+      "description": "Unique identifier of the employee requesting time off",
       "type": "string",
       "format": "uuid"
     },
     "start_date": {
+      "description": "Start date of the time off period",
       "type": ["null", "string"],
       "format": "date"
     },
     "end_date": {
+      "description": "End date of the time off period",
       "type": ["null", "string"],
       "format": "date"
     },
     "approved": {
+      "description": "Flag indicating if the time off request is approved or not",
       "type": "boolean"
     },
     "approved_by": {
+      "description": "Details of the person who approved the time off request",
       "type": ["null", "object"],
       "properties": {
         "uuid": {
+          "description": "Unique identifier of the approver",
           "type": "string",
           "format": "uuid"
         },
         "name": {
+          "description": "Name of the approver",
           "type": "string"
         }
       }
     },
     "approved_at": {
+      "description": "Timestamp when the time off request was approved",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "custom_attributes": {
+      "description": "Custom attributes related to the time off request",
       "$ref": "custom_attributes.json"
     }
   }

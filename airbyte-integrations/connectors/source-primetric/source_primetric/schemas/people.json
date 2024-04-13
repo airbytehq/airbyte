@@ -2,28 +2,36 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "Universally unique identifier for the person.",
       "type": "string",
       "format": "uuid"
     },
     "name": {
+      "description": "Name of the person.",
       "type": "string"
     },
     "mail": {
+      "description": "Email address of the person.",
       "type": "string"
     },
     "archived": {
+      "description": "Flag indicating if the person data is archived or active.",
       "type": "boolean"
     },
     "roles": {
+      "description": "Roles associated with the person.",
       "type": ["null", "object"],
       "properties": {
         "manager_id": {
+          "description": "ID of the person in the manager role, if applicable.",
           "type": ["null", "string"]
         },
         "employee_id": {
+          "description": "ID of the person in the employee role, if applicable.",
           "type": ["null", "string"]
         },
         "administrator_id": {
+          "description": "ID of the person in the administrator role, if applicable.",
           "type": ["null", "string"]
         }
       }

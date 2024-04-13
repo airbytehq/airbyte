@@ -2,13 +2,16 @@
   "type": "object",
   "properties": {
     "uuid": {
+      "description": "The unique identifier (UUID) of the organization role.",
       "type": "string",
       "format": "uuid"
     },
     "text": {
+      "description": "The text description of the organization role.",
       "type": "string"
     },
     "default_hour_rate": {
+      "description": "The default hourly rate associated with the organization role.",
       "type": "string",
       "airbyte_type": "big_number"
     }
