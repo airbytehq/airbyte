@@ -218,6 +218,16 @@ def test_open_file_without_config_raises_exception():
 
 
 @patch("smart_open.open")
+def test_open_inaccessible_file_raises_exception(smart_open_mock):
+    smart_open_mock.side_effect = OSError("File does not exist")
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    with pytest.raises(OSError):
+        with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
+            fp.read()
+
+
+@patch("smart_open.open")
 def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     smart_open_mock.return_value = io.BytesIO()
     reader = SourceS3StreamReader()

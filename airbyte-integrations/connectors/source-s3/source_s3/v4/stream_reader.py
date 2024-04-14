@@ -179,7 +179,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
                 f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
             )
-
+            raise
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
 
