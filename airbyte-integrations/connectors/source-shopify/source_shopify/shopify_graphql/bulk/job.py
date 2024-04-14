@@ -4,6 +4,7 @@
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional, Union
@@ -43,26 +44,22 @@ class ShopifyBulkManager:
     # 10Mb chunk size to save the file
     retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
     # time between job status checks
-    job_check_interval_sec: Final[int] = 5
-
-    # PLATFORM HEARTBEAT NOTES:
-    # 30 sec / attempt * 19 attempts = 570 sec of wait time in total,
-    # which is < 10 min of retrying, before Heartbeat will kill the source as non-responsive
+    job_check_interval_sec: Final[int] = 3
 
     # sleep time per creation attempt
     concurrent_interval_sec: Final[int] = 30
     # max attempts for job creation
-    concurrent_max_retry: Final[int] = 19
+    concurrent_max_retry: Final[int] = 30
     # Each job ideally should be executed within the specified time (in sec),
-    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 7 mins (420 sec),
+    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 10 mins (600 sec),
     # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
-    job_max_elapsed_time_sec: Final[float] = 420.0
+    job_max_elapsed_time_sec: Final[float] = 600.0
     # 0.1 ~= P2H, default value, lower boundary for slice size
     job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
     job_size_max: Final[float] = 365.0
     # running job logger constrain
-    log_job_state_msg_frequency: Final[int] = 3
+    log_job_state_msg_frequency: Final[int] = 5
     # attempt limit indicator
     concurrent_max_attempt_reached: bool = field(init=False, default=False)
     # attempt counter
@@ -136,10 +133,9 @@ class ShopifyBulkManager:
                 # set the slicer to revert mode
                 self.job_should_revert_slice = True
                 return True
-        else:
-            # reset slicer to normal mode
-            self.job_should_revert_slice = False
-            return False
+        # reset slicer to normal mode
+        self.job_should_revert_slice = False
+        return False
 
     def expand_job_size(self) -> None:
         self.job_size += self.job_size_adjusted_expand_factor
@@ -147,11 +143,32 @@ class ShopifyBulkManager:
     def reduce_job_size(self) -> None:
         self.job_size /= self.job_size_adjusted_reduce_factor
 
+    def job_size_normalize(self, start: datetime, end: datetime) -> datetime:
+        # adjust slice size when it's bigger than the loop point when it should end,
+        # to preserve correct job size adjustments when this is the only job we need to run, based on STATE provided
+        requested_slice_size = (end - start).total_days()
+        self.job_size = requested_slice_size if requested_slice_size < self.job_size else self.job_size
+
+    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime) -> datetime:
+        if self.is_long_running_job:
+            self._job_size_reduce_next()
+            return slice_start
+        else:
+            return slice_end
+
+    def get_adjusted_job_start(self, slice_start: datetime) -> datetime:
+        step = self.job_size if self.job_size else self.job_size_min
+        return slice_start.add(days=step)
+
+    def _job_size_reduce_next(self) -> None:
+        # revert the flag
+        self.job_should_revert_slice = False
+        # re-adjust Job Size
+        self.reduce_job_size()
+
     def __adjust_job_size(self, job_current_elapsed_time: float) -> None:
         if not self.job_should_revert_slice:
-            if job_current_elapsed_time > self.job_max_elapsed_time_sec:
-                self.reduce_job_size()
-            elif job_current_elapsed_time < 1 or job_current_elapsed_time < self.job_last_elapsed_time:
+            if job_current_elapsed_time < 1 or job_current_elapsed_time < self.job_last_elapsed_time:
                 self.expand_job_size()
             elif job_current_elapsed_time > self.job_last_elapsed_time < self.job_max_elapsed_time_sec:
                 pass
@@ -196,7 +213,7 @@ class ShopifyBulkManager:
             self.log_job_state_msg_count = 0
 
     def log_state(self, message: Optional[str] = None) -> None:
-        pattern = f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` is {self.job_state}."
+        pattern = f"Stream: `{self.stream_name}`, the BULK Job: `{self.job_id}` is {self.job_state}"
         if message:
             self.logger.info(f"{pattern}. {message}.")
         else:
@@ -211,7 +228,8 @@ class ShopifyBulkManager:
         }
 
     def job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
-        job_result_url = response.json().get("data", {}).get("node", {}).get("url") if response else None
+        parsed_response = response.json().get("data", {}).get("node", {})
+        job_result_url = parsed_response.get("url") if parsed_response and not self.job_self_canceled else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self.tools.filename_from_url(job_result_url)
@@ -249,7 +267,7 @@ class ShopifyBulkManager:
     def on_running_job(self, **kwargs) -> None:
         if self.is_long_running_job:
             self.logger.info(
-                f"Stream: `{self.stream_name}` the BULK Job: {self.job_id} runs longer than expected. The job will be canceled and retried with the smaller Slice Size."
+                f"Stream: `{self.stream_name}` the BULK Job: {self.job_id} runs longer than expected. Retry with the reduced `Slice Size` after self-cancelation."
             )
             self.job_cancel()
         else:

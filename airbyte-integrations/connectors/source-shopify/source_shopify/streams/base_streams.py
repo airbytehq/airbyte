@@ -5,6 +5,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 from functools import cached_property
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
@@ -187,6 +188,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
     deleted_cursor_field = "deleted_at"
+    _checkpoint_cursor = None
 
     @property
     def default_state_comparison_value(self) -> Union[int, str]:
@@ -213,6 +215,18 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                 params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
 
+    def track_checkpoint_cursor(self, record_value: Union[str, int]) -> None:
+        if self.filter_by_state_checkpoint:
+            # set checkpoint cursor
+            if not self._checkpoint_cursor:
+                self._checkpoint_cursor = self.config.get("start_date")
+            # track checkpoint cursor
+            if record_value >= self._checkpoint_cursor:
+                self._checkpoint_cursor = record_value
+
+    def emit_checkpoint_message(self) -> None:
+        self.logger.info(f"Stream `{self.name}`. Tracking cursor at: `{self._checkpoint_cursor}`.")
+
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
@@ -230,14 +244,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             for index, record in enumerate(records_slice, 1):
                 if self.cursor_field in record:
                     record_value = record.get(self.cursor_field, self.default_state_comparison_value)
+                    self.track_checkpoint_cursor(record_value)
                     if record_value:
                         if record_value >= state_value:
                             yield record
                         else:
                             if self.should_checkpoint(index):
-                                self.logger.info(
-                                    f"Stream `{self.name}`. Checkpointing: {{PK: '{record.get(self.primary_key)}', cursor: '{record_value}'}}."
-                                )
+                                self.emit_checkpoint_message()
                                 yield record
                     else:
                         # old entities could have cursor field in place, but set to null
@@ -436,7 +449,7 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
     """
 
     # Setting the check point interval to the limit of the records output
-    state_checkpoint_interval = 50
+    state_checkpoint_interval = 100
     filter_by_state_checkpoint = True
     data_field = None
     parent_stream_class: Union[ShopifyStream, IncrementalShopifyStream] = None
@@ -643,15 +656,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
-    @property
-    def slice_interval_in_days(self) -> Union[float, int]:
-        # use the adjusted slice size
-        if self.job_manager.job_size:
-            return self.job_manager.job_size
-        else:
-            # accept the slice_size overide from the input configuration, or provide the min value
-            return self.config.get("bulk_window_in_days", self.job_manager.job_size_min)
-
     @cached_property
     def parent_stream(self) -> object:
         """
@@ -747,11 +751,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
 
-    def job_size_reduce_next_slice(self) -> None:
-        # revert the flag
-        self.job_manager.job_should_revert_slice = False
-        # re-adjust Job Size
-        self.job_manager.reduce_job_size()
+    def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
+        slice_size_message = f"Slice size: `P{round(self.job_manager.job_size, 1)}D`"
+        self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -760,22 +762,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             start = pdm.parse(state)
             end = pdm.now()
             while start < end:
-                # When the Job is CANCELED intentionally,
-                # we will revert the slice start for the period, and retry with the smaller job size
-                if self.job_manager.is_long_running_job:
-                    start = start.subtract(days=self.slice_interval_in_days)
-                    self.job_size_reduce_next_slice()
-
-                slice_end = start.add(days=self.slice_interval_in_days)
-                # check end period is less than now() or now() is applied otherwise.
-                slice_end = slice_end if slice_end < end else end
-                # making pre-defined sliced query to pass it directly
-                prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
-                self.logger.info(
-                    f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}. Slice size: `P{round(self.slice_interval_in_days, 1)}D`."
-                )
-                yield {"query": prepared_query}
-                start = slice_end
+                self.job_manager.job_size_normalize(start, end)
+                slice_end = self.job_manager.get_adjusted_job_start(start)
+                self.emit_slice_message(start, slice_end)
+                yield {"query": self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())}
+                # increment the end of the slice or reduce the next slice
+                start = self.job_manager.get_adjusted_job_end(start, slice_end)
         else:
             # for the streams that don't support filtering
             yield {"query": self.query.get()}

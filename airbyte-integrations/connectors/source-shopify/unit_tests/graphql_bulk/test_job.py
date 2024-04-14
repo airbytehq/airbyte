@@ -301,23 +301,20 @@ def test_stream_slices(
 
     
 @pytest.mark.parametrize(
-    "stream, json_content_example, fake_threshold, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
+    "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
     [
-        (CustomerAddress, "customer_address_jsonl_content_example", None, 10, 4, 5.5),
-        (CustomerAddress, "customer_address_jsonl_content_example", 0.0001, None, 100, 50.0),
+        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 5.5),
     ],
     ids=[
         "Expand Slice Size",
-        "Reduce Slice Size",
     ],
 )   
-def test_adjust_stream_slices_job_size(
+def test_expand_stream_slices_job_size(
     request,
     requests_mock,
     bulk_job_completed_response,
     stream,
     json_content_example,
-    fake_threshold,
     last_job_elapsed_time,
     previous_slice_size,
     adjusted_slice_size,
@@ -337,13 +334,9 @@ def test_adjust_stream_slices_job_size(
     # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
     # fake current slice interval value
     stream.job_manager.job_size = previous_slice_size
-    # fake the threshold
-    if fake_threshold:
-        stream.job_manager.job_max_elapsed_time_sec = fake_threshold
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
         stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
-    
     # parsing result from completed job
     list(stream.parse_response(test_bulk_response))
     # check the next slice
