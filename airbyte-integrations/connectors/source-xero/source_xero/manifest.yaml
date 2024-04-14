@@ -76,7 +76,6 @@ definitions:
       path: "/BankTransactions"
       extractor_path: "BankTransactions"
 
-
   contacts_stream:
     $ref: "#/definitions/base_stream"
     name: "contacts"
@@ -92,7 +91,6 @@ definitions:
       primary_key: "ContactID"
       path: "/Contacts"
       extractor_path: "Contacts"
-
 
   credit_notes_stream:
     $ref: "#/definitions/base_stream"
@@ -110,7 +108,6 @@ definitions:
       path: "/CreditNotes"
       extractor_path: "CreditNotes"
 
-
   invoices_stream:
     $ref: "#/definitions/base_stream"
     name: "invoices"
@@ -126,7 +123,6 @@ definitions:
       primary_key: "InvoiceID"
       path: "/Invoices"
       extractor_path: "Invoices"
-
 
   manual_journals_stream:
     $ref: "#/definitions/base_stream"
@@ -144,7 +140,6 @@ definitions:
       path: "/ManualJournals"
       extractor_path: "ManualJournals"
 
-
   overpayments_stream:
     $ref: "#/definitions/base_stream"
     name: "overpayments"
@@ -160,7 +155,6 @@ definitions:
       primary_key: "OverpaymentID"
       path: "/Overpayments"
       extractor_path: "Overpayments"
-
 
   prepayments_stream:
     $ref: "#/definitions/base_stream"
@@ -178,7 +172,6 @@ definitions:
       path: "/Prepayments"
       extractor_path: "Prepayments"
 
-
   purchase_orders_stream:
     $ref: "#/definitions/base_stream"
     name: "purchase_orders"
@@ -195,7 +188,6 @@ definitions:
       path: "/PurchaseOrders"
       extractor_path: "PurchaseOrders"
 
-
   accounts_stream:
     $ref: "#/definitions/base_stream"
     name: "accounts"
@@ -207,7 +199,6 @@ definitions:
       primary_key: "AccountID"
       path: "/Accounts"
       extractor_path: "Accounts"
-
 
   bank_transfers_stream:
     $ref: "#/definitions/base_stream"
@@ -225,7 +216,6 @@ definitions:
       path: "/BankTransfers"
       extractor_path: "BankTransfers"
 
-
   employees_stream:
     $ref: "#/definitions/base_stream"
     name: "employees"
@@ -242,7 +232,6 @@ definitions:
       path: "/Employees"
       extractor_path: "Employees"
 
-
   items_stream:
     $ref: "#/definitions/base_stream"
     name: "items"
@@ -254,7 +243,6 @@ definitions:
       primary_key: "ItemID"
       path: "/Items"
       extractor_path: "Items"
-
 
   payments_stream:
     $ref: "#/definitions/base_stream"
@@ -272,7 +260,6 @@ definitions:
       path: "/Payments"
       extractor_path: "Payments"
 
-
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
@@ -284,7 +271,6 @@ definitions:
       primary_key: "UserID"
       path: "/Users"
       extractor_path: "Users"
-
 
   branding_themes_stream:
     $ref: "#/definitions/base_stream"
@@ -298,7 +284,6 @@ definitions:
       path: "/BrandingThemes"
       extractor_path: "BrandingThemes"
 
-
   contact_groups_stream:
     $ref: "#/definitions/base_stream"
     name: "contact_groups"
@@ -310,7 +295,6 @@ definitions:
       primary_key: "ContactGroupID"
       path: "/ContactGroups"
       extractor_path: "ContactGroups"
-
 
   currencies_stream:
     $ref: "#/definitions/base_stream"
@@ -324,7 +308,6 @@ definitions:
       path: "/Currencies"
       extractor_path: "Currencies"
 
-
   organisations_stream:
     $ref: "#/definitions/base_stream"
     name: "organisations"
@@ -336,7 +319,6 @@ definitions:
       primary_key: "OrganisationID"
       path: "/Organisation"
       extractor_path: "Organisations"
-
 
   repeating_invoices_stream:
     $ref: "#/definitions/base_stream"
@@ -350,7 +332,6 @@ definitions:
       path: "/RepeatingInvoices"
       extractor_path: "RepeatingInvoices"
 
-
   tax_rates_stream:
     $ref: "#/definitions/base_stream"
     name: "tax_rates"
@@ -363,7 +344,6 @@ definitions:
       path: "/TaxRates"
       extractor_path: "TaxRates"
 
-
   tracking_categories_stream:
     $ref: "#/definitions/base_stream"
     name: "tracking_categories"
@@ -375,7 +355,6 @@ definitions:
       primary_key: "TrackingCategoryID"
       path: "/TrackingCategories"
       extractor_path: "TrackingCategories"
-
 
   line_items_schema:
     type:

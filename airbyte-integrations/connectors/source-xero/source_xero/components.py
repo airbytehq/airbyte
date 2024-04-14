@@ -104,4 +104,3 @@ class CustomExtractor(RecordExtractor):
             return [extracted]
         else:
             return []
-
