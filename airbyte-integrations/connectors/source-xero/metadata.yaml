@@ -11,6 +11,14 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-xero
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-04-30"
+        message:
+          "The verison migrates the Xero connector to the low-code framework for greater maintainability.
+          !! Important: The authentication scheme is now using access_token instead of Oauth 2.0, 
+          The reads has been streamlined to full_refresh for each stream"
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
