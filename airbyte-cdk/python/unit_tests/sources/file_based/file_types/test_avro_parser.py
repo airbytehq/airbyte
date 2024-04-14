@@ -9,6 +9,8 @@ import pytest
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.file_types import AvroParser
 
+from unittest.mock import MagicMock
+
 _default_avro_format = AvroFormat()
 _double_as_string_avro_format = AvroFormat(double_as_string=True)
 _uuid_value = uuid.uuid4()
@@ -241,3 +243,14 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
 def test_to_output_value(avro_format, record_type, record_value, expected_value):
     parser = AvroParser()
     assert parser._to_output_value(avro_format, record_type, record_value) == expected_value
+
+
+def test_given_os_error_raise_os_error():
+    fake_file = MagicMock()
+    logger = MagicMock()
+    config = MagicMock()
+    config.format = _default_avro_format
+    stream_reader = MagicMock(open_file=MagicMock(side_effect=OSError("File does not exist")))
+
+    with pytest.raises(OSError):
+        list(AvroParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))

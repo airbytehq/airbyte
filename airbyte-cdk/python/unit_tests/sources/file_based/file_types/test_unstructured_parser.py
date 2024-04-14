@@ -591,3 +591,17 @@ def test_parse_records_remotely(
         requests_mock.post.assert_has_calls(expected_requests)
     else:
         requests_mock.post.assert_not_called()
+
+
+@patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")
+def test_given_os_error_raise_os_error(mock_detect_filetype):
+    mock_detect_filetype.return_value = FileType.PDF
+
+    fake_file = RemoteFile(uri=FILE_URI, last_modified=datetime.now())
+    stream_reader = MagicMock(open_file=MagicMock(side_effect=OSError("File does not exist")))
+    logger = MagicMock()
+    config = MagicMock()
+    config.format = UnstructuredFormat(skip_unprocessable_file_types=False)
+
+    with pytest.raises(OSError):
+        list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))
