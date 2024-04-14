@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory
  * developer to specify the correct configuration in order for a [PreparedStatement] to execute as
  * in a streaming / chunked manner.
  */
-class StreamingJdbcDatabase(
+open class StreamingJdbcDatabase(
     dataSource: DataSource,
     sourceOperations: JdbcCompatibleSourceOperations<*>?,
     private val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>

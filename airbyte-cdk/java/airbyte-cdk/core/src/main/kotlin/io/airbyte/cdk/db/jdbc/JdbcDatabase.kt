@@ -9,6 +9,8 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.db.SqlDatabase
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
+import java.io.IOException
+import java.io.OutputStream
 import java.sql.*
 import java.util.Spliterators.AbstractSpliterator
 import java.util.function.Consumer
@@ -126,6 +128,10 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
         recordTransform: CheckedFunction<ResultSet, T, SQLException?>
     ): Stream<T>
 
+    @Throws(SQLException::class, IOException::class)
+    open fun bulkCopyOut(sql: String, outputStream: OutputStream) {
+        TODO()
+    }
     /**
      * Json query is a common use case for [JdbcDatabase.unsafeQuery]. So this method is created as
      * syntactic sugar.

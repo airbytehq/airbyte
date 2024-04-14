@@ -55,7 +55,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private final String quoteString;
   private final String schemaName;
   private final CtidPostgresSourceOperations sourceOperations;
-  private final Queue<Pair<Ctid, Ctid>> subQueriesPlan;
+  final Queue<Pair<Ctid, Ctid>> subQueriesPlan;
   private final String tableName;
   private final long tableSize;
   private final int maxTuple;
@@ -64,7 +64,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private AutoCloseableIterator<RowDataWithCtid> currentIterator;
   private Long lastKnownFileNode;
   private int numberOfTimesReSynced = 0;
-  private boolean subQueriesInitialized = false;
+  boolean subQueriesInitialized = false;
   private final boolean tidRangeScanCapableDBServer;
 
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
@@ -152,7 +152,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         sourceOperations::recordWithCtid);
   }
 
-  private void initSubQueries() {
+  void initSubQueries() {
     if (useTestPageSize) {
       LOGGER.warn("Using test page size");
     }
@@ -211,12 +211,14 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                               final long blockSize,
                                               final int chunkSize,
                                               final double dataSize) {
+    int max_chunks = 89;
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     if (blockSize > 0 && chunkSize > 0 && dataSize > 0) {
       long lowerBound = startCtid.page;
       long upperBound;
       final double pages = dataSize / blockSize;
       final long eachStep = Math.max((long) pages * chunkSize, 1);
+
       LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
       final long theoreticalLastPage = relationSize / blockSize;
       LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
@@ -230,6 +232,10 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
           lowerBound = upperBound;
           upperBound += eachStep;
           chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
+          max_chunks--;
+          if (max_chunks <= 0) {
+            break; //TEMP
+          }
         }
       }
     }

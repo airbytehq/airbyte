@@ -10,6 +10,9 @@ properties:
     "$ref": "#/definitions/OrderedColumnLoadStatus"
   cursor_based_state:
     "$ref": "#/definitions/CursorBasedStatus"
+  airbyte_record_message_ht:
+    "$ref": "#/definitions/AirbyteRecordMessageHT"
+
 definitions:
   StateType:
     description: Enum to define the sync mode of stream state.
@@ -47,3 +50,23 @@ definitions:
         description: State to switch to after completion of the ordered column initial sync
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  AirbyteRecordMessageHT:
+    type: object
+    additionalProperties: true
+    required:
+      - stream
+      - data
+      - emitted_at
+    properties:
+      namespace:
+        description: "namespace the data is associated with"
+        type: string
+      stream:
+        description: "stream the data is associated with"
+        type: string
+      data:
+        description: "record data serialized"
+        type: string
+      emitted_at:
+        description: "when the data was emitted from the source. epoch in millisecond."
+        type: integer

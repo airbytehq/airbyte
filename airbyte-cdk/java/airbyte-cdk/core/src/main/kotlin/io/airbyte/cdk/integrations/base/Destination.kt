@@ -156,7 +156,11 @@ interface Destination : Integration {
     companion object {
         @JvmStatic
         fun defaultOutputRecordCollector(message: AirbyteMessage?) {
-            println(Jsons.serialize(message))
+            if (message is AirbyteMessageHT) {
+                println(message);
+            } else {
+                println(Jsons.serialize(message))
+            }
         }
     }
 }

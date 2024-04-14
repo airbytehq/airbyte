@@ -322,7 +322,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
-    final JdbcDatabase database = new StreamingJdbcDatabase(
+    final JdbcDatabase database = new StreamingPostgresDatabase(
         dataSource,
         sourceOperations,
         streamingQueryConfigProvider);

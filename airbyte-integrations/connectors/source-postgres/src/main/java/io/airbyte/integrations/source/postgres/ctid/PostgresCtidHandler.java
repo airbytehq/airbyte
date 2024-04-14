@@ -10,9 +10,11 @@ import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterat
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteMessageHT;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.models.AirbyteRecordMessageHT;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
@@ -20,9 +22,11 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
+import io.airbyte.integrations.source.postgres.StreamingPostgresDatabase;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -38,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -45,6 +51,68 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresCtidHandler {
 
+//  public static class AirbyteMessageHT extends AirbyteMessage {
+//    public AirbyteRecordMessageHT recordHT;
+//
+//    public AirbyteMessageHT(AirbyteRecordMessageHT recordHT) {
+//      this.recordHT = recordHT;
+//    }
+//    @Override
+//    public String toString() {
+//      return "{\"type\":\"RECORD\",\"record\":" + recordHT + "}";
+//    }
+//  }
+
+  public static class AirbyteRecordMessageHTSer extends AirbyteRecordMessageHT {
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+//      sb.append(AirbyteRecordMessageHT.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+      sb.append('{');
+      sb.append('"');
+      sb.append("namespace");
+      sb.append('"');
+      sb.append(':');
+      sb.append('"');
+      sb.append(((this.getNamespace() == null)?"<null>":this.getNamespace()));
+      sb.append('"');
+      sb.append(',');
+      sb.append('"');
+      sb.append("stream");
+      sb.append('"');
+      sb.append(':');
+      sb.append('"');
+      sb.append(((this.getStream() == null)?"<null>":this.getStream()));
+      sb.append('"');
+      sb.append(',');
+      sb.append('"');
+      sb.append("data");
+      sb.append('"');
+      sb.append(':');
+      sb.append(((this.getData() == null)?"<null>":this.getData()));
+      sb.append(',');
+      sb.append('"');
+      sb.append("emittedAt");
+      sb.append('"');
+      sb.append(':');
+      sb.append(((this.getEmittedAt() == null)?"<null>":this.getEmittedAt()));
+      sb.append(',');
+      sb.append('"');
+      sb.append("additionalProperties");
+      sb.append('"');
+      sb.append(':');
+      sb.append('"');
+      sb.append(((this.getAdditionalProperties() == null)?"<null>":this.getAdditionalProperties()));
+      sb.append('"');
+      sb.append(',');
+      if (sb.charAt((sb.length()- 1)) == ',') {
+        sb.setCharAt((sb.length()- 1), '}');
+      } else {
+        sb.append('}');
+      }
+      return sb.toString();
+    }
+  }
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCtidHandler.class);
 
   private final JsonNode config;
@@ -57,6 +125,7 @@ public class PostgresCtidHandler {
   final Optional<Map<AirbyteStreamNameNamespacePair, Integer>> tablesMaxTuple;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final boolean tidRangeScanCapableDBServer;
+  private final ExecutorService executor;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -77,6 +146,7 @@ public class PostgresCtidHandler {
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tidRangeScanCapableDBServer = CtidUtils.isTidRangeScanCapableDBServer(database);
+    this.executor = Executors.newFixedThreadPool(1);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
@@ -103,7 +173,7 @@ public class PostgresCtidHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .toList();
-        final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(
+        /*final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(
             selectedDatabaseFields,
             table.getNameSpace(),
             table.getName(),
@@ -111,9 +181,26 @@ public class PostgresCtidHandler {
             tableBlockSizes.get(pair).blockSize(),
             tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
-            getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
-        final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
+            getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());*/
+//        final AutoCloseableIterator<AirbyteMessage> recordIterator = getFileBasedRecordIterator(
+//                selectedDatabaseFields,
+//                table.getNameSpace(),
+//                table.getName(),
+//                tableBlockSizes.get(pair).tableSize(),
+//                tableBlockSizes.get(pair).blockSize(),
+//                tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair), emmitedAt.toEpochMilli());
+//        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
+
+        final AutoCloseableIterator<AirbyteRecordMessageHT> recordIteratorHT = getFileBasedRecordIteratorHT(
+                selectedDatabaseFields,
+                table.getNameSpace(),
+                table.getName(),
+                tableBlockSizes.get(pair).tableSize(),
+                tableBlockSizes.get(pair).blockSize(),
+                tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair), emmitedAt.toEpochMilli());
+        final AutoCloseableIterator<AirbyteMessage> ht = AutoCloseableIterators.transform(recordIteratorHT, r -> new AirbyteMessageHT(r));
+//        iteratorList.add(ht);
+        final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(ht, pair, streamName);
         iteratorList.add(logAugmented);
 
       }
@@ -133,6 +220,49 @@ public class PostgresCtidHandler {
     return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
         blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
         config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean());
+  }
+
+  private AutoCloseableIterator<AirbyteRecordMessageHT> getFileBasedRecordIteratorHT(
+          final List<String> columnNames,
+          final String schemaName,
+          final String tableName,
+          final long tableSize,
+          final long blockSize,
+          final int maxTuple,
+          final long emittedAt) {
+
+    LOGGER.info("Queueing query for table: {}", tableName);
+    final var iter = new CopyInitialSyncCtidIterator(ctidStateManager, (StreamingPostgresDatabase) database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
+            blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
+            config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean(), executor);
+
+    return AutoCloseableIterators.transform(iter, r -> new AirbyteRecordMessageHTSer()
+        .withStream(tableName)
+        .withNamespace(schemaName)
+        .withEmittedAt(emittedAt)
+        .withData(r));
+  }
+  private AutoCloseableIterator<AirbyteMessage> getFileBasedRecordIterator(
+          final List<String> columnNames,
+          final String schemaName,
+          final String tableName,
+          final long tableSize,
+          final long blockSize,
+          final int maxTuple,
+          final long emittedAt) {
+
+    LOGGER.info("Queueing query for table: {}", tableName);
+    final var iter = new CopyInitialSyncCtidIterator(ctidStateManager, (StreamingPostgresDatabase) database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
+            blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
+            config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean(), executor);
+
+    return AutoCloseableIterators.transform(iter, r -> new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                    .withStream(tableName)
+                    .withNamespace(schemaName)
+                    .withEmittedAt(emittedAt)
+                    .withData(Jsons.deserialize(r))));
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -166,7 +296,7 @@ public class PostgresCtidHandler {
         r -> {
           final long count = recordCount.incrementAndGet();
           if (count % 1_000_000 == 0) {
-            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+            LOGGER.info("Reading stream {}. Records read: {}: {}", streamName, count, r.toString());
           }
           return r;
         });
