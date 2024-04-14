@@ -1,4 +1,4 @@
-version: "0.44.0"
+version: 0.78.5
 
 definitions:
   selector:
@@ -13,15 +13,11 @@ definitions:
     url_base: "https://api.xero.com/api.xro/2.0/"
     http_method: "GET"
     authenticator:
-      type: CustomAuthenticator
-      class_name: source_xero.components.CustomAuthenticator
-      client_id: "{{ config['authentication']['client_id'] }}"
-      client_secret: "{{ config['authentication']['client_secret'] }}"
-      refresh_token: "{{ config['authentication']['refresh_token'] }}"
-      access_token: "{{ config['authentication']['access_token'] }}"
-      scopes: "{{ config['authentication']['scopes'] }}"
+      type: "BearerAuthenticator"
+      api_token: "{{ config['access_token'] }}"
     request_headers:
       "Xero-Tenant-Id": "{{ config['tenant_id'] }}"
+      "Accept": "application/json"
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
@@ -59,22 +55,6 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
-  incremental_sync_base:
-    type: DatetimeBasedCursor
-    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_field: "UpdatedDateUTC"
-    start_time_option:
-      type: RequestOption
-      field_name: "If-Modified-Since"
-      inject_into: "header"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_granularity: "P1Y"
-    lookback_window: "P31D"
-    step: "P1Y"
-
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -95,8 +75,7 @@ definitions:
       primary_key: "BankTransactionID"
       path: "/BankTransactions"
       extractor_path: "BankTransactions"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   contacts_stream:
     $ref: "#/definitions/base_stream"
@@ -113,8 +92,7 @@ definitions:
       primary_key: "ContactID"
       path: "/Contacts"
       extractor_path: "Contacts"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   credit_notes_stream:
     $ref: "#/definitions/base_stream"
@@ -131,8 +109,7 @@ definitions:
       primary_key: "CreditNoteID"
       path: "/CreditNotes"
       extractor_path: "CreditNotes"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   invoices_stream:
     $ref: "#/definitions/base_stream"
@@ -149,8 +126,7 @@ definitions:
       primary_key: "InvoiceID"
       path: "/Invoices"
       extractor_path: "Invoices"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   manual_journals_stream:
     $ref: "#/definitions/base_stream"
@@ -167,8 +143,7 @@ definitions:
       primary_key: "ManualJournalID"
       path: "/ManualJournals"
       extractor_path: "ManualJournals"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   overpayments_stream:
     $ref: "#/definitions/base_stream"
@@ -185,8 +160,7 @@ definitions:
       primary_key: "OverpaymentID"
       path: "/Overpayments"
       extractor_path: "Overpayments"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   prepayments_stream:
     $ref: "#/definitions/base_stream"
@@ -203,8 +177,7 @@ definitions:
       primary_key: "PrepaymentID"
       path: "/Prepayments"
       extractor_path: "Prepayments"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   purchase_orders_stream:
     $ref: "#/definitions/base_stream"
@@ -221,8 +194,7 @@ definitions:
       primary_key: "PurchaseOrderID"
       path: "/PurchaseOrders"
       extractor_path: "PurchaseOrders"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   accounts_stream:
     $ref: "#/definitions/base_stream"
@@ -235,8 +207,7 @@ definitions:
       primary_key: "AccountID"
       path: "/Accounts"
       extractor_path: "Accounts"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   bank_transfers_stream:
     $ref: "#/definitions/base_stream"
@@ -253,17 +224,7 @@ definitions:
       primary_key: "BankTransferID"
       path: "/BankTransfers"
       extractor_path: "BankTransfers"
-    incremental_sync_base:
-      type: DatetimeBasedCursor
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      cursor_field: "CreatedDateUTC"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_granularity: "P1Y"
-      lookback_window: "P31D"
-      step: "P1Y"
+
 
   employees_stream:
     $ref: "#/definitions/base_stream"
@@ -280,8 +241,7 @@ definitions:
       primary_key: "EmployeeID"
       path: "/Employees"
       extractor_path: "Employees"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   items_stream:
     $ref: "#/definitions/base_stream"
@@ -294,8 +254,7 @@ definitions:
       primary_key: "ItemID"
       path: "/Items"
       extractor_path: "Items"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   payments_stream:
     $ref: "#/definitions/base_stream"
@@ -312,8 +271,7 @@ definitions:
       primary_key: "PaymentID"
       path: "/Payments"
       extractor_path: "Payments"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -326,8 +284,7 @@ definitions:
       primary_key: "UserID"
       path: "/Users"
       extractor_path: "Users"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
+
 
   branding_themes_stream:
     $ref: "#/definitions/base_stream"
@@ -341,6 +298,7 @@ definitions:
       path: "/BrandingThemes"
       extractor_path: "BrandingThemes"
 
+
   contact_groups_stream:
     $ref: "#/definitions/base_stream"
     name: "contact_groups"
@@ -352,6 +310,7 @@ definitions:
       primary_key: "ContactGroupID"
       path: "/ContactGroups"
       extractor_path: "ContactGroups"
+
 
   currencies_stream:
     $ref: "#/definitions/base_stream"
@@ -365,6 +324,7 @@ definitions:
       path: "/Currencies"
       extractor_path: "Currencies"
 
+
   organisations_stream:
     $ref: "#/definitions/base_stream"
     name: "organisations"
@@ -376,6 +336,7 @@ definitions:
       primary_key: "OrganisationID"
       path: "/Organisation"
       extractor_path: "Organisations"
+
 
   repeating_invoices_stream:
     $ref: "#/definitions/base_stream"
@@ -389,6 +350,7 @@ definitions:
       path: "/RepeatingInvoices"
       extractor_path: "RepeatingInvoices"
 
+
   tax_rates_stream:
     $ref: "#/definitions/base_stream"
     name: "tax_rates"
@@ -401,6 +363,7 @@ definitions:
       path: "/TaxRates"
       extractor_path: "TaxRates"
 
+
   tracking_categories_stream:
     $ref: "#/definitions/base_stream"
     name: "tracking_categories"
@@ -412,6 +375,7 @@ definitions:
       primary_key: "TrackingCategoryID"
       path: "/TrackingCategories"
       extractor_path: "TrackingCategories"
+
 
   line_items_schema:
     type:
@@ -2742,43 +2706,16 @@ spec:
     title: Xero Spec
     type: object
     required:
-      - authentication
+      - access_token
       - tenant_id
       - start_date
     additionalProperties: true
     properties:
-      authentication:
-        type: object
-        title: Authenticate via Xero (OAuth)
-        required:
-          - client_id
-          - client_secret
-          - refresh_token
-          - access_token
-          - token_expiry_date
-        properties:
-          client_id:
-            type: string
-            title: Client ID
-            description: "Enter your Xero application's Client ID"
-          client_secret:
-            type: string
-            title: Client Secret
-            description: "Enter your Xero application's Client Secret"
-            airbyte_secret: true
-          refresh_token:
-            type: string
-            title: Refresh Token
-            description: "Enter your Xero application's refresh token"
-            airbyte_secret: true
-          access_token:
-            type: string
-            title: Access Token
-            description: "Enter your Xero application's access token"
-            airbyte_secret: true
-          token_expiry_date:
-            type: string
-            description: "The date-time when the access token should be refreshed"
+      access_token:
+        type: string
+        title: Access Token
+        description: "Enter your Xero application's access token"
+        airbyte_secret: true
         order: 0
       tenant_id:
         title: Tenant ID
@@ -2795,48 +2732,3 @@ spec:
           - "2022-03-01T00:00:00Z"
         format: "date-time"
         order: 2
-  advanced_auth:
-    auth_flow_type: oauth2.0
-    oauth_config_specification:
-      complete_oauth_output_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          refresh_token:
-            type: string
-            path_in_connector_config:
-              - authentication
-              - refresh_token
-          access_token:
-            type: string
-            path_in_connector_config:
-              - authentication
-              - access_token
-          token_expiry_date:
-            type: string
-            path_in_connector_config:
-              - authentication
-              - token_expiry_date
-            format: date-time
-      complete_oauth_server_input_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          client_id:
-            type: string
-          client_secret:
-            type: string
-      complete_oauth_server_output_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          client_id:
-            type: string
-            path_in_connector_config:
-              - authentication
-              - client_id
-          client_secret:
-            type: string
-            path_in_connector_config:
-              - authentication
-              - client_secret

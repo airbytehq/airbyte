@@ -1,12 +1,5 @@
 {
-  "authentication": {
-    "client_id": "xxxxxxxxxxxxxxx",
-    "client_secret": "xxxxxxxxxxxxxxxxxx",
-    "access_token": "xxxxxxxxxxxxxxxxxxxx",
-    "refresh_token": "xxxxxxxxxxxxxxxxxxxxx",
-    "token_expiry_date": "2020-04-04T20:30:00Z",
-    "scopes": "openid profile email accounting.settings.read accounting.transactions offline_access accounting.attachments accounting.contacts assets.read accounting.attachments.read accounting.contacts.read accounting.settings accounting.journals.read accounting.budgets.read accounting.reports.tenninetynine.read accounting.reports.read assets accounting.transactions.read"
-  },
+  "access_token": "xxxxxxxxxxxxxxxxxxxx",
   "tenant_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   "start_date": "2021-01-01T00:00:00Z"
 }

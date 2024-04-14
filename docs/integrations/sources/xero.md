@@ -29,11 +29,7 @@ This page contains the setup guide and reference information for the Xero source
 **For Airbyte Open Source:**
 
 Please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/auth-flow/) to obtain all requirements:
-- Client ID
-- Client Secret
-- Refresh Token
 - Access Token
-- Token Expiry Date
 <!-- /env:oss -->
 
 ## Setup guide
@@ -104,7 +100,7 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
-| 0.3.0   | 2024-04-15 | [36878](https://github.com/airbytehq/airbyte/pull/36878) | Migrate to low code               |
+| 1.0.0   | 2024-04-30 | [36878](https://github.com/airbytehq/airbyte/pull/36878) | Migrate to low code               |
 | 0.2.5   | 2024-01-11 | [34154](https://github.com/airbytehq/airbyte/pull/34154) | prepare for airbyte-lib           |
 | 0.2.4   | 2023-11-24 | [32837](https://github.com/airbytehq/airbyte/pull/32837) | Handle 403 error                  |
 | 0.2.3   | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40                |
