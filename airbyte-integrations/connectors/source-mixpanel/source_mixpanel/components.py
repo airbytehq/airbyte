@@ -2,6 +2,7 @@
 
 import base64
 from dataclasses import InitVar, dataclass
+import time
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import dpath.util
@@ -24,6 +25,12 @@ from .streams.engage import EngageSchema
 
 
 class MixpanelHttpRequester(HttpRequester):
+    reqs_per_hour_limit = 60
+    is_first_request = True
+
+    # def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+    #     super().__post_init__(parameters)
+
     def get_url_base(self) -> str:
         """
         REGION: url
@@ -39,6 +46,15 @@ class MixpanelHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
+
+        if not self.is_first_request and self.reqs_per_hour_limit:
+            self.is_first_request = False
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
+            # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
+            time.sleep(3600 / self.reqs_per_hour_limit)
+
         project_id = self.config.get("credentials", {}).get("project_id")
         return {"project_id": project_id} if project_id else {}
 
