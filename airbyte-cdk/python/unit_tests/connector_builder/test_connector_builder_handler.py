@@ -6,6 +6,7 @@ import copy
 import dataclasses
 import json
 import logging
+import os
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
@@ -164,10 +165,10 @@ DUMMY_CATALOG = {
             "stream": {
                 "name": "dummy_stream",
                 "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                "supported_sync_modes": ["full_refresh", "incremental"],
+                "supported_sync_modes": ["full_refresh"],
                 "source_defined_cursor": False,
             },
-            "sync_mode": "incremental",
+            "sync_mode": "full_refresh",
             "destination_sync_mode": "overwrite",
         }
     ]
@@ -179,10 +180,10 @@ CONFIGURED_CATALOG = {
             "stream": {
                 "name": _stream_name,
                 "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                "supported_sync_modes": ["full_refresh", "incremental"],
+                "supported_sync_modes": ["full_refresh"],
                 "source_defined_cursor": False,
             },
-            "sync_mode": "incremental",
+            "sync_mode": "full_refresh",
             "destination_sync_mode": "overwrite",
         }
     ]
@@ -774,3 +775,109 @@ def test_read_source_single_page_single_slice(mock_http_stream):
     streams = source.streams(config)
     for s in streams:
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
+
+
+@pytest.mark.parametrize(
+    "deployment_mode, url_base, expected_error",
+    [
+        pytest.param("CLOUD", "https://airbyte.com/api/v1/characters", None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "https://10.0.27.27", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "AirbyteTracedException", id="test_cloud_read_with_localhost"),
+        pytest.param("CLOUD", "http://unsecured.protocol/api/v1", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
+        pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
+        pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://10.0.27.27/api/v1/", None, id="test_oss_read_with_private_endpoint"),
+    ],
+)
+@patch.object(requests.Session, "send", _mocked_send)
+def test_handle_read_external_requests(deployment_mode, url_base, expected_error):
+    """
+    This test acts like an integration test for the connector builder when it receives Test Read requests.
+
+    The scenario being tested is whether requests should be denied if they are done on an unsecure channel or are made to internal
+    endpoints when running on Cloud or OSS deployments
+    """
+
+    limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+
+    test_manifest = MANIFEST
+    test_manifest["streams"][0]["$parameters"]["url_base"] = url_base
+    config = {"__injected_declarative_manifest": test_manifest}
+
+    source = create_source(config, limits)
+
+    with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
+        output_data = read_stream(source, config, catalog, limits).record.data
+        if expected_error:
+            assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
+            error_message = output_data["logs"][0]
+            assert error_message["level"] == "ERROR"
+            assert expected_error in error_message["message"]
+        else:
+            page_records = output_data["slices"][0]["pages"][0]
+            assert len(page_records) == len(MOCK_RESPONSE["result"])
+
+
+@pytest.mark.parametrize(
+    "deployment_mode, token_url, expected_error",
+    [
+        pytest.param("CLOUD", "https://airbyte.com/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "http://unsecured.protocol/tokens/bearer", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
+        pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
+        pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://10.0.27.27/tokens/bearer", None, id="test_oss_read_with_private_endpoint"),
+    ],
+)
+@patch.object(requests.Session, "send", _mocked_send)
+def test_handle_read_external_oauth_request(deployment_mode, token_url, expected_error):
+    """
+    This test acts like an integration test for the connector builder when it receives Test Read requests.
+
+    The scenario being tested is whether requests should be denied if they are done on an unsecure channel or are made to internal
+    endpoints when running on Cloud or OSS deployments
+    """
+
+    limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+
+    oauth_authenticator_config: dict[str, str] = {
+        "type": "OAuthAuthenticator",
+        "token_refresh_endpoint": token_url,
+        "client_id": "greta",
+        "client_secret": "teo",
+        "refresh_token": "john",
+    }
+
+    test_manifest = MANIFEST
+    test_manifest["definitions"]["retriever"]["requester"]["authenticator"] = oauth_authenticator_config
+    config = {"__injected_declarative_manifest": test_manifest}
+
+    source = create_source(config, limits)
+
+    with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
+        output_data = read_stream(source, config, catalog, limits).record.data
+        if expected_error:
+            assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
+            error_message = output_data["logs"][0]
+            assert error_message["level"] == "ERROR"
+            assert expected_error in error_message["message"]
