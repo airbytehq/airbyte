@@ -44,7 +44,7 @@ class ShopifyBulkManager:
     # 10Mb chunk size to save the file
     retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
     # time between job status checks
-    job_check_interval_sec: Final[int] = 3
+    job_check_interval_sec: Final[int] = 2
 
     # sleep time per creation attempt
     concurrent_interval_sec: Final[int] = 30
@@ -59,7 +59,7 @@ class ShopifyBulkManager:
     # P365D, upper boundary for slice size
     job_size_max: Final[float] = 365.0
     # running job logger constrain
-    log_job_state_msg_frequency: Final[int] = 5
+    log_job_state_msg_frequency: Final[int] = 10
     # attempt limit indicator
     concurrent_max_attempt_reached: bool = field(init=False, default=False)
     # attempt counter
@@ -163,26 +163,26 @@ class ShopifyBulkManager:
     def _job_size_reduce_next(self) -> None:
         # revert the flag
         self.job_should_revert_slice = False
-        # re-adjust Job Size
         self.reduce_job_size()
 
     def __adjust_job_size(self, job_current_elapsed_time: float) -> None:
-        if not self.job_should_revert_slice:
+        if self.job_should_revert_slice:
+            pass
+        else:
             if job_current_elapsed_time < 1 or job_current_elapsed_time < self.job_last_elapsed_time:
                 self.expand_job_size()
             elif job_current_elapsed_time > self.job_last_elapsed_time < self.job_max_elapsed_time_sec:
                 pass
-
             # set the last job time
             self.job_last_elapsed_time = job_current_elapsed_time
             # check the job size slice interval are acceptable
             self.job_size = max(self.job_size_min, min(self.job_size, self.job_size_max))
-        else:
-            pass
 
     def __reset_state(self) -> None:
         # set current job state to default values
-        self.job_state, self.job_id, self.job_self_canceled = None, None, False
+        self.job_state, self.job_id = None, None
+        # setting self-cancelation to default
+        self.job_self_canceled = False
         # set the running job message counter to default
         self.log_job_state_msg_count = 0
 
@@ -192,14 +192,16 @@ class ShopifyBulkManager:
     def job_canceled(self) -> bool:
         return self.job_state == ShopifyBulkStatus.CANCELED.value
 
-    def job_cancel(self) -> requests.Response:
+    def job_cancel(self) -> None:
         # re-use of `self._session(*, **)` to make BULK Job cancel request
         cancel_args = self.job_get_request_args(ShopifyBulkTemplates.cancel)
         with self.session as cancel_job:
+            self.logger.warn(f"CANCELING THE JOB: {self.job_id}")
             canceled_response = cancel_job.request(**cancel_args)
             # mark the job was self-canceled
             self.job_self_canceled = True
-            return self.job_healthcheck(canceled_response)
+            # check CANCELED Job health
+            self.job_healthcheck(canceled_response)
 
     def log_job_state_with_count(self) -> None:
         """
@@ -228,7 +230,7 @@ class ShopifyBulkManager:
         }
 
     def job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
-        parsed_response = response.json().get("data", {}).get("node", {})
+        parsed_response = response.json().get("data", {}).get("node", {}) if response else None
         job_result_url = parsed_response.get("url") if parsed_response and not self.job_self_canceled else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
@@ -270,6 +272,8 @@ class ShopifyBulkManager:
                 f"Stream: `{self.stream_name}` the BULK Job: {self.job_id} runs longer than expected. Retry with the reduced `Slice Size` after self-cancelation."
             )
             self.job_cancel()
+            # sleep to ensure the cancelation
+            sleep(self.job_check_interval_sec)
         else:
             sleep(self.job_check_interval_sec)
 
@@ -320,9 +324,12 @@ class ShopifyBulkManager:
 
     def job_check_state(self) -> Optional[str]:
         while not self.job_completed():
-            response = self.job_track_running()
             if self.job_canceled():
-                return None
+                response = None
+                break
+            else:
+                response = self.job_track_running()
+
         # return `job_result_url` when status is `COMPLETED`
         return self.job_get_result(response)
 
