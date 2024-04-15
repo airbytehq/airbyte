@@ -3,6 +3,17 @@
 ## Upgrading to 1.0.0
 
 Version 1.0.0 introduces changes in primary key for all *-analytics streams (including custom ones).
+- "ad_campaign_analytics"
+- "ad_creative_analytics"
+- "ad_impression_device_analytics"
+- "ad_member_company_size_analytics"
+- "ad_member_country_analytics"
+- "ad_member_job_function_analytics"
+- "ad_member_job_title_analytics"
+- "ad_member_industry_analytics"
+- "ad_member_seniority_analytics"
+- "ad_member_region_analytics"
+- "ad_member_company_analytics"
 
 ## Migration Steps
 
