@@ -53,13 +53,13 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             raise ValueError("'kid', 'alg', 'typ', 'cty' are reserved headers and should not be set")
 
         if self._kid:
-            headers["kid"] = self._kid.eval(self.config)
+            headers["kid"] = f"{self._kid.eval(self.config)}"
         if self._algorithm:
-            headers["alg"] = self._get_algorithm()
+            headers["alg"] = f"{self._get_algorithm()}"
         if self._typ:
-            headers["typ"] = self._typ.eval(self.config)
+            headers["typ"] = f"{self._typ.eval(self.config)}"
         if self._cty:
-            headers["cty"] = self._cty.eval(self.config)
+            headers["cty"] = f"{self._cty.eval(self.config)}"
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
@@ -72,11 +72,11 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             raise ValueError("'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set")
 
         if self._iss:
-            payload["iss"] = self._iss.eval(self.config)
+            payload["iss"] = f"{self._iss.eval(self.config)}"
         if self._sub:
-            payload["sub"] = self._sub.eval(self.config)
+            payload["sub"] = f"{self._sub.eval(self.config)}"
         if self._aud:
-            payload["aud"] = self._aud.eval(self.config)
+            payload["aud"] = f"{self._aud.eval(self.config)}"
         payload["iat"] = now
         payload["exp"] = exp
         payload["nbf"] = nbf
