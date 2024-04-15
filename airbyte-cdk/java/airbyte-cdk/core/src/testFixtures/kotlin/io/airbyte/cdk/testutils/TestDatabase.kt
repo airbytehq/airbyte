@@ -43,7 +43,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer
  */
 abstract class TestDatabase<
     C : JdbcDatabaseContainer<*>, T : TestDatabase<C, T, B>, B : TestDatabase.ConfigBuilder<T, B>>
-protected constructor(@JvmField val container: C) : AutoCloseable {
+protected constructor(val container: C) : AutoCloseable {
     private val suffix: String = Strings.addRandomSuffix("", "_", 10)
     private val cleanupSQL: ArrayList<String> = ArrayList()
     private val connectionProperties: MutableMap<String, String> = HashMap()
@@ -52,16 +52,14 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
 
     @Volatile private lateinit var dslContext: DSLContext
 
-    protected val databaseId: Int
-    protected val containerId: Int
+    protected val databaseId: Int = nextDatabaseId.getAndIncrement()
+    protected val containerId: Int =
+        containerUidToId!!.computeIfAbsent(container.containerId) { k: String? ->
+            nextContainerId!!.getAndIncrement()
+        }!!
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        this.databaseId = nextDatabaseId!!.getAndIncrement()
-        this.containerId =
-            containerUidToId!!.computeIfAbsent(container!!.containerId) { k: String? ->
-                nextContainerId!!.getAndIncrement()
-            }!!
         LOGGER!!.info(formatLogLine("creating database " + databaseName))
     }
 
@@ -129,17 +127,17 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
 
     abstract val sqlDialect: SQLDialect?
 
-    fun withNamespace(name: String?): String? {
+    fun withNamespace(name: String?): String {
         return name + suffix
     }
 
-    val databaseName: String?
+    val databaseName: String
         get() = withNamespace("db")
 
-    val userName: String?
+    val userName: String
         get() = withNamespace("user")
 
-    val password: String?
+    val password: String
         get() = "password"
 
     fun getDataSource(): DataSource? {
@@ -182,8 +180,8 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
         }
     }
 
-    protected fun execInContainer(cmds: Stream<String>?) {
-        val cmd = cmds!!.toList()
+    protected fun execInContainer(cmds: Stream<String>) {
+        val cmd = cmds.toList()
         if (cmd!!.isEmpty()) {
             return
         }
@@ -268,7 +266,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
             return this as B
         }
 
-        fun with(key: Any?, value: Any?): B {
+        fun with(key: Any, value: Any): B {
             builder!!.put(key, value)
             return self()
         }
@@ -299,19 +297,19 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
             return with(JdbcUtils.SSL_KEY, false)
         }
 
-        fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
+        fun withSsl(sslMode: MutableMap<Any, Any>): B {
             return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode)
         }
 
         companion object {
-            val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration? = Duration.ofSeconds(5)
+            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration? = Duration.ofSeconds(5)
         }
     }
 
     companion object {
         private val LOGGER: Logger? = LoggerFactory.getLogger(TestDatabase::class.java)
 
-        private val nextDatabaseId: AtomicInteger? = AtomicInteger(0)
+        private val nextDatabaseId: AtomicInteger = AtomicInteger(0)
 
         private val nextContainerId: AtomicInteger? = AtomicInteger(0)
         private val containerUidToId: MutableMap<String?, Int?>? = ConcurrentHashMap()
