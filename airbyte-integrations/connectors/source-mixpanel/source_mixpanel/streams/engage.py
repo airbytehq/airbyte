@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+
+import requests
 
 from .base import IncrementalMixpanelStream, MixpanelStream
 

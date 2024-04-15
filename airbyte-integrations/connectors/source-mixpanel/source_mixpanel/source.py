@@ -4,14 +4,14 @@
 
 import base64
 import copy
-import pendulum
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 from .streams import Export
 from .testing import adapt_validate_if_testing
@@ -36,11 +36,11 @@ class SourceMixpanel(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials")
-        if not credentials.get('option_title'):
-            if credentials.get('api_secret'):
-                credentials['option_title'] = "Project Secret"
+        if not credentials.get("option_title"):
+            if credentials.get("api_secret"):
+                credentials["option_title"] = "Project Secret"
             else:
-                credentials['option_title'] = "Service Account"
+                credentials["option_title"] = "Service Account"
 
         config_transformed = copy.deepcopy(config)
         config_transformed = self._validate_and_transform(config_transformed)
