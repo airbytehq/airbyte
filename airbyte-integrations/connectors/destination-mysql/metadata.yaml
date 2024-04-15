@@ -8,10 +8,6 @@ data:
   icon: mysql.svg
   license: ELv2
   name: MySQL
-  normalizationConfig:
-    normalizationIntegrationType: mysql
-    normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.3
   registries:
     cloud:
       dockerImageTag: 0.2.0
