@@ -117,7 +117,7 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    DestinationDuckdb._safe_write(con, buffer, schema_name, stream_name)
+                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
                 buffer = defaultdict(lambda: defaultdict(list))
 
@@ -138,16 +138,16 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            DestinationDuckdb._safe_write(con, buffer, schema_name, stream_name)
+            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
     @staticmethod
-    def _safe_write(con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
+    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except:
             logger.exception(
-                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+                f"Writing with pyarrow view failed, fallinfg back to writing with executemany. Expect some performance degradation."
             )
             query = f"""
             INSERT INTO {schema_name}.{table_name}
@@ -159,6 +159,8 @@ class DestinationDuckdb(Destination):
                 query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"])
             )
         else:
+            # DuckDB will automatically find and SELECT from the `pa_table`
+            # local variable defined above.
             con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
