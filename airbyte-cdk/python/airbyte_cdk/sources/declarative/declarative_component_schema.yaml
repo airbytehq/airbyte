@@ -854,15 +854,21 @@ definitions:
         description: Secret used to sign the JSON web token.
         examples:
           - "{{ config['secret_key'] }}"
+      base64_encode_secret_key:
+        type: boolean
+        description: When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.
+        default: False
       algorithm:
         type: string
         description: Algorithm used to sign the JSON web token.
+        default: ES256
         examples:
-          - "ES256"
+          - ES256
       token_duration:
         type: integer
         title: Token Duration
         description: The amount of time in seconds a JWT token can be valid after being issued.
+        default: 1200
         examples:
           - 1200
       jwt_headers:
@@ -881,6 +887,7 @@ definitions:
             type: string
             title: Type
             description: The media type of the complete JWT.
+            default: JWT
             examples:
               - JWT
           cty:
