@@ -4,6 +4,7 @@
 
 import http.client
 import logging
+import re
 import sys
 from typing import Any
 
@@ -92,12 +93,15 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             unknown_error = exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
             connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
             server_error = exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+            pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
+            cannot_include_transient_error = exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message())
             return any(
                 (
                     exc.api_transient_error(),
                     unknown_error,
                     call_rate_limit_error,
                     batch_timeout_error,
+                    cannot_include_transient_error,
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,
