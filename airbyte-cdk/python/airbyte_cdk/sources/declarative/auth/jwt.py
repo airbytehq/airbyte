@@ -11,6 +11,7 @@ import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 
 
 @dataclass
@@ -20,7 +21,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
     algorithm: Union[InterpolatedString, str]
-    base64_encode_secret_key: bool = False
+    base64_encode_secret_key: Union[InterpolatedBoolean, bool] = False
     token_duration: int = None
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = None
@@ -35,7 +36,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         super().__init__()
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
         self._algorithm = InterpolatedString.create(self.algorithm, parameters=parameters)
-        self._base64_encode_secret_key = self.base64_encode_secret_key
+        self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
         self._token_duration = self.token_duration
         self._kid = InterpolatedString.create(self.kid, parameters=parameters)
         self._typ = InterpolatedString.create(self.typ, parameters=parameters)
