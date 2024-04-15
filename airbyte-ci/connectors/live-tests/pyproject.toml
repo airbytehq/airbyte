@@ -26,7 +26,11 @@ pytest = "^8.1.1"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
-connection-retriever = {path = "../../connection-retriever", develop = true}
+# We assume `connection-retriever` is in a sibling directory to the root airbyte repo
+# TODO:
+#  - When this is open-sourced, don't require connection-retriever
+#  - When running in CI, download airbyte-platform-internal
+connection-retriever = {path = "../../../../airbyte-platform-internal/tools/connection-retriever", develop = true}
 duckdb = "^0.10.0"
 pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"
