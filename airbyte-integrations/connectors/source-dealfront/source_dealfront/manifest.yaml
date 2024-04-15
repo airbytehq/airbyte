@@ -229,9 +229,6 @@ definitions:
               - campaign
               value: '{{ record.attributes.campaign }}'
             - path:
-              - content
-              value: '{{ record.attributes.content }}'
-            - path:
               - keyword
               value: '{{ record.attributes.keyword }}'
             - path:

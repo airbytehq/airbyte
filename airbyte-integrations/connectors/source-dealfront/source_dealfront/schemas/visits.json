@@ -173,12 +173,6 @@
         "null"
       ]
     },
-    "content": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
     "country_code": {
       "type": [
         "string",
