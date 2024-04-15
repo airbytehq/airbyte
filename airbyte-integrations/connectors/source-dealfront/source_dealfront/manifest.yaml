@@ -138,7 +138,7 @@ definitions:
               value: '{{ record.attributes.employee_count }}'
             - path:
               - visits
-              value: '{{ record.attributes.visit }}'
+              value: '{{ record.attributes.visits }}'
             - path:
               - quality
               value: '{{ record.attributes.quality }}'

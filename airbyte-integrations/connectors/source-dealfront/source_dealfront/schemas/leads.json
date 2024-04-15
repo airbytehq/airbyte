@@ -235,7 +235,7 @@
     },
     "visits": {
       "type": [
-        "string",
+        "number",
         "null"
       ]
     },
