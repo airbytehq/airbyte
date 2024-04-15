@@ -17,6 +17,10 @@ This page guides you through the process of setting up the Snapchat Marketing so
 * client_secret
 * refresh_token
 * start_date
+* end_date
+* action_report_time (Optional, Default value is conversion) It specifies the principle for conversion reporting.
+* swipe_up_attribution_window (Optional, Default value is 1_DAY) This is the attribution window for swipe up.
+* view_attribution_window (Optional, Default value is 28_DAY) This is the attribution window for views.
 <!-- /env:oss -->
 
 ## Setup guide
@@ -113,6 +117,7 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.6.0   | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
 | 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.4.0   | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media`          |
 | 0.3.2   | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry.                                               |
