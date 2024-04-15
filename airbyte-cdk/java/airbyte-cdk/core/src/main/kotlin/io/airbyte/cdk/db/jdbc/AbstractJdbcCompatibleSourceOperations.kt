@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.DataTypeUtils
+import io.airbyte.cdk.db.DbAnalyticsUtils.dataTypesSerializationErrorMessage
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations.Companion.LOGGER
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -40,18 +41,34 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
 
         for (i in 1..columnCount) {
             val columnName = queryContext.metaData.getColumnName(i)
+            val columnTypeName = queryContext.metaData.getColumnTypeName(i)
             try {
+                // attempt to access the column. this allows us to know if it is null before we do
+                // type-specific
+                // parsing. if it is null, we can move on. while awkward, this seems to be the
+                // agreed upon way of checking for null values with jdbc.
+                queryContext.getObject(i)
+                if (queryContext.wasNull()) {
+                    continue
+                }
+
                 // convert to java types that will convert into reasonable json.
                 copyToJsonField(queryContext, i, jsonNode)
             } catch (e: java.lang.Exception) {
-                LOGGER.info("Failed to serialize column: {}, with error {}", columnName, e.message)
+                LOGGER.info(
+                    "Failed to serialize column: {}, of type {}, with error {}",
+                    columnName,
+                    columnTypeName,
+                    e.message
+                )
+                AirbyteTraceMessageUtility.emitAnalyticsTrace(dataTypesSerializationErrorMessage())
                 metaChanges.add(
                     AirbyteRecordMessageMetaChange()
                         .withField(columnName)
                         .withChange(AirbyteRecordMessageMetaChange.Change.NULLED)
                         .withReason(
-                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR,
+                        ),
                 )
             }
         }
@@ -166,8 +183,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) }
-            )
+                { d: Double? -> java.lang.Double.isFinite(d!!) },
+            ),
         )
     }
 
@@ -182,8 +199,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) }
-            )
+                { f: Float? -> java.lang.Float.isFinite(f!!) },
+            ),
         )
     }
 
@@ -226,7 +243,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     ) {
         node.put(
             columnName,
-            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java))
+            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java)),
         )
     }
 
@@ -241,8 +258,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             node.put(
                 columnName,
                 DateTimeConverter.convertToTimestamp(
-                    getObject(resultSet, index, LocalDateTime::class.java)
-                )
+                    getObject(resultSet, index, LocalDateTime::class.java),
+                ),
             )
         } catch (e: Exception) {
             // for backward compatibility
@@ -450,7 +467,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         val localDate = timestamptz.toLocalDate()
         node.put(
             columnName,
-            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER))
+            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)),
         )
     }
 
