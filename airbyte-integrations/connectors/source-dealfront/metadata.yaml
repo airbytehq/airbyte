@@ -20,7 +20,7 @@ data:
   connectorType: source
   definitionId: 3950cb71-85c3-4368-958e-3dfcdea911b5
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-dealfront
+  dockerRepository: 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-dealfront
   githubIssueLabel: source-dealfront
   icon: dealfront.svg
   license: MIT

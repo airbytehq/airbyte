@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "account_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "attributes": {
+      "properties": {
+        "business_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "crm_organization_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "employee_count": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "employees_range": {
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "facebook_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first_visit_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industry": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_visit_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "linkedin_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "logo_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "quality": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "revenue": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "twitter_handle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "view_in_leadfeeder": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visits": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "website_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "crm_organization_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "employee_count": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "first_visit_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "industry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_visit_date": {
+      "type": "string"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "relationships": {
+      "properties": {
+        "location": {
+          "properties": {
+            "data": {
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visits": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "website_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "last_visit_date"
+  ],
+  "type": "object"
+}

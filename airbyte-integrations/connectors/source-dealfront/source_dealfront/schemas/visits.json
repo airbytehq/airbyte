@@ -1,0 +1,382 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "account_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "attributes": {
+      "properties": {
+        "campaign": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "device_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ga_client_ids": {
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "hour": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "keyword": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lead_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lf_client_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "medium": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page_depth": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "referring_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visit_length": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "visit_route": {
+          "items": {
+            "properties": {
+              "display_page_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hostname": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "page_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "page_title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "page_url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "previous_page_path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_on_page": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ga_client_ids": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "hour": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "keyword": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lead_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lf_client_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "medium": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_depth": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "referring_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relationships": {
+      "properties": {
+        "location": {
+          "properties": {
+            "data": {
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "started_at_date": {
+      "type": "string"
+    },
+    "type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visit_length": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "visit_route": {
+      "items": {
+        "properties": {
+          "display_page_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hostname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "page_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "page_title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "previous_page_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time_on_page": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "date"
+  ],
+  "type": "object"
+}

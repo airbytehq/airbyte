@@ -1,5 +1,28 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "leads": {
+    "states": [
+      {
+        "cursor": {
+          "last_visit_date": "2024-04-14"
+        },
+        "partition": {
+          "account_id": "222886",
+          "parent_slice": {}
+        }
+      }
+    ]
+  },
+  "visits": {
+    "states": [
+      {
+        "cursor": {
+          "last_visit_date": "2024-04-14"
+        },
+        "partition": {
+          "account_id": "222886",
+          "parent_slice": {}
+        }
+      }
+    ]
   }
 }

@@ -55,6 +55,11 @@ airbyte-ci connectors --name=source-dealfront build
 
 An image will be available on your host with the tag `airbyte/source-dealfront:dev`.
 
+3. Push docker image to the CorralData private docker registry:
+```bash
+docker tag airbyte/source-dealfront:dev 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-dealfront:x.y.z
+docker push 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-dealfront:x.y.z
+```
 
 ### Running as a docker container
 
