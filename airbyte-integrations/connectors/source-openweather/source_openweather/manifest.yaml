@@ -87,18 +87,19 @@ spec:
     properties:
       lat:
         type: string
-        pattern: "^[-]?\\d{1,2}(\\.\\d+)?$"
+        pattern: "^(\\+|-)?(?:90(?:(?:\\.0+)?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]+)?))$"
         description: "Latitude, decimal (-90; 90). If you need the geocoder to automatic convert city names and zip-codes to geo coordinates and the other way around, please use our Geocoding API"
         examples:
           - "45.7603"
           - "-21.249107858038816"
       lon:
         type: string
-        pattern: "^[-]?\\d{1,2}(\\.\\d+)?$"
+        pattern: "^(\\+|-)?(?:180(?:(?:\\.0+)?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]+)?))$"
         description: "Longitude, decimal (-180; 180). If you need the geocoder to automatic convert city names and zip-codes to geo coordinates and the other way around, please use our Geocoding API"
         examples:
           - "4.835659"
           - "-70.39482074115321"
+          - "180.000"
       appid:
         type: string
         description: "API KEY"

@@ -217,14 +217,14 @@ class TestLoadYamlOrJsonPath:
             f.write(json.dumps(self.VALID_SPEC))
             f.flush()
             actual = common.load_yaml_or_json_path(Path(f.name))
-            assert self.VALID_SPEC == actual
+            assert actual == self.VALID_SPEC
 
     def test_load_yaml(self):
         with tempfile.NamedTemporaryFile("w", suffix=".yaml") as f:
             f.write(yaml.dump(self.VALID_SPEC))
             f.flush()
             actual = common.load_yaml_or_json_path(Path(f.name))
-            assert self.VALID_SPEC == actual
+            assert actual == self.VALID_SPEC
 
     def test_load_other(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
