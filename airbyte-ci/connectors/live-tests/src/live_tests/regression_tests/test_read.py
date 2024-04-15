@@ -2,31 +2,14 @@
 from __future__ import annotations
 
 import json
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterable, List, Optional
 
 import pytest
-from airbyte_protocol.models import (  # type: ignore
-    AirbyteMessage,
-)
+from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
-
 from live_tests.commons.models import ExecutionResult
 
-from .utils import (
-    fail_test_on_failing_execution_results,
-    get_and_write_diff,
-    get_test_logger,
-    write_string_to_test_artifact,
-)
+from .utils import fail_test_on_failing_execution_results, get_and_write_diff, get_test_logger, write_string_to_test_artifact
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
@@ -81,42 +64,24 @@ class TestDataIntegrity:
                 logger.warning(f"No primary keys provided on stream {stream_name}.")
                 continue
 
-            primary_key = (
-                _primary_key[0] if isinstance(_primary_key, list) else _primary_key
-            )
+            primary_key = _primary_key[0] if isinstance(_primary_key, list) else _primary_key
 
             control_pks = set()
             target_pks = set()
-            logger.info(
-                f"Retrieving primary keys for stream {stream_name} on control version."
-            )
-            for (
-                control_record
-            ) in read_with_state_control_execution_result.get_records_per_stream(
-                stream_name
-            ):
+            logger.info(f"Retrieving primary keys for stream {stream_name} on control version.")
+            for control_record in read_with_state_control_execution_result.get_records_per_stream(stream_name):
                 control_pks.add(control_record.record.data[primary_key])
 
-            logger.info(
-                f"Retrieving primary keys for stream {stream_name} on target version."
-            )
-            for (
-                target_record
-            ) in read_with_state_target_execution_result.get_records_per_stream(
-                stream_name
-            ):
+            logger.info(f"Retrieving primary keys for stream {stream_name} on target version.")
+            for target_record in read_with_state_target_execution_result.get_records_per_stream(stream_name):
                 target_pks.add(target_record.record.data[primary_key])
 
             if missing_pks := control_pks - target_pks:
-                logger.warning(
-                    f"Found {len(missing_pks)} primary keys for stream {stream_name}. Retrieving missing records."
-                )
+                logger.warning(f"Found {len(missing_pks)} primary keys for stream {stream_name}. Retrieving missing records.")
                 streams_with_missing_records.add(stream_name)
                 missing_records = [
                     r
-                    for r in read_with_state_control_execution_result.get_records_per_stream(
-                        stream_name
-                    )
+                    for r in read_with_state_control_execution_result.get_records_per_stream(stream_name)
                     if r.record.data[primary_key] in missing_pks
                 ]
                 record_property(
@@ -129,13 +94,9 @@ class TestDataIntegrity:
                     f"missing_records_{stream_name}.json",
                     subdir=request.node.name,
                 )
-                logger.info(
-                    f"Missing records for stream {stream_name} are stored in {artifact_path}."
-                )
+                logger.info(f"Missing records for stream {stream_name} are stored in {artifact_path}.")
         if streams_with_missing_records:
-            pytest.fail(
-                f"Missing records for streams: {', '.join(streams_with_missing_records)}."
-            )
+            pytest.fail(f"Missing records for streams: {', '.join(streams_with_missing_records)}.")
 
     async def _check_record_counts(
         self,
@@ -146,18 +107,8 @@ class TestDataIntegrity:
     ) -> None:
         record_count_difference_per_stream: Dict[str, Dict[str, int]] = {}
         for stream_name in configured_streams:
-            control_records_count = sum(
-                1
-                for _ in read_control_execution_result.get_records_per_stream(
-                    stream_name
-                )
-            )
-            target_records_count = sum(
-                1
-                for _ in read_target_execution_result.get_records_per_stream(
-                    stream_name
-                )
-            )
+            control_records_count = sum(1 for _ in read_control_execution_result.get_records_per_stream(stream_name))
+            target_records_count = sum(1 for _ in read_target_execution_result.get_records_per_stream(stream_name))
 
             difference = {
                 "delta": target_records_count - control_records_count,
@@ -201,12 +152,8 @@ class TestDataIntegrity:
         """
         streams_with_diff = set()
         for stream in configured_streams:
-            control_records = list(
-                read_control_execution_result.get_records_per_stream(stream)
-            )
-            target_records = list(
-                read_target_execution_result.get_records_per_stream(stream)
-            )
+            control_records = list(read_control_execution_result.get_records_per_stream(stream))
+            target_records = list(read_target_execution_result.get_records_per_stream(stream))
 
             if control_records and not target_records:
                 pytest.fail(f"Stream {stream} is missing in the target version.")
@@ -257,12 +204,8 @@ class TestDataIntegrity:
         """
         logger = get_test_logger(request)
 
-        assert (
-            control_execution_result.stream_schemas is not None
-        ), "Control schemas were not inferred."
-        assert (
-            target_execution_result.stream_schemas is not None
-        ), "Target schemas were not inferred."
+        assert control_execution_result.stream_schemas is not None, "Control schemas were not inferred."
+        assert target_execution_result.stream_schemas is not None, "Target schemas were not inferred."
 
         mismatches_count = 0
         for stream in control_execution_result.stream_schemas:
@@ -276,39 +219,23 @@ class TestDataIntegrity:
 
             diff = DeepDiff(control_schema, target_schema, ignore_order=True)
             if diff:
-                record_property(
-                    f"{stream} diff between control and target version", diff.pretty()
-                )
+                record_property(f"{stream} diff between control and target version", diff.pretty())
                 try:
-                    control_record = next(
-                        control_execution_result.get_records_per_stream(stream)
-                    )
+                    control_record = next(control_execution_result.get_records_per_stream(stream))
                     control_example = json.dumps(control_record.record.data, indent=2)
-                    record_property(
-                        f"{stream} example record for control version", control_example
-                    )
+                    record_property(f"{stream} example record for control version", control_example)
                 except StopIteration:
-                    logger.warning(
-                        f"Stream {stream} has no record in the control version."
-                    )
+                    logger.warning(f"Stream {stream} has no record in the control version.")
                 try:
-                    target_record = next(
-                        target_execution_result.get_records_per_stream(stream)
-                    )
+                    target_record = next(target_execution_result.get_records_per_stream(stream))
                     target_example = json.dumps(target_record.record.data, indent=2)
-                    record_property(
-                        f"{stream} example record for target version", target_example
-                    )
+                    record_property(f"{stream} example record for target version", target_example)
                 except StopIteration:
-                    logger.warning(
-                        f"Stream {stream} has no record in the target version."
-                    )
+                    logger.warning(f"Stream {stream} has no record in the target version.")
                 mismatches_count += 1
 
         if mismatches_count > 0:
-            pytest.fail(
-                f"{mismatches_count} streams have mismatching schemas between control and target versions."
-            )
+            pytest.fail(f"{mismatches_count} streams have mismatching schemas between control and target versions.")
 
     @pytest.mark.with_state
     async def test_record_count_with_state(
@@ -550,12 +477,8 @@ class TestDataIntegrity:
         record_diff_path_prefix = f"{stream}_record_diff"
         record_diff = get_and_write_diff(
             request,
-            _get_filtered_sorted_records(
-                control_records, target_pks, True, primary_key
-            ),
-            _get_filtered_sorted_records(
-                target_records, control_pks, True, primary_key
-            ),
+            _get_filtered_sorted_records(control_records, target_pks, True, primary_key),
+            _get_filtered_sorted_records(target_records, control_pks, True, primary_key),
             record_diff_path_prefix,
             ignore_order=False,
             exclude_paths=EXCLUDE_PATHS,
@@ -564,9 +487,7 @@ class TestDataIntegrity:
         control_records_diff_path_prefix = f"{stream}_control_records_diff"
         control_records_diff = get_and_write_diff(
             request,
-            _get_filtered_sorted_records(
-                control_records, target_pks, False, primary_key
-            ),
+            _get_filtered_sorted_records(control_records, target_pks, False, primary_key),
             [],
             control_records_diff_path_prefix,
             ignore_order=False,
@@ -577,9 +498,7 @@ class TestDataIntegrity:
         target_records_diff = get_and_write_diff(
             request,
             [],
-            _get_filtered_sorted_records(
-                target_records, control_pks, False, primary_key
-            ),
+            _get_filtered_sorted_records(target_records, control_pks, False, primary_key),
             target_records_diff_path_prefix,
             ignore_order=False,
             exclude_paths=EXCLUDE_PATHS,

@@ -14,9 +14,7 @@ from mitmproxy import http, io  # type: ignore
 from mitmproxy.addons.savehar import SaveHar  # type: ignore
 
 
-async def get_container_from_id(
-    dagger_client: dagger.Client, container_id: str
-) -> dagger.Container:
+async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
     """Get a dagger container from its id.
     Please remind that container id are not persistent and can change between Dagger sessions.
 
@@ -29,15 +27,11 @@ async def get_container_from_id(
         pytest.exit(f"Failed to load connector container: {e}")
 
 
-async def get_container_from_tarball_path(
-    dagger_client: dagger.Client, tarball_path: Path
-) -> dagger.Container:
+async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_path: Path) -> dagger.Container:
     if not tarball_path.exists():
         pytest.exit(f"Connector image tarball {tarball_path} does not exist")
     container_under_test_tar_file = (
-        dagger_client.host()
-        .directory(str(tarball_path.parent), include=tarball_path.name)
-        .file(tarball_path.name)
+        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
     )
     try:
         return await dagger_client.container().import_(container_under_test_tar_file)
@@ -45,9 +39,7 @@ async def get_container_from_tarball_path(
         pytest.exit(f"Failed to import connector image from tarball: {e}")
 
 
-async def get_container_from_local_image(
-    dagger_client: dagger.Client, local_image_name: str
-) -> Optional[dagger.Container]:
+async def get_container_from_local_image(dagger_client: dagger.Client, local_image_name: str) -> Optional[dagger.Container]:
     """Get a dagger container from a local image.
     It will use Docker python client to export the image to a tarball and then import it into dagger.
 
@@ -68,18 +60,14 @@ async def get_container_from_local_image(
     image_digest = image.id.replace("sha256:", "")
     tarball_path = Path(f"/tmp/{image_digest}.tar")
     if not tarball_path.exists():
-        logging.info(
-            f"Exporting local connector image {local_image_name} to tarball {tarball_path}"
-        )
+        logging.info(f"Exporting local connector image {local_image_name} to tarball {tarball_path}")
         with open(tarball_path, "wb") as f:
             for chunk in image.save(named=True):
                 f.write(chunk)
     return await get_container_from_tarball_path(dagger_client, tarball_path)
 
 
-async def get_container_from_dockerhub_image(
-    dagger_client: dagger.Client, dockerhub_image_name: str
-) -> dagger.Container:
+async def get_container_from_dockerhub_image(dagger_client: dagger.Client, dockerhub_image_name: str) -> dagger.Container:
     """Get a dagger container from a dockerhub image.
 
     Args:
@@ -95,9 +83,7 @@ async def get_container_from_dockerhub_image(
         pytest.exit(f"Failed to import connector image from DockerHub: {e}")
 
 
-async def get_connector_container(
-    dagger_client: dagger.Client, image_name_with_tag: str
-) -> dagger.Container:
+async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str) -> dagger.Container:
     """Get a dagger container for the connector image to test.
 
     Args:
@@ -113,21 +99,15 @@ async def get_connector_container(
     connector_container_id_path = Path("/tmp/container_id.txt")
     if connector_container_id_path.exists():
         # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
-        return await get_container_from_id(
-            dagger_client, connector_container_id_path.read_text()
-        )
+        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
 
     # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
-    if connector_image_tarball_path := os.environ.get(
-        "CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"
-    ):
+    if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):
         tarball_path = Path(connector_image_tarball_path)
         return await get_container_from_tarball_path(dagger_client, tarball_path)
 
     # Let's try to load the connector container from a local image
-    if connector_container := await get_container_from_local_image(
-        dagger_client, image_name_with_tag
-    ):
+    if connector_container := await get_container_from_local_image(dagger_client, image_name_with_tag):
         return connector_container
 
     # If we get here, we'll try to pull the connector image from DockerHub
@@ -155,9 +135,7 @@ def get_http_flows_from_mitm_dump(mitm_dump_path: Path) -> List[http.HTTPFlow]:
         List[http.HTTPFlow]: List of http flows.
     """
     with open(mitm_dump_path, "rb") as dump_file:
-        return [
-            f for f in io.FlowReader(dump_file).stream() if isinstance(f, http.HTTPFlow)
-        ]
+        return [f for f in io.FlowReader(dump_file).stream() if isinstance(f, http.HTTPFlow)]
 
 
 def mitm_http_stream_to_har(mitm_http_stream_path: Path, har_file_path: Path) -> Path:

@@ -7,23 +7,12 @@ from typing import List, Optional
 
 import asyncclick as click
 import dagger
-from rich.prompt import Prompt
-
-from live_tests.commons.connection_objects_retrieval import (
-    COMMAND_TO_REQUIRED_OBJECT_TYPES,
-    get_connection_objects,
-)
+from live_tests.commons.connection_objects_retrieval import COMMAND_TO_REQUIRED_OBJECT_TYPES, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner
-from live_tests.commons.models import (
-    ActorType,
-    Command,
-    ConnectionObjects,
-    ConnectorUnderTest,
-    ExecutionInputs,
-    TargetOrControl,
-)
+from live_tests.commons.models import ActorType, Command, ConnectionObjects, ConnectorUnderTest, ExecutionInputs, TargetOrControl
 from live_tests.commons.utils import clean_up_artifacts
 from live_tests.debug import DAGGER_CONFIG
+from rich.prompt import Prompt
 
 from .consts import MAIN_OUTPUT_DIRECTORY
 
@@ -42,25 +31,19 @@ LOGGER = logging.getLogger("debug_command")
 @click.option("--connection-id", type=str, required=False, default=None)
 @click.option(
     "--config-path",
-    type=click.Path(
-        file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path
-    ),
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
     required=False,
     default=None,
 )
 @click.option(
     "--catalog-path",
-    type=click.Path(
-        file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path
-    ),
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
     required=False,
     default=None,
 )
 @click.option(
     "--state-path",
-    type=click.Path(
-        file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path
-    ),
+    type=click.Path(file_okay=True, readable=True, dir_okay=False, resolve_path=True, path_type=Path),
     required=False,
     default=None,
 )
@@ -85,9 +68,7 @@ async def debug_cmd(
     connector_images: List[str],
 ) -> None:
     if connection_id:
-        retrieval_reason = click.prompt(
-            "👮‍♂️ Please provide a reason for accessing the connection objects. This will be logged"
-        )
+        retrieval_reason = click.prompt("👮‍♂️ Please provide a reason for accessing the connection objects. This will be logged")
     else:
         retrieval_reason = None
 
@@ -114,11 +95,13 @@ async def debug_cmd(
                 )
 
             Prompt.ask(
-                textwrap.dedent("""
+                textwrap.dedent(
+                    """
                 Debug artifacts will be destroyed after this prompt. 
                 Press enter when you're done reading them.
                 🚨 Do not copy them elsewhere on your disk!!! 🚨
-                """)
+                """
+                )
             )
         finally:
             clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
@@ -131,9 +114,7 @@ async def _execute_command_and_save_artifacts(
     connection_objects: ConnectionObjects,
 ) -> None:
     try:
-        connector_under_test = await ConnectorUnderTest.from_image_name(
-            dagger_client, connector_image, TargetOrControl.CONTROL
-        )
+        connector_under_test = await ConnectorUnderTest.from_image_name(dagger_client, connector_image, TargetOrControl.CONTROL)
         if connector_under_test.actor_type is ActorType.SOURCE:
             actor_id = connection_objects.source_id
         else:

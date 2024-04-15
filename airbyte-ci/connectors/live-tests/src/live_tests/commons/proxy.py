@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import logging
 import uuid
 from typing import Optional
@@ -36,9 +38,7 @@ class Proxy:
         # - Hostname to avoid sharing the same https dump between different tests
         # - Session id to avoid sharing the same https dump between different runs of the same tests
         # The session id is set to the Airbyte Connection ID to ensure that no cache is shared between connections
-        return self.dagger_client.cache_volume(
-            f"{self.MITMPROXY_IMAGE}{self.hostname}{self.session_id}"
-        )
+        return self.dagger_client.cache_volume(f"{self.MITMPROXY_IMAGE}{self.hostname}{self.session_id}")
 
     @property
     def mitmproxy_dir_cache(self) -> dagger.CacheVolume:
@@ -57,9 +57,7 @@ class Proxy:
         proxy_container = (
             self.dagger_client.container()
             .from_(self.MITMPROXY_IMAGE)
-            .with_exec(
-                ["mkdir", "-p", "/home/mitmproxy/.mitmproxy"], skip_entrypoint=True
-            )
+            .with_exec(["mkdir", "-p", "/home/mitmproxy/.mitmproxy"], skip_entrypoint=True)
             # This is caching the mitmproxy stream files, which can contain sensitive information
             # We want to nuke this cache after test suite execution.
             .with_mounted_cache("/dumps", self.dump_cache_volume)
@@ -74,13 +72,8 @@ class Proxy:
         # If the proxy was instantiated with a stream for server replay from a previous run, we want to use it.
         # Requests to the same URL will be replayed from the stream instead of being sent to the server.
         # This is useful to avoid rate limiting issues and limits responses drifts due to time based logics.
-        if (
-            self.stream_for_server_replay is not None
-            and await self.stream_for_server_replay.size() > 0
-        ):
-            proxy_container = proxy_container.with_file(
-                "/cache.mitm", self.stream_for_server_replay
-            )
+        if self.stream_for_server_replay is not None and await self.stream_for_server_replay.size() > 0:
+            proxy_container = proxy_container.with_file("/cache.mitm", self.stream_for_server_replay)
             command = [
                 "mitmdump",
                 "-s",
@@ -106,9 +99,7 @@ class Proxy:
         return proxy_container.with_exec(command)
 
     async def get_service(self) -> dagger.Service:
-        return (
-            (await self.get_container()).with_exposed_port(self.PROXY_PORT).as_service()
-        )
+        return (await self.get_container()).with_exposed_port(self.PROXY_PORT).as_service()
 
     async def bind_container(self, container: dagger.Container) -> dagger.Container:
         """Bind a container to the proxy service and set environment variables to use the proxy for HTTP(S) traffic.
@@ -161,9 +152,7 @@ class Proxy:
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_mounted_cache("/dumps", self.dump_cache_volume)
         )
-        dump_files = (
-            await container.with_exec(["ls", "/dumps"], skip_entrypoint=True).stdout()
-        ).splitlines()
+        dump_files = (await container.with_exec(["ls", "/dumps"], skip_entrypoint=True).stdout()).splitlines()
         if self.MITM_STREAM_FILE not in dump_files:
             return None
         return await (

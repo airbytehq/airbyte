@@ -6,7 +6,6 @@ from typing import Callable, Dict, Iterable, List
 import pytest
 from _pytest.fixtures import SubRequest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, Type  # type: ignore
-
 from live_tests.commons.models import ExecutionResult
 
 from .utils import fail_test_on_failing_execution_results, get_and_write_diff
@@ -44,14 +43,10 @@ async def test_catalog_are_the_same(
     target_catalog = get_catalog(discover_target_execution_result)
 
     if control_catalog is None:
-        pytest.skip(
-            "The control discover did not return a catalog, we cannot compare the results."
-        )
+        pytest.skip("The control discover did not return a catalog, we cannot compare the results.")
 
     if target_catalog is None:
-        pytest.fail(
-            "The target discover did not return a catalog. Check the test artifacts for more information."
-        )
+        pytest.fail("The target discover did not return a catalog. Check the test artifacts for more information.")
 
     control_streams = {c.name: c for c in control_catalog.streams}
     target_streams = {t.name: t for t in target_catalog.streams}
@@ -104,16 +99,10 @@ async def test_catalog_are_the_same(
             )
 
 
-def _get_filtered_sorted_streams(
-    streams: Dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool
-) -> List[Dict]:
+def _get_filtered_sorted_streams(streams: Dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool) -> List[Dict]:
     return sorted(
         filter(
-            lambda x: (
-                x["name"] in stream_set
-                if include_target
-                else x["name"] not in stream_set
-            ),
+            lambda x: (x["name"] in stream_set if include_target else x["name"] not in stream_set),
             [json.loads(s.json(sort_keys=True)) for s in streams.values()],
         ),
         key=lambda x: x["name"],

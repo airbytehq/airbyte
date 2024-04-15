@@ -8,7 +8,6 @@ from typing import Iterable, Optional
 
 import duckdb
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
-
 from live_tests.commons.backends.file_backend import FileBackend
 
 
@@ -52,9 +51,7 @@ class DuckDbBackend(FileBackend):
         duck_db_conn = duckdb.connect(str(self.duckdb_path))
 
         if self.schema:
-            sanitized_schema_name = "_".join(
-                [self.sanitize_table_name(s) for s in self.schema]
-            )
+            sanitized_schema_name = "_".join([self.sanitize_table_name(s) for s in self.schema])
             duck_db_conn.sql(f"CREATE SCHEMA IF NOT EXISTS {sanitized_schema_name}")
             duck_db_conn.sql(f"USE {sanitized_schema_name}")
             logging.info(f"Using schema {sanitized_schema_name}")
@@ -62,15 +59,11 @@ class DuckDbBackend(FileBackend):
         for json_file in self.jsonl_files_to_insert:
             if json_file.exists():
                 table_name = self.sanitize_table_name(json_file.stem)
-                logging.info(
-                    f"Creating table {table_name} from {json_file} in schema {sanitized_schema_name}"
-                )
+                logging.info(f"Creating table {table_name} from {json_file} in schema {sanitized_schema_name}")
                 duck_db_conn.sql(
                     f"CREATE TABLE {table_name} AS SELECT * FROM read_json_auto('{json_file}', sample_size = {self.SAMPLE_SIZE}, format = 'newline_delimited')"
                 )
-                logging.info(
-                    f"Table {table_name} created in schema {sanitized_schema_name}"
-                )
+                logging.info(f"Table {table_name} created in schema {sanitized_schema_name}")
 
         for json_file in self.record_per_stream_paths_data_only.values():
             if json_file.exists():
@@ -81,7 +74,5 @@ class DuckDbBackend(FileBackend):
                 duck_db_conn.sql(
                     f"CREATE TABLE {self.sanitize_table_name(table_name)} AS SELECT * FROM read_json_auto('{json_file}', sample_size = {self.SAMPLE_SIZE}, format = 'newline_delimited')"
                 )
-                logging.info(
-                    f"Table {table_name} created in schema {sanitized_schema_name}"
-                )
+                logging.info(f"Table {table_name} created in schema {sanitized_schema_name}")
         duck_db_conn.close()
