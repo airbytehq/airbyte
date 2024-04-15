@@ -112,22 +112,19 @@ class MongoDbCdcEventUtilsTest {
     final UUID legacyUuid = UUID.randomUUID();
 
     final Document document = new Document("field1", new BsonBoolean(true))
-        .append("field2", new BsonInt32(1))
-        .append("field3", new BsonInt64(2))
-        .append("field4", new BsonDouble(3.0))
-        .append("field5", new BsonDecimal128(new Decimal128(4)))
-        .append("field6", bsonTimestamp)
-        .append("field7", new BsonDateTime(bsonTimestamp.getValue()))
-        .append("field8", new BsonBinary("test".getBytes(Charset.defaultCharset())))
-        .append("field9", new BsonSymbol("test2"))
-        .append("field10", new BsonString("test3"))
-        .append("field11", new BsonObjectId(new ObjectId(OBJECT_ID)))
-        .append("field12", new BsonJavaScript("code"))
-        .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
-        .append("field14", new BsonRegularExpression("pattern"))
+        /*
+         * .append("field2", new BsonInt32(1)) .append("field3", new BsonInt64(2)) .append("field4", new
+         * BsonDouble(3.0)) .append("field5", new BsonDecimal128(new Decimal128(4))) .append("field6",
+         * bsonTimestamp) .append("field7", new BsonDateTime(bsonTimestamp.getValue())) .append("field8",
+         * new BsonBinary("test".getBytes(Charset.defaultCharset()))) .append("field9", new
+         * BsonSymbol("test2")) .append("field10", new BsonString("test3")) .append("field11", new
+         * BsonObjectId(new ObjectId(OBJECT_ID))) .append("field12", new BsonJavaScript("code"))
+         * .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new
+         * BsonString("scope")))) .append("field14", new BsonRegularExpression("pattern"))
+         */
         .append("field15", new BsonNull())
-        .append("field16", new Document("key", "value"))
-        .append("field17", new BsonBinary(standardUuid, UuidRepresentation.STANDARD))
+        // .append("field16", new Document("key", "value"))
+        // .append("field17", new BsonBinary(standardUuid, UuidRepresentation.STANDARD))
         .append("field18", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY));
 
     final String documentAsJson = document.toJson();

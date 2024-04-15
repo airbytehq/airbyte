@@ -104,7 +104,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
     resultSet.getObject(colIndex);
     if (resultSet.wasNull()) {
-        json.putNull(columnName);
+      json.putNull(columnName);
     } else {
       // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-type-conversions.html
       switch (columnType) {

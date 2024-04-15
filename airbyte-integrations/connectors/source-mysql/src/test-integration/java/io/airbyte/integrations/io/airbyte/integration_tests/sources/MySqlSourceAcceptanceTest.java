@@ -138,8 +138,8 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(stateMessages.isEmpty(), "Reason");
     ObjectMapper mapper = new ObjectMapper();
 
-    assertTrue(recordMessages.get(0).getData().equals(
-        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+    assertEquals(recordMessages.get(0).getData(),
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\", \"userid\":null}"));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
