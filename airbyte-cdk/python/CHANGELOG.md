@@ -3,6 +3,9 @@
 ## 0.81.5
 Update LangChain version to latest
 
+## 0.81.4
+Adding stream_descriptor as part of AirbyteTracedException.__init__
+
 ## 0.81.3
 Republish print buffer after previous pypi attempt timed out
 
