@@ -2,17 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import urllib.parse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
-import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests import Response
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -26,7 +26,7 @@ class KlaviyoStream(HttpStream, ABC):
     page_size = None
     api_revision = "2023-10-15"
 
-    def __init__(self, api_key: str, start_date: Optional[str] = None, **kwargs):
+    def __init__(self, api_key: str, start_date: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._api_key = api_key
         self._start_ts = start_date
@@ -42,8 +42,10 @@ class KlaviyoStream(HttpStream, ABC):
             "Authorization": f"Klaviyo-API-Key {self._api_key}",
         }
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
+    def next_page_token(self, response: Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information
+        required to make paginated requests.
 
         Klaviyo uses cursor-based pagination https://developers.klaviyo.com/en/reference/api_overview#pagination
         This method returns the params in the pre-constructed url nested in links[next]
@@ -51,12 +53,11 @@ class KlaviyoStream(HttpStream, ABC):
 
         decoded_response = response.json()
 
-        links = decoded_response.get("links", {})
-        next = links.get("next")
-        if not next:
+        next_page_link = decoded_response.get("links", {}).get("next")
+        if not next_page_link:
             return None
 
-        next_url = urllib.parse.urlparse(next)
+        next_url = urllib.parse.urlparse(next_page_link)
         return {str(k): str(v) for (k, v) in urllib.parse.parse_qsl(next_url.query)}
 
     def request_params(
@@ -71,8 +72,8 @@ class KlaviyoStream(HttpStream, ABC):
         else:
             return {"page[size]": self.page_size} if self.page_size else {}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """:return an iterable containing each record in the response"""
+    def parse_response(self, response: Response, **kwargs) -> Iterable[Mapping]:
+        """Return an iterable containing each record in the response"""
 
         response_json = response.json()
         for record in response_json.get("data", []):  # API returns records in a container array "data"
@@ -87,8 +88,9 @@ class KlaviyoStream(HttpStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest
-        record and the current state and picks the 'most' recent cursor. This is how a stream's state is determined.
+        Override to determine the latest state after reading the latest record.
+        This typically compared the cursor_field from the latest record and the current state and picks
+        the 'most' recent cursor. This is how a stream's state is determined.
         Required for incremental.
         """
 
@@ -99,7 +101,7 @@ class KlaviyoStream(HttpStream, ABC):
         current_stream_state[self.cursor_field] = latest_cursor.isoformat()
         return current_stream_state
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: Response) -> Optional[float]:
         if response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
             retry_after = float(retry_after) if retry_after else None
@@ -129,8 +131,9 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
         """
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+        Override to return the cursor field used by this stream e.g: an API entity might always use
+        created_at as the cursor field. This is usually id or date based. This field's presence tells the framework
+        this in an incremental stream. Required for incremental.
         :return str: The name of the cursor field.
         """
 
@@ -161,36 +164,15 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         return params
 
 
-class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
-    """Base class for all streams that have a cursor field, but underlying API does not support either sorting or filtering"""
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
-        """
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-        :return str: The name of the cursor field.
-        """
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        stream_state = stream_state or {}
-        starting_point = stream_state.get(self.cursor_field, self._start_ts)
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if starting_point and record[self.cursor_field] > starting_point or not starting_point:
-                yield record
-
-
 class ArchivedRecordsStream(IncrementalKlaviyoStream):
-    def __init__(self, path: str, cursor_field: str, start_date: Optional[str] = None, api_revision: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        path: str,
+        cursor_field: str,
+        start_date: Optional[str] = None,
+        api_revision: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(start_date=start_date, **kwargs)
         self._path = path
         self._cursor_field = cursor_field
@@ -224,7 +206,7 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
     """A mixin class which should be used when archived records need to be read"""
 
     @property
-    def archived_campaigns(self) -> ArchivedRecordsStream:
+    def archived_stream(self) -> ArchivedRecordsStream:
         return ArchivedRecordsStream(self.path(), self.cursor_field, self._start_ts, self.api_revision, api_key=self._api_key)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -250,31 +232,7 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        yield from self.archived_campaigns.read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
-
-class Profiles(IncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles"""
-
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-
-    cursor_field = "updated"
-    api_revision = "2023-02-22"
-    page_size = 100
-    state_checkpoint_interval = 100  # API can return maximum 100 records per page
-
-    def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return "profiles"
-
-    def request_params(
-        self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({"additional-fields[profile]": "predictive_analytics"})
-        return params
+        yield from self.archived_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):
@@ -287,48 +245,6 @@ class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):
         return "campaigns"
 
 
-class Lists(SemiIncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/reference/get_lists"""
-
-    max_retries = 10
-    cursor_field = "updated"
-
-    def path(self, **kwargs) -> str:
-        return "lists"
-
-
-class GlobalExclusions(Profiles):
-    """
-    Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
-    This stream takes data from 'profiles' endpoint, but suppressed records only
-    """
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            if not record["attributes"].get("subscriptions", {}).get("email", {}).get("marketing", {}).get("suppressions"):
-                continue
-            yield record
-
-
-class Metrics(SemiIncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/reference/get_metrics"""
-
-    cursor_field = "updated"
-
-    def path(self, **kwargs) -> str:
-        return "metrics"
-
-
-class Events(IncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/reference/get_events"""
-
-    cursor_field = "datetime"
-    state_checkpoint_interval = 200  # API can return maximum 200 records per page
-
-    def path(self, **kwargs) -> str:
-        return "events"
-
-
 class Flows(ArchivedRecordsMixin, IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""
 
@@ -337,13 +253,3 @@ class Flows(ArchivedRecordsMixin, IncrementalKlaviyoStream):
 
     def path(self, **kwargs) -> str:
         return "flows"
-
-
-class EmailTemplates(IncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/reference/get_templates"""
-
-    cursor_field = "updated"
-    state_checkpoint_interval = 10  # API can return maximum 10 records per page
-
-    def path(self, **kwargs) -> str:
-        return "templates"
