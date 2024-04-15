@@ -25,7 +25,7 @@ import org.apache.commons.io.FileUtils
 private val logger = KotlinLogging.logger {}
 
 internal class AsyncFlush(
-    streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
+    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
     private val stagingOperations: StagingOperations?,
     private val database: JdbcDatabase?,
     private val catalog: ConfiguredAirbyteCatalog?,
@@ -41,8 +41,6 @@ internal class AsyncFlush(
     override val optimalBatchSizeBytes: Long,
     private val useDestinationsV2Columns: Boolean
 ) : DestinationFlushFunction {
-    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
-        streamDescToWriteConfig
 
     @Throws(Exception::class)
     override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
