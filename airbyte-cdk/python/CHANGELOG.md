@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.6
+Upgrade to recent version of langchain
+
 ## 0.81.5
 Updated langchain version and add langchain_core as a dependency
 
