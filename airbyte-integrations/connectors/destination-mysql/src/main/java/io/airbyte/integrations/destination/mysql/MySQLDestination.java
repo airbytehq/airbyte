@@ -21,6 +21,7 @@ import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransf
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -30,6 +31,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
+import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,12 +144,22 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
-    throw new UnsupportedOperationException("mysql does not yet support DV2");
+    return new MysqlSqlGenerator();
   }
 
   @Override
   protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
     return new PropertyNameSimplifyingDataTransformer();
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+  @Override
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {
@@ -161,7 +174,7 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
   protected JdbcDestinationHandler<MinimumDestinationState> getDestinationHandler(@NotNull String databaseName,
                                                                                   @NotNull JdbcDatabase database,
                                                                                   @NotNull String rawTableSchema) {
-    throw new UnsupportedOperationException("Mysql does not yet support DV2");
+    return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
   }
 
   @NotNull
