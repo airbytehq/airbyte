@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.18  | 2024-04-15 | [36919](https://github.com/airbytehq/airbyte/pull/36919)   | Refactor source operations.                                                                                                                     |
 | 3.3.17  | 2024-04-10 | [36919](https://github.com/airbytehq/airbyte/pull/36919)   | Fix a bug in conversion of null values.                                                                                                         |
 | 3.3.16  | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)   | Update to connector's metadat definition.                                                                                                       |
 | 3.3.15  | 2024-04-05 | [36577](https://github.com/airbytehq/airbyte/pull/36577)   | Config error will not send out system trace message                                                                                             |
