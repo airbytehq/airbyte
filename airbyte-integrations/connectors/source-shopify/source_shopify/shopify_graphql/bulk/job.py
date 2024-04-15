@@ -202,6 +202,8 @@ class ShopifyBulkManager:
             self.job_self_canceled = True
             # check CANCELED Job health
             self.job_healthcheck(canceled_response)
+        # sleep to ensure the cancelation
+        sleep(self.job_check_interval_sec)
 
     def log_job_state_with_count(self) -> None:
         """
@@ -255,7 +257,7 @@ class ShopifyBulkManager:
     def on_created_job(self, **kwargs) -> None:
         pass
 
-    def on_canceled_job(self, response: requests.Response) -> None:
+    def on_canceled_job(self, response: requests.Response) -> Optional[AirbyteTracedException]:
         if not self.job_self_canceled:
             raise ShopifyBulkExceptions.BulkJobCanceled(
                 f"The BULK Job: `{self.job_id}` exited with {self.job_state}, details: {response.text}",
@@ -271,9 +273,8 @@ class ShopifyBulkManager:
             self.logger.info(
                 f"Stream: `{self.stream_name}` the BULK Job: {self.job_id} runs longer than expected. Retry with the reduced `Slice Size` after self-cancelation."
             )
+            # cancel the long-running bulk job
             self.job_cancel()
-            # sleep to ensure the cancelation
-            sleep(self.job_check_interval_sec)
         else:
             sleep(self.job_check_interval_sec)
 
@@ -298,7 +299,7 @@ class ShopifyBulkManager:
     def on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobUnknownError(f"Could not validate the status of the BULK Job `{self.job_id}`. Errors: {errors}.")
 
-    def job_check_for_errors(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+    def job_check_for_errors(self, response: requests.Response) -> Union[AirbyteTracedException, Iterable[Mapping[str, Any]]]:
         try:
             return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
         except (Exception, JSONDecodeError) as e:
@@ -313,14 +314,19 @@ class ShopifyBulkManager:
         with self.session as track_running_job:
             response = track_running_job.request(**status_args)
         # errors check
-        errors = self.job_check_for_errors(response)
-        if not errors:
-            self.job_update_state(response)
-            self.job_state_to_fn_map.get(self.job_state)(response=response)
-            return response
-        else:
-            # execute ERRORS scenario
-            self.on_job_with_errors(errors)
+        try:
+            errors = self.job_check_for_errors(response)
+            if not errors:
+                self.job_update_state(response)
+                self.job_state_to_fn_map.get(self.job_state)(response=response)
+                return response
+            else:
+                # execute ERRORS scenario
+                self.on_job_with_errors(errors)
+        except ShopifyBulkExceptions.BulkJobBadResponse as e:
+            request = response.request
+            self.logger.info(f"Stream: `{self.stream_name}`, retrying Bad Request: {request.body}. Error: {repr(e)}.")
+            return self.job_retry_request(request)
 
     def job_check_state(self) -> Optional[str]:
         while not self.job_completed():

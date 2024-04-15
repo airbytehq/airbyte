@@ -224,9 +224,6 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             if record_value >= self._checkpoint_cursor:
                 self._checkpoint_cursor = record_value
 
-    def emit_checkpoint_message(self) -> None:
-        self.logger.info(f"Stream `{self.name}`. Tracking cursor at: `{self._checkpoint_cursor}`.")
-
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
@@ -250,7 +247,6 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                             yield record
                         else:
                             if self.should_checkpoint(index):
-                                self.emit_checkpoint_message()
                                 yield record
                     else:
                         # old entities could have cursor field in place, but set to null
