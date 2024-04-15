@@ -94,11 +94,12 @@ definitions:
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
-    path: "/projects"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/projects_schema"
+    $parameters:
+      path: "/projects"
 
   projects_partition_router:
     type: SubstreamPartitionRouter
@@ -110,11 +111,12 @@ definitions:
   sections_compact_stream:
     $ref: "#/definitions/base_stream"
     name: "sections_compact"
-    path: "/projects/{{ stream_slice['project_id'] }}/sections"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/sections_compact_schema"
+    $parameters:
+      path: "/projects/{{ stream_slice['project_id'] }}/sections"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -132,11 +134,12 @@ definitions:
   sections_stream:
     $ref: "#/definitions/base_stream"
     name: "sections"
-    path: "/sections/{{ stream_slice['section_gid'] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/sections_schema"
+    $parameters:
+      path: "/sections/{{ stream_slice['section_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -147,11 +150,12 @@ definitions:
   tasks_stream:
     $ref: "#/definitions/base_stream"
     name: "tasks"
-    path: "/projects/{{ stream_slice['project_id'] }}/tasks"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/tasks_schema"
+    $parameters:
+      path: "/projects/{{ stream_slice['project_id'] }}/tasks"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -167,11 +171,12 @@ definitions:
   stories_compact_stream:
     $ref: "#/definitions/base_stream"
     name: "stories_compact"
-    path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/stories_compact_schema"
+    $parameters:
+      path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -187,11 +192,12 @@ definitions:
   stories_stream:
     $ref: "#/definitions/base_stream"
     name: "stories"
-    path: "/stories/{{ stream_slice['story_gid'] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/stories_schema"
+    $parameters:
+      path: "/stories/{{ stream_slice['story_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -202,11 +208,12 @@ definitions:
   workspaces_stream:
     $ref: "#/definitions/base_stream"
     name: "workspaces"
-    path: "/workspaces"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/workspaces_schema"
+    $parameters:
+      path: "/workspaces"
 
   workspaces_partition_router:
     type: SubstreamPartitionRouter
@@ -218,11 +225,12 @@ definitions:
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
-    path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/tags_schema"
+    $parameters:
+      path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -231,11 +239,12 @@ definitions:
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
-    path: "/users"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/users_schema"
+    $parameters:
+      path: "/users"
 
   users_partition_router:
     type: SubstreamPartitionRouter
@@ -247,11 +256,12 @@ definitions:
   teams_stream:
     $ref: "#/definitions/base_stream"
     name: "teams"
-    path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/teams_schema"
+    $parameters:
+      path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -267,11 +277,12 @@ definitions:
   team_memberships_stream:
     $ref: "#/definitions/base_stream"
     name: "team_memberships"
-    path: "/teams/{{ stream_slice['team_gid'] }}/team_memberships"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/team_memberships_schema"
+    $parameters:
+      path: "/teams/{{ stream_slice['team_gid'] }}/team_memberships"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -282,11 +293,12 @@ definitions:
   attachments_compact_stream:
     $ref: "#/definitions/base_stream"
     name: "attachments_compact"
-    path: "/attachments"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/attachments_compact_schema"
+    $parameters:
+      path: "/attachments"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -317,11 +329,12 @@ definitions:
   attachments_stream:
     $ref: "#/definitions/base_stream"
     name: "attachments"
-    path: "/attachments/{{ stream_slice['attachments_gid'] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/attachments_schema"
+    $parameters:
+      path: "/attachments/{{ stream_slice['attachments_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -332,11 +345,12 @@ definitions:
   portfolios_compact_stream:
     $ref: "#/definitions/base_stream"
     name: "portfolios_compact"
-    path: "/portfolios"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/portfolios_compact_schema"
+    $parameters:
+      path: "/portfolios"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -366,11 +380,12 @@ definitions:
   portfolios_stream:
     $ref: "#/definitions/base_stream"
     name: "portfolios"
-    path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/portfolios_schema"
+    $parameters:
+      path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -381,11 +396,12 @@ definitions:
   portfolios_memberships_stream:
     $ref: "#/definitions/base_stream"
     name: "portfolios_memberships"
-    path: "/portfolio_memberships"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/portfolios_memberships_schema"
+    $parameters:
+      path: "/portfolio_memberships"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -400,11 +416,12 @@ definitions:
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "custom_fields"
-    path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/custom_fields_schema"
+    $parameters:
+      path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -413,11 +430,12 @@ definitions:
   organization_exports_stream:
     $ref: "#/definitions/base_stream"
     name: "organization_exports"
-    path: "/organization_exports/{{ stream_slice.gid }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/organization_exports_schema"
+    $parameters:
+      path: "/organization_exports/{{ stream_slice.gid }}"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -429,11 +447,12 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "events"
     primary_key: "created_at"
-    path: "/events"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/events_schema"
+    $parameters:
+      path: "/events"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
