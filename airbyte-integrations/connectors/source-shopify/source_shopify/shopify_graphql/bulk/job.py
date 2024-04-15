@@ -49,11 +49,11 @@ class ShopifyBulkManager:
     # sleep time per creation attempt
     concurrent_interval_sec: Final[int] = 30
     # max attempts for job creation
-    concurrent_max_retry: Final[int] = 30
+    concurrent_max_retry: Final[int] = 120
     # Each job ideally should be executed within the specified time (in sec),
-    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 10 mins (600 sec),
+    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 1 hours (3600 sec),
     # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
-    job_max_elapsed_time_sec: Final[float] = 600.0
+    job_max_elapsed_time_sec: Final[float] = 1800.0
     # 0.1 ~= P2H, default value, lower boundary for slice size
     job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
