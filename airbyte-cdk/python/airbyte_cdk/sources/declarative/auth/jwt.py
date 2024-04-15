@@ -92,7 +92,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         secret_key: str = f"{self._secret_key.eval(self.config)}"
         if not secret_key:
             raise ValueError("secret_key is required")
-        if self._base64_encode_secret_key:
+        if self._base64_encode_secret_key.eval(self.config):
             secret_key = base64.b64encode(secret_key.encode()).decode()
         return secret_key
 
