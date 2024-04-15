@@ -47,14 +47,6 @@ class MixpanelHttpRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
-        if not self.is_first_request and self.reqs_per_hour_limit:
-            self.is_first_request = False
-            # we skip this block, if self.reqs_per_hour_limit = 0,
-            # in all other cases wait for X seconds to match API limitations
-            # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
-            time.sleep(3600 / self.reqs_per_hour_limit)
-
         project_id = self.config.get("credentials", {}).get("project_id")
         return {"project_id": project_id} if project_id else {}
 
@@ -73,6 +65,18 @@ class MixpanelHttpRequester(HttpRequester):
             page = extra_params.pop("page", {})
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
+
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
+
+        if not self.is_first_request and self.reqs_per_hour_limit:
+            self.is_first_request = False
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
+            # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
+            time.sleep(3600 / self.reqs_per_hour_limit)
+
+        return super().send_request(**kwargs)
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):
