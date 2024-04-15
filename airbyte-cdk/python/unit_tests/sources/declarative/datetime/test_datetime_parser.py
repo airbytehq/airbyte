@@ -41,7 +41,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 def test_parse_date(test_name, input_date, date_format, expected_output_date):
     parser = DatetimeParser()
     output_date = parser.parse(input_date, date_format)
-    assert expected_output_date == output_date
+    assert output_date == expected_output_date
 
 
 @pytest.mark.parametrize(
@@ -56,4 +56,4 @@ def test_parse_date(test_name, input_date, date_format, expected_output_date):
 def test_format_datetime(test_name, input_dt, datetimeformat, expected_output):
     parser = DatetimeParser()
     output_date = parser.format(input_dt, datetimeformat)
-    assert expected_output == output_date
+    assert output_date == expected_output
