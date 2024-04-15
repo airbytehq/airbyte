@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
 ## 0.81.4
 Adding stream_descriptor as part of AirbyteTracedException.__init__
 
