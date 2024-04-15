@@ -4,11 +4,19 @@
 
 import responses
 from airbyte_cdk.models import SyncMode
-from source_pivotal_tracker.source import Activity, Epics, Labels, PivotalAuthenticator, ProjectMemberships, Projects, Releases, Stories
+from source_pivotal_tracker.source import SourcePivotalTracker
 
 auth = PivotalAuthenticator("goodtoken")
 project_args = {"project_ids": [98, 99], "authenticator": auth}
 stream_slice = {"project_id": 99}
+
+
+def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
+    source = SourcePivotalTracker()
+    matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
+    if not matches_by_name:
+        raise ValueError("Please provide a valid stream name.")
+    return matches_by_name[0]
 
 
 @responses.activate
