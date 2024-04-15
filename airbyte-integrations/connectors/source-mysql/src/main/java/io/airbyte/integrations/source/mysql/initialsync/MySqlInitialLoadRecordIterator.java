@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
