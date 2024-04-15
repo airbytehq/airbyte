@@ -1951,51 +1951,51 @@ definitions:
     title: Portfolio Memberships Schema
     additionalProperties: true
     type:
-    - object
-    - 'null'
+      - object
+      - "null"
     properties:
       gid:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       resource_type:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       portfolio:
         type:
-        - object
-        - 'null'
+          - object
+          - "null"
         properties:
           gid:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
           resource_type:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
           name:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
       user:
         type:
-        - object
-        - 'null'
+          - object
+          - "null"
         properties:
           gid:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
           resource_type:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
           name:
             type:
-            - string
-            - 'null'
+              - string
+              - "null"
 
   portfolios_schema:
     $schema: http://json-schema.org/draft-07/schema#
