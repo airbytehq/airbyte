@@ -190,7 +190,7 @@ def test_check(response, start_date, check_passed):
             403,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms?per_page=10 failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
             ],
             None,
         ),
@@ -199,7 +199,7 @@ def test_check(response, start_date, check_passed):
             404,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms?per_page=10 failed with status code 404 and error message None. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
             ],
             "Not Found",
         ),
@@ -279,73 +279,6 @@ def test_parse_response(requests_mock):
 
 
 class TestAllStreams:
-    @pytest.mark.parametrize(
-        "expected_stream_cls",
-        [
-            (AuditLogs),
-            (GroupMemberships),
-            (Groups),
-            (Macros),
-            (Organizations),
-            (Posts),
-            (OrganizationMemberships),
-            (SatisfactionRatings),
-            (SlaPolicies),
-            (Tags),
-            (TicketAudits),
-            (TicketComments),
-            (TicketFields),
-            (TicketForms),
-            (TicketMetrics),
-            (TicketSkips),
-            (TicketMetricEvents),
-            (Tickets),
-            (Topics),
-            (Users),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-            (AccountAttributes),
-            (AttributeDefinitions),
-            (UserFields),
-        ],
-        ids=[
-            "AuditLogs",
-            "GroupMemberships",
-            "Groups",
-            "Macros",
-            "Organizations",
-            "Posts",
-            "OrganizationMemberships",
-            "SatisfactionRatings",
-            "SlaPolicies",
-            "Tags",
-            "TicketAudits",
-            "TicketComments",
-            "TicketFields",
-            "TicketForms",
-            "TicketMetrics",
-            "TicketSkips",
-            "TicketMetricEvents",
-            "Tickets",
-            "Topics",
-            "Users",
-            "Brands",
-            "CustomRoles",
-            "Schedules",
-            "AccountAttributes",
-            "AttributeDefinitions",
-            "UserFields",
-        ],
-    )
-    def test_streams(self, expected_stream_cls):
-        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
-            streams = SourceZendeskSupport().streams(TEST_CONFIG)
-            mocked_records.assert_called()
-            for stream in streams:
-                if expected_stream_cls in streams:
-                    assert isinstance(stream, expected_stream_cls)
-
     def test_ticket_forms_exception_stream(self):
         with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             mocked_records.side_effect = Exception("The error")

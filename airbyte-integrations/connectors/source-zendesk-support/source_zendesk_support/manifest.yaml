@@ -110,19 +110,22 @@ definitions:
       $ref: "#/definitions/cursor_incremental_sync"
 
   # Paginators
-  page_size_paginator:
+  links_next_paginator:
     type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['links']['next'] }}"
+      stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+
+  links_next_paginator_with_paze_size:
+    $ref: "#/definitions/links_next_paginator"
     page_size_option:
       type: RequestOption
       field_name: "page[size]"
       inject_into: request_parameter
-    pagination_strategy:
-      type: CursorPagination
-      page_size: 100
-      cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-    page_token_option:
-      type: RequestPath
 
   after_url_paginator:
     type: DefaultPaginator
@@ -131,12 +134,15 @@ definitions:
       cursor_value: '{{ response.get("after_url") }}'
       stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
       page_size: 100
+    page_token_option:
+      type: RequestPath
+
+  after_url_paginator_with_paze_size:
+    $ref: "#/definitions/after_url_paginator"
     page_size_option:
       type: RequestOption
       field_name: "per_page"
       inject_into: request_parameter
-    page_token_option:
-      type: RequestPath
 
   # Full-refresh streams
   account_attributes_stream:
@@ -243,7 +249,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator_with_paze_size"
     incremental_sync:
       class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
       type: CustomIncrementalSync
@@ -273,7 +279,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "group_memberships"
       path: "group_memberships"
@@ -298,7 +304,7 @@ definitions:
           sort_by: "created_at"
           sort_order: "asc"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     incremental_sync:
       $ref: "#/definitions/semi_incremental_stream/incremental_sync"
     $parameters:
@@ -380,7 +386,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "satisfaction_ratings"
       path: "satisfaction_ratings"
@@ -399,7 +405,7 @@ definitions:
           sort_by: "created_at"
           sort_order: "asc"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_activities"
       path: "activities"
@@ -479,7 +485,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
@@ -488,6 +494,16 @@ definitions:
 
   ticket_forms_stream:
     $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "ticket_forms"
       path: "ticket_forms"
@@ -500,7 +516,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_metric_events"
       path: "incremental/ticket_metric_events"
@@ -513,7 +529,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_metrics"
       path: "ticket_metrics"
@@ -529,7 +545,7 @@ definitions:
         request_parameters:
           sort_order: "desc"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_skips"
       path: "skips.json"
@@ -567,7 +583,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/page_size_paginator"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "topics"
       path: "community/topics"
