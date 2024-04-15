@@ -217,7 +217,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       long lowerBound = startCtid.page;
       long upperBound;
       final double pages = dataSize / blockSize;
-      final long eachStep = Math.max((long) pages * chunkSize, 1);
+      final long eachStep = 50_000L; //Math.max((long) pages * chunkSize, 1);
 
       LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
       final long theoreticalLastPage = relationSize / blockSize;

@@ -180,7 +180,7 @@ public class CopyInitialSyncCtidIterator extends AbstractIterator<String> implem
             LOGGER.info("Executing query for table {}: {} with bindings {} and {}", tableName, sql, lowerBound, upperBound);
             return sql;
         } else {
-            final String sql = "SELECT %s FROM %s WHERE ctid > %s::tid"
+            final String sql = "SELECT %s FROM %s WHERE ctid > '%s'::tid"
                     .formatted(generetaFormat(), fullTableName, lowerBound.toString());
 
             LOGGER.info("Executing query for table {}: {} with binding {}", tableName, sql, lowerBound);
