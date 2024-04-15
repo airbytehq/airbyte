@@ -98,14 +98,22 @@ class ConcurrentReadProcessor:
         3. Emit messages that were added to the message repository
         """
         partition = sentinel.partition
-        partition.close()
-        partitions_running = self._streams_to_running_partitions[partition.stream_name()]
-        if partition in partitions_running:
-            partitions_running.remove(partition)
-            # If all partitions were generated and this was the last one, the stream is done
-            if partition.stream_name() not in self._streams_currently_generating_partitions and len(partitions_running) == 0:
-                yield from self._on_stream_is_done(partition.stream_name())
-        yield from self._message_repository.consume_queue()
+
+        try:
+            partition.close()
+        except Exception as exception:
+            self._flag_exception(partition.stream_name(), exception)
+            yield AirbyteTracedException.from_exception(
+                exception, stream_descriptor=StreamDescriptor(name=partition.stream_name())
+            ).as_sanitized_airbyte_message()
+        finally:
+            partitions_running = self._streams_to_running_partitions[partition.stream_name()]
+            if partition in partitions_running:
+                partitions_running.remove(partition)
+                # If all partitions were generated and this was the last one, the stream is done
+                if partition.stream_name() not in self._streams_currently_generating_partitions and len(partitions_running) == 0:
+                    yield from self._on_stream_is_done(partition.stream_name())
+            yield from self._message_repository.consume_queue()
 
     def on_record(self, record: Record) -> Iterable[AirbyteMessage]:
         """
@@ -136,11 +144,14 @@ class ConcurrentReadProcessor:
         1. Stop all running streams
         2. Raise the exception
         """
-        self._exceptions_per_stream_name.setdefault(exception.stream_name, []).append(exception.exception)
+        self._flag_exception(exception.stream_name, exception.exception)
         self._logger.exception(f"Exception while syncing stream {exception.stream_name}", exc_info=exception.exception)
-        yield AirbyteTracedException.from_exception(exception).as_airbyte_message(
-            stream_descriptor=StreamDescriptor(name=exception.stream_name)
-        )
+        yield AirbyteTracedException.from_exception(
+            exception, stream_descriptor=StreamDescriptor(name=exception.stream_name)
+        ).as_airbyte_message()
+
+    def _flag_exception(self, stream_name: str, exception: Exception) -> None:
+        self._exceptions_per_stream_name.setdefault(stream_name, []).append(exception)
 
     def start_next_partition_generator(self) -> Optional[AirbyteMessage]:
         """
