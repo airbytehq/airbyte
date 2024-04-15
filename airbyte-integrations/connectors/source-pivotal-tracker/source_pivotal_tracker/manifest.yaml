@@ -25,19 +25,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -58,19 +45,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -99,19 +73,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -140,19 +101,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -181,19 +129,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -222,19 +157,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -256,7 +178,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: '#/definitions/base_requester'
-          path: projects/{{ stream_slice['project_id'] }}/activity?limit=10
+          path: projects/{{ stream_slice['project_id'] }}/activity
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -269,13 +191,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response['headers',
-              'X-Tracker-Pagination-Offset']+response['headers',
-              'X-Tracker-Pagination-Limit' ]}}
-            stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+            type: OffsetIncrement
+            page_size: 10
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -296,8 +218,8 @@ definitions:
       api_token: '{{ config[''api_token''] }}'
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: X-TrackerToken
+        inject_into: header
 
 streams:
   - $ref: '#/definitions/streams/projects'
@@ -336,515 +258,1138 @@ metadata:
     activity: true
 
 schemas:
-  projects:
-    $schema: http://json-schema.org/draft-07/schema#
+  epics:
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     properties:
       id:
         type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      show_priority_icon:
-        type:
-        - 'null'
-        - boolean
-      show_priority_icon_in_all_panels:
-        type:
-        - 'null'
-        - boolean
-      created_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      name:
-        type:
-        - 'null'
-        - string
-      account_id:
-        type:
-        - 'null'
-        - integer
-      version:
-        type:
-        - 'null'
-        - integer
-      iteration_length:
-        type:
-        - 'null'
-        - integer
-      current_iteration_number:
-        type:
-        - 'null'
-        - integer
-      week_start_day:
-        type:
-        - 'null'
-        - string
-      point_scale:
-        type:
-        - 'null'
-        - string
-      point_scale_is_custom:
-        type:
-        - 'null'
-        - boolean
-      bugs_and_chores_are_estimatable:
-        type:
-        - 'null'
-        - boolean
-      automatic_planning:
-        type:
-        - 'null'
-        - boolean
-      enable_tasks:
-        type:
-        - 'null'
-        - boolean
-      time_zone:
-        type:
-        - 'null'
-        - object
-      velocity_averaged_over:
-        type:
-        - 'null'
-        - integer
-      number_of_done_iterations_to_show:
-        type:
-        - 'null'
-        - integer
-      has_google_domain:
-        type:
-        - 'null'
-        - boolean
-      enable_incoming_emails:
-        type:
-        - 'null'
-        - boolean
-      initial_velocity:
-        type:
-        - 'null'
-        - integer
-      public:
-        type:
-        - 'null'
-        - boolean
-      atom_enabled:
-        type:
-        - 'null'
-        - boolean
-      enable_following:
-        type:
-        - 'null'
-        - boolean
-      show_story_priority:
-        type:
-        - 'null'
-        - boolean
-      project_type:
-        type:
-        - 'null'
-        - string
-      start_time:
-        type:
-        - 'null'
-        - string
-        format: date-time
-
-  stories:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      description:
-        type:
-        - 'null'
-        - string
-      deadline:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      created_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      name:
-        type:
-        - 'null'
-        - string
-      story_type:
-        type:
-        - 'null'
-        - string
-      estimate:
-        type:
-        - 'null'
-        - integer
-      story_priority:
-        type:
-        - 'null'
-        - string
-      current_state:
-        type:
-        - 'null'
-        - string
-      requested_by_id:
-        type:
-        - 'null'
-        - integer
-      owned_by_id:
-        type:
-        - 'null'
-        - integer
+          - 'null'
+          - integer
       url:
         type:
-        - 'null'
-        - string
+          - 'null'
+          - string
+      kind:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      label:
+        type: object
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          kind:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+            format: date-time
+          project_id:
+            type:
+              - 'null'
+              - integer
+          updated_at:
+            type:
+              - 'null'
+              - string
+            format: date-time
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      project_id:
+        type:
+          - 'null'
+          - integer
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      description:
+        type:
+          - 'null'
+          - string
+    additionalProperties: true
+  labels:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      kind:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      project_id:
+        type:
+          - 'null'
+          - integer
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+    additionalProperties: true
+  stories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      url:
+        type:
+          - 'null'
+          - string
+      kind:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      labels:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type:
+                - 'null'
+                - integer
+            kind:
+              type:
+                - 'null'
+                - string
+            name:
+              type:
+                - 'null'
+                - string
+            created_at:
+              type:
+                - 'null'
+                - string
+              format: date-time
+            project_id:
+              type:
+                - 'null'
+                - integer
+            updated_at:
+              type:
+                - 'null'
+                - string
+              format: date-time
+      deadline:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      estimate:
+        type:
+          - 'null'
+          - integer
       owner_ids:
         type: array
         items:
           type: integer
-      labels:
-        type: array
-        items:
-          $ref: "#/schemas/label"
-      accepted_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-    
-
-  project_memberships:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      last_viewed_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
       created_at:
         type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      favorite:
-        type:
-        - 'null'
-        - boolean
-      project_color:
-        type:
-        - 'null'
-        - string
-      role:
-        type:
-        - 'null'
-        - string
-      wants_comment_notification_emails:
-        type:
-        - 'null'
-        - boolean
-      will_receive_mention_notifications_or_emails:
-        type:
-        - 'null'
-        - boolean
-      person:
-        $ref: "#/schemas/person"
-
-  labels:
-    $schema: http://json-schema.org/draft-07/schema#
-    $ref: "#/schemas/label"
-  
-  releases:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      created_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      name:
-        type:
-        - 'null'
-        - string
-      current_state:
-        type:
-        - 'null'
-        - string
-      url:
-        type:
-        - 'null'
-        - string
-      deadline:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      labels:
-        type: array
-        items:
-          $ref: "#/schemas/label"
-      accepted_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-
-  epics:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      description:
-        type:
-        - 'null'
-        - string
-      created_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      name:
-        type:
-        - 'null'
-        - string
-      url:
-        type:
-        - 'null'
-        - string
-      label:
-        $ref: "#/schemas/label"
-
-  label:
-    type: object
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      created_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      updated_at:
-        type:
-        - 'null'
-        - string
-        format: date-time
-      project_id:
-        type:
-        - 'null'
-        - integer
-      name:
-        type:
-        - 'null'
-        - string
-
-  person:
-    type: object
-    properties:
-      id:
-        type:
-        - 'null'
-        - integer
-      kind:
-        type:
-        - 'null'
-        - string
-      name:
-        type:
-        - 'null'
-        - string
-      initials:
-        type:
-        - 'null'
-        - string
-      email:
-        type:
-        - 'null'
-        - string
-      username:
-        type:
-        - 'null'
-        - string
-
-  activity:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    properties:
-      guid:
-        type:
-        - 'null'
-        - string
-      kind:
-        type:
-        - 'null'
-        - string
-      project:
-        type:
-        - 'null'
-        - object
-        additionalProperties: true
-        properties: {}
-      secondary_resources:
-        type:
-        - 'null'
-        - array
-        items:
-          type:
           - 'null'
           - string
+        format: date-time
       project_id:
         type:
-        - 'null'
-        - integer
-      occurred_at:
+          - 'null'
+          - integer
+      story_type:
         type:
-        - 'null'
-        - string
+          - 'null'
+          - string
+      updated_at:
+        type:
+          - 'null'
+          - string
         format: date-time
-      performed_by:
-        $ref: "#/schemas/person"
+      accepted_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      description:
+        type:
+          - 'null'
+          - string
+      owned_by_id:
+        type:
+          - 'null'
+          - integer
+      current_state:
+        type:
+          - 'null'
+          - string
+      story_priority:
+        type:
+          - 'null'
+          - string
+      requested_by_id:
+        type:
+          - 'null'
+          - integer
+    additionalProperties: true
+  activity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - guid
+    properties:
+      guid:
+        type: string
+      kind:
+        type:
+          - string
+          - 'null'
+      changes:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type:
+                - number
+                - 'null'
+            kind:
+              type:
+                - string
+                - 'null'
+            name:
+              type:
+                - string
+                - 'null'
+            new_values:
+              type:
+                - object
+                - 'null'
+              properties:
+                version:
+                  type:
+                    - number
+                    - 'null'
+                id:
+                  type:
+                    - number
+                    - 'null'
+                name:
+                  type:
+                    - string
+                    - 'null'
+                repo:
+                  type:
+                    - string
+                    - 'null'
+                text:
+                  type:
+                    - string
+                    - 'null'
+                label:
+                  type:
+                    - string
+                    - 'null'
+                owner:
+                  type:
+                    - string
+                    - 'null'
+                counts:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    kind:
+                      type:
+                        - string
+                        - 'null'
+                    number_of_stories_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                    sum_of_story_estimates_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                    number_of_zero_point_stories_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                labels:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type:
+                      - string
+                      - 'null'
+                number:
+                  type:
+                    - number
+                    - 'null'
+                status:
+                  type:
+                    - string
+                    - 'null'
+                after_id:
+                  type:
+                    - number
+                    - 'null'
+                deadline:
+                  type:
+                    - string
+                    - 'null'
+                estimate:
+                  type:
+                    - number
+                    - 'null'
+                host_url:
+                  type:
+                    - string
+                    - 'null'
+                label_id:
+                  type:
+                    - number
+                    - 'null'
+                story_id:
+                  type:
+                    - number
+                    - 'null'
+                before_id:
+                  type:
+                    - number
+                    - 'null'
+                label_ids:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type:
+                      - number
+                      - 'null'
+                owner_ids:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type:
+                      - number
+                      - 'null'
+                person_id:
+                  type:
+                    - number
+                    - 'null'
+                created_at:
+                  type:
+                    - string
+                    - 'null'
+                project_id:
+                  type:
+                    - number
+                    - 'null'
+                story_type:
+                  type:
+                    - string
+                    - 'null'
+                updated_at:
+                  type:
+                    - string
+                    - 'null'
+                accepted_at:
+                  type:
+                    - string
+                    - 'null'
+                avatar_guid:
+                  type:
+                    - string
+                    - 'null'
+                description:
+                  type:
+                    - string
+                    - 'null'
+                owned_by_id:
+                  type:
+                    - number
+                    - 'null'
+                completed_at:
+                  type:
+                    - number
+                    - 'null'
+                follower_ids:
+                  type:
+                    - array
+                    - 'null'
+                  items:
+                    type:
+                      - number
+                      - 'null'
+                current_state:
+                  type:
+                    - string
+                    - 'null'
+                attachment_ids:
+                  type:
+                    - array
+                    - 'null'
+                review_type_id:
+                  type:
+                    - number
+                    - 'null'
+                story_priority:
+                  type:
+                    - string
+                    - 'null'
+                profile_content:
+                  type:
+                    - string
+                    - 'null'
+                requested_by_id:
+                  type:
+                    - number
+                    - 'null'
+                file_attachments:
+                  type:
+                    - array
+                    - 'null'
+                blocked_story_ids:
+                  type:
+                    - array
+                    - 'null'
+                google_attachments:
+                  type:
+                    - array
+                    - 'null'
+                file_attachment_ids:
+                  type:
+                    - array
+                    - 'null'
+                google_attachment_ids:
+                  type:
+                    - array
+                    - 'null'
+                past_done_stories_count:
+                  type:
+                    - number
+                    - 'null'
+                past_done_story_estimates:
+                  type:
+                    - number
+                    - 'null'
+                past_done_stories_no_point_count:
+                  type:
+                    - number
+                    - 'null'
+            story_type:
+              type:
+                - string
+                - 'null'
+            change_type:
+              type:
+                - string
+                - 'null'
+            story_priority:
+              type:
+                - string
+                - 'null'
+            original_values:
+              type:
+                - object
+                - 'null'
+              properties:
+                counts:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    kind:
+                      type:
+                        - string
+                        - 'null'
+                    number_of_stories_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                    sum_of_story_estimates_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                    number_of_zero_point_stories_by_state:
+                      type:
+                        - object
+                        - 'null'
+                      properties:
+                        kind:
+                          type:
+                            - string
+                            - 'null'
+                        planned:
+                          type:
+                            - number
+                            - 'null'
+                        started:
+                          type:
+                            - number
+                            - 'null'
+                        accepted:
+                          type:
+                            - number
+                            - 'null'
+                        finished:
+                          type:
+                            - number
+                            - 'null'
+                        rejected:
+                          type:
+                            - number
+                            - 'null'
+                        delivered:
+                          type:
+                            - number
+                            - 'null'
+                        unstarted:
+                          type:
+                            - number
+                            - 'null'
+                        unscheduled:
+                          type:
+                            - number
+                            - 'null'
+                status:
+                  type:
+                    - string
+                    - 'null'
+                owner_ids:
+                  type:
+                    - array
+                    - 'null'
+                updated_at:
+                  type:
+                    - string
+                    - 'null'
+                avatar_guid:
+                  type:
+                    - string
+                    - 'null'
+                completed_at:
+                  type:
+                    - number
+                    - 'null'
+                follower_ids:
+                  type:
+                    - array
+                    - 'null'
+                current_state:
+                  type:
+                    - string
+                    - 'null'
       message:
         type:
-        - 'null'
-        - string
+          - string
+          - 'null'
+      project:
+        type:
+          - object
+          - 'null'
+        properties:
+          id:
+            type:
+              - number
+              - 'null'
+          kind:
+            type:
+              - string
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
       highlight:
         type:
-        - 'null'
-        - string
+          - string
+          - 'null'
+      occurred_at:
+        type:
+          - string
+          - 'null'
+      performed_by:
+        type:
+          - object
+          - 'null'
+        properties:
+          id:
+            type:
+              - number
+              - 'null'
+          kind:
+            type:
+              - string
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+          initials:
+            type:
+              - string
+              - 'null'
       project_version:
         type:
-        - 'null'
-        - integer
-      changes:
+          - number
+          - 'null'
+      primary_resources:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type:
+                - number
+                - 'null'
+            url:
+              type:
+                - string
+                - 'null'
+            kind:
+              type:
+                - string
+                - 'null'
+            name:
+              type:
+                - string
+                - 'null'
+            story_type:
+              type:
+                - string
+                - 'null'
+            story_priority:
+              type:
+                - string
+                - 'null'
+      secondary_resources:
+        type:
+          - array
+          - 'null'
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      version:
+        type:
+          - number
+          - 'null'
+      id:
+        type: number
+      kind:
+        type:
+          - string
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      public:
+        type:
+          - boolean
+          - 'null'
+      time_zone:
+        type:
+          - object
+          - 'null'
+        properties:
+          kind:
+            type:
+              - string
+              - 'null'
+          offset:
+            type:
+              - string
+              - 'null'
+          olson_name:
+            type:
+              - string
+              - 'null'
+      account_id:
+        type:
+          - number
+          - 'null'
+      created_at:
+        type:
+          - string
+          - 'null'
+      start_time:
+        type:
+          - string
+          - 'null'
+      updated_at:
+        type:
+          - string
+          - 'null'
+      point_scale:
+        type:
+          - string
+          - 'null'
+      atom_enabled:
+        type:
+          - boolean
+          - 'null'
+      enable_tasks:
+        type:
+          - boolean
+          - 'null'
+      project_type:
+        type:
+          - string
+          - 'null'
+      week_start_day:
+        type:
+          - string
+          - 'null'
+      profile_content:
+        type:
+          - string
+          - 'null'
+      enable_following:
+        type:
+          - boolean
+          - 'null'
+      initial_velocity:
+        type:
+          - number
+          - 'null'
+      iteration_length:
+        type:
+          - number
+          - 'null'
+      has_google_domain:
+        type:
+          - boolean
+          - 'null'
+      automatic_planning:
+        type:
+          - boolean
+          - 'null'
+      show_priority_icon:
+        type:
+          - boolean
+          - 'null'
+      show_story_priority:
+        type:
+          - boolean
+          - 'null'
+      point_scale_is_custom:
+        type:
+          - boolean
+          - 'null'
+      enable_incoming_emails:
+        type:
+          - boolean
+          - 'null'
+      velocity_averaged_over:
+        type:
+          - number
+          - 'null'
+      current_iteration_number:
+        type:
+          - number
+          - 'null'
+      bugs_and_chores_are_estimatable:
+        type:
+          - boolean
+          - 'null'
+      show_priority_icon_in_all_panels:
+        type:
+          - boolean
+          - 'null'
+      number_of_done_iterations_to_show:
+        type:
+          - number
+          - 'null'
+    additionalProperties: true
+  releases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      url:
+        type:
+          - 'null'
+          - string
+      kind:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      labels:
         type: array
         items:
           type: object
           properties:
             id:
               type:
-              - 'null'
-              - integer
+                - 'null'
+                - integer
             kind:
               type:
-              - 'null'
-              - string
-            change_type:
+                - 'null'
+                - string
+            name:
               type:
-              - 'null'
-              - string
-            original_values:
+                - 'null'
+                - string
+            created_at:
               type:
-              - 'null'
-              - object
-            new_values:
+                - 'null'
+                - string
+              format: date-time
+            project_id:
               type:
-              - 'null'
-              - object
-      primary_resources:
+                - 'null'
+                - integer
+            updated_at:
+              type:
+                - 'null'
+                - string
+              format: date-time
+      deadline:
         type:
-        - 'null'
-        - array
-        items:
-          type: object
-          properties:
-            id:
-              type:
+          - 'null'
+          - string
+        format: date-time
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      project_id:
+        type:
+          - 'null'
+          - integer
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      accepted_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      current_state:
+        type:
+          - 'null'
+          - string
+    additionalProperties: true
+  project_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      kind:
+        type:
+          - 'null'
+          - string
+      role:
+        type:
+          - 'null'
+          - string
+      person:
+        type: object
+        properties:
+          id:
+            type:
               - 'null'
               - integer
-            kind:
-              type:
+          kind:
+            type:
               - 'null'
               - string
-
+          name:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
+          initials:
+            type:
+              - 'null'
+              - string
+          username:
+            type:
+              - 'null'
+              - string
+      favorite:
+        type:
+          - 'null'
+          - boolean
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      project_id:
+        type:
+          - 'null'
+          - integer
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      project_color:
+        type:
+          - 'null'
+          - string
+      last_viewed_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      wants_comment_notification_emails:
+        type:
+          - 'null'
+          - boolean
+      will_receive_mention_notifications_or_emails:
+        type:
+          - 'null'
+          - boolean
+    additionalProperties: true
