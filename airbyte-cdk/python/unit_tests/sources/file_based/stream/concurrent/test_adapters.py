@@ -23,8 +23,9 @@ from airbyte_cdk.sources.file_based.stream.concurrent.adapters import (
     FileBasedStreamPartition,
     FileBasedStreamPartitionGenerator,
 )
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -164,7 +165,15 @@ class StreamFacadeTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
         self._legacy_stream = DefaultFileBasedStream(
-            cursor=None,
+            cursor=FileBasedConcurrentCursor(
+                stream_config=FileBasedStreamConfig(name="stream", format=CsvFormat()),
+                stream_name="stream",
+                stream_namespace=None,
+                stream_state={},
+                message_repository=InMemoryMessageRepository(),
+                connector_state_manager=Mock(),
+                cursor_field=CursorField("cursor"),
+            ),
             config=FileBasedStreamConfig(name="stream", format=CsvFormat()),
             catalog_schema={},
             stream_reader=MagicMock(),
