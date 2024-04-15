@@ -75,6 +75,7 @@ class MessageGrouper:
         source: DeclarativeSource,
         config: Mapping[str, Any],
         configured_catalog: ConfiguredAirbyteCatalog,
+         state,
         record_limit: Optional[int] = None,
     ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
@@ -96,7 +97,7 @@ class MessageGrouper:
         latest_config_update: AirbyteControlMessage = None
         auxiliary_requests = []
         for message_group in self._get_message_groups(
-            self._read_stream(source, config, configured_catalog),
+            self._read_stream(source, config, configured_catalog, state),
             schema_inferrer,
             datetime_format_inferrer,
             record_limit,
@@ -276,12 +277,13 @@ class MessageGrouper:
         current_page_records.clear()
 
     def _read_stream(
-        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog
+        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog,
+            state
     ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
-            yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, {})
+            yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, state)
         except Exception as e:
             error_message = f"{e.args[0] if len(e.args) > 0 else str(e)}"
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()

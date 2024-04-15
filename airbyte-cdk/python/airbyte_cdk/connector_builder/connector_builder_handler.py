@@ -54,12 +54,12 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, limits: TestReadLimits
+    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, state, limits: TestReadLimits
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices, limits.max_records)
         stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
-        stream_read = handler.get_message_groups(source, config, configured_catalog, limits.max_records)
+        stream_read = handler.get_message_groups(source, config, configured_catalog, state, limits.max_records)
         return AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(data=dataclasses.asdict(stream_read), stream=stream_name, emitted_at=_emitted_at()),
