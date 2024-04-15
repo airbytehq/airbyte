@@ -59,7 +59,7 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
         .withStream(getAirbyteStreamState(pair, Jsons.jsonNode(ocLoadStatus)));
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  protected AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     Preconditions.checkNotNull(pair);
     Preconditions.checkNotNull(pair.getName());
     Preconditions.checkNotNull(pair.getNamespace());
