@@ -3,8 +3,8 @@
 ## Upgrading to 1.0.0
 This release upgrades the SFTP Bulk connector to file-based CDK which causes the following changes:
 
-- configuration changes
-- stream changes
+- Configuration changes
+- Stream changes
 
 Users should:
 
