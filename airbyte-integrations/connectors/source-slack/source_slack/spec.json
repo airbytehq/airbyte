@@ -29,6 +29,12 @@
         "title": "Join all channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
       },
+      "include_private_channels": {
+        "type": "boolean",
+        "default": false,
+        "title": "Include private channels",
+        "description": "Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels. "
+      },
       "channel_filter": {
         "type": "array",
         "default": [],
