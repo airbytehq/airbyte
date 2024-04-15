@@ -318,7 +318,6 @@ streams:
   - "#/definitions/annotations_stream" # +
   - "#/definitions/cohort_members_stream" # +
   - "#/definitions/funnels_stream" # +
-  - "#/definitions/funnel_ids_stream" # -
 
 check:
   type: CheckStream

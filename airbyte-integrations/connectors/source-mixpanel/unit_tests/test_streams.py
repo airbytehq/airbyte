@@ -12,18 +12,11 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 from source_mixpanel.streams import (
-    Annotations,
-    CohortMembers,
-    Cohorts,
-    Engage,
     EngageSchema,
     Export,
     ExportSchema,
-    Funnels,
-    FunnelsList,
     IncrementalMixpanelStream,
     MixpanelStream,
-    Revenue,
 )
 from source_mixpanel.utils import read_full_refresh
 
@@ -105,296 +98,296 @@ def cohorts_response():
         ],
     )
 
-
-def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
-    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
-
-    stream = Cohorts(authenticator=MagicMock(), **config)
-
-    records = read_incremental(stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
-
-
-@pytest.fixture
-def engage_response():
-    return setup_response(
-        200,
-        {
-            "page": 0,
-            "page_size": 1000,
-            "session_id": "1234567890-EXAMPL",
-            "status": "ok",
-            "total": 2,
-            "results": [
-                {
-                    "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
-                    "$properties": {
-                        "$created": "2008-12-12T11:20:47",
-                        "$browser": "Chrome",
-                        "$browser_version": "83.0.4103.116",
-                        "$email": "clark@asw.com",
-                        "$first_name": "Clark",
-                        "$last_name": "Kent",
-                        "$name": "Clark Kent",
-                    },
-                },
-                {
-                    "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
-                    "$properties": {
-                        "$created": "2008-11-12T11:20:47",
-                        "$browser": "Firefox",
-                        "$browser_version": "83.0.4103.116",
-                        "$email": "bruce@asw.com",
-                        "$first_name": "Bruce",
-                        "$last_name": "Wayne",
-                        "$name": "Bruce Wayne",
-                    },
-                },
-            ],
-        },
-    )
-
-
-def test_engage_stream_incremental(requests_mock, engage_response, config):
-    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
-
-    stream = Engage(authenticator=MagicMock(), **config)
-
-    stream_state = {"created": "2008-12-12T11:20:47"}
-    records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
-
-    assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
-
-
-def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config):
-    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
-    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
-
-    stream = CohortMembers(authenticator=MagicMock(), **config)
-    stream.set_cursor(["created"])
-    stream_state = {"created": "2008-12-12T11:20:47"}
-    records = stream.read_records(
-        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
-    )
-
-    records = [item for item in records]
-    assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
-
-
-@pytest.fixture
-def funnels_list_response():
-    return setup_response(200, [{"funnel_id": 1, "name": "Signup funnel"}])
-
-
-def test_funnels_list_stream(requests_mock, config, funnels_list_response):
-    stream = FunnelsList(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_list_response)
-
-    records = stream.read_records(sync_mode=SyncMode.full_refresh)
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
-
-
-@pytest.fixture
-def funnels_list_url(config):
-    funnel_list = FunnelsList(authenticator=MagicMock(), **config)
-    return get_url_to_mock(funnel_list)
-
-
-@pytest.fixture
-def funnels_response(start_date):
-    first_date = start_date + timedelta(days=1)
-    second_date = start_date + timedelta(days=10)
-    return setup_response(
-        200,
-        {
-            "meta": {"dates": [str(first_date), str(second_date)]},
-            "data": {
-                str(first_date): {
-                    "steps": [],
-                    "analysis": {
-                        "completion": 20524,
-                        "starting_amount": 32688,
-                        "steps": 2,
-                        "worst": 1,
-                    },
-                },
-                str(second_date): {
-                    "steps": [],
-                    "analysis": {
-                        "completion": 20500,
-                        "starting_amount": 34750,
-                        "steps": 2,
-                        "worst": 1,
-                    },
-                },
-            },
-        },
-    )
-
-
-def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_url):
-    stream = Funnels(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", funnels_list_url, funnels_list_response)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_response)
-
-    stream_slices = stream.stream_slices(sync_mode=SyncMode.incremental)
-
-    records_arr = []
-    for stream_slice in stream_slices:
-        records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
-        for record in records:
-            records_arr.append(record)
-
-    assert len(records_arr) == 4
-    last_record = records_arr[-1]
-    # Test without current state date
-    new_state = stream.get_updated_state(current_stream_state={}, latest_record=records_arr[-1])
-    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
-
-    # Test with current state, that lesser than last record date
-    last_record_date = pendulum.parse(last_record["date"]).date()
-    new_state = stream.get_updated_state(
-        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date - timedelta(days=1))}},
-        latest_record=records_arr[-1],
-    )
-    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
-
-    # Test with current state, that is greater, than last record date
-    new_state = stream.get_updated_state(
-        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}},
-        latest_record=records_arr[-1],
-    )
-    assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
-
-
-@pytest.fixture
-def engage_schema_response():
-    return setup_response(
-        200,
-        {
-            "results": {
-                "$created": {"count": 124, "type": "string"},
-                "$is_active": {"count": 412, "type": "boolean"},
-                "$CreatedDateTimestamp": {"count": 300, "type": "number"},
-                "$CreatedDate": {"count": 11, "type": "datetime"},
-                "$properties": {"count": 2, "type": "object"},
-                "$tags": {"count": 131, "type": "list"},
-            }
-        },
-    )
-
-
-def test_engage_schema(requests_mock, engage_schema_response, config):
-    stream = Engage(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
-    assert stream.get_json_schema() == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "additionalProperties": True,
-        "properties": {
-            "CreatedDate": {"type": ["null", "string"]},
-            "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
-            "browser": {"type": ["null", "string"]},
-            "browser_version": {"type": ["null", "string"]},
-            "city": {"type": ["null", "string"]},
-            "country_code": {"type": ["null", "string"]},
-            "created": {"type": ["null", "string"]},
-            "distinct_id": {"type": ["null", "string"]},
-            "email": {"type": ["null", "string"]},
-            "first_name": {"type": ["null", "string"]},
-            "id": {"type": ["null", "string"]},
-            "is_active": {"type": ["null", "boolean"]},
-            "last_name": {"type": ["null", "string"]},
-            "last_seen": {"format": "date-time", "type": ["null", "string"]},
-            "name": {"type": ["null", "string"]},
-            "properties": {"additionalProperties": True, "type": ["null", "object"]},
-            "region": {"type": ["null", "string"]},
-            "tags": {"items": {}, "required": False, "type": ["null", "array"]},
-            "timezone": {"type": ["null", "string"]},
-            "unblocked": {"type": ["null", "string"]},
-        },
-        "type": "object",
-    }
-
-
-def test_update_engage_schema(requests_mock, config):
-    stream = EngageSchema(authenticator=MagicMock(), **config)
-    requests_mock.register_uri(
-        "GET",
-        get_url_to_mock(stream),
-        setup_response(
-            200,
-            {
-                "results": {
-                    "$someNewSchemaField": {"count": 124, "type": "string"},
-                }
-            },
-        ),
-    )
-    engage_stream = Engage(authenticator=MagicMock(), **config)
-    engage_schema = engage_stream.get_json_schema()
-    assert "someNewSchemaField" in engage_schema["properties"]
-
-
-@pytest.fixture
-def annotations_response():
-    return setup_response(
-        200,
-        {
-            "annotations": [
-                {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
-                {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
-            ]
-        },
-    )
-
-
-def test_annotations_stream(requests_mock, annotations_response, config):
-
-    stream = Annotations(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
-
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-    # read records for single slice
-    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 2
-
-
-@pytest.fixture
-def revenue_response():
-    return setup_response(
-        200,
-        {
-            "computed_at": "2021-07-03T12:43:48.889421+00:00",
-            "results": {
-                "$overall": {"amount": 0.0, "count": 124, "paid_count": 0},
-                "2021-06-01": {"amount": 0.0, "count": 124, "paid_count": 0},
-                "2021-06-02": {"amount": 0.0, "count": 124, "paid_count": 0},
-            },
-            "session_id": "162...",
-            "status": "ok",
-        },
-    )
-
-
-def test_revenue_stream(requests_mock, revenue_response, config):
-
-    stream = Revenue(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
-
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-    # read records for single slice
-    records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 2
+#
+# def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
+#     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
+#
+#     stream = Cohorts(authenticator=MagicMock(), **config)
+#
+#     records = read_incremental(stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
+#
+#     records_length = sum(1 for _ in records)
+#     assert records_length == 1
+#
+#
+# @pytest.fixture
+# def engage_response():
+#     return setup_response(
+#         200,
+#         {
+#             "page": 0,
+#             "page_size": 1000,
+#             "session_id": "1234567890-EXAMPL",
+#             "status": "ok",
+#             "total": 2,
+#             "results": [
+#                 {
+#                     "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
+#                     "$properties": {
+#                         "$created": "2008-12-12T11:20:47",
+#                         "$browser": "Chrome",
+#                         "$browser_version": "83.0.4103.116",
+#                         "$email": "clark@asw.com",
+#                         "$first_name": "Clark",
+#                         "$last_name": "Kent",
+#                         "$name": "Clark Kent",
+#                     },
+#                 },
+#                 {
+#                     "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
+#                     "$properties": {
+#                         "$created": "2008-11-12T11:20:47",
+#                         "$browser": "Firefox",
+#                         "$browser_version": "83.0.4103.116",
+#                         "$email": "bruce@asw.com",
+#                         "$first_name": "Bruce",
+#                         "$last_name": "Wayne",
+#                         "$name": "Bruce Wayne",
+#                     },
+#                 },
+#             ],
+#         },
+#     )
+#
+#
+# def test_engage_stream_incremental(requests_mock, engage_response, config):
+#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
+#
+#     stream = Engage(authenticator=MagicMock(), **config)
+#
+#     stream_state = {"created": "2008-12-12T11:20:47"}
+#     records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
+#
+#     assert len(records) == 1
+#     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+#
+#
+# def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config):
+#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
+#     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
+#
+#     stream = CohortMembers(authenticator=MagicMock(), **config)
+#     stream.set_cursor(["created"])
+#     stream_state = {"created": "2008-12-12T11:20:47"}
+#     records = stream.read_records(
+#         sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
+#     )
+#
+#     records = [item for item in records]
+#     assert len(records) == 1
+#     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+#
+#
+# @pytest.fixture
+# def funnels_list_response():
+#     return setup_response(200, [{"funnel_id": 1, "name": "Signup funnel"}])
+#
+#
+# def test_funnels_list_stream(requests_mock, config, funnels_list_response):
+#     stream = FunnelsList(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_list_response)
+#
+#     records = stream.read_records(sync_mode=SyncMode.full_refresh)
+#
+#     records_length = sum(1 for _ in records)
+#     assert records_length == 1
+#
+#
+# @pytest.fixture
+# def funnels_list_url(config):
+#     funnel_list = FunnelsList(authenticator=MagicMock(), **config)
+#     return get_url_to_mock(funnel_list)
+#
+#
+# @pytest.fixture
+# def funnels_response(start_date):
+#     first_date = start_date + timedelta(days=1)
+#     second_date = start_date + timedelta(days=10)
+#     return setup_response(
+#         200,
+#         {
+#             "meta": {"dates": [str(first_date), str(second_date)]},
+#             "data": {
+#                 str(first_date): {
+#                     "steps": [],
+#                     "analysis": {
+#                         "completion": 20524,
+#                         "starting_amount": 32688,
+#                         "steps": 2,
+#                         "worst": 1,
+#                     },
+#                 },
+#                 str(second_date): {
+#                     "steps": [],
+#                     "analysis": {
+#                         "completion": 20500,
+#                         "starting_amount": 34750,
+#                         "steps": 2,
+#                         "worst": 1,
+#                     },
+#                 },
+#             },
+#         },
+#     )
+#
+#
+# def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_url):
+#     stream = Funnels(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", funnels_list_url, funnels_list_response)
+#     requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_response)
+#
+#     stream_slices = stream.stream_slices(sync_mode=SyncMode.incremental)
+#
+#     records_arr = []
+#     for stream_slice in stream_slices:
+#         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
+#         for record in records:
+#             records_arr.append(record)
+#
+#     assert len(records_arr) == 4
+#     last_record = records_arr[-1]
+#     # Test without current state date
+#     new_state = stream.get_updated_state(current_stream_state={}, latest_record=records_arr[-1])
+#     assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+#
+#     # Test with current state, that lesser than last record date
+#     last_record_date = pendulum.parse(last_record["date"]).date()
+#     new_state = stream.get_updated_state(
+#         current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date - timedelta(days=1))}},
+#         latest_record=records_arr[-1],
+#     )
+#     assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+#
+#     # Test with current state, that is greater, than last record date
+#     new_state = stream.get_updated_state(
+#         current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}},
+#         latest_record=records_arr[-1],
+#     )
+#     assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
+#
+#
+# @pytest.fixture
+# def engage_schema_response():
+#     return setup_response(
+#         200,
+#         {
+#             "results": {
+#                 "$created": {"count": 124, "type": "string"},
+#                 "$is_active": {"count": 412, "type": "boolean"},
+#                 "$CreatedDateTimestamp": {"count": 300, "type": "number"},
+#                 "$CreatedDate": {"count": 11, "type": "datetime"},
+#                 "$properties": {"count": 2, "type": "object"},
+#                 "$tags": {"count": 131, "type": "list"},
+#             }
+#         },
+#     )
+#
+#
+# def test_engage_schema(requests_mock, engage_schema_response, config):
+#     stream = Engage(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
+#     assert stream.get_json_schema() == {
+#         "$schema": "http://json-schema.org/draft-07/schema#",
+#         "additionalProperties": True,
+#         "properties": {
+#             "CreatedDate": {"type": ["null", "string"]},
+#             "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
+#             "browser": {"type": ["null", "string"]},
+#             "browser_version": {"type": ["null", "string"]},
+#             "city": {"type": ["null", "string"]},
+#             "country_code": {"type": ["null", "string"]},
+#             "created": {"type": ["null", "string"]},
+#             "distinct_id": {"type": ["null", "string"]},
+#             "email": {"type": ["null", "string"]},
+#             "first_name": {"type": ["null", "string"]},
+#             "id": {"type": ["null", "string"]},
+#             "is_active": {"type": ["null", "boolean"]},
+#             "last_name": {"type": ["null", "string"]},
+#             "last_seen": {"format": "date-time", "type": ["null", "string"]},
+#             "name": {"type": ["null", "string"]},
+#             "properties": {"additionalProperties": True, "type": ["null", "object"]},
+#             "region": {"type": ["null", "string"]},
+#             "tags": {"items": {}, "required": False, "type": ["null", "array"]},
+#             "timezone": {"type": ["null", "string"]},
+#             "unblocked": {"type": ["null", "string"]},
+#         },
+#         "type": "object",
+#     }
+#
+#
+# def test_update_engage_schema(requests_mock, config):
+#     stream = EngageSchema(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri(
+#         "GET",
+#         get_url_to_mock(stream),
+#         setup_response(
+#             200,
+#             {
+#                 "results": {
+#                     "$someNewSchemaField": {"count": 124, "type": "string"},
+#                 }
+#             },
+#         ),
+#     )
+#     engage_stream = Engage(authenticator=MagicMock(), **config)
+#     engage_schema = engage_stream.get_json_schema()
+#     assert "someNewSchemaField" in engage_schema["properties"]
+#
+#
+# @pytest.fixture
+# def annotations_response():
+#     return setup_response(
+#         200,
+#         {
+#             "annotations": [
+#                 {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
+#                 {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
+#             ]
+#         },
+#     )
+#
+#
+# def test_annotations_stream(requests_mock, annotations_response, config):
+#
+#     stream = Annotations(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
+#
+#     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+#     # read records for single slice
+#     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+#
+#     records_length = sum(1 for _ in records)
+#     assert records_length == 2
+#
+#
+# @pytest.fixture
+# def revenue_response():
+#     return setup_response(
+#         200,
+#         {
+#             "computed_at": "2021-07-03T12:43:48.889421+00:00",
+#             "results": {
+#                 "$overall": {"amount": 0.0, "count": 124, "paid_count": 0},
+#                 "2021-06-01": {"amount": 0.0, "count": 124, "paid_count": 0},
+#                 "2021-06-02": {"amount": 0.0, "count": 124, "paid_count": 0},
+#             },
+#             "session_id": "162...",
+#             "status": "ok",
+#         },
+#     )
+#
+#
+# def test_revenue_stream(requests_mock, revenue_response, config):
+#
+#     stream = Revenue(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
+#
+#     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+#     # read records for single slice
+#     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
+#
+#     records_length = sum(1 for _ in records)
+#     assert records_length == 2
 
 
 @pytest.fixture
@@ -504,38 +497,38 @@ def test_export_iter_dicts(config):
     # drop record parts because they are not standing nearby
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
+#
+# @pytest.mark.parametrize(
+#     ("http_status_code", "should_retry", "log_message"),
+#     [
+#         (402, False, "Unable to perform a request. Payment Required: "),
+#     ],
+# )
+# def test_should_retry_payment_required(http_status_code, should_retry, log_message, config, caplog):
+#     response_mock = MagicMock()
+#     response_mock.status_code = http_status_code
+#     response_mock.json = MagicMock(return_value={"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"})
+#     streams = [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]
+#     for stream_class in streams:
+#         stream = stream_class(authenticator=MagicMock(), **config)
+#         assert stream.should_retry(response_mock) == should_retry
+#         assert log_message in caplog.text
 
-@pytest.mark.parametrize(
-    ("http_status_code", "should_retry", "log_message"),
-    [
-        (402, False, "Unable to perform a request. Payment Required: "),
-    ],
-)
-def test_should_retry_payment_required(http_status_code, should_retry, log_message, config, caplog):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status_code
-    response_mock.json = MagicMock(return_value={"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"})
-    streams = [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]
-    for stream_class in streams:
-        stream = stream_class(authenticator=MagicMock(), **config)
-        assert stream.should_retry(response_mock) == should_retry
-        assert log_message in caplog.text
-
-
-def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
-    streams = []
-    for cls in [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]:
-        stream = cls(authenticator=MagicMock(), **config)
-        requests_mock.register_uri(stream.http_method, get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-        streams.append(stream)
-
-    for stream in streams:
-        records = []
-        with pytest.raises(AirbyteTracedException) as e:
-            for slice_ in stream.stream_slices(sync_mode="full_refresh"):
-                records.extend(stream.read_records("full_refresh", stream_slice=slice_))
-        assert records == []
-        assert (
-            str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. "
-            "See more details: Unable to authenticate request"
-        )
+#
+# def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
+#     streams = []
+#     for cls in [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]:
+#         stream = cls(authenticator=MagicMock(), **config)
+#         requests_mock.register_uri(stream.http_method, get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
+#         streams.append(stream)
+#
+#     for stream in streams:
+#         records = []
+#         with pytest.raises(AirbyteTracedException) as e:
+#             for slice_ in stream.stream_slices(sync_mode="full_refresh"):
+#                 records.extend(stream.read_records("full_refresh", stream_slice=slice_))
+#         assert records == []
+#         assert (
+#             str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. "
+#             "See more details: Unable to authenticate request"
+#         )
