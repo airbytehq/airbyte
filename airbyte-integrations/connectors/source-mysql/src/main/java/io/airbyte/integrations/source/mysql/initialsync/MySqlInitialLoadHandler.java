@@ -10,6 +10,7 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
@@ -27,6 +28,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -110,7 +112,7 @@ public class MySqlInitialLoadHandler {
           }
         });
 
-        final AutoCloseableIterator<JsonNode> queryStream =
+        final AutoCloseableIterator<AirbyteRecordData> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
@@ -144,7 +146,7 @@ public class MySqlInitialLoadHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private AutoCloseableIterator<AirbyteMessage> getRecordIterator(
-                                                                  final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                  final AutoCloseableIterator<AirbyteRecordData> recordIterator,
                                                                   final String streamName,
                                                                   final String namespace,
                                                                   final long emittedAt) {
@@ -154,7 +156,12 @@ public class MySqlInitialLoadHandler {
             .withStream(streamName)
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
-            .withData(r)));
+            .withData(r.rawRowData())
+            .withMeta(isMetaChangesEmptyOrNull(r.meta()) ? null : r.meta())));
+  }
+
+  private boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
+    return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
   // Augments the given iterator with record count logs.
