@@ -160,6 +160,7 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
 ```
 /tmp/regression_tests_artifacts
 └── session_1710754231
+    ├── duck.db
     |── report.html
     ├── command_execution_artifacts
     │   └── source-orb
@@ -167,7 +168,6 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       │   ├── dev
     │       │   │   ├── airbyte_messages
     │       │   │   │   ├── connection_status.jsonl
-    │       │   │   │   ├── duck.db
     │       │   │   │   └── logs.jsonl
     │       │   │   ├── http_dump.har
     │       │   │   ├── http_dump.mitm
@@ -176,7 +176,6 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       │   └── latest
     │       │       ├── airbyte_messages
     │       │       │   ├── connection_status.jsonl
-    │       │       │   ├── duck.db
     │       │       │   └── logs.jsonl
     │       │       ├── http_dump.har
     │       │       ├── http_dump.mitm
@@ -185,16 +184,14 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       ├── discover
     │       │   ├── dev
     │       │   │   ├── airbyte_messages
-    │       │   │   │   ├── catalog.jsonl
-    │       │   │   │   └── duck.db
+    │       │   │   │   └── catalog.jsonl
     │       │   │   ├── http_dump.har
     │       │   │   ├── http_dump.mitm
     │       │   │   ├── stderr.log
     │       │   │   └── stdout.log
     │       │   └── latest
     │       │       ├── airbyte_messages
-    │       │       │   ├── catalog.jsonl
-    │       │       │   └── duck.db
+    │       │       │   └── catalog.jsonl
     │       │       ├── http_dump.har
     │       │       ├── http_dump.mitm
     │       │       ├── stderr.log
@@ -202,7 +199,6 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       ├── read-with-state
     │       │   ├── dev
     │       │   │   ├── airbyte_messages
-    │       │   │   │   ├── duck.db
     │       │   │   │   ├── logs.jsonl
     │       │   │   │   ├── records.jsonl
     │       │   │   │   ├── states.jsonl
@@ -213,7 +209,6 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       │   │   └── stdout.log
     │       │   └── latest
     │       │       ├── airbyte_messages
-    │       │       │   ├── duck.db
     │       │       │   ├── logs.jsonl
     │       │       │   ├── records.jsonl
     │       │       │   ├── states.jsonl
@@ -225,13 +220,11 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
     │       └── spec
     │           ├── dev
     │           │   ├── airbyte_messages
-    │           │   │   ├── duck.db
     │           │   │   └── spec.jsonl
     │           │   ├── stderr.log
     │           │   └── stdout.log
     │           └── latest
     │               ├── airbyte_messages
-    │               │   ├── duck.db
     │               │   └── spec.jsonl
     │               ├── stderr.log
     │               └── stdout.log
