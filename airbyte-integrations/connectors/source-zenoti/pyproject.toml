@@ -3,10 +3,10 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.0"
+version = "0.6.0"
 name = "source-zenoti"
 description = "Source implementation for zenoti."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = [ "Michal Krawczyk <michal@corraldata.com>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/zenoti"
