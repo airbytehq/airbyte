@@ -258,7 +258,7 @@ class JwtHeaders(BaseModel):
     kid: Optional[str] = Field(
         None, description='Private key ID for user account.', examples=["{{ config['kid'] }}"], title='Key Identifier'
     )
-    typ: Optional[str] = Field(None, description='The media type of the complete JWT.', examples=['JWT'], title='Type')
+    typ: Optional[str] = Field('JWT', description='The media type of the complete JWT.', examples=['JWT'], title='Type')
     cty: Optional[str] = Field(None, description='Content type of JWT header.', examples=['JWT'], title='Content Type')
 
 
@@ -284,9 +284,13 @@ class JwtPayload(BaseModel):
 class JwtAuthenticator(BaseModel):
     type: Literal['JwtAuthenticator']
     secret_key: str = Field(..., description='Secret used to sign the JSON web token.', examples=["{{ config['secret_key'] }}"])
-    algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=['HS256', 'ES256'])
+    base64_encode_secret_key: Optional[bool] = Field(
+        False,
+        description='When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.',
+    )
+    algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=['ES256'])
     token_duration: Optional[int] = Field(
-        None,
+        1200,
         description='The amount of time in seconds a JWT token can be valid after being issued.',
         examples=[1200],
         title='Token Duration',
