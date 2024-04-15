@@ -83,13 +83,13 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         return payload
 
     def _get_algorithm(self) -> str:
-        algorithm: str = self._algorithm.eval(self.config)
+        algorithm: str = f"{self._algorithm.eval(self.config)}"
         if not algorithm:
             raise ValueError("Algorithm is required")
         return algorithm
 
     def _get_secret_key(self) -> str:
-        secret_key: str = self._secret_key.eval(self.config)
+        secret_key: str = f"{self._secret_key.eval(self.config)}"
         if not secret_key:
             raise ValueError("secret_key is required")
         if self._base64_encode_secret_key:
