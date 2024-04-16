@@ -4,12 +4,11 @@
 
 import datetime
 import uuid
+from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.file_types import AvroParser
-
-from unittest.mock import MagicMock
 
 _default_avro_format = AvroFormat()
 _double_as_string_avro_format = AvroFormat(double_as_string=True)

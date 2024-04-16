@@ -6,7 +6,7 @@ import asyncio
 import datetime
 import math
 from typing import Any, Mapping, Union
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pyarrow as pa
 import pytest
@@ -17,8 +17,6 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pyarrow import Scalar
-
-from unittest.mock import MagicMock
 
 _default_parquet_format = ParquetFormat()
 _decimal_as_float_parquet_format = ParquetFormat(decimal_as_float=True)
