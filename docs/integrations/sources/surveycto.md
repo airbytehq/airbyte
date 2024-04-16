@@ -53,6 +53,11 @@ The SurveyCTO source connector supports the following streams:
 - Form Data Definition - Fetch form's definition from SurveyCTO in json format
 - Form Repeat Groups - Fetch SurveyCTO form's repeat group data in csv format. The form needs to have repeat groups for it to work.
 
+## Reference Resources
+[SurveyCTO API Documentation](https://support.surveycto.com/hc/en-us/articles/360033156894?flash_digest=0a6eded7694409181788cc46a7026897850d65b5&flash_digest=d76dde7c3ffc40f4a7f0ebd87596d32f3a52304f) - Provides details of the SurveyCTO API endpoints and the expected parameters. The downside is you need to be signed in to a SurveyCTO server to access the documentation
+
+[pysurveycto](https://github.com/IDinsight/surveycto-python) - A Python library to download data collected on SurveyCTO data collection app using SurveyCTO REST API. The library was created by [IDinsight](https://www.idinsight.org/) as an open-source contribution to the SurveyCTO ecosystem. 
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
