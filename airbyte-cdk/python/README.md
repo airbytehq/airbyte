@@ -165,5 +165,23 @@ HTTP requests to `localhost:8113/data` should now return the body defined in the
 
 #### Publishing a new version to PyPi
 
-1. Open a PR
-2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
+Python CDK has a
+[GitHub workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
+that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and then making a commit to update (and subsequently auto-release)
+[`source-declarative-manifest`](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-declarative-manifest)
+and Connector Builder (in the platform repository).
+
+> [!Note]: The workflow will handle the `CHANGELOG.md` entry for you. You should
+> not add changelog lines in your PRs to the CDK itself.
+
+> [!Warning]: The workflow bumps version on it's own, please don't change the
+> CDK version in `pyproject.toml` manually.
+
+1. You only trigger the release workflow once all the PRs that you want to be included are already merged into the `master` branch.
+2. The [`Publish CDK Manually`](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml) workflow from master using `release-type=major|manor|patch` and setting the changelog message.
+3. When the workflow runs, it will commit a new version directly to master
+  branch.
+4. The workflow will bump the version of `source-declarative-manifest` according to the `release-type` of the CDK, then commit these changes
+  back to master. The commit to master will kick off a publish of the new version of `source-declarative-manifest`.
+5. The workflow will also add a pull request to `airbyte-platform-internal`
+  repo to bump the dependency in Connector Builder.
