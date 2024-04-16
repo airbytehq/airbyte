@@ -235,9 +235,26 @@ class FBMarketingStream(Stream, ABC):
     def _filter_all_statuses(self) -> MutableMapping[str, Any]:
         """Filter records by statuses"""
 
+        filt_values = [
+            "active",
+            "archived",
+            "completed",
+            "limited",
+            "not_delivering",
+            "deleted",
+            "not_published",
+            "pending_review",
+            "permanently_deleted",
+            "recently_completed",
+            "recently_rejected",
+            "rejected",
+            "scheduled",
+            "inactive",
+        ]
+
         return {
             "filtering": [
-                {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value":  self._filter_statuses},
+                {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value":  filt_values},
             ],
         }
 
