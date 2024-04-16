@@ -45,6 +45,7 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37208](https://github.com/airbytehq/airbyte/pull/37208) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37208](https://github.com/airbytehq/airbyte/pull/37208) | schema descriptions |
 | 0.2.0   | 2023-10-03 | [30983](https://github.com/airbytehq/airbyte/pull/30983) | Migrate to low code  |
 | 0.1.0   | 2022-11-15 | [19436](https://github.com/airbytehq/airbyte/issues/19436) | Created CDK native Open Exchange Rates connector  |
