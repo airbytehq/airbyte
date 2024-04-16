@@ -7,43 +7,50 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, DestinationSyncMode, FailureType, OAuthConfigSpecification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
-        Activities,
-        AdAccount,
-        AdCreatives,
-        Ads,
-        AdSets,
-        AdsInsights,
-        AdsInsightsActionCarouselCard,
-        AdsInsightsActionConversionDevice,
-        AdsInsightsActionProductID,
-        AdsInsightsActionReaction,
-        AdsInsightsActionType,
-        AdsInsightsActionVideoSound,
-        AdsInsightsActionVideoType,
-        AdsInsightsAgeAndGender,
-        AdsInsightsCountry,
-        AdsInsightsDeliveryDevice,
-        AdsInsightsDeliveryPlatform,
-        AdsInsightsDeliveryPlatformAndDevicePlatform,
-        AdsInsightsDemographicsAge,
-        AdsInsightsDemographicsCountry,
-        AdsInsightsDemographicsDMARegion,
-        AdsInsightsDemographicsGender,
-        AdsInsightsDma,
-        AdsInsightsPlatformAndDevice,
-        AdsInsightsRegion,
-        Campaigns,
-        CustomAudiences,
-        CustomConversions,
-        Images,
-        Videos,
+    Activities,
+    AdAccount,
+    AdCreatives,
+    Ads,
+    AdSets,
+    AdsInsights,
+    AdsInsightsActionCarouselCard,
+    AdsInsightsActionConversionDevice,
+    AdsInsightsActionProductID,
+    AdsInsightsActionReaction,
+    AdsInsightsActionType,
+    AdsInsightsActionVideoSound,
+    AdsInsightsActionVideoType,
+    AdsInsightsAgeAndGender,
+    AdsInsightsCountry,
+    AdsInsightsDeliveryDevice,
+    AdsInsightsDeliveryPlatform,
+    AdsInsightsDeliveryPlatformAndDevicePlatform,
+    AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsCountry,
+    AdsInsightsDemographicsDMARegion,
+    AdsInsightsDemographicsGender,
+    AdsInsightsDma,
+    AdsInsightsPlatformAndDevice,
+    AdsInsightsRegion,
+    Campaigns,
+    CustomAudiences,
+    CustomConversions,
+    Images,
+    Videos,
 )
 
 from .utils import validate_end_date, validate_start_date
