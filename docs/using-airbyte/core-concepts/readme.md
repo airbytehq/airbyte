@@ -108,6 +108,10 @@ For more details, see our [dbt integration documentation](/cloud/managing-airbyt
 
 A workspace is a grouping of sources, destinations, connections, and other configurations. It lets you collaborate with team members and share resources across your team under a shared billing account.
 
+## Organization
+
+Organizations let you collaborate with team members and share workspaces across your team.
+
 ## Glossary of Terms
 
 You can find a extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).

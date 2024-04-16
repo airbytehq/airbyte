@@ -4,6 +4,7 @@
 
 import http.client
 import logging
+import re
 import sys
 from typing import Any
 
@@ -84,6 +85,12 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
 
+    def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
+        """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
+        According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
+        pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
+        return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
+
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
@@ -98,6 +105,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     unknown_error,
                     call_rate_limit_error,
                     batch_timeout_error,
+                    is_transient_cannot_include_error(exc),
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,

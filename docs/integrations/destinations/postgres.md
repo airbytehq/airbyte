@@ -225,6 +225,12 @@ will contain 3 columns:
 | time_without_timezone      | TIME                     |
 | date                       | DATE                     |
 
+### Naming limitations
+
+Postgres restricts all identifiers to 63 characters or less. If your stream includes column names
+longer than 63 characters, they will be truncated to this length. If this results in two columns
+having the same name, Airbyte may modify these column names to avoid the collision.
+
 ## Creating dependent objects
 
 :::caution
