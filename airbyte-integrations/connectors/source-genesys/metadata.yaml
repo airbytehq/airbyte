@@ -1,29 +1,31 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-genesys
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
   githubIssueLabel: source-genesys
   icon: genesys.svg
   license: MIT
   name: Genesys
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-genesys
   registries:
     cloud:
       enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-genesys
+  supportLevel: community
   tags:
     - language:python
     - cdk:python
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
 metadataSpecVersion: "1.0"
