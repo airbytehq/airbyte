@@ -12,6 +12,9 @@ jobs:
   format-fix:
     name: "Run airbyte-ci format fix all"
     runs-on: ubuntu-latest
+    permissions:
+      # Allow writing to repository
+      contents: write
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
