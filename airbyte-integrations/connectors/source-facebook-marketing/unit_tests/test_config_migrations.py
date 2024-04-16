@@ -4,6 +4,7 @@
 
 
 import json
+import pathlib
 from typing import Any, Mapping
 
 import pytest
@@ -23,10 +24,14 @@ def load_config(config_path: str) -> Mapping[str, Any]:
         return json.load(config)
 
 
+def _config_path(path_from_unit_test_folder: str) -> str:
+    return str(pathlib.Path(__file__).parent / path_from_unit_test_folder)
+
+
 class TestMigrateAccountIdToArray:
-    TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_old_config.json"
-    NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_new_config.json"
-    UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_upgraded_config.json"
+    TEST_CONFIG_PATH = _config_path("test_migrations/account_id_to_array/test_old_config.json")
+    NEW_TEST_CONFIG_PATH = _config_path("test_migrations/account_id_to_array/test_new_config.json")
+    UPGRADED_TEST_CONFIG_PATH = _config_path("test_migrations/account_id_to_array/test_upgraded_config.json")
 
     @staticmethod
     def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
@@ -88,12 +93,12 @@ class TestMigrateAccountIdToArray:
 
 
 class TestMigrateIncludeDeletedToStatusFilters:
-    OLD_TEST1_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_false/test_old_config.json"
-    NEW_TEST1_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_false/test_new_config.json"
-    OLD_TEST2_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_true/test_old_config.json"
-    NEW_TEST2_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_true/test_new_config.json"
+    OLD_TEST1_CONFIG_PATH = _config_path("test_migrations/include_deleted_to_status_filters/include_deleted_false/test_old_config.json")
+    NEW_TEST1_CONFIG_PATH = _config_path("test_migrations/include_deleted_to_status_filters/include_deleted_false/test_new_config.json")
+    OLD_TEST2_CONFIG_PATH = _config_path("test_migrations/include_deleted_to_status_filters/include_deleted_true/test_old_config.json")
+    NEW_TEST2_CONFIG_PATH = _config_path("test_migrations/include_deleted_to_status_filters/include_deleted_true/test_new_config.json")
 
-    UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_upgraded_config.json"
+    UPGRADED_TEST_CONFIG_PATH = _config_path("test_migrations/account_id_to_array/test_upgraded_config.json")
 
     filter_properties = ["ad_statuses", "adset_statuses", "campaign_statuses"]
 
