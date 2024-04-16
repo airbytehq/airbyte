@@ -99,13 +99,15 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         return secret_key
 
     def _get_signed_token(self) -> str:
-        # todo error handling
-        return jwt.encode(
-            payload=self._get_jwt_payload(),
-            key=self._get_secret_key(),
-            algorithm=self._get_algorithm(),
-            headers=self._get_jwt_headers(),
-        )
+        try:
+            return jwt.encode(
+                payload=self._get_jwt_payload(),
+                key=self._get_secret_key(),
+                algorithm=self._get_algorithm(),
+                headers=self._get_jwt_headers(),
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to sign token: {e}")
 
     def _get_header_prefix(self) -> str:
         return self._header_prefix.eval(self.config) if self._header_prefix else None
