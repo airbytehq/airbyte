@@ -22,6 +22,7 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
+# Pin the PyAirbyte version to avoid updates from breaking CI
 PYAIRBYTE_VERSION = "0.10.2"
 
 
