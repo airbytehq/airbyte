@@ -136,7 +136,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun compareBooleanValues(
+    protected open fun compareBooleanValues(
         firstBooleanValue: String,
         secondBooleanValue: String
     ): Boolean {

@@ -10,9 +10,10 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
@@ -21,6 +22,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -143,26 +145,21 @@ private constructor(
                 stagingOperations,
                 writeConfigs,
                 typerDeduper
-            ), // todo (cgardens) - wrapping the old close function to avoid more code churn.
-            OnCloseFunction { _, streamSyncSummaries ->
-                try {
-                    GeneralStagingFunctions.onCloseFunction(
-                            database,
-                            stagingOperations,
-                            writeConfigs,
-                            purgeStagingData,
-                            typerDeduper
-                        )
-                        .accept(false, streamSyncSummaries)
-                } catch (e: Exception) {
-                    throw RuntimeException(e)
-                }
-            },
+            ),
+            GeneralStagingFunctions.onCloseFunction(
+                database,
+                stagingOperations,
+                writeConfigs,
+                purgeStagingData,
+                typerDeduper
+            ),
             flusher,
             catalog!!,
             BufferManager(getMemoryLimit(bufferMemoryLimit)),
             Optional.ofNullable(defaultNamespace),
-            dataTransformer
+            FlushFailure(),
+            Executors.newFixedThreadPool(5),
+            AirbyteMessageDeserializer(dataTransformer),
         )
     }
 

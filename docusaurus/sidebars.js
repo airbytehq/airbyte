@@ -332,6 +332,11 @@ const deployAirbyte = {
     },
     {
       type: "doc",
+      label: "Using docker compose",
+      id: "deploying-airbyte/docker-compose",
+    },
+    {
+      type: "doc",
       label: "On AWS EC2",
       id: "deploying-airbyte/on-aws-ec2",
     },
@@ -601,6 +606,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/march_2024",
         "release_notes/february_2024",
         "release_notes/january_2024",
         "release_notes/december_2023",
