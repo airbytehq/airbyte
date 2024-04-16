@@ -196,7 +196,6 @@ class ShopifyBulkManager:
         # re-use of `self._session(*, **)` to make BULK Job cancel request
         cancel_args = self.job_get_request_args(ShopifyBulkTemplates.cancel)
         with self.session as cancel_job:
-            self.logger.warn(f"CANCELING THE JOB: {self.job_id}")
             canceled_response = cancel_job.request(**cancel_args)
             # mark the job was self-canceled
             self.job_self_canceled = True
