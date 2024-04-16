@@ -37,7 +37,7 @@ class DestinationLangchain(Destination):
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.embedder = embedder_map[config.embedding.mode](config.embedding, config.processing.chunk_size)
         self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
