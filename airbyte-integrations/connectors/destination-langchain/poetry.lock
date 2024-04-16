@@ -541,8 +541,10 @@ files = [
 ]
 
 [package.dependencies]
+hnswlib = {version = ">=0.7.0", optional = true, markers = "extra == \"hnswlib\""}
 numpy = ">=1.17.3"
 orjson = ">=3.8.2"
+protobuf = {version = ">=3.20.0", optional = true, markers = "extra == \"proto\" or extra == \"hnswlib\" or extra == \"full\""}
 pydantic = ">=1.10.8"
 rich = ">=13.1.0"
 types-requests = ">=2.28.11.6"
@@ -949,6 +951,19 @@ files = [
     {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
     {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
 ]
+
+[[package]]
+name = "hnswlib"
+version = "0.8.0"
+description = "hnswlib"
+optional = false
+python-versions = "*"
+files = [
+    {file = "hnswlib-0.8.0.tar.gz", hash = "sha256:cb6d037eedebb34a7134e7dc78966441dfd04c9cf5ee93911be911ced951c44c"},
+]
+
+[package.dependencies]
+numpy = "*"
 
 [[package]]
 name = "httpcore"
@@ -3538,4 +3553,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "ff7f5e40f1f30353d666f734fc7cd7ec060a134cbcc4f1966c92dbdccc6df43b"
+content-hash = "ad709b37ca9af82179a2fa112342e1a98a5484a20f096a9222cea2175a80212f"
