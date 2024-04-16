@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
@@ -150,7 +151,8 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("code2", transformed.get("field13").get("code").asText());
     assertEquals("scope", transformed.get("field13").get("scope").get("scope").asText());
     assertEquals("pattern", transformed.get("field14").asText());
-    assertFalse(transformed.has("field15"));
+    assertTrue(transformed.has("field15"));
+    assertEquals(JsonNodeType.NULL, transformed.get("field15").getNodeType());
     assertEquals("value", transformed.get("field16").get("key").asText());
     // Assert that UUIDs can be serialized. Currently, they will be represented as base 64 encoded
     // strings. Since the original mongo source
