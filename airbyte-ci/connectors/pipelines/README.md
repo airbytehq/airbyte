@@ -2,12 +2,15 @@
 
 ## What is it?
 
-`airbyte-ci` is a command line interface to run CI/CD pipelines.
-The goal of this CLI is to offer developers a tool to run these pipelines locally and in a CI context with the same guarantee.
-It can prevent unnecessary commit -> push cycles developers typically go through when they when to test their changes against a remote CI.
-This is made possible thanks to the use of [Dagger](https://dagger.io), a CI/CD engine relying on Docker Buildkit to provide reproducible builds.
-Our pipeline are declared with Python code, the main entrypoint is [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/commands/airbyte_ci.py).
-This documentation should be helpful for both local and CI use of the CLI. We indeed [power connector testing in the CI with this CLI](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/connector_integration_test_single_dagger.yml#L78).
+`airbyte-ci` is a command line interface to run CI/CD pipelines. The goal of this CLI is to offer
+developers a tool to run these pipelines locally and in a CI context with the same guarantee. It can
+prevent unnecessary commit -> push cycles developers typically go through when they when to test
+their changes against a remote CI. This is made possible thanks to the use of
+[Dagger](https://dagger.io), a CI/CD engine relying on Docker Buildkit to provide reproducible
+builds. Our pipeline are declared with Python code, the main entrypoint is
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/commands/airbyte_ci.py).
+This documentation should be helpful for both local and CI use of the CLI. We indeed
+[power connector testing in the CI with this CLI](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/connector_integration_test_single_dagger.yml#L78).
 
 ## How to install
 
@@ -27,8 +30,8 @@ make tools.airbyte-ci.install
 ### Setting up connector secrets access
 
 If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
-access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
-CI Credentials package (which Airbyte CI uses under the hood) README's
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the CI
+Credentials package (which Airbyte CI uses under the hood) README's
 [Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
 instructions.
 
@@ -63,6 +66,11 @@ To clean the airbyte-ci install, run the following command:
 make tools.airbyte-ci.clean
 ```
 
+## Disabling telemetry
+
+We collect anonymous usage data to help improve the tool. If you would like to disable this, you can
+set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
+
 ## Installation for development
 
 #### Pre-requisites
@@ -81,29 +89,36 @@ poetry shell
 cd ../../
 ```
 
-**Alternatively**, you can install airbyte-ci with pipx so that the entrypoint is available in your PATH:
+**Alternatively**, you can install airbyte-ci with pipx so that the entrypoint is available in your
+PATH:
 
 ```bash
 make tools.airbyte-ci.install
 ```
 
-However, this will not automatically install the dependencies for the local dependencies of airbyte-ci, or respect the lockfile.
+However, this will not automatically install the dependencies for the local dependencies of
+airbyte-ci, or respect the lockfile.
 
 Its often best to use the `poetry` steps instead.
 
 #### Running Tests
 
 From `airbyte-ci/connectors/pipelines`:
+
 ```bash
 poetry run pytest tests
 ```
 
 You can also run a subset of tests:
+
 ```bash
 poetry run pytest pipelines/models/steps.py
 ```
 
-More options, such as running test by keyword matching, are available - see the [pytest CLI documentation](https://docs.pytest.org/en/6.2.x/usage.html) for all the available options.```
+More options, such as running test by keyword matching, are available - see the
+[pytest CLI documentation](https://docs.pytest.org/en/6.2.x/usage.html) for all the available
+options.```
+
 #### Checking Code Format (Pipelines)
 
 ```bash
@@ -131,6 +146,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
+- [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
 - [`format` command subgroup](#format-subgroup)
   - [`format check` command](#format-check-command)
   - [`format fix` command](#format-fix-command)
@@ -153,7 +169,8 @@ At this point you can run `airbyte-ci` commands.
 
 ### <a id="airbyte-ci-command-group"></a>`airbyte-ci` command group
 
-**The main command group option has sensible defaults. In local use cases you're not likely to pass options to the `airbyte-ci` command group.**
+**The main command group option has sensible defaults. In local use cases you're not likely to pass
+options to the `airbyte-ci` command group.**
 
 #### Options
 
@@ -171,7 +188,6 @@ At this point you can run `airbyte-ci` commands.
 | `--ci-context`                                 | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
 | `--pipeline-start-timestamp`                   | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
 | `--show-dagger-logs/--hide-dagger-logs`        | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                       |
-
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
@@ -230,17 +246,13 @@ Run a test pipeline for one or multiple connectors.
 
 #### Examples
 
-Test a single connector:
-`airbyte-ci connectors --name=source-pokeapi test`
+Test a single connector: `airbyte-ci connectors --name=source-pokeapi test`
 
-Test multiple connectors:
-`airbyte-ci connectors --name=source-pokeapi --name=source-bigquery test`
+Test multiple connectors: `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery test`
 
-Test certified connectors:
-`airbyte-ci connectors --support-level=certified test`
+Test certified connectors: `airbyte-ci connectors --support-level=certified test`
 
-Test connectors changed on the current branch:
-`airbyte-ci connectors --modified test`
+Test connectors changed on the current branch: `airbyte-ci connectors --modified test`
 
 Run acceptance test only on the modified connectors, just run its full refresh tests:
 `airbyte-ci connectors --modified test --only-step="acceptance" --acceptance.-k=test_full_refresh`
@@ -261,7 +273,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        airbyte_lib_validation[Run airbyte-lib validation tests]
+        pyairbyte_validation[Run PyAirbyte validation tests]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -269,7 +281,7 @@ flowchart TD
         unit-->build
         secret-->integration
         secret-->cat
-        secret-->airbyte_lib_validation
+        secret-->pyairbyte_validation
         build-->integration
         build-->cat
     end
@@ -294,27 +306,31 @@ flowchart TD
 
 Note:
 
-- The above options are implemented for Java connectors but may not be available for Python connectors. If an option is not supported, the pipeline will not fail but instead the 'default' behavior will be executed.
+- The above options are implemented for Java connectors but may not be available for Python
+  connectors. If an option is not supported, the pipeline will not fail but instead the 'default'
+  behavior will be executed.
 
 #### Extra parameters
-You can pass extra parameters to the following steps:
-* `unit` 
-* `integration` 
-* `acceptance` 
 
-This allows you to override the default parameters of these steps. 
-For example, you can only run the `test_read` test of the acceptance test suite with:
-`airbyte-ci connectors --name=source-pokeapi test --acceptance.-k=test_read`
-Here the `-k` parameter is passed to the pytest command running acceptance tests.
-Please keep in mind that the extra parameters are not validated by the CLI: if you pass an invalid parameter, you'll face a late failure during the pipeline execution.
+You can pass extra parameters to the following steps:
+
+- `unit`
+- `integration`
+- `acceptance`
+
+This allows you to override the default parameters of these steps. For example, you can only run the
+`test_read` test of the acceptance test suite with:
+`airbyte-ci connectors --name=source-pokeapi test --acceptance.-k=test_read` Here the `-k` parameter
+is passed to the pytest command running acceptance tests. Please keep in mind that the extra
+parameters are not validated by the CLI: if you pass an invalid parameter, you'll face a late
+failure during the pipeline execution.
 
 ### <a id="connectors-build-command"></a>`connectors build` command
 
-Run a build pipeline for one or multiple connectors and export the built docker image to the local docker host.
-It's mainly purposed for local use.
+Run a build pipeline for one or multiple connectors and export the built docker image to the local
+docker host. It's mainly purposed for local use.
 
-Build a single connector:
-`airbyte-ci connectors --name=source-pokeapi build`
+Build a single connector: `airbyte-ci connectors --name=source-pokeapi build`
 
 Build a single connector with a custom image tag:
 `airbyte-ci connectors --name=source-pokeapi build --tag=my-custom-tag`
@@ -330,11 +346,9 @@ You will get:
 Build multiple connectors:
 `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery build`
 
-Build certified connectors:
-`airbyte-ci connectors --support-level=certified build`
+Build certified connectors: `airbyte-ci connectors --support-level=certified build`
 
-Build connectors changed on the current branch:
-`airbyte-ci connectors --modified build`
+Build connectors changed on the current branch: `airbyte-ci connectors --modified build`
 
 #### What it runs
 
@@ -378,8 +392,8 @@ flowchart TD
 
 ### <a id="connectors-publish-command"></a>`connectors publish` command
 
-Run a publish pipeline for one or multiple connectors.
-It's mainly purposed for CI use to release a connector update.
+Run a publish pipeline for one or multiple connectors. It's mainly purposed for CI use to release a
+connector update.
 
 ### Examples
 
@@ -397,10 +411,9 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--slack-webhook`                    | False    |                                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                           |
 | `--slack-channel`                    | False    |                                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                          |
 | `--ci-requirements`                  | False    |                                 |                                    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.                                                                                               |
-| `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified      |
-| `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                 |
-| `--python-registry-check-url`        | False    | https://pypi.org/pypi           | `PYTHON_REGISTRY_CHECK_URL`        | The python registry url to check whether a package is published already                                                 |
-
+| `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified                                                                                       |
+| `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                                                                                                  |
+| `--python-registry-check-url`        | False    | https://pypi.org/pypi           | `PYTHON_REGISTRY_CHECK_URL`        | The python registry url to check whether a package is published already                                                                                                                   |
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
 
@@ -422,15 +435,20 @@ flowchart TD
 
 #### Python registry publishing
 
-If `remoteRegistries.pypi.enabled` in the connector metadata is set to `true`, the connector will be published to the python registry.
-To do so, the `--python-registry-token` and `--python-registry-url` options are used to authenticate with the registry and publish the connector.
-If the current version of the connector is already published to the registry, the publish will be skipped (the `--python-registry-check-url` is used for the check).
+If `remoteRegistries.pypi.enabled` in the connector metadata is set to `true`, the connector will be
+published to the python registry. To do so, the `--python-registry-token` and
+`--python-registry-url` options are used to authenticate with the registry and publish the
+connector. If the current version of the connector is already published to the registry, the publish
+will be skipped (the `--python-registry-check-url` is used for the check).
 
 On a pre-release, the connector will be published as a `.dev<N>` version.
 
-The `remoteRegistries.pypi.packageName` field holds the name of the used package name. It should be set to `airbyte-source-<package name>`. Certified Python connectors are required to have PyPI publishing enabled.
+The `remoteRegistries.pypi.packageName` field holds the name of the used package name. It should be
+set to `airbyte-source-<package name>`. Certified Python connectors are required to have PyPI
+publishing enabled.
 
 An example `remoteRegistries` entry in a connector `metadata.yaml` looks like this:
+
 ```yaml
 remoteRegistries:
   pypi:
@@ -444,7 +462,8 @@ Bump the version of the selected connectors.
 
 ### Examples
 
-Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump_version patch <pr-number> "<changelog-entry>"`
+Bump source-openweather:
+`airbyte-ci connectors --name=source-openweather bump_version patch <pr-number> "<changelog-entry>"`
 
 #### Arguments
 
@@ -460,7 +479,8 @@ Upgrade the CDK version of the selected connectors by updating the dependency in
 
 ### Examples
 
-Upgrade for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
+Upgrade for source-openweather:
+`airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
 
 #### Arguments
 
@@ -474,7 +494,8 @@ Modify the selected connector metadata to use the latest base image version.
 
 ### Examples
 
-Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_base_image`
+Upgrade the base image for source-openweather:
+`airbyte-ci connectors --name=source-openweather upgrade_base_image`
 
 ### Options
 
@@ -493,15 +514,19 @@ Make a connector using a Dockerfile migrate to the base image by:
 - Updating its documentation to explain the build process
 - Bumping by a patch version
 
-### Examples
+#### Examples
 
-Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate_to_base_image`
+Migrate source-openweather to use the base image:
+`airbyte-ci connectors --name=source-openweather migrate_to_base_image`
 
-### Arguments
+### <a id="connectors-migrate-to-poetry"></a>`connectors migrate-to-poetry` command
 
-| Argument              | Description                                                 |
-| --------------------- | ----------------------------------------------------------- |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
+Migrate connectors the poetry package manager.
+
+#### Examples
+
+Migrate source-openweather to use the base image:
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
@@ -524,15 +549,20 @@ Available commands:
 
 ### <a id="format-check-command"></a>`format check all` command
 
-This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
+This command runs formatting checks, but does not format the code in place. It will exit 1 as soon
+as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
 
-Running `airbyte-ci format check` will run checks on all different types of code. Run `airbyte-ci format check --help` for subcommands to check formatting for only certain types of files.
+Running `airbyte-ci format check` will run checks on all different types of code. Run
+`airbyte-ci format check --help` for subcommands to check formatting for only certain types of
+files.
 
 ### <a id="format-fix-command"></a>`format fix all` command
 
-This command runs formatting checks and reformats any code that would be reformatted, so it's recommended to stage changes you might have before running this command.
+This command runs formatting checks and reformats any code that would be reformatted, so it's
+recommended to stage changes you might have before running this command.
 
-Running `airbyte-ci format fix all` will format all of the different types of code. Run `airbyte-ci format fix --help` for subcommands to format only certain types of files.
+Running `airbyte-ci format fix all` will format all of the different types of code. Run
+`airbyte-ci format fix --help` for subcommands to format only certain types of files.
 
 ### <a id="poetry-subgroup"></a>`poetry` command subgroup
 
@@ -548,13 +578,16 @@ Available commands:
 
 ### Examples
 
-- Publish a python package: `airbyte-ci poetry --package-path=path/to/package publish --publish-name=my-package --publish-version="1.2.3" --python-registry-token="..." --registry-url="http://host.docker.internal:8012/"`
+- Publish a python package:
+  `airbyte-ci poetry --package-path=path/to/package publish --publish-name=my-package --publish-version="1.2.3" --python-registry-token="..." --registry-url="http://host.docker.internal:8012/"`
 
 ### <a id="format-check-command"></a>`publish` command
 
-This command publishes poetry packages (using `pyproject.toml`) or python packages (using `setup.py`) to a python registry.
+This command publishes poetry packages (using `pyproject.toml`) or python packages (using
+`setup.py`) to a python registry.
 
-For poetry packages, the package name and version can be taken from the `pyproject.toml` file or be specified as options.
+For poetry packages, the package name and version can be taken from the `pyproject.toml` file or be
+specified as options.
 
 #### Options
 
@@ -573,8 +606,8 @@ Available commands:
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
 
-This command deploys the metadata service orchestrator to production.
-The `DAGSTER_CLOUD_METADATA_API_TOKEN` environment variable must be set.
+This command deploys the metadata service orchestrator to production. The
+`DAGSTER_CLOUD_METADATA_API_TOKEN` environment variable must be set.
 
 #### Example
 
@@ -589,38 +622,63 @@ flowchart TD
 
 ### <a id="tests-command"></a>`tests` command
 
-This command runs the Python tests for a airbyte-ci poetry package.
+This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry
+packages. Feel free to checkout this
+[Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9)
+to see the list of available options in `[tool.airbyte-ci]` section.
 
-#### Arguments
-
-| Option                | Required | Default | Mapped environment variable | Description                         |
-| --------------------- | -------- | ------- | --------------------------- | ----------------------------------- |
-| `poetry_package_path` | True     |         |                             | The path to poetry package to test. |
+You can find the list of internal packages
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
 
 #### Options
 
-| Option                    | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `-c/--poetry-run-command` | True     | None    |                             | The command to run with `poetry run`                                                        |
-| `-e/--pass-env-var`       | False    | None    |                             | Host environment variable that is passed to the container running the poetry command        |
-| `--ci-requirements`       | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| Option                     | Required | Multiple | Description                                                                                 |
+| -------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------- |
+| `--poetry-package-path/-p` | False    | True     | Poetry packages path to run the poe tasks for.                                              |
+| `--modified`               | False    | False    | Run poe tasks of modified internal poetry packages.                                         |
+| `--ci-requirements`        | False    | False    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
-You can pass multiple `-c/--poetry-run-command` options to run multiple commands.
 
-E.G.: running `pytest` and `mypy`:
-`airbyte-ci test airbyte-ci/connectors/pipelines --poetry-run-command='pytest tests' --poetry-run-command='mypy pipelines'`
+You can pass multiple `--poetry-package-path` options to run poe tasks.
 
-E.G.: passing the environment variable `GCP_GSM_CREDENTIALS` environment variable to the container running the poetry command:
-`airbyte-ci test airbyte-lib --pass-env-var='GCP_GSM_CREDENTIALS'`
-
-E.G.: running `pytest` on a specific test folder:
-`airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --poetry-run-command='pytest tests/unit_tests'`
+E.G.: running Poe tasks on the modified internal packages of the current branch:
+`airbyte-ci test --modified`
 
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.7.2   | [#36962](https://github.com/airbytehq/airbyte/pull/36962)  | Re-enable connector dependencies upload on publish.                                                                        |
+| 4.7.1   | [#36961](https://github.com/airbytehq/airbyte/pull/36961)  | Temporarily disable python connectors dependencies upload until we find a schema the data team can work with.              |
+| 4.7.0   | [#36892](https://github.com/airbytehq/airbyte/pull/36892)  | Upload Python connectors dependencies list to GCS on publish.                                                              |
+| 4.6.5   | [#36722](https://github.com/airbytehq/airbyte/pull/36527)  | Fix incorrect pipeline names                                                                                               |
+| 4.6.4   | [#36480](https://github.com/airbytehq/airbyte/pull/36480)  | Burst the Gradle Task cache if a new CDK version was released                                                              |
+| 4.6.3   | [#36527](https://github.com/airbytehq/airbyte/pull/36527)  | Handle extras as well as groups in `airbyte ci test` [poetry packages]                                                     |
+| 4.6.2   | [#36220](https://github.com/airbytehq/airbyte/pull/36220)  | Allow using `migrate-to-base-image` without PULL_REQUEST_NUMBER                                                            |
+| 4.6.1   | [#36319](https://github.com/airbytehq/airbyte/pull/36319)  | Fix `ValueError` related to PR number in migrate-to-poetry                                                                 |
+| 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |
+| 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                          |
+| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                          |
+| 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump_version command                                                                               |
+| 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                        |
+| 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                             |
+| 4.4.0   | [#35317](https://github.com/airbytehq/airbyte/pull/35317)  | Augment java connector reports to include full logs and junit test results                                                 |
+| 4.3.2   | [#35536](https://github.com/airbytehq/airbyte/pull/35536)  | Make QA checks run correctly on `*-strict-encrypt` connectors.                                                             |
+| 4.3.1   | [#35437](https://github.com/airbytehq/airbyte/pull/35437)  | Do not run QA checks on publish, just MetadataValidation.                                                                  |
+| 4.3.0   | [#35438](https://github.com/airbytehq/airbyte/pull/35438)  | Optionally disable telemetry with environment variable.                                                                    |
+| 4.2.4   | [#35325](https://github.com/airbytehq/airbyte/pull/35325)  | Use `connectors_qa` for QA checks and remove redundant checks.                                                             |
+| 4.2.3   | [#35322](https://github.com/airbytehq/airbyte/pull/35322)  | Declare `connectors_qa` as an internal package for testing.                                                                |
+| 4.2.2   | [#35364](https://github.com/airbytehq/airbyte/pull/35364)  | Fix connector tests following gradle changes in #35307.                                                                    |
+| 4.2.1   | [#35204](https://github.com/airbytehq/airbyte/pull/35204)  | Run `poetry check` before `poetry install` on poetry package install.                                                      |
+| 4.2.0   | [#35103](https://github.com/airbytehq/airbyte/pull/35103)  | Java 21 support.                                                                                                           |
+| 4.1.4   | [#35039](https://github.com/airbytehq/airbyte/pull/35039)  | Fix bug which prevented gradle test reports from being added.                                                              |
+| 4.1.3   | [#35010](https://github.com/airbytehq/airbyte/pull/35010)  | Use `poetry install --no-root` in the builder container.                                                                   |
+| 4.1.2   | [#34945](https://github.com/airbytehq/airbyte/pull/34945)  | Only install main dependencies when running poetry install.                                                                |
+| 4.1.1   | [#34430](https://github.com/airbytehq/airbyte/pull/34430)  | Speed up airbyte-ci startup (and airbyte-ci format).                                                                       |
+| 4.1.0   | [#34923](https://github.com/airbytehq/airbyte/pull/34923)  | Include gradle test reports in HTML connector test report.                                                                 |
+| 4.0.0   | [#34736](https://github.com/airbytehq/airbyte/pull/34736)  | Run poe tasks declared in internal poetry packages.                                                                        |
+| 3.10.4  | [#34867](https://github.com/airbytehq/airbyte/pull/34867)  | Remove connector ops team                                                                                                  |
 | 3.10.3  | [#34836](https://github.com/airbytehq/airbyte/pull/34836)  | Add check for python registry publishing enabled for certified python sources.                                             |
 | 3.10.2  | [#34044](https://github.com/airbytehq/airbyte/pull/34044)  | Add pypi validation testing.                                                                                               |
 | 3.10.1  | [#34756](https://github.com/airbytehq/airbyte/pull/34756)  | Enable connectors tests in draft PRs.                                                                                      |
@@ -756,8 +814,9 @@ E.G.: running `pytest` on a specific test folder:
 
 ## More info
 
-This project is owned by the Connectors Operations team.
-We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
+This project is owned by the Connectors Operations team. We share project updates and remaining
+stories before its release to production in this
+[EPIC](https://github.com/airbytehq/airbyte/issues/24403).
 
 # Troubleshooting
 
@@ -810,13 +869,16 @@ make tools.airbyte-ci.install
 
 To fix this, you can either:
 
-- Ensure that airbyte-ci is installed with pipx. Run `pipx list` to check if airbyte-ci is installed.
+- Ensure that airbyte-ci is installed with pipx. Run `pipx list` to check if airbyte-ci is
+  installed.
 - Run `pipx ensurepath` to add the pipx binary directory to your PATH.
-- Add the pipx binary directory to your PATH manually. The pipx binary directory is usually `~/.local/bin`.
+- Add the pipx binary directory to your PATH manually. The pipx binary directory is usually
+  `~/.local/bin`.
 
 ### python3.10 not found
 
-If you get the following error when running `pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
+If you get the following error when running
+`pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
 
 ```bash
 $ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
@@ -828,13 +890,15 @@ It means that you don't have Python 3.10 installed on your system.
 To fix this, you can either:
 
 - Install Python 3.10 with pyenv. Run `pyenv install 3.10` to install the latest Python version.
-- Install Python 3.10 with your system package manager. For instance, on Ubuntu you can run `sudo apt install python3.10`.
-- Ensure that Python 3.10 is in your PATH. Run `which python3.10` to check if Python 3.10 is installed and in your PATH.
+- Install Python 3.10 with your system package manager. For instance, on Ubuntu you can run
+  `sudo apt install python3.10`.
+- Ensure that Python 3.10 is in your PATH. Run `which python3.10` to check if Python 3.10 is
+  installed and in your PATH.
 
 ### Any type of pipeline failure
 
-First you should check that the version of the CLI you are using is the latest one.
-You can check the version of the CLI with the `--version` option:
+First you should check that the version of the CLI you are using is the latest one. You can check
+the version of the CLI with the `--version` option:
 
 ```bash
 $ airbyte-ci --version
@@ -847,7 +911,8 @@ and compare it with the version in the pyproject.toml file:
 $ cat airbyte-ci/connectors/pipelines/pyproject.toml | grep version
 ```
 
-If you get any type of pipeline failure, you can run the pipeline with the `--show-dagger-logs` option to get more information about the failure.
+If you get any type of pipeline failure, you can run the pipeline with the `--show-dagger-logs`
+option to get more information about the failure.
 
 ```bash
 $ airbyte-ci --show-dagger-logs connectors --name=source-pokeapi test

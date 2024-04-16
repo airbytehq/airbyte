@@ -66,9 +66,7 @@ class MockFormat:
         ),
     ],
 )
-def test_fill_nulls(
-    input_schema: Mapping[str, Any], expected_output: Mapping[str, Any]
-) -> None:
+def test_fill_nulls(input_schema: Mapping[str, Any], expected_output: Mapping[str, Any]) -> None:
     assert DefaultFileBasedStream._fill_nulls(input_schema) == expected_output
 
 
@@ -103,14 +101,8 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
 
     def test_when_read_records_from_slice_then_return_records(self) -> None:
         self._parser.parse_records.return_value = [self._A_RECORD]
-        messages = list(
-            self._stream.read_records_from_slice(
-                {"files": [RemoteFile(uri="uri", last_modified=self._NOW)]}
-            )
-        )
-        assert list(map(lambda message: message.record.data["data"], messages)) == [
-            self._A_RECORD
-        ]
+        messages = list(self._stream.read_records_from_slice({"files": [RemoteFile(uri="uri", last_modified=self._NOW)]}))
+        assert list(map(lambda message: message.record.data["data"], messages)) == [self._A_RECORD]
 
     def test_given_exception_when_read_records_from_slice_then_do_process_other_files(
         self,
@@ -165,9 +157,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
     ) -> None:
         self._stream_config.schemaless = False
         self._validation_policy.record_passes_validation_policy.return_value = False
-        self._parser.parse_records.side_effect = [
-            self._iter([self._A_RECORD, ValueError("An error")])
-        ]
+        self._parser.parse_records.side_effect = [self._iter([self._A_RECORD, ValueError("An error")])]
 
         messages = list(
             self._stream.read_records_from_slice(
@@ -225,9 +215,7 @@ class TestFileBasedErrorCollector:
             "Multiple errors",
         ],
     )
-    def test_collect_parsing_error(
-        self, stream, file, line_no, n_skipped, collector_expected_len
-    ) -> None:
+    def test_collect_parsing_error(self, stream, file, line_no, n_skipped, collector_expected_len) -> None:
         test_error_pattern = "Error parsing record."
         # format the error body
         test_error = (
@@ -252,11 +240,5 @@ class TestFileBasedErrorCollector:
         # we expect the following method will raise the AirbyteTracedException
         with pytest.raises(AirbyteTracedException) as parse_error:
             list(self.test_error_collector.yield_and_raise_collected())
-        assert (
-            parse_error.value.message
-            == "Some errors occured while reading from the source."
-        )
-        assert (
-            parse_error.value.internal_message
-            == "Please check the logged errors for more information."
-        )
+        assert parse_error.value.message == "Some errors occured while reading from the source."
+        assert parse_error.value.internal_message == "Please check the logged errors for more information."

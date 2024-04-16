@@ -50,7 +50,7 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   private static final String DATABASE_NAME = "test_database";
   private static final Path PATH = Path.of(".");
-  public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true";
+  public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/";
 
   @Test
   void testDebeziumProperties() {
@@ -67,7 +67,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(20 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -97,7 +97,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(20 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -126,7 +126,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(20 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -155,7 +155,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(17 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(18 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
     assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -185,7 +185,7 @@ class MongoDbDebeziumPropertiesManagerTest {
   @Test
   void testCreateConnectionString() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
@@ -193,18 +193,10 @@ class MongoDbDebeziumPropertiesManagerTest {
   @Test
   void testCreateConnectionStringQuotedString() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
-  }
-
-  @Test
-  void testCreateConnectionStringUseSecondary() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
-    assertNotNull(connectionString);
-    assertEquals("mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true&readPreference=secondary", connectionString);
   }
 
   @Test
@@ -212,7 +204,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
         .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }

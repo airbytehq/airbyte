@@ -14,6 +14,7 @@ from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from requests.auth import AuthBase
 
 from ..exceptions import DefaultBackoffException
@@ -115,9 +116,20 @@ class AbstractOauth2Authenticator(AuthBase):
     def _get_refresh_access_token_response(self) -> Any:
         try:
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-            self._log_response(response)
-            response.raise_for_status()
-            return response.json()
+            if response.ok:
+                response_json = response.json()
+                # Add the access token to the list of secrets so it is replaced before logging the response
+                # An argument could be made to remove the prevous access key from the list of secrets, but unmasking values seems like a security incident waiting to happen...
+                access_key = response_json.get(self.get_access_token_name())
+                if not access_key:
+                    raise Exception("Token refresh API response was missing access token {self.get_access_token_name()}")
+                add_to_secrets(access_key)
+                self._log_response(response)
+                return response_json
+            else:
+                # log the response even if the request failed for troubleshooting purposes
+                self._log_response(response)
+                response.raise_for_status()
         except requests.exceptions.RequestException as e:
             if e.response is not None:
                 if e.response.status_code == 429 or e.response.status_code >= 500:

@@ -2,21 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any
 
-from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
+from typing import Any, Mapping, Optional
+
+from airbyte_cdk.models import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.source import TState
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointStreamReader
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
-    def __init__(self, catalog_path: str):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceMicrosoftSharePointStreamReader(),
             spec_class=SourceMicrosoftSharePointSpec,
-            catalog_path=catalog_path,
+            catalog=catalog,
+            config=config,
+            state=state,
             cursor_cls=DefaultFileBasedCursor,
         )
 

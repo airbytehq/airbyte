@@ -42,24 +42,8 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         timeout_seconds: 1200
-        ignored_fields:
-          ads:
-            - name: "profile_image_url"
-              bypass_reason: "Volatile URLs"
-          creative_assets_images:
-            - name: "image_url"
-              bypass_reason: "Volatile URL params"
-          creative_assets_videos:
-            - name: "preview_url"
-              bypass_reason: "Volatile URL params"
-            - name: "video_cover_url"
-              bypass_reason: "Volatile URL params"
-            - name: "preview_url_expire_time"
-              bypass_reason: "Changes over time"
         empty_streams:
           - name: ads_reports_hourly
             bypass_reason: "Tested with daily granularity."
@@ -79,24 +63,8 @@ acceptance_tests:
       - config_path: "secrets/prod_config_with_day_granularity.json"
         expect_records:
           path: "integration_tests/expected_records2.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         timeout_seconds: 1200
-        ignored_fields:
-          ads:
-            - name: "profile_image_url"
-              bypass_reason: "Volatile URLs"
-          creative_assets_images:
-            - name: "image_url"
-              bypass_reason: "Volatile URL params"
-          creative_assets_videos:
-            - name: "preview_url"
-              bypass_reason: "Volatile URL params"
-            - name: "video_cover_url"
-              bypass_reason: "Volatile URL params"
-            - name: "preview_url_expire_time"
-              bypass_reason: "Changes over time"
         empty_streams:
           - name: ad_groups
             bypass_reason: "This stream is tested on the new style config."

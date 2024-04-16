@@ -200,9 +200,7 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 | `expect_records`                                | object           | None                                        | Compare produced records with expected records, see details below                                             |
 | `expect_records.path`                           | string           |                                             | File with expected records                                                                                    |
 | `expect_records.bypass_reason`                  | string           |                                             | Explain why this test is bypassed                                                                             |
-| `expect_records.extra_fields`                   | boolean          | False                                       | Allow output records to have other fields i.e: expected records are a subset                                  |
 | `expect_records.exact_order`                    | boolean          | False                                       | Ensure that records produced in exact same order                                                              |
-| `expect_records.extra_records`                  | boolean          | True                                        | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
 | `file_types`                                    | object           | None                                        | Configure file-based connectors specific tests                                                                |
 | `file_types.skip_test`                          | boolean          | False                                       | Skip file-based connectors specific tests for the current config with a `bypass_reason`                       |
 | `file_types.bypass_reason`                      | string           | None                                        | Reason why file-based connectors specific tests are skipped                                                   |
@@ -210,15 +208,7 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 | `file_types.unsupported_types[0].extension`     | string           |                                             | File type in `.csv` format which cannot be added to a test account                                            |
 | `file_types.unsupported_types[0].bypass_reason` | string           | None                                        | Reason why this file type cannot be added to a test account                                                   |
 
-`expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys, only the following flag combinations are supported:
-
-| extra_fields | exact_order | extra_records |
-| :----------- | :---------- | :------------ |
-| x            | x           |               |
-|              | x           | x             |
-|              | x           |               |
-|              |             | x             |
-|              |             |               |
+`expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped.
 
 ### Schema format checking
 
@@ -302,6 +292,16 @@ Some examples of the types of tests covered are verification that streams define
 | `streams_without_primary_key.bypass_reason`             | string | None                  | The reason the stream doesn't have the PK |
 | `allowed_hosts.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `allowedHosts` check for the certified connector should be skipped |
 | `suggested_streams.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
+
+## Test Connector Documentation
+
+Verifies that connectors documentation follows our standard template, does have correct order of headings, 
+does not have missing headings and all required fields in Prerequisites section. 
+
+| Input             | Type   | Default               | Note                                                               |
+|:------------------|:-------|:----------------------|:-------------------------------------------------------------------|
+| `config_path`     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
+| `timeout_seconds` | int    | 20\*60                | Test execution timeout in seconds                                  |
 
 ## Strictness level
 

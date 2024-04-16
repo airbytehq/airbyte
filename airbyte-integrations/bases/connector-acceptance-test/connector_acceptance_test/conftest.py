@@ -299,6 +299,8 @@ async def discovered_catalog_fixture(
 
     output = await docker_runner.call_discover(config=connector_config)
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
@@ -322,6 +324,8 @@ async def previous_discovered_catalog_fixture(
         )
         return None
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
@@ -395,3 +399,21 @@ def pytest_sessionfinish(session, exitstatus):
 @pytest.fixture(name="connector_metadata")
 def connector_metadata_fixture(base_path) -> dict:
     return load_yaml_or_json_path(base_path / "metadata.yaml")
+
+
+@pytest.fixture(name="docs_path")
+def docs_path_fixture(base_path, connector_metadata) -> Path:
+    path_to_docs = connector_metadata["data"]["documentationUrl"].replace("https://docs.airbyte.com", "docs") + ".md"
+    airbyte_path = Path(base_path).parents[6]
+    return airbyte_path / path_to_docs
+
+
+@pytest.fixture(name="connector_documentation")
+def connector_documentation_fixture(docs_path: str) -> str:
+    with open(docs_path, "r") as f:
+        return f.read().rstrip()
+
+
+@pytest.fixture(name="is_connector_certified")
+def connector_certification_status_fixture(connector_metadata: dict) -> bool:
+    return connector_metadata.get("data", {}).get("ab_internal", {}).get("ql", 0) >= 400

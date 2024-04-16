@@ -248,7 +248,7 @@ async def run_steps(
     >>> from pipelines.models.steps import Step, StepResult, StepStatus
     >>> class TestStep(Step):
     ...     async def _run(self) -> StepResult:
-    ...         return StepResult(self, StepStatus.SUCCESS)
+    ...         return StepResult(step=self, status=StepStatus.SUCCESS)
     >>> steps = [
     ...     StepToRun(id="step1", step=TestStep()),
     ...     [

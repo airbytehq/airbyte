@@ -60,7 +60,9 @@ class HttpMocker(contextlib.ContextDecorator):
         getattr(self._mocker, method)(
             requests_mock.ANY,
             additional_matcher=self._matches_wrapper(matcher),
-            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses],
+            response_list=[
+                {"text": response.body, "status_code": response.status_code, "headers": response.headers} for response in responses
+            ],
         )
 
     def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:

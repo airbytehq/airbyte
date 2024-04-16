@@ -8,20 +8,20 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, ClassVar, List, Optional
+from pathlib import Path
+from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
-from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import CIContext
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
+from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.steps import STEP_PARAMS, Step, StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
@@ -62,11 +62,11 @@ class VersionCheck(Step, ABC):
 
     @property
     def success_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     @property
     def failure_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.FAILURE, stderr=self.failure_message)
+        return StepResult(step=self, status=StepStatus.FAILURE, stderr=self.failure_message)
 
     @abstractmethod
     def validate(self) -> StepResult:
@@ -74,13 +74,13 @@ class VersionCheck(Step, ABC):
 
     async def _run(self) -> StepResult:
         if not self.should_run:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
         if self.context.ci_context == CIContext.MASTER:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class VersionIncrementCheck(VersionCheck):
@@ -119,70 +119,53 @@ class VersionIncrementCheck(VersionCheck):
         return self.success_result
 
 
-class VersionFollowsSemverCheck(VersionCheck):
-    context: ConnectorContext
-    title = "Connector version semver check"
+class QaChecks(SimpleDockerStep):
+    """A step to run QA checks for a connectors.
+    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
+    """
 
-    @property
-    def failure_message(self) -> str:
-        return f"The dockerImageTag in {METADATA_FILE_NAME} is not following semantic versioning or was decremented. Master version is {self.master_connector_version}, current version is {self.current_connector_version}"
+    def __init__(self, context: ConnectorContext) -> None:
+        code_directory = context.connector.code_directory
+        documentation_file_path = context.connector.documentation_file_path
+        migration_guide_file_path = context.connector.migration_guide_file_path
+        icon_path = context.connector.icon_path
+        technical_name = context.connector.technical_name
 
-    def validate(self) -> StepResult:
-        try:
-            if not self.current_connector_version >= self.master_connector_version:
-                return self.failure_result
-        except ValueError:
-            return self.failure_result
-        return self.success_result
+        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
+        if context.connector.technical_name.endswith("-strict-encrypt"):
+            technical_name = technical_name.replace("-strict-encrypt", "")
+            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
+            if documentation_file_path:
+                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
+            if migration_guide_file_path:
+                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
+            if icon_path:
+                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
 
-
-class QaChecks(Step):
-    """A step to run QA checks for a connector."""
-
-    context: ConnectorContext
-    title = "QA checks"
-
-    async def _run(self) -> StepResult:
-        """Run QA checks on a connector.
-
-        The QA checks are defined in this module:
-        https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/qa_checks.py
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-        Returns:
-            StepResult: Failure or success of the QA checks with stdout and stderr.
-        """
-        connector_ops = await internal_tools.with_connector_ops(self.context)
-        include = [
-            str(self.context.connector.code_directory),
-            str(self.context.connector.documentation_file_path),
-            str(self.context.connector.migration_guide_file_path),
-            str(self.context.connector.icon_path),
-        ]
-        if (
-            self.context.connector.technical_name.endswith("strict-encrypt")
-            or self.context.connector.technical_name == "source-file-secure"
-        ):
-            original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
-            include += [
-                str(original_connector.code_directory),
-                str(original_connector.documentation_file_path),
-                str(original_connector.icon_path),
-                str(original_connector.migration_guide_file_path),
-            ]
-
-        filtered_repo = self.context.get_repo_dir(
-            include=include,
+        super().__init__(
+            title=f"Run QA checks for {technical_name}",
+            context=context,
+            paths_to_mount=[
+                MountPath(code_directory),
+                # These paths are optional
+                # But their absence might make the QA check fail
+                MountPath(documentation_file_path, optional=True),
+                MountPath(migration_guide_file_path, optional=True),
+                MountPath(icon_path, optional=True),
+            ],
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
+            ],
+            secrets={
+                k: v
+                for k, v in {
+                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
+                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
+                }.items()
+                if v
+            },
+            command=["connectors-qa", "run", f"--name={technical_name}"],
         )
-
-        qa_checks = (
-            connector_ops.with_mounted_directory("/airbyte", filtered_repo)
-            .with_workdir("/airbyte")
-            .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
-        )
-
-        return await self.get_step_result(qa_checks)
 
 
 class AcceptanceTests(Step):
@@ -257,7 +240,7 @@ class AcceptanceTests(Step):
         """
 
         if not self.context.connector.acceptance_test_config:
-            return StepResult(self, StepStatus.SKIPPED)
+            return StepResult(step=self, status=StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
@@ -272,7 +255,7 @@ class AcceptanceTests(Step):
                     break
         return step_result
 
-    async def get_cache_buster(self) -> str:
+    def get_cache_buster(self) -> str:
         """
         This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
@@ -303,7 +286,7 @@ class AcceptanceTests(Step):
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
-            .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
+            .with_env_variable("CACHEBUSTER", self.get_cache_buster())
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
@@ -318,58 +301,3 @@ class AcceptanceTests(Step):
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
-
-
-class CheckBaseImageIsUsed(Step):
-    context: ConnectorContext
-    title = "Check our base image is used"
-
-    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
-        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
-        if not is_certified:
-            return self.skip("Connector is not certified, it does not require the use of our base image.")
-
-        is_using_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None
-        migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image <PR NUMBER>' and commit the changes."
-        if not is_using_base_image:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but does not use our base image. {migration_hint}",
-            )
-        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include=["Dockerfile"])).entries()
-        if has_dockerfile:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
-            )
-        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
-
-
-class CheckPythonRegistryPublishConfiguration(Step):
-    context: ConnectorContext
-    title = "Check connector is published to python registry if it's a certified python connector"
-
-    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
-        is_python_registry_published = self.context.connector.metadata.get("remoteRegistries", {}).get("pypi", {}).get("enabled", False)
-        if is_python_registry_published:
-            return StepResult(self, StepStatus.SUCCESS, stdout="Connector is published to PyPI.")
-
-        tags = self.context.connector.metadata.get("tags", [])
-        is_python_registry_compatible = ("language:python" in tags or "language:low-code" in tags) and "language:java" not in tags
-        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
-        is_source = self.context.connector.metadata.get("connectorType") == "source"
-        if not is_source or not is_certified or not is_python_registry_compatible:
-            return self.skip(
-                "Connector is not a certified python source connector, it does not require to be published to python registry."
-            )
-
-        migration_hint = "Check the airbyte-ci readme under https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/pipelines#python-registry-publishing for how to configure publishing."
-        if not is_python_registry_published:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is a certified python source but publication to PyPI is not enabled. {migration_hint}",
-            )
-        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is a certified python source and is published to PyPI.")

@@ -22,7 +22,7 @@ This source allows you to synchronize the following data tables:
 ## Getting started
 
 **Requirements**
-In order to use the My Hours API you need to provide the credentials to an admin My Hours account.
+- In order to use the My Hours API you need to provide the credentials to an admin My Hours account.
 
 ### Performance Considerations (Airbyte Open Source)
 
@@ -33,6 +33,7 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------- |
+| 0.2.0   | 2024-03-15 | [36063](https://github.com/airbytehq/airbyte/pull/36063) | Migrate to Low Code                  |
 | 0.1.2   | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates               |
 | 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream   |
 | 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270)   | New Source: My Hours                 |

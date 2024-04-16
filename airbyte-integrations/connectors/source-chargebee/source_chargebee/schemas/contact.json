@@ -15,6 +15,9 @@
     "id": {
       "type": ["string", "null"]
     },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
     "label": {
       "type": ["string", "null"]
     },
@@ -30,19 +33,11 @@
     "send_billing_email": {
       "type": ["boolean", "null"]
     },
+    "phone": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

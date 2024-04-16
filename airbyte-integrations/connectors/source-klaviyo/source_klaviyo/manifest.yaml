@@ -1,0 +1,194 @@
+version: 0.81.3
+type: DeclarativeSource
+
+definitions:
+  # Authenticator
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "Klaviyo-API-Key {{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: "Authorization"
+      inject_into: header
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: "https://a.klaviyo.com/api/"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401, 403]
+          error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
+    request_headers:
+      Accept: "application/json"
+      Revision: "2023-10-15"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  # Paginator
+  cursor_pagination_strategy:
+    type: CursorPagination
+    cursor_value: "{{ response.get('links', {}).get('next') }}"
+
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy: "#/definitions/cursor_pagination_strategy"
+    page_token_option:
+      type: RequestPath
+
+  # Retrievers
+  base_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  semi_incremental_retriever:
+    $ref: "#/definitions/base_retriever"
+    record_selector:
+      $ref: "#/definitions/selector"
+      record_filter:
+        type: RecordFilter
+        condition: |
+          {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
+          {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
+
+  profiles_retriever:
+    $ref: "#/definitions/base_retriever"
+    paginator:
+      $ref: "#/definitions/paginator"
+      pagination_strategy:
+        $ref: "#/definitions/cursor_pagination_strategy"
+        page_size: 100
+      page_size_option:
+        type: RequestOption
+        field_name: "page[size]"
+        inject_into: request_parameter
+    requester:
+      $ref: "#/definitions/requester"
+      request_headers:
+        Accept: "application/json"
+        Revision: "2023-02-22"
+      request_parameters:
+        "additional-fields[profile]": "predictive_analytics"
+
+  # Base streams
+  base_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated"]
+            value: "{{ record.get('attributes', {}).get('updated') }}"
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/base_retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoDatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
+        inject_into: request_parameter
+
+  base_semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/semi_incremental_retriever"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+
+  # Incremental streams
+  profiles_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    name: "profiles"
+    $ref: "#/definitions/base_incremental_stream"
+    retriever: "#/definitions/profiles_retriever"
+    $parameters:
+      path: "profiles"
+
+  global_exclusions_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    name: "global_exclusions"
+    $ref: "#/definitions/profiles_stream"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppressions'] }}"
+
+  events_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_events
+    name: "events"
+    $ref: "#/definitions/base_incremental_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["datetime"]
+            value: "{{ record.get('attributes', {}).get('datetime') }}"
+    $parameters:
+      path: "events"
+      cursor_field: "datetime"
+
+  email_templates_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_templates
+    name: "email_templates"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "templates"
+
+  # Semi-Incremental streams
+  metrics_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_metrics
+    name: "metrics"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "metrics"
+
+  lists_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_lists
+    name: "lists"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "lists"
+
+streams:
+  # Incremental streams
+  - "#/definitions/profiles_stream"
+  - "#/definitions/global_exclusions_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/email_templates_stream"
+
+  # Semi-Incremental streams
+  - "#/definitions/metrics_stream"
+  - "#/definitions/lists_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - metrics

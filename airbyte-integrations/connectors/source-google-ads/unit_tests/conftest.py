@@ -3,8 +3,6 @@
 #
 
 
-from unittest.mock import Mock
-
 import pytest
 from source_google_ads.models import CustomerModel
 
@@ -56,6 +54,10 @@ def mock_oauth_call(requests_mock):
 @pytest.fixture
 def customers(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
+
+@pytest.fixture
+def additional_customers(config, customers):
+    return customers + [CustomerModel(id="789", time_zone="local", is_manager_account=False)]
 
 
 @pytest.fixture

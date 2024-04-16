@@ -39,15 +39,16 @@ class MongoDbSourceConfigTest {
     final String username = "username";
     final boolean isSchemaEnforced = false;
     final JsonNode rawConfig = Jsons.jsonNode(
-        Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(
-            AUTH_SOURCE_CONFIGURATION_KEY, authSource,
-            CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
-            DATABASE_CONFIGURATION_KEY, database,
+        Map.of(
             DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, sampleSize,
-            PASSWORD_CONFIGURATION_KEY, password,
             QUEUE_SIZE_CONFIGURATION_KEY, queueSize,
-            USERNAME_CONFIGURATION_KEY, username,
-            SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
+            DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(
+                AUTH_SOURCE_CONFIGURATION_KEY, authSource,
+                CHECKPOINT_INTERVAL_CONFIGURATION_KEY, checkpointInterval,
+                DATABASE_CONFIGURATION_KEY, database,
+                PASSWORD_CONFIGURATION_KEY, password,
+                USERNAME_CONFIGURATION_KEY, username,
+                SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(rawConfig);
     assertNotNull(sourceConfig);
     assertEquals(authSource, sourceConfig.getAuthSource());
@@ -55,7 +56,7 @@ class MongoDbSourceConfigTest {
     assertEquals(database, sourceConfig.getDatabaseName());
     assertEquals(password, sourceConfig.getPassword());
     assertEquals(OptionalInt.of(queueSize), sourceConfig.getQueueSize());
-    assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.rawConfig());
+    assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
     assertEquals(sampleSize, sourceConfig.getSampleSize());
     assertEquals(username, sourceConfig.getUsername());
     assertEquals(isSchemaEnforced, sourceConfig.getEnforceSchema());
@@ -76,7 +77,7 @@ class MongoDbSourceConfigTest {
     assertEquals(null, sourceConfig.getDatabaseName());
     assertEquals(null, sourceConfig.getPassword());
     assertEquals(OptionalInt.empty(), sourceConfig.getQueueSize());
-    assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.rawConfig());
+    assertEquals(rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY), sourceConfig.getDatabaseConfig());
     assertEquals(DEFAULT_DISCOVER_SAMPLE_SIZE, sourceConfig.getSampleSize());
     assertEquals(null, sourceConfig.getUsername());
   }

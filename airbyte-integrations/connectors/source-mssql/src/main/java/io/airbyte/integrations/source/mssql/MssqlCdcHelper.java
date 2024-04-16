@@ -57,7 +57,7 @@ public class MssqlCdcHelper {
     return false;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -94,14 +94,13 @@ public class MssqlCdcHelper {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
-    // TODO: enable heartbeats in MS SQL Server.
-    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
       final String sslMethod = sslConfig.get("ssl_method").asText();
       if ("unencrypted".equals(sslMethod)) {
         props.setProperty("database.encrypt", "false");
+        props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_trust_server_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
         props.setProperty("driver.trustServerCertificate", "true");
@@ -120,6 +119,8 @@ public class MssqlCdcHelper {
           props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
+    } else {
+      props.setProperty("driver.trustServerCertificate", "true");
     }
 
     return props;

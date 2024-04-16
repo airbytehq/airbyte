@@ -16,17 +16,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.1.3
+  dockerImageTag: 2.5.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Bing Ads
   remoteRegistries:
     pypi:
-      enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      enabled: true
       packageName: airbyte-source-bing-ads
   registries:
     cloud:
@@ -61,4 +61,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

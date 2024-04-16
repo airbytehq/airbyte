@@ -19,6 +19,7 @@ This will enable our team to make sure your contribution does not overlap with e
 3. Code the change
 4. Ensure all tests pass. For connectors, this includes acceptance tests as well.
 5. Update documentation in `docs/integrations/<connector-name>.md` 
+6. Make sure your contribution passes our [QA checks](./resources/qa-checks.md)
 
 
 #### Open a pull request

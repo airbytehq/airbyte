@@ -80,7 +80,7 @@ class TestLoadContainerToLocalDockerHost:
             docker_client.images.get(full_image_name)
 
             # CI can't run docker arm64 containers
-            if platform is LOCAL_BUILD_PLATFORM or (os.getenv("CI") != "True"):
+            if platform is LOCAL_BUILD_PLATFORM or (os.environ.get("CI", "false").lower() != "true"):
                 docker_client.containers.run(full_image_name, "spec")
             docker_client.images.remove(full_image_name, force=True)
 

@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -15,22 +16,86 @@
         "channel": { "type": "string" },
         "audiences": {
           "type": ["null", "object"],
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {
+            "included": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "excluded": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
         },
         "send_options": {
           "type": ["null", "object"],
           "properties": {
-            "use_smart_sending": { "type": "boolean" }
+            "ignore_unsubscribes": { "type": ["null", "boolean"] },
+            "use_smart_sending": { "type": ["null", "boolean"] }
           }
         },
         "message": { "type": "string" },
         "tracking_options": {
           "type": ["null", "object"],
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {
+            "is_tracking_opens": { "type": ["null", "boolean"] },
+            "is_tracking_clicks": { "type": ["null", "boolean"] },
+            "is_add_utm": { "type": ["null", "boolean"] },
+            "utm_params": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "value": { "type": "string" }
+                }
+              }
+            }
+          }
         },
         "send_strategy": {
           "type": ["null", "object"],
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {
+            "method": { "type": "string" },
+            "options_static": {
+              "type": ["null", "object"],
+              "properties": {
+                "datetime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_without_timezone"
+                },
+                "is_local": { "type": ["null", "boolean"] },
+                "send_past_recipients_immediately": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "options_throttled": {
+              "type": ["null", "object"],
+              "properties": {
+                "datetime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_without_timezone"
+                },
+                "throttle_percentage": { "type": "integer" }
+              }
+            },
+            "options_sto": {
+              "type": ["null", "object"],
+              "properties": {
+                "date": { "type": "string", "format": "date" }
+              }
+            }
+          }
         },
         "created_at": { "type": ["null", "string"], "format": "date-time" },
         "scheduled_at": { "type": ["null", "string"], "format": "date-time" },
@@ -40,11 +105,38 @@
     },
     "links": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "self": { "type": "string" }
+      }
     },
     "relationships": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "tags": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": { "type": "string" },
+                  "id": { "type": "string" }
+                }
+              }
+            },
+            "links": {
+              "type": ["null", "object"],
+              "properties": {
+                "self": { "type": "string" },
+                "related": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
