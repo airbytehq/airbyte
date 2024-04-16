@@ -46,6 +46,7 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.2 | 2024-04-15 | [37292](https://github.com/airbytehq/airbyte/pull/37292) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37292](https://github.com/airbytehq/airbyte/pull/37292) | schema descriptions |
 | 0.2.0   | 2023-10-10 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Migrate to low code.
 | 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.
