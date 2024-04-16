@@ -155,6 +155,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
         "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
         "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up_to_date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
+        "check_version_increment": "pipelines.airbyte_ci.connectors.check_version_increment.commands.check_version_increment",
     },
 )
 @click.option(
