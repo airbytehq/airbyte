@@ -181,7 +181,7 @@ and Connector Builder (in the platform repository).
 2. The [`Publish CDK Manually`](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml) workflow from master using `release-type=major|manor|patch` and setting the changelog message.
 3. When the workflow runs, it will commit a new version directly to master
   branch.
-4. The workflow will add a new pull request to `airbytehq/airbyte` repository to
-  bump the `airbyte_cdk` dependency on `source-declarative-manifest`.
+4. The workflow will bump the version of `source-declarative-manifest` according to the `release-type` of the CDK, then commit these changes
+  back to master. The commit to master will kick off a publish of the new version of `source-declarative-manifest`.
 5. The workflow will also add a pull request to `airbyte-platform-internal`
   repo to bump the dependency in Connector Builder.
