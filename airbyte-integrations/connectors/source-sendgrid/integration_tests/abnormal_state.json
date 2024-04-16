@@ -42,5 +42,16 @@
         "name": "invalid_emails"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created_at": "7270247822"
+      },
+      "stream_descriptor": {
+        "name": "suppression_group_members"
+      }
+    }
   }
 ]

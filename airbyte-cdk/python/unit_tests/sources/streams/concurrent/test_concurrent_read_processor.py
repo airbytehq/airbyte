@@ -108,7 +108,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         messages = list(handler.on_partition_generation_completed(sentinel))
 
         expected_messages = []
-        assert expected_messages == messages
+        assert messages == expected_messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_last_stream_partition_done(self):
@@ -146,7 +146,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             ),
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
         assert in_order_validation_mock.mock_calls.index(
             call._another_stream.cursor.ensure_at_least_one_state_emitted
         ) < in_order_validation_mock.mock_calls.index(call._message_repository.consume_queue)
@@ -223,7 +223,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         expected_messages = [
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
 
         partition.close.assert_called_once()
 
@@ -267,8 +267,43 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             )
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
         self._a_closed_partition.close.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_given_exception_on_partition_complete_sentinel_then_yield_error_trace_message_and_stream_is_incomplete(self) -> None:
+        self._a_closed_partition.stream_name.return_value = self._stream.name
+        self._a_closed_partition.close.side_effect = ValueError
+
+        handler = ConcurrentReadProcessor(
+            [self._stream],
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+        handler.start_next_partition_generator()
+        handler.on_partition(self._a_closed_partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
+        messages = list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._a_closed_partition)))
+
+        expected_status_message = AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(
+                        name=self._stream.name,
+                    ),
+                    status=AirbyteStreamStatus.INCOMPLETE,
+                ),
+                emitted_at=1577836800000.0,
+            ),
+        )
+        assert list(map(lambda message: message.trace.type, messages)) == [TraceType.ERROR, TraceType.STREAM_STATUS]
+        assert messages[1] == expected_status_message
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_stream_is_not_done(self):
@@ -294,7 +329,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         messages = list(handler.on_partition_complete_sentinel(sentinel))
 
         expected_messages = []
-        assert expected_messages == messages
+        assert messages == expected_messages
         partition.close.assert_called_once()
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -331,7 +366,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             )
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_with_repository_messge(self):
@@ -381,7 +416,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             ),
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
         assert handler._record_counter[_STREAM_NAME] == 2
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -423,7 +458,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             ),
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_emits_status_message_on_first_record_with_repository_message(self):
@@ -477,7 +512,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             ),
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
         ]
-        assert expected_messages == messages
+        assert messages == expected_messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(self):
