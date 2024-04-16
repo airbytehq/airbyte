@@ -871,6 +871,13 @@ definitions:
         default: 1200
         examples:
           - 1200
+      header_prefix:
+        type: string
+        title: Header Prefix
+        description: The prefix to be used within the Authentication header.
+        examples:
+          - "Bearer"
+          - "Basic"
       jwt_headers:
         type: object
         title: JWT Headers

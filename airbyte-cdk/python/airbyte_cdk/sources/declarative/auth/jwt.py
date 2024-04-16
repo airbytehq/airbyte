@@ -23,6 +23,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     algorithm: Union[InterpolatedString, str]
     base64_encode_secret_key: Union[InterpolatedBoolean, bool] = False
     token_duration: int = None
+    header_prefix: Union[InterpolatedString, str] = None
     kid: Union[InterpolatedString, str] = None
     typ: Union[InterpolatedString, str] = None
     iss: Union[InterpolatedString, str] = None
@@ -38,6 +39,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._algorithm = InterpolatedString.create(self.algorithm, parameters=parameters)
         self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
         self._token_duration = self.token_duration
+        self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters)
         self._kid = InterpolatedString.create(self.kid, parameters=parameters)
         self._typ = InterpolatedString.create(self.typ, parameters=parameters)
         self._iss = InterpolatedString.create(self.iss, parameters=parameters)
@@ -50,7 +52,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     def _get_jwt_headers(self) -> Mapping[str, Any]:
         headers = self._additional_jwt_headers.eval(self.config)
         if any(prop in headers for prop in ["kid", "alg", "typ", "cty"]):
-            raise ValueError("'kid', 'alg', 'typ', 'cty' are reserved headers and should not be set")
+            raise ValueError("'kid', 'alg', 'typ', 'cty' are reserved headers and should not be set as part of 'additional_jwt_headers'")
 
         if self._kid:
             headers["kid"] = f"{self._kid.eval(self.config)}"
@@ -69,7 +71,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
         payload = self._additional_jwt_payload.eval(self.config)
         if any(prop in payload for prop in ["iss", "sub", "aud", "iat", "exp", "nbf"]):
-            raise ValueError("'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set")
+            raise ValueError("'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set as part of 'additional_jwt_payload'")
 
         if self._iss:
             payload["iss"] = f"{self._iss.eval(self.config)}"
@@ -105,10 +107,14 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             headers=self._get_jwt_headers(),
         )
 
+    def _get_header_prefix(self) -> str:
+        header_prefix: str = f"{self.header_prefix.eval(self.config)}"
+        return None if not header_prefix else header_prefix
+
     @property
     def auth_header(self) -> str:
         return "Authorization"
 
     @property
     def token(self) -> str:
-        return f"Bearer {self._get_signed_token()}"
+        return f"{self._get_header_prefix()} {self._get_signed_token()}" if self._get_header_prefix() else f"{self._get_signed_token()}"

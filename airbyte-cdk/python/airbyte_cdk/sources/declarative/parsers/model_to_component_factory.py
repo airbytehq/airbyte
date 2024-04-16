@@ -818,6 +818,7 @@ class ModelToComponentFactory:
             secret_key=model.secret_key,\
             base64_encode_secret_key=model.base64_encode_secret_key,
             token_duration=model.token_duration,
+            header_prefix=model.header_prefix,
             kid=model.jwt_headers.kid,
             typ=model.jwt_headers.typ,
             cty=model.jwt_headers.cty,
