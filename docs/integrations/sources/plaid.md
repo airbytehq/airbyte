@@ -70,6 +70,7 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.4.2 | 2024-04-15 | [37226](https://github.com/airbytehq/airbyte/pull/37226) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.4.1 | 2024-04-12 | [37226](https://github.com/airbytehq/airbyte/pull/37226) | schema descriptions |
 | 0.4.0   | 2023-08-17 | [29127](https://github.com/airbytehq/airbyte/pull/29127) | Rewrote connector to no-code SDK                              |
 | 0.3.2   | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
