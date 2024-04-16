@@ -249,7 +249,8 @@ class MongoDbCdcEventUtilsTest {
     assertTrue(abDataNode.has("field12"));
     assertTrue(abDataNode.has("field13"));
     assertTrue(abDataNode.has("field14"));
-    assertFalse(abDataNode.has("field15"));
+    assertTrue(abDataNode.has("field15"));
+    assertEquals(JsonNodeType.NULL, abDataNode.get("field15").getNodeType());
     assertTrue(abDataNode.has("field16"));
   }
 
