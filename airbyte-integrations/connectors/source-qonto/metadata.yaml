@@ -1,9 +1,12 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-qonto
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg
   license: MIT
@@ -11,7 +14,6 @@ data:
   releaseDate: "2023-10-19"
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
   tags:
     - language:python
     - cdk:low-code
