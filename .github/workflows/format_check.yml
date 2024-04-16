@@ -106,12 +106,13 @@ jobs:
       # We have no creds. Ignore docker caching and just run the CLI.
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 1
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        ref: ${{ github.head_ref }}
-        fetch-depth: 1
 
     - name: Install `airbyte-ci` CLI
       # We use the stable `airbyte-ci` from `master`. Ignores any CI changes
