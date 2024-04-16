@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-    - master
+      - master
   pull_request:
 
 jobs:
@@ -103,23 +103,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # We have no creds. Ignore docker caching and just run the CLI.
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}
-        fetch-depth: 1
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install `airbyte-ci` CLI
-      # We use the stable `airbyte-ci` from `master`. Ignores any CI changes
-      # local to this repo.
-      run: >
-        pip install
-        git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
+      - name: Install `airbyte-ci` CLI
+        # We use the stable `airbyte-ci` from `master`. Ignores any CI changes
+        # local to this repo.
+        run: >
+          pip install
+          git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
 
-    - name: Run format checks
-      run: |
-        airbyte-ci format check all
+      - name: Run format checks
+        run: |
+          airbyte-ci format check all
