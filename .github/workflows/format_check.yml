@@ -118,7 +118,7 @@ jobs:
       # local to this repo.
       run: >
         pip install
-        git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/pipelines
+        git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
 
     - name: Run format checks
       run: |
