@@ -84,7 +84,7 @@ def test_write():
     # assert state message is
     assert output_message == state_message
 
-    embedder_map["openai"].assert_called_with(config_model.embedding, config_model.processing.chunk_size)
+    embedder_map["openai"].assert_called_with(config_model.embedding)
     indexer_map["pinecone"].assert_called_with(config_model.indexing, mock_embedder)
     mock_indexer.pre_sync.assert_called_with(configured_catalog)
 

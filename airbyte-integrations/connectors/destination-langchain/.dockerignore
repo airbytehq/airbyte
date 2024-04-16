@@ -2,5 +2,4 @@
 !Dockerfile
 !main.py
 !destination_langchain
-!pyproject.toml
-!poetry.lock
+!setup.py

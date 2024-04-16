@@ -10,11 +10,24 @@ For information about how to use this connector within Airbyte, see [the documen
 
 #### Minimum Python version required `= 3.10.0`
 
-### Installing the connector
-From this connector directory, run:
-```bash
-poetry install --with dev
+#### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
 ```
+python -m venv .venv
+```
+
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/langchain)
@@ -29,7 +42,8 @@ and place them into `secrets/config.json`.
 ```
 python main.py spec
 python main.py check --config secrets/config.json
-python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -62,18 +76,6 @@ You can run our full test suite locally using [`airbyte-ci`](https://github.com/
 ```bash
 airbyte-ci connectors --name=destination-langchain test
 ```
-
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-poetry run pytest -s unit_tests
-```
-
-### Integration Tests
-To run integration tests locally, make sure you have a secrets/config.json as explained above, and then run:
-```
-poetry run pytest -s integration_tests
-``` 
 
 ### Customizing acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
