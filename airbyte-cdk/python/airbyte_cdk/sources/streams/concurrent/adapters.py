@@ -77,7 +77,6 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
                 partition_generator=StreamPartitionGenerator(
                     stream,
                     message_repository,
-                    SyncMode.full_refresh,  # TODO: make this interface sync mode agnostic, this value isnt used
                     [cursor_field] if cursor_field is not None else None,
                     state,
                     cursor,
@@ -213,7 +212,6 @@ class StreamPartition(Partition):
         stream: Stream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
@@ -226,7 +224,6 @@ class StreamPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._message_repository = message_repository
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
@@ -247,7 +244,7 @@ class StreamPartition(Partition):
             #  `if not stream_state` to know if it calls the Event stream or not
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
-                sync_mode=SyncMode.full_refresh,
+                sync_mode=SyncMode.full_refresh,  # TODO: ask maxime why this is hard coded
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
             ):
@@ -303,7 +300,6 @@ class StreamPartitionGenerator(PartitionGenerator):
         self,
         stream: Stream,
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
@@ -314,16 +310,13 @@ class StreamPartitionGenerator(PartitionGenerator):
         """
         self.message_repository = message_repository
         self._stream = stream
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
 
     def generate(self) -> Iterable[Partition]:
-        for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
-            yield StreamPartition(
-                self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
-            )
+        for s in self._stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=self._cursor_field, stream_state=self._state):
+            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._cursor_field, self._state, self._cursor)
 
 
 @deprecated("This class is experimental. Use at your own risk.")
