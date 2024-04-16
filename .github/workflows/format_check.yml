@@ -14,51 +14,51 @@ jobs:
     name: "Check for formatting errors"
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}
-        fetch-depth: 1
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install `airbyte-ci` CLI
-      # We use the stable `airbyte-ci` from `master`. Intentionally ignores any CI changes
-      # local to this branch.
-      run: >
-        pip install
-        git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
+      - name: Install `airbyte-ci` CLI
+        # We use the stable `airbyte-ci` from `master`. Intentionally ignores any CI changes
+        # local to this branch.
+        run: >
+          pip install
+          git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
 
-    - name: Run format checks
-      id: airbyte_ci_format_check_all
-      run: |
-        airbyte-ci format check all
+      - name: Run format checks
+        id: airbyte_ci_format_check_all
+        run: |
+          airbyte-ci format check all
 
-    # The final slack messaging steps will be skipped on forks and only
-    # relate to builds on `master`.
+      # The final slack messaging steps will be skipped on forks and only
+      # relate to builds on `master`.
 
-    - name: Match GitHub User to Slack User [MASTER]
-      if: |
-        github.ref == 'refs/heads/master'
-      id: match-github-to-slack-user
-      uses: ./.github/actions/match-github-to-slack-user
-      env:
-        AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-        GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Match GitHub User to Slack User [MASTER]
+        if: |
+          github.ref == 'refs/heads/master'
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Format Failure on Master Slack Channel [MASTER]
-      if: steps.airbyte_ci_format_check_all.outcome == 'failure' && github.ref == 'refs/heads/master'
-      uses: abinoda/slack-action@master
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      with:
-        args: >-
-          {\"channel\":\"C03BEADRPNY\", \"blocks\":[
-          {\"type\":\"divider\"},
-          {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Formatting is broken on master! :bangbang: \n\n\"}},
-          {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
-          {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
-          {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
-          {\"type\":\"divider\"}]}
+      - name: Format Failure on Master Slack Channel [MASTER]
+        if: steps.airbyte_ci_format_check_all.outcome == 'failure' && github.ref == 'refs/heads/master'
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Formatting is broken on master! :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"divider\"}]}
