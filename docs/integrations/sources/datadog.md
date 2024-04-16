@@ -73,6 +73,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                              | Subject                                                                      |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.4.2 | 2024-04-15 | [37147](https://github.com/airbytehq/airbyte/pull/37147) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.4.1 | 2024-04-12 | [37147](https://github.com/airbytehq/airbyte/pull/37147) | schema descriptions |
 | 0.4.0   | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999)  | Add `monitors` and `service_level_objectives` Streams |
 | 0.3.0   | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885)  | Migrate to low code                                                          |
