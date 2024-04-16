@@ -43,6 +43,7 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.3.3 | 2024-04-15 | [37160](https://github.com/airbytehq/airbyte/pull/37160) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.2 | 2024-04-12 | [37160](https://github.com/airbytehq/airbyte/pull/37160) | schema descriptions |
 | 0.3.1   | 2023-11-28 | [32874](https://github.com/airbytehq/airbyte/pull/32874) | 🐛 Source: fix page_size_option parameter in spec           |
 | 0.3.0   | 2023-10-24 | [31102](https://github.com/airbytehq/airbyte/pull/14759) | ✨ Source: Migrate to Low Code CDK                          |
