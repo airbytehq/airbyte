@@ -35,7 +35,10 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that
   // have completed the snapshot.
-  private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+  private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+
+  // No special handling for resumable full refresh streams. We will report the cursor as it is.
+  private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
 
   public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
@@ -44,20 +47,25 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     this.cdcState = cdcState;
     this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
-    this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
+    initStreams(initialLoadStreams, catalog);
   }
 
-  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
-                                                                                  final ConfiguredAirbyteCatalog catalog) {
-    final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
+  private void initStreams(final InitialLoadStreams initialLoadStreams,
+                           final ConfiguredAirbyteCatalog catalog) {
+    this.streamsThatHaveCompletedSnapshot = new HashSet<>();
+    this.resumableFullRefreshStreams = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
       if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
           && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        streamsThatHaveCompletedSnapshot.add(
+        this.streamsThatHaveCompletedSnapshot.add(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      }
+      if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
+          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        this.resumableFullRefreshStreams.add(
             new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
       }
     });
-    return streamsThatHaveCompletedSnapshot;
   }
 
   @Override
@@ -66,12 +74,18 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
-
     });
-    AirbyteStreamNameNamespacePair pair =
-        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
-    var pkStatus = getPrimaryKeyLoadStatus(pair);
-    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
+
+    resumableFullRefreshStreams.forEach(stream -> {
+      var pkStatus = getPrimaryKeyLoadStatus(stream);
+      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+    });
+    if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+      AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      var pkStatus = getPrimaryKeyLoadStatus(pair);
+      streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
+    }
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
@@ -88,13 +102,21 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
-    AirbyteStreamNameNamespacePair pair =
-        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
-    streamsThatHaveCompletedSnapshot.add(pair);
+    if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+      AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      streamsThatHaveCompletedSnapshot.add(pair);
+    }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
+
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
+
+    resumableFullRefreshStreams.forEach(stream -> {
+      var pkStatus = getPrimaryKeyLoadStatus(stream);
+      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
     });
 
     final AirbyteGlobalState globalState = new AirbyteGlobalState();

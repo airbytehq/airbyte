@@ -133,7 +133,6 @@ protected constructor(driverClassName: String) :
         val emittedAt = Instant.now()
 
         val database = createDatabase(config)
-
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =

@@ -50,7 +50,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -76,22 +75,40 @@ public class MySqlInitialReadUtil {
                                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                                         final TableInfo<CommonField<MysqlType>> table,
                                                                                         final StateManager stateManager,
+                                                                                        final ConfiguredAirbyteStream fullRefreshStream,
                                                                                         final Instant emittedAt,
                                                                                         final String quoteString) {
     final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
-        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, SyncMode.FULL_REFRESH, savedOffsetStillPresentOnServer);
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
-    // If there are streams to sync via primary key load, build the relevant iterators.
+    // State manager will need to know all streams in order to produce a state message
+    // But for initial load handler we only want to produce iterator on the single full refresh stream.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
       final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+
+      // Filter on initialLoadStream
+      var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
+      var pkStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
+
+      Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> result;
+      if (pkStatus == null) {
+        result = Map.of();
+      } else {
+        result = Map.of(pair, pkStatus);
+      }
+
+      var fullRefreshStreamInitialLoad = new InitialLoadStreams(List.of(fullRefreshStream),
+          result);
+
       final MySqlInitialLoadStateManager initialLoadStateManager =
-          new MySqlInitialLoadFullRefreshGlobalStateManager(initialLoadStreams,
-              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, table, quoteString),
+          new MySqlInitialLoadGlobalStateManager(fullRefreshStreamInitialLoad,
+              initPairToPrimaryKeyInfoMap(database, fullRefreshStreamInitialLoad, table, quoteString),
               stateToBeUsed, catalog);
-      return Optional.of(getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager, metadataInjector));
+      return Optional
+          .of(getMySqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, metadataInjector));
     }
     return Optional.empty();
   }
@@ -189,7 +206,7 @@ public class MySqlInitialReadUtil {
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
     final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
-        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, SyncMode.INCREMENTAL, savedOffsetStillPresentOnServer);
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
     final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
@@ -244,14 +261,13 @@ public class MySqlInitialReadUtil {
    */
   public static InitialLoadStreams cdcStreamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog,
-                                                                      final SyncMode allowedSyncMode,
                                                                       final boolean savedOffsetStillPresentOnServer) {
 
     if (!savedOffsetStillPresentOnServer) {
+      // Add a filter here to identify resumable full refresh streams.
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
-              .filter(c -> c.getSyncMode().equals(allowedSyncMode))
               .collect(Collectors.toList()),
           new HashMap<>());
     }
@@ -290,7 +306,7 @@ public class MySqlInitialReadUtil {
         .map(Jsons::clone)
         .forEach(streamsForPkSync::add);
     final List<ConfiguredAirbyteStream> newlyAddedStreams =
-        identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced(), allowedSyncMode);
+        identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
     streamsForPkSync.addAll(newlyAddedStreams);
 
     return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus);
@@ -343,7 +359,7 @@ public class MySqlInitialReadUtil {
         .forEach(streamsForPkSync::add);
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
-        Collections.unmodifiableSet(alreadySeenStreamPairs), SyncMode.INCREMENTAL);
+        Collections.unmodifiableSet(alreadySeenStreamPairs));
     streamsForPkSync.addAll(newlyAddedStreams);
     return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()),
         pairToInitialLoadStatus);
@@ -354,12 +370,11 @@ public class MySqlInitialReadUtil {
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams,
-                                                                        final SyncMode syncMode) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+    // Add a filter here to identify resumable full refresh streams.
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == syncMode)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
@@ -373,7 +388,6 @@ public class MySqlInitialReadUtil {
             .collect(
                 Collectors.toSet());
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !initialLoadStreamsNamespacePairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
