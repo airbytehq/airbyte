@@ -60,6 +60,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | schema descriptions |
 | 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
