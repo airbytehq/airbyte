@@ -5,9 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.57.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]==0.81.6"]
 
-TEST_REQUIREMENTS = ["pytest~=6.2"]
+TEST_REQUIREMENTS = ["pytest~=7.2"]
 
 setup(
     name="destination_astra",

@@ -85,6 +85,7 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.17 | 2024-04-15 | [35911](https://github.com/airbytehq/airbyte/pull/35911)  | Update CDK & pytest version to fix security vulnerabilities.
 | 0.2.16 | 2024-03-22 | [35911](https://github.com/airbytehq/airbyte/pull/35911) | Fix tests and move to Poetry |
 | 0.2.15 | 2023-01-25 | [34529](https://github.com/airbytehq/airbyte/pull/34529) | Fix tests |
 | 0.2.14 | 2023-01-15 | [34229](https://github.com/airbytehq/airbyte/pull/34229) | Allow configuring tenant id |

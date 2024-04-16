@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, call
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import ChromaLocalIndexingModel
 from destination_langchain.indexer import ChromaLocalIndexer
-from langchain.document_loaders.base import Document
+from langchain_core.documents.base import Document
 
 
 def create_chroma_local_indexer():

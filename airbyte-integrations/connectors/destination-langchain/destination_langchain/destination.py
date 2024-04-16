@@ -22,7 +22,7 @@ from destination_langchain.batcher import Batcher
 from destination_langchain.config import ConfigModel
 from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.indexer import ChromaLocalIndexer, DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
-from langchain.document_loaders.base import Document
+from langchain_core.documents.base import Document
 
 BATCH_SIZE = 128
 

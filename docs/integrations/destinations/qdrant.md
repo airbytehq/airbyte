@@ -71,6 +71,7 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.0.11 | 2024-04-15 | [33500](https://github.com/airbytehq/airbyte/pull/33303) | Updated CDK and pytest versions to fix security vulnerabilities |
 | 0.0.10 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
 | 0.0.9 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
 | 0.0.8 | 2023-11-29 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources and fix spec schema |

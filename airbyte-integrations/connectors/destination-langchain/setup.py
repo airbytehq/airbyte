@@ -6,8 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.51.10",
-    "langchain",
+    "airbyte-cdk==0.81.6",
+    "langchain~=0.1",
     "openai",
     "requests",
     "tiktoken",
@@ -20,7 +20,7 @@ MAIN_REQUIREMENTS = [
     "chromadb==0.4.3",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2"]
+TEST_REQUIREMENTS = ["pytest~=7.2"]
 
 setup(
     name="destination_langchain",

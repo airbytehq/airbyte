@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import DocArrayHnswSearchIndexingModel
 from destination_langchain.indexer import DocArrayHnswSearchIndexer
-from langchain.document_loaders.base import Document
+from langchain_core.documents.base import Document
 
 
 class DocArrayIndexerTest(unittest.TestCase):

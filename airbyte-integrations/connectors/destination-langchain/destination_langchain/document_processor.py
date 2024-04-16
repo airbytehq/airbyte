@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, C
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
 from destination_langchain.config import ProcessingConfigModel
 from dpath.exceptions import PathNotFound
-from langchain.document_loaders.base import Document
+from langchain_core.documents.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
