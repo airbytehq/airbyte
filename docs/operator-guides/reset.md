@@ -15,6 +15,8 @@ To perform a full removal of the data for all your streams, navigate to a connec
 
 To clear data for a single stream, navigate to a Connection's status page, click the three grey dots next to any stream, and select "Clear data". This will clear the data for just that stream. You will then need to sync the connection again in order to reload data for that stream. 
 
+![Clear data from a stream](./assets/clear-example.png)
+
 :::note
 A single stream clear will sync all enabled streams on the next sync. 
 :::
