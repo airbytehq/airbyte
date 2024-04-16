@@ -9,9 +9,9 @@ from typing import Any, Mapping, Union
 
 import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 
 
 @dataclass
@@ -70,7 +70,9 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
         payload = self._additional_jwt_payload.eval(self.config)
         if any(prop in payload for prop in ["iss", "sub", "aud", "iat", "exp", "nbf"]):
-            raise ValueError("'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set as part of 'additional_jwt_payload'")
+            raise ValueError(
+                "'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set as part of 'additional_jwt_payload'"
+            )
 
         if self._iss:
             payload["iss"] = self._iss.eval(self.config)

@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import logging
-import jwt
 import base64
+import logging
 from datetime import datetime
+
 import freezegun
+import jwt
 import pytest
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAuthenticator
 
