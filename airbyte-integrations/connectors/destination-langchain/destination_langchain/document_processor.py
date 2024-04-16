@@ -10,9 +10,9 @@ from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, C
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
 from destination_langchain.config import ProcessingConfigModel
 from dpath.exceptions import PathNotFound
-from langchain_core.documents.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
+from langchain_core.documents.base import Document
 
 METADATA_STREAM_FIELD = "_airbyte_stream"
 METADATA_RECORD_ID_FIELD = "_record_id"
