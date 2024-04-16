@@ -2,6 +2,9 @@ data:
   ab_internal:
     ql: 200
     sl: 200
+  allowedHosts:
+    hosts:
+      - ${connection_string}
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
