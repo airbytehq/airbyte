@@ -113,7 +113,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     def insights_job_timeout(self):
         return pendulum.duration(minutes=self._insights_job_timeout)
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
 
     def read_records(
@@ -227,6 +227,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
+            #TODO: VERSION BUMP: DIFFERENT
+            # for account in self._api.accounts:
+            #     yield InsightAsyncJob(api=self._api.api, edge_object=account, interval=interval, params=params)
             yield InsightAsyncJob(
                 api=self._api.api,
                 edge_object=self._api.get_account(account_id=account_id),

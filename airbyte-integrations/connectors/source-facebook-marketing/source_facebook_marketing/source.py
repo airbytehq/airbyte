@@ -22,7 +22,7 @@ from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -46,6 +46,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
+    AdRuleLibraries,
     Campaigns,
     CustomAudiences,
     CustomConversions,
@@ -95,7 +96,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(access_token=config.access_token, page_size=config.page_size)
+            api = API(access_token=config.access_token, page_size=config.page_size, parallelism=config.parallelism)
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
@@ -129,7 +130,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(access_token=config.access_token, page_size=config.page_size)
+        api = API(access_token=config.access_token, page_size=config.page_size, parallelism=config.parallelism)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -143,49 +144,7 @@ class SourceFacebookMarketing(AbstractSource):
             insights_job_timeout=config.insights_job_timeout,
         )
         streams = [
-            AdAccount(api=api, account_ids=config.account_ids),
-            AdSets(
-                api=api,
-                account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                filter_statuses=config.adset_statuses,
-                page_size=config.page_size,
-            ),
-            Ads(
-                api=api,
-                account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                filter_statuses=config.ad_statuses,
-                page_size=config.page_size,
-            ),
-            AdCreatives(
-                api=api,
-                account_ids=config.account_ids,
-                fetch_thumbnail_images=config.fetch_thumbnail_images,
-                page_size=config.page_size,
-            ),
-            AdsInsights(page_size=config.page_size, **insights_args),
-            AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
-            AdsInsightsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsRegion(page_size=config.page_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, **insights_args),
-            AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
-            AdsInsightsActionType(page_size=config.page_size, **insights_args),
-            AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
-            AdsInsightsActionConversionDevice(page_size=config.page_size, **insights_args),
-            AdsInsightsActionProductID(page_size=config.page_size, **insights_args),
-            AdsInsightsActionReaction(page_size=config.page_size, **insights_args),
-            AdsInsightsActionVideoSound(page_size=config.page_size, **insights_args),
-            AdsInsightsActionVideoType(page_size=config.page_size, **insights_args),
-            AdsInsightsDeliveryDevice(page_size=config.page_size, **insights_args),
-            AdsInsightsDeliveryPlatform(page_size=config.page_size, **insights_args),
-            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
-            AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
+            AdAccounts(api=api, account_ids=config.account_ids),
             Campaigns(
                 api=api,
                 account_ids=config.account_ids,
@@ -193,38 +152,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 filter_statuses=config.campaign_statuses,
                 page_size=config.page_size,
-            ),
-            CustomConversions(
-                api=api,
-                account_ids=config.account_ids,
-                page_size=config.page_size,
-            ),
-            CustomAudiences(
-                api=api,
-                account_ids=config.account_ids,
-                page_size=config.page_size,
-            ),
-            Images(
-                api=api,
-                account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                page_size=config.page_size,
-            ),
-            Videos(
-                api=api,
-                account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                page_size=config.page_size,
-            ),
-            Activities(
-                api=api,
-                account_ids=config.account_ids,
-                start_date=config.start_date,
-                end_date=config.end_date,
-                page_size=config.page_size,
-            ),
+            )
         ]
 
         return streams + self.get_custom_insights_streams(api, config)

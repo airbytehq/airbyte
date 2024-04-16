@@ -25,6 +25,22 @@ ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
 ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
+# VALID_STATUSES = [
+#     "active",
+#     "archived",
+#     "completed",
+#     "limited",
+#     "not_delivering",
+#     "deleted",
+#     "not_published",
+#     "pending_review",
+#     "permanently_deleted",
+#     "recently_completed",
+#     "recently_rejected",
+#     "rejected",
+#     "scheduled",
+#     "inactive",
+# ]
 
 
 class InsightConfig(BaseModel):
@@ -172,6 +188,17 @@ class ConnectorConfig(BaseConfig):
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
         default_factory=lambda: datetime.now(tz=timezone.utc),
+    )
+
+    parallelism: Optional[PositiveInt] = Field(
+        title="Maximum number of parallel connections",
+        order=9,
+        description=(
+            "Maximum number of parallel connections."
+            "Most users do not need to set this field unless they specifically need to tune the connector to address "
+            "specific issues or use cases."
+        ),
+        default=1,
     )
 
     campaign_statuses: Optional[List[ValidCampaignStatuses]] = Field(

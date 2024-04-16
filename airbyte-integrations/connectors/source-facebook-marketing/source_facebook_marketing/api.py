@@ -6,11 +6,15 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
+import requests
+from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
@@ -22,7 +26,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=15, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -45,7 +49,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         per_account: float
 
     # Insights async jobs throttle
-    _ads_insights_throttle: Throttle
+    _ads_insights_throttle: Throttle = Throttle(per_account=0, per_application=0)
 
     @property
     def ads_insights_throttle(self) -> Throttle:
@@ -175,7 +179,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, access_token: str, page_size: int = 100):
+    def __init__(self, access_token: str, page_size: int = 100, parallelism: int = 1):
         self._accounts = {}
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
@@ -183,7 +187,10 @@ class API:
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         setattr(self.api, "default_page_size", page_size)
         # set the default API client to Facebook lib.
+        adapter = requests.adapters.HTTPAdapter(pool_connections=parallelism, pool_maxsize=parallelism, pool_block=False)
+        MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
+        self.me = User(fbid='me')
 
     def get_account(self, account_id: str) -> AdAccount:
         """Get AdAccount object by id"""

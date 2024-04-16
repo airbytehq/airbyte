@@ -151,4 +151,8 @@ class InsightAsyncJobManager:
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """
+        #TODO: VERSION BUMP: DIFFERENT
+        # for account in self._api.accounts:
+        #     account.get_insights()
+
         self._api.get_account(account_id=self._account_id).get_insights()

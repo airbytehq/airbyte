@@ -5,13 +5,15 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import traced_exception
@@ -56,6 +58,10 @@ class FBMarketingStream(Stream, ABC):
         self._filter_statuses = filter_statuses
         self._fields = None
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 500
+
     def fields(self, **kwargs) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         if self._fields:
@@ -91,6 +97,7 @@ class FBMarketingStream(Stream, ABC):
     def add_account_id(record, account_id: str):
         if "account_id" not in record:
             record["account_id"] = account_id
+        return record
 
     def get_account_state(self, account_id: str, stream_state: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """
@@ -172,36 +179,49 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        account_id = stream_slice["account_id"]
-        account_state = stream_slice.get("stream_state", {})
+        stream_accounts = self.stream_accounts(stream_state)
 
+        # call chain: read_records -> list_objects -> _get_object_list_parallel -> get_ad_creatives (for example) -> api call with fb lib
         try:
-            for record in self.list_objects(
-                params=self.request_params(stream_state=account_state),
-                account_id=account_id,
-            ):
+            for record in self.list_objects(account_ids_with_state=stream_accounts):
                 if isinstance(record, AbstractObject):
                     record = record.export_all_data()  # convert FB object to dict
                 self.fix_date_time(record)
-                self.add_account_id(record, stream_slice["account_id"])
                 yield record
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def _get_object_list_parallel(self, api_call_wrapper, account_ids_with_state: List[Tuple[str, any]], ignore_fields: List[str] = []):
+        jobs = []
+        for account_id, state in account_ids_with_state:
+            fields = [field for field in self.fields(account_id=account_id) if field not in ignore_fields]
+            params = self.request_params(stream_state=state)
+            jobs.append(gevent.spawn(api_call_wrapper, account=self._api.get_account(account_id), account_id=account_id, fields=fields, params=params))
+
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
+                for record in job.value:
+                    yield record
+
+    # This replaces `stream_slices` on master as we are not using them because they are not executed in parallel
+    def stream_accounts(self, stream_state: Mapping[str, Any] = None) -> List[Tuple[str, any]]:
+        account_ids_with_state = []
         if stream_state:
             stream_state = self._transform_state_from_one_account_format(stream_state, ["include_deleted"])
             stream_state = self._transform_state_from_old_deleted_format(stream_state)
 
         for account_id in self._account_ids:
             account_state = self.get_account_state(account_id, stream_state)
-            yield {"account_id": account_id, "stream_state": account_state}
+            account_ids_with_state.append((account_id, account_state))
+        return account_ids_with_state
 
     @abstractmethod
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, account_ids_with_state: List[Tuple[str, any]]) -> Iterable:
         """List FB objects, these objects will be loaded in read_records later with their details.
 
-        :param params: params to make request
+        :param account_ids_with_state:
         :return: list of FB objects to load
         """
 
@@ -215,19 +235,12 @@ class FBMarketingStream(Stream, ABC):
     def _filter_all_statuses(self) -> MutableMapping[str, Any]:
         """Filter records by statuses"""
 
-        return (
-            {
-                "filtering": [
-                    {
-                        "field": f"{self.entity_prefix}.{self.status_field}",
-                        "operator": "IN",
-                        "value": self._filter_statuses,
-                    },
-                ],
-            }
-            if self._filter_statuses and self.status_field
-            else {}
-        )
+        return {
+            "filtering": [
+                {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value":  self._filter_statuses},
+            ],
+        }
+
 
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
@@ -282,16 +295,6 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         else:
             # if start_date is not specified then do not use date filters
             return {}
-
-        potentially_new_records_in_the_past = set(self._filter_statuses) - set(stream_state.get("filter_statuses", []))
-
-        if potentially_new_records_in_the_past:
-            self.logger.info(f"Ignoring bookmark for {self.name} because `filter_statuses` were changed.")
-            if self._start_date:
-                filter_value = self._start_date
-            else:
-                # if start_date is not specified then do not use date filters
-                return {}
 
         return {
             "filtering": [
@@ -348,34 +351,29 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Main read method used by CDK
-        - save initial state
-        - save maximum value (it is the first one)
-        - update state only when we reach the end
-        - stop reading when we reached the end
-        """
-        account_id = stream_slice["account_id"]
-        account_state = stream_slice.get("stream_state")
+
+        stream_accounts = self.stream_accounts(stream_state)
 
         try:
-            records_iter = self.list_objects(
-                params=self.request_params(stream_state=account_state),
-                account_id=account_id,
-            )
-            account_cursor = self._cursor_values.get(account_id)
+            records_iter = self.list_objects(account_ids_with_state=stream_accounts)
 
-            max_cursor_value = None
             for record in records_iter:
                 record_cursor_value = pendulum.parse(record[self.cursor_field])
-                if account_cursor and record_cursor_value < account_cursor:
+
+                account_id = record["account_id"]
+                state_cursor_value = self._cursor_values[account_id]
+
+                if state_cursor_value and record_cursor_value < state_cursor_value:
                     break
 
-                max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
-                record = record.export_all_data()
+                max_cursor_value = max(state_cursor_value, record_cursor_value) if state_cursor_value else record_cursor_value
+                self._cursor_values[account_id] = max_cursor_value
+
+                if isinstance(record, AbstractObject):
+                    record = record.export_all_data()  # convert FB object to dict
+
                 self.fix_date_time(record)
-                self.add_account_id(record, stream_slice["account_id"])
                 yield record
 
-            self._cursor_values[account_id] = max_cursor_value
         except FacebookRequestError as exc:
             raise traced_exception(exc)
