@@ -1,0 +1,258 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "SubscriptionContractNextBillingDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "NextBillingUpcomingYearMonth": {
+            "type": "string"
+        },
+        "DeliveryIntervalDeliveryCount": {
+            "type": "string"
+        },
+        "DeliveryMethod": {
+            "type": "object",
+            "properties": {
+                "shippingOptions": {
+                    "type": "object",
+                    "properties": {
+                        "presentmentTitle": {"type": "string"},
+                        "description": {"type": "string"},
+                        "code": {"type": "string"}
+                    }
+                },
+                "address": {
+                    "type": "object",
+                    "properties": {
+                        "zip": {"type": "string"},
+                        "country": {"type": "string"},
+                        "province": {"type": "string"},
+                        "address2": {"type": "string"},
+                        "city": {"type": "string"},
+                        "phone": {"type": "string"},
+                        "address1": {"type": "string"},
+                        "countryCode": {"type": "string"},
+                        "provinceCode": {"type": "string"},
+                        "name": {"type": "string"}
+                    }
+                }
+            }
+        },
+        "DeliveryPriceAmount": {
+            "type": "number"
+        },
+        "CustomAttributes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "string"},
+                    "key": {"type": "string"},
+                    "__typename": {"type": "string"}
+                }
+            }
+        },
+        "CustomerId": {
+            "type": "string"
+        },
+        "ShopDomain": {
+            "type": "string"
+        },
+        "NextBillingYearMonth": {
+            "type": "string"
+        },
+        "CurrencyCode": {
+            "type": "string"
+        },
+        "Discounts": {
+            "type": "array"
+        },
+        "CustomerPaymentMethod": {
+            "type": "object",
+            "properties": {
+                "revokedAt": {"type": "string"},
+                "instrument": {
+                    "type": "object",
+                    "properties": {
+                        "expiryMonth": {"type": "string"},
+                        "lastDigits": {"type": "string"},
+                        "expiryYear": {"type": "string"},
+                        "billingAddress": {
+                            "type": "object",
+                            "properties": {
+                                "zip": {"type": "string"},
+                                "country": {"type": "string"},
+                                "province": {"type": "string"},
+                                "city": {"type": "string"},
+                                "address1": {"type": "string"},
+                                "countryCode": {"type": "string"},
+                                "provinceCode": {"type": "string"}
+                            }
+                        },
+                        "brand": {"type": "string"},
+                        "__typename": {"type": "string"}
+                    }
+                },
+                "id": {"type": "string"}
+            }
+        },
+        "BillingIntervalBillingCount": {
+            "type": "string"
+        },
+        "OriginOrderId": {
+            "type": "string"
+        },
+        "ItemTypeSubscriptionStatusNextBillingDate": {
+            "type": "string"
+        },
+        "SK": {
+            "type": "string"
+        },
+        "LineCount": {
+            "type": "integer"
+        },
+        "NextBillingUpcomingDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "CreatedAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "DeliveryPriceCurrencyCode": {
+            "type": "string"
+        },
+        "MarketOverrideCountryCode": {
+            "type": "string"
+        },
+        "DeliveryBatchingAnchor": {
+            "type": "array"
+        },
+        "NextBillingDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "IsUpdating": {
+            "type": "boolean"
+        },
+        "SubscriptionStatus": {
+            "type": "string"
+        },
+        "PK": {
+            "type": "string"
+        },
+        "HasPrepaidLines": {
+            "type": "boolean"
+        },
+        "SubscriptionId": {
+            "type": "string"
+        },
+        "ShopifyUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "ShippingDiscountAmount": {
+            "type": "number"
+        },
+        "FormattedShippingDiscount": {
+            "type": "string"
+        },
+        "FormattedDeliveryPrice": {
+            "type": "string"
+        },
+        "FormattedFrequency": {
+            "type": "string"
+        },
+        "DiscountCodes": {
+            "type": "array"
+        },
+        "SubscriptionTotal": {
+            "type": "number"
+        },
+        "FormattedSubscriptionTotal": {
+            "type": "string"
+        },
+        "Lines": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "LineDiscountedPriceCurrencyCode": {"type": "string"},
+                    "SellingPlanName": {"type": "string"},
+                    "CustomAttributes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "value": {"type": "string"},
+                                "key": {"type": "string"},
+                                "__typename": {"type": "string"}
+                            }
+                        }
+                    },
+                    "CustomerId": {"type": "string"},
+                    "ShopDomain": {"type": "string"},
+                    "NextBillingYearMonth": {"type": "string"},
+                    "SubscriptionContractId": {"type": "string"},
+                    "CurrentPriceAmount": {"type": "string"},
+                    "PricingPolicyCycleDiscounts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "adjustmentValue": {
+                                    "type": "object",
+                                    "properties": {
+                                        "percentage": {"type": "integer"}
+                                    }
+                                },
+                                "afterCycle": {"type": "integer"},
+                                "computedPrice": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currencyCode": {"type": "string"},
+                                        "amount": {"type": "string"}
+                                    }
+                                },
+                                "adjustmentType": {"type": "string"}
+                            }
+                        }
+                    },
+                    "Title": {"type": "string"},
+                    "VariantTitle": {"type": "string"},
+                    "ItemTypeSubscriptionStatusNextBillingDate": {"type": "string"},
+                    "SK": {"type": "string"},
+                    "SKU": {"type": "string"},
+                    "ProductId": {"type": "string"},
+                    "RequiresShipping": {"type": "boolean"},
+                    "CurrentPriceCurrencyCode": {"type": "string"},
+                    "VariantId": {"type": "string"},
+                    "Quantity": {"type": "integer"},
+                    "NextBillingDate": {"type": "string", "format": "date-time"},
+                    "PricingPolicyBasePriceAmount": {"type": "string"},
+                    "SellingPlanId": {"type": "string"},
+                    "SubscriptionContractLineId": {"type": "string"},
+                    "VariantImageSrc": {"type": "string"},
+                    "PricingPolicyBasePriceCurrencyCode": {"type": "string"},
+                    "PK": {"type": "string"},
+                    "SuccessfulBillingAttempts": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "LineDiscountedPriceAmount": {"type": "string"},
+                    "DiscountAllocations": {
+                        "type": "array",
+                        "items": {"type": "object"}
+                    },
+                    "SubscriptionId": {"type": "string"},
+                    "FormattedItemPrice": {"type": "string"},
+                    "FormattedLineTotal": {"type": "string"},
+                    "FormattedPricingPolicyBasePrice": {"type": "string"},
+                    "FormattedPricingPolicyBasePriceMultipliedQuantiy": {"type": "string"}
+                }
+            }
+        }
+    },
+    "type": "object"
+}

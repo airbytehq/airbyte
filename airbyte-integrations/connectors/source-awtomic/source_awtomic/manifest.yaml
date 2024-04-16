@@ -1,195 +1,74 @@
 version: 0.57.0
-type: DeclarativeSource
-check:
-  type: CheckStream
-  stream_names:
-    - Subscriptions
-streams:
-  - type: DeclarativeStream
+
+definitions:
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - Items
+
+  requester:
+    type: HttpRequester
+    url_base: https://api.awtomic.com/
+    path: subscriptions
+    http_method: GET
+    request_parameters: {}
+    request_headers: {}
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+    request_body_json: {}
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: lastEvaluatedKey
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      pagination_strategy:
+        class_name: "source_awtomic.page_increment_strategy.LastEvaluatedKeyPaginationStrategy"
+        type: "CustomPaginationStrategy"
+        page_size: 100
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  subscriptions_stream:
+    $ref: "#/definitions/base_stream"
     name: Subscriptions
     primary_key:
       - SubscriptionId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        properties:
-          BillingIntervalBillingCount:
-            type: string
-          CreatedAt:
-            type: string
-          CurrencyCode:
-            type: string
-          CustomAttributes:
-            items:
-              properties:
-                __typename:
-                  type: string
-                key:
-                  type: string
-                value:
-                  type: string
-              type: object
-            type: array
-          Customer:
-            properties:
-              acceptsMarketing:
-                type: boolean
-              displayName:
-                type: string
-              email:
-                type: string
-              id:
-                type: string
-              imageSrc:
-                type: string
-              locale:
-                type: string
-              phone:
-                type: string
-              productSubscriberStatus:
-                type: string
-              validEmailAddress:
-                type: boolean
-              verifiedEmail:
-                type: boolean
-            type: object
-          CustomerId:
-            type: string
-          CustomerPaymentMethod:
-            properties:
-              id:
-                type: string
-              instrument:
-                properties:
-                  __typename:
-                    type: string
-                  billingAddress:
-                    properties:
-                      address1:
-                        type: string
-                      city:
-                        type: string
-                      country:
-                        type: string
-                      countryCode:
-                        type: string
-                      province:
-                        type: string
-                      provinceCode:
-                        type: string
-                      zip:
-                        type: string
-                    type: object
-                  brand:
-                    type: string
-                  expiryMonth:
-                    type: string
-                  expiryYear:
-                    type: string
-                  lastDigits:
-                    type: string
-                type: object
-              revokedAt:
-                type: string
-            type: object
-          DeliveryBatchingAnchor:
-            type: array
-          DeliveryIntervalDeliveryCount:
-            type: string
-          DeliveryMethod:
-            properties:
-              address:
-                properties:
-                  address1:
-                    type: string
-                  address2:
-                    type: string
-                  city:
-                    type: string
-                  country:
-                    type: string
-                  countryCode:
-                    type: string
-                  name:
-                    type: string
-                  phone:
-                    type: string
-                  province:
-                    type: string
-                  provinceCode:
-                    type: string
-                  zip:
-                    type: string
-                type: object
-              shippingOptions:
-                properties:
-                  code:
-                    type: string
-                  description:
-                    type: string
-                  presentmentTitle:
-                    type: string
-                type: object
-            type: object
-          DeliveryPriceAmount:
-            type: number
-          DeliveryPriceCurrencyCode:
-            type: string
-          Discounts:
-            type: array
-          HasPrepaidLines:
-            type: boolean
-          IsInDunning:
-            type: boolean
-          IsUpdating:
-            type: boolean
-          ItemTypeSubscriptionStatusNextBillingDate:
-            type: string
-          LineCount:
-            type: number
-          MarketOverrideCountryCode:
-            type: string
-          NextBillingDate:
-            type: string
-          NextBillingUpcomingDate:
-            type: string
-          NextBillingUpcomingYearMonth:
-            type: string
-          NextBillingYearMonth:
-            type: string
-          OriginOrderId:
-            type: string
-          PK:
-            type: string
-          PauseDates:
-            items:
-              properties:
-                Date:
-                  type: string
-              type: object
-            type: array
-          SK:
-            type: string
-          ShopDomain:
-            type: string
-          SubscriptionContractNextBillingDate:
-            type: string
-          SubscriptionId:
-            type: string
-          SubscriptionStatus:
-            type: string
-          UpdatedAt:
-            type: string
-        type: object
+      
+  subscriptions_contract_stream:
+    name: "subscription_contract"
+    primary_key:
+      - SubscriptionId
     retriever:
-      type: SimpleRetriever
+      $ref: "#/definitions/retriever"
       requester:
         type: HttpRequester
         url_base: https://api.awtomic.com/
         path: subscriptions
         http_method: GET
-        request_parameters: {}
+        request_parameters: {'expandLines':'true'}
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
@@ -199,27 +78,23 @@ streams:
             field_name: x-api-key
             inject_into: header
         request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - Items
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: lastEvaluatedKey
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          class_name: "source_awtomic.page_increment_strategy.LastEvaluatedKeyPaginationStrategy"
-          type: "CustomPaginationStrategy"
-          page_size: 100
-      partition_router: []
+        path: "customers/{{ stream_slice.customer_id[22:] }}/subscriptions"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/subscriptions_stream"
+            parent_key:  "CustomerId"
+            partition_field: "customer_id"
+
+streams:
+  - "#/definitions/subscriptions_stream"
+  - "#/definitions/subscriptions_contract_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "Subscriptions"
+
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
