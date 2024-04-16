@@ -12,9 +12,6 @@ jobs:
   format-fix:
     name: "Run airbyte-ci format fix all"
     runs-on: ubuntu-latest
-    permissions:
-      # Allow writing to repository
-      contents: write
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -23,7 +20,6 @@ jobs:
           # Important that this is set so that CI checks are triggered again
           # Without this we would be forever waiting on required checks to pass
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          fetch-depth: 0
 
       - name: Run airbyte-ci format fix all
         uses: ./.github/actions/run-airbyte-ci
