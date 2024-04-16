@@ -21,6 +21,8 @@ ALL_LANGUAGES = [
 
 ALL_TYPES = ["source", "destination"]
 
+ALL_SUPPORT_LEVELS = ["certified", "community"]
+
 
 class CheckCategory(Enum):
     """The category of a QA check"""
@@ -135,6 +137,15 @@ class Check(ABC):
         """
         raise NotImplementedError("Subclasses must implement category property/attribute")
 
+    @property
+    def applies_to_connector_support_levels(self) -> List[str]:
+        """The connector's support levels that the QA check applies to
+
+        Returns:
+            List[str]: The connector's support levels that the QA check applies to
+        """
+        return ALL_SUPPORT_LEVELS
+
     def run(self, connector: Connector) -> CheckResult:
         if not self.runs_on_released_connectors and connector.is_released:
             return self.skip(
@@ -157,6 +168,11 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.connector_type} connectors",
+            )
+        if connector.support_level not in self.applies_to_connector_support_levels:
+            return self.skip(
+                connector,
+                f"Check does not apply to {connector.support_level} connectors",
             )
         return self._run(connector)
 

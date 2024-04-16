@@ -213,20 +213,15 @@ class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
     name = "Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata"
     description = "Certified source connectors must have a value filled out for `maxSecondsBetweenMessages` in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in connector's `metadata.yaml` file."
     applies_to_connector_types = ["source"]
-
-    @staticmethod
-    def check_connector_certified(connector: Connector) -> bool:
-        connector_sl_value = connector.metadata.get("ab_internal", {}).get("sl", 0)
-        return connector_sl_value >= 200
+    applies_to_connector_support_levels = ["certified"]
 
     def _run(self, connector: Connector) -> CheckResult:
-        if self.check_connector_certified(connector):
-            max_seconds_between_messages = connector.metadata.get("maxSecondsBetweenMessages")
-            if not max_seconds_between_messages:
-                return self.fail(
-                    connector=connector,
-                    message="Missing required for certified connectors field 'maxSecondsBetweenMessages'",
-                )
+        max_seconds_between_messages = connector.metadata.get("maxSecondsBetweenMessages")
+        if not max_seconds_between_messages:
+            return self.fail(
+                connector=connector,
+                message="Missing required for certified connectors field 'maxSecondsBetweenMessages'",
+            )
         return self.pass_(
             connector=connector,
             message="Value for maxSecondsBetweenMessages is set",

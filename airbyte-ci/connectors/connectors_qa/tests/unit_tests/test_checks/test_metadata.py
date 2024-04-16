@@ -212,28 +212,9 @@ class TestCheckConnectorCDKTag:
 
 
 class TestCheckConnectorMaxSecondsBetweenMessagesValue:
-    @pytest.mark.parametrize(
-        ("metadata_value", "expected_result"),
-        (
-            ({"ab_internal": {"sl": 200}}, True),
-            ({"ab_internal": {"sl": 100}}, False),
-            ({"ab_internal": {}}, False),
-            ({}, False)
-        ),
-    )
-    def test_check_connector_certified(self, mocker, metadata_value, expected_result):
-        # Arrange
-        connector = mocker.MagicMock(metadata=metadata_value)
-
-        # Act
-        result = metadata.CheckConnectorMaxSecondsBetweenMessagesValue.check_connector_certified(connector)
-
-        # Assert
-        assert result is expected_result
-
     def test_fail_when_field_missing(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(metadata={"ab_internal": {"sl": 200}})
+        connector = mocker.MagicMock(metadata={"supportLevel": "certified"})
 
         # Act
         result = metadata.CheckConnectorMaxSecondsBetweenMessagesValue()._run(connector)
@@ -244,7 +225,7 @@ class TestCheckConnectorMaxSecondsBetweenMessagesValue:
 
     def test_pass_when_field_present(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(metadata={"ab_internal": {"sl": 200}, "maxSecondsBetweenMessages": 1})
+        connector = mocker.MagicMock(metadata={"supportLevel": "certified", "maxSecondsBetweenMessages": 1})
         
         # Act
         result = metadata.CheckConnectorMaxSecondsBetweenMessagesValue()._run(connector)
