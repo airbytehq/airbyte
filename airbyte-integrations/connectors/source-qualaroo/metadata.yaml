@@ -1,30 +1,32 @@
 data:
   allowedHosts:
     hosts:
-      - "*" # Please change to the hostname of the source.
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-qualaroo
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+    - '*'
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: eb655362-28a8-4311-8806-4fcc612734a7
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-qualaroo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
   license: MIT
   name: Qualaroo
-  releaseDate: "2021-08-18"
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: '2021-08-18'
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-qualaroo
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/qualaroo
   tags:
-    - language:python
-    - cdk:low-code
-metadataSpecVersion: "1.0"
+  - language:python
+  - cdk:low-code
+metadataSpecVersion: '1.0'
