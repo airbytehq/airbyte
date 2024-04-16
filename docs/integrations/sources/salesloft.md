@@ -102,6 +102,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.2 | 2024-04-15 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.2.1 | 2024-04-12 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | schema descriptions |
 | 1.2.0   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
 | 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
