@@ -49,5 +49,6 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.1.2 | 2024-04-15 | [37258](https://github.com/airbytehq/airbyte/pull/37258) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37258](https://github.com/airbytehq/airbyte/pull/37258) | schema descriptions |
 | 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147)   | Release Serpstat Connector                                                                |
