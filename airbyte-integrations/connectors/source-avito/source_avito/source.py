@@ -51,7 +51,7 @@ class CallsByTime(AvitoStream):
         if len(calls) < self.record_count:
             return None  # Finished all
 
-        # Add 1 microsecond to prevent duplicates
+        # Add 1 second to prevent duplicates
         max_start_time: pendulum.date = max([pendulum.parse(call["startTime"]) for call in calls]).add(seconds=1)
         if max_start_time.date() > self.time_to.date():
             return None  # Finished all by provided daterange
