@@ -38,7 +38,6 @@ jobs:
 
       # The final slack messaging steps will be skipped on forks and only
       # relate to builds on `master`.
-
       - name: Match GitHub User to Slack User [MASTER]
         if: |
           github.ref == 'refs/heads/master'
