@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import PineconeIndexingModel
 from destination_langchain.indexer import PineconeIndexer
-from langchain_core.documents.base import Document
+from langchain.document_loaders.base import Document
 from pinecone import IndexDescription
 
 

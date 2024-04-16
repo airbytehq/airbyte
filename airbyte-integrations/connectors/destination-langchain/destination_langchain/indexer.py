@@ -16,9 +16,9 @@ from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswS
 from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from destination_langchain.measure_time import measure_time
 from destination_langchain.utils import format_exception
+from langchain.document_loaders.base import Document
 from langchain.vectorstores import Chroma
 from langchain.vectorstores.docarray import DocArrayHnswSearch
-from langchain_core.documents.base import Document
 
 
 class Indexer(ABC):
