@@ -108,8 +108,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         )
 
     def _get_header_prefix(self) -> str:
-        header_prefix: str = f"{self._header_prefix.eval(self.config)}"
-        return header_prefix if header_prefix else None
+        return f"{self._header_prefix.eval(self.config)}" if self._header_prefix else None
 
     @property
     def auth_header(self) -> str:
