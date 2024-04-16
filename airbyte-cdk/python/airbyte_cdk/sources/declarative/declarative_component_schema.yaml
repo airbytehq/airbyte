@@ -843,8 +843,6 @@ definitions:
       - type
       - secret_key
       - algorithm
-      - jwt_headers
-      - jwt_payload
     properties:
       type:
         type: string
@@ -861,9 +859,11 @@ definitions:
       algorithm:
         type: string
         description: Algorithm used to sign the JSON web token.
-        default: ES256
         examples:
           - ES256
+          - HS256
+          - RS256
+          - "{{ config['algorithm'] }}"
       token_duration:
         type: integer
         title: Token Duration
@@ -871,6 +871,7 @@ definitions:
         default: 1200
         examples:
           - 1200
+          - 3600
       header_prefix:
         type: string
         title: Header Prefix

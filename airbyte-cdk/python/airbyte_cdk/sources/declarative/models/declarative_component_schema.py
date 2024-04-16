@@ -288,21 +288,23 @@ class JwtAuthenticator(BaseModel):
         False,
         description='When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.',
     )
-    algorithm: str = Field(..., description='Algorithm used to sign the JSON web token.', examples=['ES256'])
+    algorithm: str = Field(
+        ..., description='Algorithm used to sign the JSON web token.', examples=['ES256', 'HS256', 'RS256', "{{ config['algorithm'] }}"]
+    )
     token_duration: Optional[int] = Field(
         1200,
         description='The amount of time in seconds a JWT token can be valid after being issued.',
-        examples=[1200],
+        examples=[1200, 3600],
         title='Token Duration',
     )
     header_prefix: Optional[str] = Field(
         None, description='The prefix to be used within the Authentication header.', examples=['Bearer', 'Basic'], title='Header Prefix'
     )
-    jwt_headers: JwtHeaders = Field(..., description='JWT headers used when signing JSON web token.', title='JWT Headers')
+    jwt_headers: Optional[JwtHeaders] = Field(None, description='JWT headers used when signing JSON web token.', title='JWT Headers')
     additional_jwt_headers: Optional[Dict[str, Any]] = Field(
         None, description='Additional headers to be included with the JWT headers object.', title='Additional JWT Headers'
     )
-    jwt_payload: JwtPayload = Field(..., description='JWT Payload used when signing JSON web token.', title='JWT Payload')
+    jwt_payload: Optional[JwtPayload] = Field(None, description='JWT Payload used when signing JSON web token.', title='JWT Payload')
     additional_jwt_payload: Optional[Dict[str, Any]] = Field(
         None, description='Additional properties to be added to the JWT payload.', title='Additional JWT Payload Properties'
     )

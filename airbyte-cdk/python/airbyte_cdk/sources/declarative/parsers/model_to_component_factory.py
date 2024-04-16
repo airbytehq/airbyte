@@ -66,7 +66,11 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    JwtAuthenticator as JwtAuthenticatorModel,
+    JwtHeaders as JwtHeadersModel,
+    JwtPayload as JwtPayloadModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
 )
@@ -811,11 +815,15 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_jwt_authenticator(model: JwtAuthenticatorModel, config: Config, **kwargs: Any) -> JwtAuthenticator:
+        if not isinstance(model.jwt_headers, JwtHeadersModel):
+            model.jwt_headers = JwtHeadersModel()
+        if not isinstance(model.jwt_payload, JwtPayloadModel):
+            model.jwt_payload = JwtPayloadModel()
         return JwtAuthenticator(
             config=config,
             parameters=model.parameters or {},
             algorithm=model.algorithm,
-            secret_key=model.secret_key,\
+            secret_key=model.secret_key,
             base64_encode_secret_key=model.base64_encode_secret_key,
             token_duration=model.token_duration,
             header_prefix=model.header_prefix,

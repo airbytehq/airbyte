@@ -56,12 +56,11 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
         if self._kid:
             headers["kid"] = self._kid.eval(self.config)
-        if self._algorithm:
-            headers["alg"] = self._get_algorithm()
         if self._typ:
             headers["typ"] = self._typ.eval(self.config)
         if self._cty:
             headers["cty"] = self._cty.eval(self.config)
+        headers["alg"] = self._algorithm.eval(self.config)
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
@@ -84,26 +83,16 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         payload["nbf"] = nbf
         return payload
 
-    def _get_algorithm(self) -> str:
-        algorithm: str = self._algorithm.eval(self.config)
-        if not algorithm:
-            raise ValueError("Algorithm is required")
-        return algorithm
-
     def _get_secret_key(self) -> str:
         secret_key: str = self._secret_key.eval(self.config)
-        if not secret_key:
-            raise ValueError("secret_key is required")
-        if self._base64_encode_secret_key.eval(self.config):
-            secret_key = base64.b64encode(secret_key.encode()).decode()
-        return secret_key
+        return base64.b64encode(secret_key.encode()).decode() if self._base64_encode_secret_key.eval(self.config) else secret_key
 
     def _get_signed_token(self) -> str:
         try:
             return jwt.encode(
                 payload=self._get_jwt_payload(),
                 key=self._get_secret_key(),
-                algorithm=self._get_algorithm(),
+                algorithm=self._algorithm.eval(self.config),
                 headers=self._get_jwt_headers(),
             )
         except Exception as e:
