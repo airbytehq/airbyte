@@ -71,6 +71,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | schema descriptions |
 | 0.2.0   | 2023-10-23 |[31162](https://github.com/airbytehq/airbyte/pull/31162)  | Migrate to low-code framework         |
 | 0.1.3   | 2023-05-15 |[26079](https://github.com/airbytehq/airbyte/pull/26079)  | Make incremental syncs timestamp inclusive          |
