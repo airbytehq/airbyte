@@ -7,12 +7,12 @@ import csv
 import json
 import logging
 import os
+import sys
 import time
 from abc import ABC
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib import request
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -22,9 +22,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_appmetrica_logs_api.auth import CredentialsCraftAuthenticator
+from .auth import CredentialsCraftAuthenticator
+
 from .fields import AVAILABLE_FIELDS
-import sys
 
 logger = logging.getLogger("airbyte")
 
@@ -58,7 +58,7 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         product_name: str = "",
         custom_json: Optional[Mapping[str, str]] = {},
         iter_content_chunk_size: int = 8192,
-        field_name_map: dict[str, any] | None = None,
+        field_name_map: Optional[dict[str, any]],
     ):
         super().__init__(authenticator)
         self.application_id = application_id
@@ -271,23 +271,26 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
 class SourceAppmetricaLogsApi(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         config = SourceAppmetricaLogsApi.prepare_config(config)
-        source_type = config["source"]
+
+        first_stream_source = config["sources"][0]
+
+        source_type = first_stream_source["source_name"]
         available_fields = AVAILABLE_FIELDS[source_type]["fields"].keys()
         if config.get("check_fields", True):
-            for field in config.get("fields", []):
+            for field in first_stream_source.get("fields", []):
                 if field not in available_fields:
                     return False, f'Field "{field}" is invalid for source type {source_type}'
 
-        if config.get("event_name_list") and config["source"] != "events":
-            return False, f'event_name_list is not available for source {config["source"]}'
+        if config.get("event_name_list") and first_stream_source["source_name"] != "events":
+            return False, f'event_name_list is not available for source {first_stream_source["source_name"]}'
 
         try:
             json.loads(config.get("custom_json", "{}"))
         except Exception as msg:
             return False, f"Invalid Custom Constants JSON: {msg}"
 
-        for filter_n, filter in enumerate(config.get("filters", [])):
-            name = filter["name"]
+        for filter_n, filter_ in enumerate(first_stream_source.get("filters", [])):
+            name = filter_["name"]
             if name not in available_fields:
                 return False, f"Filter {filter_n} ({name}) not in available fields list."
 
@@ -366,27 +369,30 @@ class SourceAppmetricaLogsApi(AbstractSource):
     @staticmethod
     def prepare_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
         config = SourceAppmetricaLogsApi.prepare_config_dates(config)
-        config = SourceAppmetricaLogsApi.get_field_name_map(config)
+        for source in config["sources"]:
+            source["field_name_map"] = SourceAppmetricaLogsApi.get_field_name_map(source)
         return config
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceAppmetricaLogsApi.prepare_config(config)
         auth = SourceAppmetricaLogsApi.get_auth(config)
-        stream = AppmetricaLogsApiStream(
-            authenticator=auth,
-            application_id=config["application_id"],
-            date_from=config["prepared_date_range"]["date_from"],
-            date_to=config["prepared_date_range"]["date_to"],
-            chunked_logs_params=config.get("chunked_logs", {"split_mode_type": "do_not_split_mode"}),
-            fields=config.get("fields", []),
-            source=config["source"],
-            filters=config.get("filters", []),
-            date_dimension=config.get("date_dimension", "default"),
-            product_name=config.get("product_name", ""),
-            client_name=config.get("client_name", ""),
-            custom_json=json.loads(config.get("custom_json", "{}")),
-            event_name_list=config.get("event_name_list"),
-            iter_content_chunk_size=config.get("iter_content_chunk_size", 8192),
-            field_name_map=config["field_name_map"],
-        )
-        return [stream]
+        return [
+            AppmetricaLogsApiStream(
+                authenticator=auth,
+                application_id=config["application_id"],
+                date_from=config["prepared_date_range"]["date_from"],
+                date_to=config["prepared_date_range"]["date_to"],
+                chunked_logs_params=config.get("chunked_logs", {"split_mode_type": "do_not_split_mode"}),
+                fields=source.get("fields", []),
+                source=source["source_name"],
+                filters=source.get("filters", []),
+                date_dimension=config.get("date_dimension", "default"),
+                product_name=config.get("product_name", ""),
+                client_name=config.get("client_name", ""),
+                custom_json=json.loads(config.get("custom_json", "{}")),
+                event_name_list=config.get("event_name_list"),
+                iter_content_chunk_size=config.get("iter_content_chunk_size", 8192),
+                field_name_map=source["field_name_map"],
+            )
+            for source in config["sources"]
+        ]
