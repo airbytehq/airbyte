@@ -41,6 +41,7 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 0.3.2 | 2024-04-15 | [37240](https://github.com/airbytehq/airbyte/pull/37240) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37240](https://github.com/airbytehq/airbyte/pull/37240) | schema descriptions |
 | 0.3.0   | 2023-10-25 | [31070](https://github.com/airbytehq/airbyte/pull/31070) | Migrate to low-code framework |
 | 0.2.0   | 2023-05-24 | [26491](https://github.com/airbytehq/airbyte/pull/26491) | Remove authSpecification from spec.json as OAuth is not supported by Qualaroo + update stream schema     |
