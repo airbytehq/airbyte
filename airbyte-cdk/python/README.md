@@ -167,7 +167,7 @@ HTTP requests to `localhost:8113/data` should now return the body defined in the
 
 Python CDK has a
 [GitHub workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
-that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and then making a pull request to update
+that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and then making a commit to update (and subsequently auto-release)
 [`source-declarative-manifest`](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-declarative-manifest)
 and Connector Builder (in the platform repository).
 
