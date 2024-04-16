@@ -71,6 +71,7 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.3 | 2024-04-15 | [37126](https://github.com/airbytehq/airbyte/pull/37126) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.2 | 2024-04-12 | [37126](https://github.com/airbytehq/airbyte/pull/37126) | schema descriptions |
 | 0.2.1 | 2023-11-08 | [31489](https://github.com/airbytehq/airbyte/pull/31489) | Fix transaction stream custom fields |
 | 0.2.0 | 2023-07-17 | [29200](https://github.com/airbytehq/airbyte/pull/29200) | Migrate connector to low-code framework |
