@@ -55,13 +55,13 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             raise ValueError("'kid', 'alg', 'typ', 'cty' are reserved headers and should not be set as part of 'additional_jwt_headers'")
 
         if self._kid:
-            headers["kid"] = f"{self._kid.eval(self.config)}"
+            headers["kid"] = self._kid.eval(self.config)
         if self._algorithm:
-            headers["alg"] = f"{self._get_algorithm()}"
+            headers["alg"] = self._get_algorithm()
         if self._typ:
-            headers["typ"] = f"{self._typ.eval(self.config)}"
+            headers["typ"] = self._typ.eval(self.config)
         if self._cty:
-            headers["cty"] = f"{self._cty.eval(self.config)}"
+            headers["cty"] = self._cty.eval(self.config)
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
@@ -74,24 +74,24 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             raise ValueError("'iss', 'sub', 'aud', 'iat', 'exp', 'nbf' are reserved properties and should not be set as part of 'additional_jwt_payload'")
 
         if self._iss:
-            payload["iss"] = f"{self._iss.eval(self.config)}"
+            payload["iss"] = self._iss.eval(self.config)
         if self._sub:
-            payload["sub"] = f"{self._sub.eval(self.config)}"
+            payload["sub"] = self._sub.eval(self.config)
         if self._aud:
-            payload["aud"] = f"{self._aud.eval(self.config)}"
+            payload["aud"] = self._aud.eval(self.config)
         payload["iat"] = now
         payload["exp"] = exp
         payload["nbf"] = nbf
         return payload
 
     def _get_algorithm(self) -> str:
-        algorithm: str = f"{self._algorithm.eval(self.config)}"
+        algorithm: str = self._algorithm.eval(self.config)
         if not algorithm:
             raise ValueError("Algorithm is required")
         return algorithm
 
     def _get_secret_key(self) -> str:
-        secret_key: str = f"{self._secret_key.eval(self.config)}"
+        secret_key: str = self._secret_key.eval(self.config)
         if not secret_key:
             raise ValueError("secret_key is required")
         if self._base64_encode_secret_key.eval(self.config):
@@ -108,7 +108,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         )
 
     def _get_header_prefix(self) -> str:
-        return f"{self._header_prefix.eval(self.config)}" if self._header_prefix else None
+        return self._header_prefix.eval(self.config) if self._header_prefix else None
 
     @property
     def auth_header(self) -> str:
@@ -116,4 +116,4 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
     @property
     def token(self) -> str:
-        return f"{self._get_header_prefix()} {self._get_signed_token()}" if self._get_header_prefix() else f"{self._get_signed_token()}"
+        return f"{self._get_header_prefix()} {self._get_signed_token()}" if self._get_header_prefix() else self._get_signed_token()
