@@ -6,7 +6,7 @@ products: all
 
 Clearing your data allows you to drop all previously synced data so that any ensuing sync can start syncing fresh. This is useful if you don't require the data replicated to your destination to be saved permanently or are just testing Airbyte.
 
-Airbyte allows you to clear all streams in the connection, some, or only a single stream.
+Airbyte allows you to clear all streams in the connection or only a single stream through the UI. You may also be prompted to clear some streams when making configuration changes that apply to multiple streams. Airbyte also supports the clearing of multiple streams through the API. 
 
 In order to backfill all historical data, a sync should be initiated after your clear succeeds.
 
