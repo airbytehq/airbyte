@@ -9,13 +9,25 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://cloudtrail.us-east-1.amazonaws.com"
+    url_base: "https://cloudtrail.{{ config['aws_region_name'] }}.amazonaws.com"
     http_method: "POST"
     authenticator:
       type: CustomAuthenticator
       class_name: source_aws_cloudtrail.components.CustomAuthenticator
       aws_key_id: "{{config['aws_key_id']}}"
       aws_secret_key: "{{config['aws_secret_key']}}"
+      aws_region_name: "{{config['aws_region_name']}}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 400
 
   incremental_sync_base:
     type: DatetimeBasedCursor
@@ -73,9 +85,6 @@ definitions:
         request_headers:
           x-amz-target: "com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents"
         request_body_json:
-          LookupAttributes:
-            - AttributeKey: EventName
-              AttributeValue: ConsoleLogin
           MaxResults: 50
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
