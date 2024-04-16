@@ -34,5 +34,6 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2024-04-15 | [37287](https://github.com/airbytehq/airbyte/pull/37287) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37287](https://github.com/airbytehq/airbyte/pull/37287) | schema descriptions |
 | 0.1.0 | 2022-10-12 | [17918](https://github.com/airbytehq/airbyte/pull/17918) | Initial release supporting the Whisky Hunter API |
