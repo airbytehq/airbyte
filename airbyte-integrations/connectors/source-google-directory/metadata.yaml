@@ -27,6 +27,6 @@ data:
       packageName: airbyte-source-google-directory
   supportLevel: community
   tags:
-  - language:python
-  - cdk:python
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

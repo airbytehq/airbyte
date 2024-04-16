@@ -26,6 +26,6 @@ data:
       packageName: airbyte-source-smaily
   supportLevel: community
   tags:
-  - language:python
-  - cdk:low-code
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"

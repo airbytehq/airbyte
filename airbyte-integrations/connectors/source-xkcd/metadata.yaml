@@ -26,6 +26,6 @@ data:
       packageName: airbyte-source-xkcd
   supportLevel: community
   tags:
-  - language:python
-  - cdk:python
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

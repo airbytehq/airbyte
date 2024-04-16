@@ -25,6 +25,6 @@ data:
       packageName: airbyte-source-tplcentral
   supportLevel: community
   tags:
-  - language:python
-  - cdk:python
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"
