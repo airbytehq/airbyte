@@ -25,8 +25,8 @@ jobs:
         python-version: '3.10'
 
     - name: Install `airbyte-ci` CLI
-      # We use the stable `airbyte-ci` from `master`. Ignores any CI changes
-      # local to this repo.
+      # We use the stable `airbyte-ci` from `master`. Intentionally ignores any CI changes
+      # local to this branch.
       run: >
         pip install
         git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
