@@ -35,5 +35,6 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
+| 0.1.2 | 2024-04-15 | [37129](https://github.com/airbytehq/airbyte/pull/37129) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37129](https://github.com/airbytehq/airbyte/pull/37129) | schema descriptions |
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
