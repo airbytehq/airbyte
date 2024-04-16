@@ -234,8 +234,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
-    assertTrue(cdcFieldsOmitted(secondSyncRecords.get(0).getData()).equals(
-        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}")));
+    assertEquals(cdcFieldsOmitted(secondSyncRecords.get(0).getData()),
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}"));
 
   }
 

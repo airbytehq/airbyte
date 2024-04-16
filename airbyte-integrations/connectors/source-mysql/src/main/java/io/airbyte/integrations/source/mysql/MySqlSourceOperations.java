@@ -102,6 +102,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     final String columnName = field.getName();
     final MysqlType columnType = field.getMysqlType();
 
+    // Attempt to access the column. this allows us to know if it is null before we do
+    // type-specific parsing. If the column is null, we will populate the null value and skip attempting
+    // to
+    // parse the column value.
     resultSet.getObject(colIndex);
     if (resultSet.wasNull()) {
       json.putNull(columnName);
