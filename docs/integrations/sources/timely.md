@@ -33,6 +33,7 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.2 | 2024-04-15 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37270](https://github.com/airbytehq/airbyte/pull/37270) | schema descriptions |
 | 0.3.0   | 2023-10-25 | [31002](https://github.com/airbytehq/airbyte/pull/31002) | Migrate to low-code framework |
 | 0.2.0   | 2023-10-23 | [31745](https://github.com/airbytehq/airbyte/pull/31745) | Fix schemas |
