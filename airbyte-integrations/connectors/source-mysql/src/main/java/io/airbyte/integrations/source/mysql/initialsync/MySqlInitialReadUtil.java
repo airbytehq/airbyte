@@ -73,7 +73,7 @@ public class MySqlInitialReadUtil {
 
   public static Optional<MySqlInitialLoadHandler> getMySqlFullRefreshInitialLoadHandler(final JdbcDatabase database,
                                                                                         final ConfiguredAirbyteCatalog catalog,
-                                                                                        final TableInfo<CommonField<MysqlType>> table,
+                                                                                        final MySqlInitialLoadStateManager initialLoadStateManager,
                                                                                         final StateManager stateManager,
                                                                                         final ConfiguredAirbyteStream fullRefreshStream,
                                                                                         final Instant emittedAt,
@@ -82,31 +82,23 @@ public class MySqlInitialReadUtil {
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
-    final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-
     // State manager will need to know all streams in order to produce a state message
     // But for initial load handler we only want to produce iterator on the single full refresh stream.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
-      final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
       // Filter on initialLoadStream
       var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
       var pkStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
-
-      Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> result;
+      Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> fullRefreshPkStatus;
       if (pkStatus == null) {
-        result = Map.of();
+        fullRefreshPkStatus = Map.of();
       } else {
-        result = Map.of(pair, pkStatus);
+        fullRefreshPkStatus = Map.of(pair, pkStatus);
       }
 
       var fullRefreshStreamInitialLoad = new InitialLoadStreams(List.of(fullRefreshStream),
-          result);
-
-      final MySqlInitialLoadStateManager initialLoadStateManager =
-          new MySqlInitialLoadGlobalStateManager(fullRefreshStreamInitialLoad,
-              initPairToPrimaryKeyInfoMap(database, fullRefreshStreamInitialLoad, table, quoteString),
-              stateToBeUsed, catalog);
+          fullRefreshPkStatus);
+      final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
       return Optional
           .of(getMySqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, metadataInjector));
     }
@@ -154,7 +146,7 @@ public class MySqlInitialReadUtil {
     }
   }
 
-  private static boolean isSavedOffsetStillPresentOnServer(final JdbcDatabase database,
+  public static boolean isSavedOffsetStillPresentOnServer(final JdbcDatabase database,
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final StateManager stateManager) {
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
@@ -184,6 +176,21 @@ public class MySqlInitialReadUtil {
     return savedOffsetStillPresentOnServer;
   }
 
+  public static MySqlInitialLoadGlobalStateManager getMySqlInitialLoadGlobalStateManager(final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final StateManager stateManager,
+      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+      final String quoteString) {
+    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+    final InitialLoadStreams initialLoadStreams =
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
+    final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+
+    return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
+        initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        stateToBeUsed, catalog);
+  }
+
   /*
    * Returns the read iterators associated with : 1. Initial cdc read snapshot via primary key
    * queries. 2. Incremental cdc reads via debezium.
@@ -196,6 +203,7 @@ public class MySqlInitialReadUtil {
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                                 final StateManager stateManager,
+                                                                                final MySqlInitialLoadStateManager initialLoadStateManager,
                                                                                 final Instant emittedAt,
                                                                                 final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -213,10 +221,7 @@ public class MySqlInitialReadUtil {
 
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
-      final MySqlInitialLoadStateManager initialLoadStateManager =
-          new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
-              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog);
+
       final MySqlInitialLoadHandler initialLoadHandler =
           getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager, metadataInjector);
 
