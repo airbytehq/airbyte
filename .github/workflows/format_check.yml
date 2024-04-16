@@ -13,7 +13,6 @@ jobs:
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
     if: >
-      false &&
       (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
       (github.event.pull_request.head.repo.fork == false)
     runs-on: tooling-test-small
