@@ -63,13 +63,24 @@ class Calls(CalltouchStream):
         date_from: datetime,
         date_to: datetime,
         site_id: str,
+        calls_bind_to: str | None,
+        calls_attribution: int | None,
     ):
         super().__init__(authenticator, date_from, date_to)
         self._site_id: str = site_id
+        self._calls_bind_to: str | None = calls_bind_to
+        self._calls_attribution: int | None = calls_attribution
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["withCallTags"] = True
+
+        if self._calls_bind_to:
+            params["bindTo"] = self._calls_bind_to
+
+        if self._calls_attribution:
+            params["attribution"] = self._calls_attribution
+
         return params
 
     def path(self, **kwargs) -> str:
@@ -179,6 +190,13 @@ class SourceCalltouch(AbstractSource):
         config = self.transform_config(config)
         auth = self.get_auth(config)
         return [
-            Calls(authenticator=auth, date_from=config["dateFrom"], date_to=config["dateTo"], site_id=config["site_id"]),
+            Calls(
+                authenticator=auth,
+                date_from=config["dateFrom"],
+                date_to=config["dateTo"],
+                site_id=config["site_id"],
+                calls_attribution=config.get("calls_attribution"),
+                calls_bind_to=config.get("callsBindTo"),
+            ),
             Requests(authenticator=auth, date_from=config["dateFrom"], date_to=config["dateTo"]),
         ]

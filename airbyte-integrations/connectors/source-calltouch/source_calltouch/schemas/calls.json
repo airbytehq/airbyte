@@ -1,52 +1,52 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "callId": {
-      "type": [
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "callId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "callphase": {
-      "type": [
+    "callphase" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "attribution": {
-      "type": [
+    "attribution" : {
+      "type" : [
         "null",
         "integer"
       ]
     },
-    "callTags": {
-      "type": [
+    "callTags" : {
+      "type" : [
         "null",
         "array"
       ],
-      "items": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": [
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "type": {
-            "type": [
+          "type" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "names": {
-            "type": [
+          "names" : {
+            "type" : [
               "null",
               "array"
             ],
-            "items": {
-              "type": [
+            "items" : {
+              "type" : [
                 "null",
                 "string"
               ]
@@ -55,301 +55,301 @@
         }
       }
     },
-    "date": {
-      "type": [
+    "date" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "duration": {
-      "type": [
+    "duration" : {
+      "type" : [
         "null",
         "integer"
       ]
     },
-    "callerNumber": {
-      "type": [
+    "callerNumber" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "redirectNumber": {
-      "type": [
+    "redirectNumber" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "phoneNumber": {
-      "type": [
+    "phoneNumber" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "manager": {
-      "type": [
+    "manager" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "successful": {
-      "type": [
+    "successful" : {
+      "type" : [
         "null",
         "boolean"
       ]
     },
-    "uniqueCall": {
-      "type": [
+    "uniqueCall" : {
+      "type" : [
         "null",
         "boolean"
       ]
     },
-    "targetCall": {
-      "type": [
+    "targetCall" : {
+      "type" : [
         "null",
         "boolean"
       ]
     },
-    "uniqTargetCall": {
-      "type": [
+    "uniqTargetCall" : {
+      "type" : [
         "null",
         "boolean"
       ]
     },
-    "callbackCall": {
-      "type": [
+    "callbackCall" : {
+      "type" : [
         "null",
         "boolean"
       ]
     },
-    "city": {
-      "type": [
+    "city" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "source": {
-      "type": [
+    "source" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "medium": {
-      "type": [
+    "medium" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "keyword": {
-      "type": [
+    "keyword" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "url": {
-      "type": [
+    "url" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "callUrl": {
-      "type": [
+    "callUrl" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "ref": {
-      "type": [
+    "ref" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "hostname": {
-      "type": [
+    "hostname" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "utmSource": {
-      "type": [
+    "utmSource" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "utmMedium": {
-      "type": [
+    "utmMedium" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "utmCampaign": {
-      "type": [
+    "utmCampaign" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "utmContent": {
-      "type": [
+    "utmContent" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "utmTerm": {
-      "type": [
+    "utmTerm" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "sessionId": {
-      "type": [
+    "sessionId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "ctCallerId": {
-      "type": [
+    "ctCallerId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "clientId": {
-      "type": [
+    "clientId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "yaClientId": {
-      "type": [
+    "yaClientId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "sipCallId": {
-      "type": [
+    "sipCallId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "userAgent": {
-      "type": [
+    "userAgent" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "ip": {
-      "type": [
+    "ip" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "waitingConnect": {
-      "type": [
+    "waitingConnect" : {
+      "type" : [
         "null",
         "integer"
       ]
     },
-    "callReferenceId": {
-      "type": [
+    "callReferenceId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "mapVisits": {
-      "type": [
+    "mapVisits" : {
+      "type" : [
         "null",
         "array"
       ],
-      "items": {
-        "type": "object",
-        "properties": {
-          "utmSource": {
-            "type": [
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "utmSource" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "sessionDate": {
-            "type": [
+          "sessionDate" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "city": {
-            "type": [
+          "city" : {
+            "type" : [
               "null",
               "array"
             ]
           },
-          "ip": {
-            "type": [
+          "ip" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "utmTerm": {
-            "type": [
+          "utmTerm" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "utmContent": {
-            "type": [
+          "utmContent" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "userAgent": {
-            "type": [
+          "userAgent" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "source": {
-            "type": [
+          "source" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "medium": {
-            "type": [
+          "medium" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "utmCampaign": {
-            "type": [
+          "utmCampaign" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "url": {
-            "type": [
+          "url" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "ref": {
-            "type": [
+          "ref" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "additionalTags": {
-            "type": [
+          "additionalTags" : {
+            "type" : [
               "null",
               "array"
             ],
-            "items": {
-              "type": "string"
+            "items" : {
+              "type" : "string"
             }
           },
-          "utmMedium": {
-            "type": [
+          "utmMedium" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "keyword": {
-            "type": [
+          "keyword" : {
+            "type" : [
               "null",
               "string"
             ]
@@ -357,49 +357,49 @@
         }
       }
     },
-    "attrs": {
-      "type": [
+    "attrs" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "comments": {
-      "type": [
+    "comments" : {
+      "type" : [
         "null",
         "array"
       ],
-      "items": {
-        "type": [
+      "items" : {
+        "type" : [
           "null",
           "object"
         ],
-        "properties": {
-          "commentId": {
-            "type": [
+        "properties" : {
+          "commentId" : {
+            "type" : [
               "null",
               "integer"
             ]
           },
-          "callId": {
-            "type": [
+          "callId" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "comment": {
-            "type": [
+          "comment" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "partyId": {
-            "type": [
+          "partyId" : {
+            "type" : [
               "null",
               "string"
             ]
           },
-          "partyName": {
-            "type": [
+          "partyName" : {
+            "type" : [
               "null",
               "string"
             ]
@@ -407,162 +407,162 @@
         }
       }
     },
-    "phrases": {
-      "type": "null"
+    "phrases" : {
+      "type" : "null"
     },
-    "additionalTags": {
-      "type": [
+    "additionalTags" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "callClientUniqueId": {
-      "type": [
+    "callClientUniqueId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "device": {
-      "type": [
+    "device" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "os": {
-      "type": [
+    "os" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "browser": {
-      "type": [
+    "browser" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "timestamp": {
-      "type": [
+    "timestamp" : {
+      "type" : [
         "null",
         "integer"
       ]
     },
-    "sessionDate": {
-      "type": [
+    "sessionDate" : {
+      "type" : [
         "null",
         "string"
       ],
-      "format": "time-stamp"
+      "format" : "time-stamp"
     },
-    "orders": {
-      "type": [
+    "orders" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "order": {
-      "type": [
+    "order" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "yandexDirect": {
-      "type": [
+    "yandexDirect" : {
+      "type" : [
         "null",
         "object"
       ],
-      "properties": {
-        "campaignId": {
-          "type": [
+      "properties" : {
+        "campaignId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "adGroupId": {
-          "type": [
+        "adGroupId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "adId": {
-          "type": [
+        "adId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "criteriaId": {
-          "type": [
+        "criteriaId" : {
+          "type" : [
             "null",
             "string"
           ]
         }
       }
     },
-    "googleAdWords": {
-      "type": [
+    "googleAdWords" : {
+      "type" : [
         "null",
         "object"
       ],
-      "properties": {
-        "campaignId": {
-          "type": [
+      "properties" : {
+        "campaignId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "adGroupId": {
-          "type": [
+        "adGroupId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "adId": {
-          "type": [
+        "adId" : {
+          "type" : [
             "null",
             "string"
           ]
         },
-        "criteriaId": {
-          "type": [
+        "criteriaId" : {
+          "type" : [
             "null",
             "string"
           ]
         }
       }
     },
-    "siteId": {
-      "type": [
+    "siteId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "siteName": {
-      "type": [
+    "siteName" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "callbackInfo": {
-      "type": [
+    "callbackInfo" : {
+      "type" : [
         "null",
         "object"
       ],
-      "properties": {
-        "fields": {
-          "type": [
+      "properties" : {
+        "fields" : {
+          "type" : [
             "null",
             "array"
           ],
-          "items": {
-            "type": [
+          "items" : {
+            "type" : [
               "null",
               "object"
             ],
-            "properties": {
-              "name": {
-                "type": "string"
+            "properties" : {
+              "name" : {
+                "type" : "string"
               },
-              "value": {
-                "type": [
+              "value" : {
+                "type" : [
                   "string",
                   "integer",
                   "boolean",
@@ -574,38 +574,38 @@
         }
       }
     },
-    "ctClientId": {
-      "type": [
+    "ctClientId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "dcm": {
-      "type": [
+    "dcm" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "phonesInText": {
-      "type": [
+    "phonesInText" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "ctGlobalId": {
-      "type": [
+    "ctGlobalId" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "subPoolName": {
-      "type": [
+    "subPoolName" : {
+      "type" : [
         "null",
         "string"
       ]
     },
-    "statusDetails": {
-      "type": [
+    "statusDetails" : {
+      "type" : [
         "null",
         "string"
       ]

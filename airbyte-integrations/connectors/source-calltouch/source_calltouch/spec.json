@@ -212,6 +212,21 @@
             }
           }
         ]
+      },
+      "calls_bind_to": {
+        "title": "Calls Stream bindTo",
+        "description": "Flag for Calls stream with reference to different metrics. Possible values: call - by call date; session - by session date",
+        "type": "string",
+        "enum": ["call", "session"],
+        "order": 3,
+        "default": "call"
+      },
+      "calls_attribution": {
+        "title": "Calls Stream attribution",
+        "description": "Call attribution model. Possible values: 0 - last interaction; 1 - last indirect (default)",
+        "type": "integer",
+        "order": 4,
+        "default": 1
       }
     }
   }
