@@ -155,6 +155,8 @@ protected constructor(driverClassName: String) :
             this.getAirbyteType(columnType)
         }
 
+        initializeForStateManager(database, catalog, fullyQualifiedTableNameToInfo, stateManager)
+
         val incrementalIterators =
             getIncrementalIterators(
                 database,
@@ -186,6 +188,14 @@ protected constructor(driverClassName: String) :
             Exceptions.toRuntime { this.close() }
             LOGGER.info("Closed database connection pool.")
         }
+    }
+
+    // Optional - perform any initialization logic before read. For example, source connector
+    // can choose to load up state manager here.
+    protected open fun initializeForStateManager(database: Database,
+                                                 catalog: ConfiguredAirbyteCatalog,
+                                                 tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+                                                 stateManager: StateManager) {
     }
 
     @Throws(SQLException::class)

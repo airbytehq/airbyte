@@ -106,7 +106,6 @@ abstract class AbstractJdbcSource<Datatype>(
         database: JdbcDatabase,
         airbyteStream: ConfiguredAirbyteStream,
         catalog: ConfiguredAirbyteCatalog?,
-        table: TableInfo<CommonField<Datatype>>,
         stateManager: StateManager?
     ): InitialLoadHandler<Datatype>? {
         return null
@@ -126,7 +125,7 @@ abstract class AbstractJdbcSource<Datatype>(
     ): AutoCloseableIterator<AirbyteMessage> {
         if (supportResumableFullRefresh()) {
             val initialLoadHandler =
-                getInitialLoadHandler(database, airbyteStream, catalog, table, stateManager)
+                getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
                         "Must provide initialLoadHandler for resumable full refresh."
                     )
