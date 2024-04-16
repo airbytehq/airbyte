@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.20  | 2024-04-16 | [37111](https://github.com/airbytehq/airbyte/pull/37111)                                                          | Populate null values in record message.                                                                                                         |
 | 3.3.19  | 2024-04-15 | [37328](https://github.com/airbytehq/airbyte/pull/37328)   | Populate airbyte_meta.changes                                                                                                                   |
 | 3.3.18  | 2024-04-15 | [37324](https://github.com/airbytehq/airbyte/pull/37324)   | Refactor source operations.                                                                                                                     |
 | 3.3.17  | 2024-04-10 | [36919](https://github.com/airbytehq/airbyte/pull/36919)   | Fix a bug in conversion of null values.                                                                                                         |
