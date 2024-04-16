@@ -80,6 +80,7 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.3 | 2024-04-15 | [37257](https://github.com/airbytehq/airbyte/pull/37257) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.2 | 2024-04-12 | [37257](https://github.com/airbytehq/airbyte/pull/37257) | schema descriptions |
 | 0.1.1   | 2023-02-13 | [22892](https://github.com/airbytehq/airbyte/pull/22892) | Specified date formatting in specification |
 | 0.1.0   | 2022-10-26 | [#18775](https://github.com/airbytehq/airbyte/pull/18775) | 🎉 New Source: Mailjet SMS API [low-code CDK] |
