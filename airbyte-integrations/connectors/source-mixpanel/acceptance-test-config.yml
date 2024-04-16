@@ -6,7 +6,7 @@ custom_environment_variables:
   REQS_PER_HOUR_LIMIT: 0
   AVAILABLE_TESTING_RANGE_DAYS: 10
   PATCH_FUNNEL_SLICES: yes
-#test_strictness_level: "high"
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -44,15 +44,15 @@ acceptance_tests:
       - config_path: "secrets/config_project_secret.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 9000
-#  incremental:
-#    tests:
-#      - config_path: "secrets/config_incremental.json"
-#        # The `Engage` and `CohortMembers` streams are not part of incremental catalog as they are semi-incremental,
-#        # so cursor filter is not inside request, but results are filtered based on the cursor value.
-#        # Also, these streams can produce records without cursor field, so abnormal state test would fail.
-#        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
-#        timeout_seconds: 9000
-#        # skip incremental tests as cursor granularity is day, so records for stream state day are duplicated
-#        skip_comprehensive_incremental_tests: true
+  incremental:
+    tests:
+      - config_path: "secrets/config_incremental.json"
+        # The `Engage` and `CohortMembers` streams are not part of incremental catalog as they are semi-incremental,
+        # so cursor filter is not inside request, but results are filtered based on the cursor value.
+        # Also, these streams can produce records without cursor field, so abnormal state test would fail.
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 9000
+        # skip incremental tests as cursor granularity is day, so records for stream state day are duplicated
+        skip_comprehensive_incremental_tests: true

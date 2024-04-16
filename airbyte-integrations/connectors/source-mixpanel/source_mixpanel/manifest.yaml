@@ -153,7 +153,7 @@ definitions:
           type: CustomPaginationStrategy
           class_name: "source_mixpanel.components.EngagePaginationStrategy"
           start_from_page: 1
-          page_size: 102
+          page_size: 1000
         page_token_option:
           type: RequestOption
           inject_into: request_parameter

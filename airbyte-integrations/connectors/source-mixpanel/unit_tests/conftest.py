@@ -8,7 +8,7 @@ import pytest
 
 @pytest.fixture
 def start_date():
-    return pendulum.parse("2017-01-25").date()
+    return pendulum.parse("2024-01-25T00:00:00").date()
 
 
 @pytest.fixture

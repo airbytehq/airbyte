@@ -10,7 +10,9 @@ import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
+from source_mixpanel import SourceMixpanel
 from source_mixpanel.streams import EngageSchema, Export, ExportSchema, IncrementalMixpanelStream, MixpanelStream
 from source_mixpanel.utils import read_full_refresh
 
@@ -92,76 +94,99 @@ def cohorts_response():
         ],
     )
 
-#
-# def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
+
+def init_stream(name='', config=None):
+    streams = SourceMixpanel().streams(config)
+    for stream in streams:
+        if stream.name == name:
+            return stream
+
+
+def test_cohorts_stream_incremental(requests_mock, cohorts_response, config_raw):
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
+
+    cohorts_stream = init_stream('cohorts', config=config_raw)
+
+    # records = read_incremental(cohorts_stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
+    records = read_incremental(cohorts_stream, stream_state={}, cursor_field=["created"])
+
+    assert len(list(records)) == 2
+
+
+@pytest.fixture
+def engage_response():
+    return setup_response(
+        200,
+        {
+            "page": 0,
+            "page_size": 1000,
+            "session_id": "1234567890-EXAMPL",
+            "status": "ok",
+            "total": 2,
+            "results": [
+                {
+                    "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
+                    "$properties": {
+                        "$created": "2008-12-12T11:20:47",
+                        "$browser": "Chrome",
+                        "$browser_version": "83.0.4103.116",
+                        "$email": "clark@asw.com",
+                        "$first_name": "Clark",
+                        "$last_name": "Kent",
+                        "$name": "Clark Kent",
+                    },
+                },
+                {
+                    "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
+                    "$properties": {
+                        "$created": "2008-11-12T11:20:47",
+                        "$browser": "Firefox",
+                        "$browser_version": "83.0.4103.116",
+                        "$email": "bruce@asw.com",
+                        "$first_name": "Bruce",
+                        "$last_name": "Wayne",
+                        "$name": "Bruce Wayne",
+                    },
+                },
+            ],
+        },
+    )
+
+
+def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
+    engage_properties = {
+        "results": {
+            "$browser": {
+                "count": 124,
+                "type": "string"
+            },
+            "$browser_version": {
+                "count": 124,
+                "type": "string"
+            }
+        }
+    }
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage?", engage_response)
+
+    stream = init_stream('engage', config=config_raw)
+
+    stream_state = {"created": "2008-12-12T11:20:47"}
+    records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
+
+    assert len(records) == 2
+    # assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+
+
+# def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config_raw):
+#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
 #     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 #
-#     stream = Cohorts(authenticator=MagicMock(), **config)
+#     # stream = CohortMembers(authenticator=MagicMock(), **config)
+#     stream = init_stream('cohort_members', config=config_raw)
 #
-#     records = read_incremental(stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
-#
-#     records_length = sum(1 for _ in records)
-#     assert records_length == 1
-#
-#
-# @pytest.fixture
-# def engage_response():
-#     return setup_response(
-#         200,
-#         {
-#             "page": 0,
-#             "page_size": 1000,
-#             "session_id": "1234567890-EXAMPL",
-#             "status": "ok",
-#             "total": 2,
-#             "results": [
-#                 {
-#                     "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
-#                     "$properties": {
-#                         "$created": "2008-12-12T11:20:47",
-#                         "$browser": "Chrome",
-#                         "$browser_version": "83.0.4103.116",
-#                         "$email": "clark@asw.com",
-#                         "$first_name": "Clark",
-#                         "$last_name": "Kent",
-#                         "$name": "Clark Kent",
-#                     },
-#                 },
-#                 {
-#                     "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
-#                     "$properties": {
-#                         "$created": "2008-11-12T11:20:47",
-#                         "$browser": "Firefox",
-#                         "$browser_version": "83.0.4103.116",
-#                         "$email": "bruce@asw.com",
-#                         "$first_name": "Bruce",
-#                         "$last_name": "Wayne",
-#                         "$name": "Bruce Wayne",
-#                     },
-#                 },
-#             ],
-#         },
-#     )
-#
-#
-# def test_engage_stream_incremental(requests_mock, engage_response, config):
-#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
-#
-#     stream = Engage(authenticator=MagicMock(), **config)
-#
-#     stream_state = {"created": "2008-12-12T11:20:47"}
-#     records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
-#
-#     assert len(records) == 1
-#     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
-#
-#
-# def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config):
-#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
-#     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
-#
-#     stream = CohortMembers(authenticator=MagicMock(), **config)
-#     stream.set_cursor(["created"])
 #     stream_state = {"created": "2008-12-12T11:20:47"}
 #     records = stream.read_records(
 #         sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
@@ -170,7 +195,7 @@ def cohorts_response():
 #     records = [item for item in records]
 #     assert len(records) == 1
 #     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
-#
+
 #
 # @pytest.fixture
 # def funnels_list_response():
@@ -192,39 +217,67 @@ def cohorts_response():
 #     funnel_list = FunnelsList(authenticator=MagicMock(), **config)
 #     return get_url_to_mock(funnel_list)
 #
-#
-# @pytest.fixture
-# def funnels_response(start_date):
-#     first_date = start_date + timedelta(days=1)
-#     second_date = start_date + timedelta(days=10)
-#     return setup_response(
-#         200,
-#         {
-#             "meta": {"dates": [str(first_date), str(second_date)]},
-#             "data": {
-#                 str(first_date): {
-#                     "steps": [],
-#                     "analysis": {
-#                         "completion": 20524,
-#                         "starting_amount": 32688,
-#                         "steps": 2,
-#                         "worst": 1,
-#                     },
-#                 },
-#                 str(second_date): {
-#                     "steps": [],
-#                     "analysis": {
-#                         "completion": 20500,
-#                         "starting_amount": 34750,
-#                         "steps": 2,
-#                         "worst": 1,
-#                     },
-#                 },
-#             },
-#         },
-#     )
-#
-#
+
+@pytest.fixture
+def funnels_response(start_date):
+    first_date = start_date + timedelta(days=1)
+    second_date = start_date + timedelta(days=10)
+    return setup_response(
+        200,
+        {
+            "meta": {"dates": [str(first_date), str(second_date)]},
+            "data": {
+                str(first_date): {
+                    "steps": [],
+                    "analysis": {
+                        "completion": 20524,
+                        "starting_amount": 32688,
+                        "steps": 2,
+                        "worst": 1,
+                    },
+                },
+                str(second_date): {
+                    "steps": [],
+                    "analysis": {
+                        "completion": 20500,
+                        "starting_amount": 34750,
+                        "steps": 2,
+                        "worst": 1,
+                    },
+                },
+            },
+        },
+    )
+
+@pytest.fixture
+def funnel_ids_response(start_date):
+    return setup_response(
+        200,
+        [{
+        "funnel_id": 36152117,
+        "name": "test"
+        }]
+    )
+
+
+def test_funnels_stream(requests_mock, config, funnels_response, funnel_ids_response, config_raw):
+    config_raw["start_date"] = "2024-01-01T00:00:00Z"
+    config_raw["end_date"] = "2024-04-01T00:00:00Z"
+    stream = init_stream('funnels', config=config_raw)
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels/list", funnel_ids_response)
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels", funnels_response)
+
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+    assert len(stream_slices) > 3
+    assert {
+        "funnel_id": stream_slices[0]['funnel_id'],
+        "name": stream_slices[0]['funnel_name']
+    } == {
+        "funnel_id": 36152117,
+        "name": "test"
+        }
+
+
 # def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_url):
 #     stream = Funnels(authenticator=MagicMock(), **config)
 #     requests_mock.register_uri("GET", funnels_list_url, funnels_list_response)
@@ -259,100 +312,107 @@ def cohorts_response():
 #     )
 #     assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
 #
+
+@pytest.fixture
+def engage_schema_response():
+    return setup_response(
+        200,
+        {
+            "results": {
+                "$created": {"count": 124, "type": "string"},
+                "$is_active": {"count": 412, "type": "boolean"},
+                "$CreatedDateTimestamp": {"count": 300, "type": "number"},
+                "$CreatedDate": {"count": 11, "type": "datetime"},
+                "$properties": {"count": 2, "type": "object"},
+                "$tags": {"count": 131, "type": "list"},
+            }
+        },
+    )
+
+
+def test_engage_schema(requests_mock, engage_schema_response, config_raw, config):
+    #stream = Engage(authenticator=MagicMock(), **config)
+
+    stream = init_stream('engage', config=config_raw)
+
+    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
+    assert stream.get_json_schema() == {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": True,
+        "properties": {
+            "CreatedDate": {"type": ["null", "string"]},
+            "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
+            "browser": {"type": ["null", "string"]},
+            "browser_version": {"type": ["null", "string"]},
+            "city": {"type": ["null", "string"]},
+            "country_code": {"type": ["null", "string"]},
+            "created": {"type": ["null", "string"]},
+            "distinct_id": {"type": ["null", "string"]},
+            "email": {"type": ["null", "string"]},
+            "first_name": {"type": ["null", "string"]},
+            "id": {"type": ["null", "string"]},
+            "is_active": {"type": ["null", "boolean"]},
+            "last_name": {"type": ["null", "string"]},
+            "last_seen": {"format": "date-time", "type": ["null", "string"]},
+            "name": {"type": ["null", "string"]},
+            "properties": {"additionalProperties": True, "type": ["null", "object"]},
+            "region": {"type": ["null", "string"]},
+            "tags": {"items": {}, "required": False, "type": ["null", "array"]},
+            "timezone": {"type": ["null", "string"]},
+            "unblocked": {"type": ["null", "string"]},
+        },
+        "type": "object",
+    }
+
+
+def test_update_engage_schema(requests_mock, config, config_raw):
+    stream = EngageSchema(authenticator=MagicMock(), **config)
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "results": {
+                    "$someNewSchemaField": {"count": 124, "type": "string"},
+                }
+            },
+        ),
+    )
+    engage_stream = init_stream('engage', config=config_raw)
+    engage_schema = engage_stream.get_json_schema()
+    assert "someNewSchemaField" in engage_schema["properties"]
+
+
+@pytest.fixture
+def annotations_response():
+    return setup_response(
+        200,
+        {
+            "annotations": [
+                {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
+                {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
+            ]
+        },
+    )
+
+
+# def test_annotations_stream(requests_mock, annotations_response, config_raw):
+#     stream = init_stream('annotations', config=config_raw)
+#     # stream = Annotations(authenticator=MagicMock(), **config)
+#     requests_mock.register_uri("GET", "https://mixpanel.com/api/app/projects/annotations", annotations_response)
 #
-# @pytest.fixture
-# def engage_schema_response():
-#     return setup_response(
-#         200,
-#         {
-#             "results": {
-#                 "$created": {"count": 124, "type": "string"},
-#                 "$is_active": {"count": 412, "type": "boolean"},
-#                 "$CreatedDateTimestamp": {"count": 300, "type": "number"},
-#                 "$CreatedDate": {"count": 11, "type": "datetime"},
-#                 "$properties": {"count": 2, "type": "object"},
-#                 "$tags": {"count": 131, "type": "list"},
-#             }
-#         },
-#     )
+#     stream_slice = StreamSlice(partition={}, cursor_slice= {
+#         "start_date": "2017-01-25T00:00:00Z",
+#         "end_date": "2017-02-25T00:00:00Z"
+#     })
 #
-#
-# def test_engage_schema(requests_mock, engage_schema_response, config):
-#     stream = Engage(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
-#     assert stream.get_json_schema() == {
-#         "$schema": "http://json-schema.org/draft-07/schema#",
-#         "additionalProperties": True,
-#         "properties": {
-#             "CreatedDate": {"type": ["null", "string"]},
-#             "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
-#             "browser": {"type": ["null", "string"]},
-#             "browser_version": {"type": ["null", "string"]},
-#             "city": {"type": ["null", "string"]},
-#             "country_code": {"type": ["null", "string"]},
-#             "created": {"type": ["null", "string"]},
-#             "distinct_id": {"type": ["null", "string"]},
-#             "email": {"type": ["null", "string"]},
-#             "first_name": {"type": ["null", "string"]},
-#             "id": {"type": ["null", "string"]},
-#             "is_active": {"type": ["null", "boolean"]},
-#             "last_name": {"type": ["null", "string"]},
-#             "last_seen": {"format": "date-time", "type": ["null", "string"]},
-#             "name": {"type": ["null", "string"]},
-#             "properties": {"additionalProperties": True, "type": ["null", "object"]},
-#             "region": {"type": ["null", "string"]},
-#             "tags": {"items": {}, "required": False, "type": ["null", "array"]},
-#             "timezone": {"type": ["null", "string"]},
-#             "unblocked": {"type": ["null", "string"]},
-#         },
-#         "type": "object",
-#     }
-#
-#
-# def test_update_engage_schema(requests_mock, config):
-#     stream = EngageSchema(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri(
-#         "GET",
-#         get_url_to_mock(stream),
-#         setup_response(
-#             200,
-#             {
-#                 "results": {
-#                     "$someNewSchemaField": {"count": 124, "type": "string"},
-#                 }
-#             },
-#         ),
-#     )
-#     engage_stream = Engage(authenticator=MagicMock(), **config)
-#     engage_schema = engage_stream.get_json_schema()
-#     assert "someNewSchemaField" in engage_schema["properties"]
-#
-#
-# @pytest.fixture
-# def annotations_response():
-#     return setup_response(
-#         200,
-#         {
-#             "annotations": [
-#                 {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
-#                 {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
-#             ]
-#         },
-#     )
-#
-#
-# def test_annotations_stream(requests_mock, annotations_response, config):
-#
-#     stream = Annotations(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
-#
-#     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
 #     # read records for single slice
 #     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-#
+#     records = list(records)
 #     records_length = sum(1 for _ in records)
 #     assert records_length == 2
-#
+
 #
 # @pytest.fixture
 # def revenue_response():
@@ -439,6 +499,7 @@ def export_response():
 def test_export_stream(requests_mock, export_response, config):
 
     stream = Export(authenticator=MagicMock(), **config)
+
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
