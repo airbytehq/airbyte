@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
-  private final CdcState cdcState;
+  protected final CdcState cdcState;
 
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that have completed the snapshot.
@@ -74,7 +74,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
         .withGlobal(globalState);
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  protected AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     Preconditions.checkNotNull(pair);
     Preconditions.checkNotNull(pair.getName());
     Preconditions.checkNotNull(pair.getNamespace());
