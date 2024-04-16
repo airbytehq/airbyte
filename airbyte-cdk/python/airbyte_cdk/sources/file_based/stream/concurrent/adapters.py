@@ -69,7 +69,6 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
                 partition_generator=FileBasedStreamPartitionGenerator(
                     stream,
                     message_repository,
-                    SyncMode.full_refresh,  # TODO: this is not used anywhere, we should remove it from the interface. Sending a dummy value
                     [cursor_field] if cursor_field is not None else None,
                     state,
                     cursor,
@@ -278,21 +277,19 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
         self,
         stream: AbstractFileBasedStream,
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: "AbstractConcurrentFileBasedCursor",
     ):
         self._stream = stream
         self._message_repository = message_repository
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
 
     def generate(self) -> Iterable[FileBasedStreamPartition]:
         pending_partitions = []
-        for _slice in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
+        for _slice in self._stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=self._cursor_field, stream_state=self._state):
             if _slice is not None:
                 for file in _slice.get("files", []):
                     pending_partitions.append(
