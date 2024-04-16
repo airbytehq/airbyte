@@ -33,6 +33,7 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------- |
+| 0.1.4 | 2024-04-15 | [37199](https://github.com/airbytehq/airbyte/pull/37199) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.3 | 2024-04-12 | [37199](https://github.com/airbytehq/airbyte/pull/37199) | schema descriptions |
 | 0.1.2   | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates               |
 | 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream   |
