@@ -49,6 +49,7 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version   | Date         | Pull Request                                                   | Subject                                       |
 | :-------- | :----------- | :------------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37146](https://github.com/airbytehq/airbyte/pull/37146) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37146](https://github.com/airbytehq/airbyte/pull/37146) | schema descriptions |
 | 0.2.0     | 2021-11-09   | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code                    |
 | 0.1.23    | 2021-11-09   | [126](https://github.com/faros-ai/airbyte-connectors/pull/126) | Add Customer.io source                        |
