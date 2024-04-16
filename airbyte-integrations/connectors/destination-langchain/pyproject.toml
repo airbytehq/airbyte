@@ -23,7 +23,7 @@ langchain = "^0.1"
 openai = "*"
 requests = "*"
 tiktoken = "*"
-docarray = { version = ">=0.32.0", extras = ["hnswlib"] }
+docarray = "*"
 pinecone-client = {version = "2.2.4", extras = ["grpc"]}
 typing-inspect = "0.8.0"
 typing_extensions = "4.5.0"
