@@ -54,6 +54,7 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.3.3 | 2024-04-15 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.3.2 | 2024-04-12 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | schema descriptions |
 | 1.3.1 | 2024-01-29 | [34633](https://github.com/airbytehq/airbyte/pull/34633) | Add backoff policy for `Requested Items` stream |
 | 1.3.0 | 2024-01-15 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Add `Requested Items` stream |
