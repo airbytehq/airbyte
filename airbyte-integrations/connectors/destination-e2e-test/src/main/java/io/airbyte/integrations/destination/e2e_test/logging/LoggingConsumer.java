@@ -55,6 +55,7 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
       return;
     } else if (message.getType() == Type.TRACE) {
       LOGGER.info("Received a trace: {}", message);
+      return;
     } else if (message.getType() != Type.RECORD) {
       return;
     }
