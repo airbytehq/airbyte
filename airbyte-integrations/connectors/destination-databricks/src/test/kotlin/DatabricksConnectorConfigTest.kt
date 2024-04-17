@@ -15,7 +15,7 @@ class DatabricksConnectorConfigTest {
         val jsonString = MoreResources.readResource("basic-config.json");
         val objectMapper = MoreMappers.initMapper()
         objectMapper.registerModule(kotlinModule())
-        val deserializedConfig:DatabricksConnectorConfig = objectMapper.readValue<DatabricksConnectorConfig>(jsonString, DatabricksConnectorConfig::class.java)
+        val deserializedConfig = objectMapper.readValue(jsonString, DatabricksConnectorConfig::class.java)
 //        assertEquals(config, deserializedConfig)
         println(jsonString)
         println(deserializedConfig)
