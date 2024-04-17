@@ -3,6 +3,8 @@
 This is the repository for the Goldcast Api configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/goldcast-api).
 
+Currently we are not able to implement incremental streams with this source as the api does not allow a filter on updated at / last modified column.
+
 ## Local development
 
 ### Prerequisites
