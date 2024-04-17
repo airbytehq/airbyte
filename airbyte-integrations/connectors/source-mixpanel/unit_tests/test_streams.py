@@ -433,6 +433,19 @@ def test_export_stream(requests_mock, export_response, config):
     records_length = sum(1 for _ in records)
     assert records_length == 1
 
+def test_export_stream_fail(requests_mock, export_response, config):
+
+    stream = Export(authenticator=MagicMock(), **config)
+    error_message = ""
+    requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    try:
+        records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
+        records = list(records)
+    except Exception as e:
+        error_message = str(e)
+    assert "Your credentials might have expired" in error_message
+
 
 def test_handle_time_zone_mismatch(requests_mock, config, caplog):
     stream = Export(authenticator=MagicMock(), **config)
