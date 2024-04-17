@@ -64,6 +64,17 @@ def test_dpath_extractor(test_name, field_path, body, expected_records):
                 {"id": 2, "nested": [{"field": "a"}], "field": "a"},
             ],
         ),
+        (
+            "test_extract_single_record",
+            ["data"],
+            ["nested"],
+            {"data": {"id": 1, "nested": [{"field": "a"}, {"field": "b"}]}},
+            [
+                {"id": 1, "nested": [{"field": "a"}, {"field": "b"}], "field": "a"},
+                {"id": 1, "nested": [{"field": "a"}, {"field": "b"}], "field": "b"},
+            ],
+        ),
+        ("test_field_does_not_exist", ["data"], ["nested"], {"id": 1}, []),
     ],
 )
 def test_unnest_dpath_extractor(test_name, field_path, unnest_field_path, body, expected_records):

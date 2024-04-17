@@ -60,8 +60,6 @@ class UnnestingDpathExtractor(RecordExtractor):
     unnest_extractor: Optional[RecordExtractor] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        print("parameters", parameters)
-        print("self", self)
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
@@ -93,14 +91,10 @@ class UnnestingDpathExtractor(RecordExtractor):
         return extracted
 
     def unnest_fields(self, records: List[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
-        if isinstance(records, list):
-            unnest = []
-            for record in records:
-                for unnest_record in self.unnest_extractor.extract_from_json(record):
-                    merged = dict()
-                    merged.update(record)
-                    merged.update(unnest_record)
-                    unnest.append(merged)
-            return unnest
-        else:
+        if not isinstance(records, list):
             return self.unnest_extractor.extract_from_json(records)
+
+        unnested_records = [
+            {**record, **unnest_record} for record in records for unnest_record in self.unnest_extractor.extract_from_json(record)
+        ]
+        return unnested_records
