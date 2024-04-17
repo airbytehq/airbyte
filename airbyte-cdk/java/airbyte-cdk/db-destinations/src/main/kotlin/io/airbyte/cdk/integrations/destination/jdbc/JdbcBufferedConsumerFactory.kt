@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -78,11 +78,10 @@ object JdbcBufferedConsumerFactory {
             ),
             catalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            FlushFailure(),
             Optional.ofNullable(defaultNamespace),
+            FlushFailure(),
             Executors.newFixedThreadPool(2),
-            dataTransformer,
-            DeserializationUtil()
+            AirbyteMessageDeserializer(dataTransformer)
         )
     }
 

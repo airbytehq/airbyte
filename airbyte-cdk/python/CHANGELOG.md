@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
+## 0.81.4
+Adding stream_descriptor as part of AirbyteTracedException.__init__
+
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
 ## 0.81.1
 Concurrent CDK: add logging on exception
 
