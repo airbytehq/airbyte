@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.auth.jwt import JwtAuthenticator
 
 LOGGER = logging.getLogger(__name__)
 
+
 class TestJwtAuthenticator:
     """
     Test class for JWT Authenticator.
@@ -50,17 +51,23 @@ class TestJwtAuthenticator:
         with pytest.raises(ValueError):
             authenticator._get_jwt_headers()
 
-
     @pytest.mark.parametrize(
         "iss, sub, aud, additional_jwt_payload, expected",
-        [(
-            "test_iss",
-            "test_sub",
-            "test_aud",
-            {"test": "test"},
-            {"iss": "test_iss", "sub": "test_sub", "aud": "test_aud", "test": "test"},
-        ),
-        (None, None, None, None, {}),
+        [
+            (
+                "test_iss",
+                "test_sub",
+                "test_aud",
+                {"test": "test"},
+                {"iss": "test_iss", "sub": "test_sub", "aud": "test_aud", "test": "test"},
+            ),
+            (
+                None,
+                None,
+                None,
+                None,
+                {}
+            ),
         ]
     )
     def test_get_jwt_payload(self, iss, sub, aud, additional_jwt_payload, expected):
@@ -128,7 +135,6 @@ class TestJwtAuthenticator:
             headers=authenticator._get_jwt_headers(),
         )
 
-
     def test_given_invalid_algorithm_get_signed_token_throws_error(self):
         authenticator = JwtAuthenticator(
             config={},
@@ -145,7 +151,6 @@ class TestJwtAuthenticator:
         )
         with pytest.raises(ValueError):
             authenticator._get_signed_token()
-
 
     @pytest.mark.parametrize(
         "header_prefix, expected",

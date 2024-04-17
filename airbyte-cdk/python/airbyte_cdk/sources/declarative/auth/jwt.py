@@ -12,8 +12,6 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.models import JwtHeaders as JwtHeadersModel
-from airbyte_cdk.sources.declarative.models import JwtPayload as JwtPayloadModel
 
 
 class JwtAlgorithm(str):

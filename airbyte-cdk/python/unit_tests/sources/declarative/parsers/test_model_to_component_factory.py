@@ -992,6 +992,7 @@ authenticator:
 
     assert isinstance(authenticator, expected_authenticator_class)
 
+
 def test_create_composite_error_handler():
     content = """
         error_handler:
@@ -1845,6 +1846,7 @@ def test_create_custom_schema_loader():
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
+
 
 @freezegun.freeze_time("2021-01-01 00:00:00")
 @pytest.mark.parametrize(
