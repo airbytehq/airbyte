@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "live-tests"
-version = "0.14.2"
+version = "0.15.0"
 description = "Contains utilities for testing connectors against live data."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -27,7 +27,8 @@ pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
 # TODO: when this is open-sourced, don't require connection-retriever
-connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
+connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever", branch = "augustin/04-16-connection_retriever_automatically_fetch_connections_for_testing"}
+#connection-retriever = { path = "/Users/augustin/workspace/airbyte-platform-internal/tools/connection-retriever/", develop = true }
 duckdb = "^0.10.0"
 pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"

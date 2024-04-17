@@ -13,6 +13,8 @@ from typing import Any, Dict, Iterable, Iterator, List, MutableMapping, Optional
 import _collections_abc
 import dagger
 import requests
+
+# type: ignore
 from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from genson import SchemaBuilder  # type: ignore
@@ -429,3 +431,5 @@ class ConnectionObjects:
     workspace_id: Optional[str]
     source_id: Optional[str]
     destination_id: Optional[str]
+    source_docker_image: Optional[str]
+    connection_id: Optional[str]
