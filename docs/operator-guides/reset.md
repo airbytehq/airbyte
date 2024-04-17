@@ -19,8 +19,6 @@ To perform a full removal of the data for all your streams, navigate to a connec
 
 To clear data for a single stream, navigate to a Connection's status page, click the three grey dots next to any stream, and select "Clear data". This will clear the data for just that stream. You will then need to sync the connection again in order to reload data for that stream. 
 
-![Clear data from a stream](./assets/clear-example.png)
-
 You will also automatically be prompted to clear affected streams if you edit any stream settings or approve any non-breaking schema changes. To ensure data continues to sync accurately, Airbyte recommends doing a clear of those streams as your streams could sync incorrectly if a clear is not performed. 
 
 Similarly to a sync, a clear can be completed as successful, failed, or cancelled. To resolve a failed clearing of data, you should manually drop the tables in the destination so that Airbyte can continue syncing accurately into the destination. 
