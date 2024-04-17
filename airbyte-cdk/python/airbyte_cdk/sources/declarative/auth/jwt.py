@@ -12,7 +12,9 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+
 # from airbyte_cdk.sources.declarative.models import Algorithm as JwtAlgorithm
+
 
 class JwtAlgorithm(str):
     """
@@ -31,6 +33,7 @@ class JwtAlgorithm(str):
     PS256 = "PS256"
     PS384 = "PS384"
     PS512 = "PS512"
+
 
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
