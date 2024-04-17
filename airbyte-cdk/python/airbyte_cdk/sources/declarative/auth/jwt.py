@@ -5,17 +5,16 @@
 import base64
 from dataclasses import InitVar, dataclass
 from datetime import datetime
-from typing import Any, Mapping, Union, Optional
+from typing import Any, Mapping, Optional, Union
 
 import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.models import (
-    JwtHeaders as JwtHeadersModel,
-    JwtPayload as JwtPayloadModel
-)
+from airbyte_cdk.sources.declarative.models import JwtHeaders as JwtHeadersModel
+from airbyte_cdk.sources.declarative.models import JwtPayload as JwtPayloadModel
+
 
 class JwtAlgorithm(str):
     """
@@ -34,6 +33,7 @@ class JwtAlgorithm(str):
     PS256 = "PS256"
     PS384 = "PS384"
     PS512 = "PS512"
+
 
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
@@ -76,7 +76,11 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
         self._algorithm = JwtAlgorithm(self.algorithm) if isinstance(self.algorithm, str) else self.algorithm
-        self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters) if isinstance(self.base64_encode_secret_key, str) else self.base64_encode_secret_key
+        self._base64_encode_secret_key = (
+            InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
+            if isinstance(self.base64_encode_secret_key, str)
+            else self.base64_encode_secret_key
+        )
         self._token_duration = self.token_duration
         self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters) if self.header_prefix else None
         self._kid = InterpolatedString.create(self.kid, parameters=parameters) if self.kid else None
@@ -89,7 +93,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
 
     def _get_jwt_headers(self) -> dict[str, Any]:
-        """"
+        """ "
         Builds and returns the headers used when signing the JWT.
         """
         headers = self._additional_jwt_headers.eval(self.config)
