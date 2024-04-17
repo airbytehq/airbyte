@@ -1988,7 +1988,7 @@ def test_create_jwt_authenticator(config, manifest, expected):
     assert isinstance(authenticator, JwtAuthenticator)
     assert authenticator._secret_key.eval(config) == expected["secret_key"]
     assert authenticator._algorithm == expected["algorithm"]
-    assert authenticator._base64_encode_secret_key.eval(config) == expected["base64_encode_secret_key"]
+    assert authenticator._base64_encode_secret_key == expected["base64_encode_secret_key"]
     assert authenticator._token_duration == expected["token_duration"]
     if "header_prefix" in expected:
         assert authenticator._header_prefix.eval(config) == expected["header_prefix"]

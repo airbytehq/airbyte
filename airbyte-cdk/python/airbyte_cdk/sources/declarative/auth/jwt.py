@@ -5,16 +5,17 @@
 import base64
 from dataclasses import InitVar, dataclass
 from datetime import datetime
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Union, Optional
 
 import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-
-# from airbyte_cdk.sources.declarative.models import Algorithm as JwtAlgorithm
-
+from airbyte_cdk.sources.declarative.models import (
+    JwtHeaders as JwtHeadersModel,
+    JwtPayload as JwtPayloadModel
+)
 
 class JwtAlgorithm(str):
     """
@@ -34,7 +35,6 @@ class JwtAlgorithm(str):
     PS384 = "PS384"
     PS512 = "PS512"
 
-
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
 
@@ -42,35 +42,34 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
     algorithm: Union[str, JwtAlgorithm]
-    base64_encode_secret_key: Union[InterpolatedBoolean, bool] = False
-    token_duration: int = None
-    header_prefix: Union[InterpolatedString, str] = None
-    kid: Union[InterpolatedString, str] = None
-    typ: Union[InterpolatedString, str] = None
-    iss: Union[InterpolatedString, str] = None
-    sub: Union[InterpolatedString, str] = None
-    aud: Union[InterpolatedString, str] = None
-    cty: Union[InterpolatedString, str] = None
-    additional_jwt_headers: Mapping[str, Any] = None
-    additional_jwt_payload: Mapping[str, Any] = None
+    token_duration: Optional[int]
+    base64_encode_secret_key: Optional[Union[InterpolatedBoolean, str, bool]] = False
+    header_prefix: Optional[Union[InterpolatedString, str]] = None
+    kid: Optional[Union[InterpolatedString, str]] = None
+    typ: Optional[Union[InterpolatedString, str]] = None
+    iss: Optional[Union[InterpolatedString, str]] = None
+    sub: Optional[Union[InterpolatedString, str]] = None
+    aud: Optional[Union[InterpolatedString, str]] = None
+    cty: Optional[Union[InterpolatedString, str]] = None
+    additional_jwt_headers: Optional[Mapping[str, Any]] = None
+    additional_jwt_payload: Optional[Mapping[str, Any]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__init__()
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
         self._algorithm = JwtAlgorithm(self.algorithm) if isinstance(self.algorithm, str) else self.algorithm
-        self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
+        self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters) if isinstance(self.base64_encode_secret_key, str) else self.base64_encode_secret_key
         self._token_duration = self.token_duration
-        self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters)
-        self._kid = InterpolatedString.create(self.kid, parameters=parameters)
-        self._typ = InterpolatedString.create(self.typ, parameters=parameters)
-        self._iss = InterpolatedString.create(self.iss, parameters=parameters)
-        self._sub = InterpolatedString.create(self.sub, parameters=parameters)
-        self._aud = InterpolatedString.create(self.aud, parameters=parameters)
-        self._cty = InterpolatedString.create(self.cty, parameters=parameters)
+        self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters) if self.header_prefix else None
+        self._kid = InterpolatedString.create(self.kid, parameters=parameters) if self.kid else None
+        self._typ = InterpolatedString.create(self.typ, parameters=parameters) if self.typ else None
+        self._iss = InterpolatedString.create(self.iss, parameters=parameters) if self.iss else None
+        self._sub = InterpolatedString.create(self.sub, parameters=parameters) if self.sub else None
+        self._aud = InterpolatedString.create(self.aud, parameters=parameters) if self.aud else None
+        self._cty = InterpolatedString.create(self.cty, parameters=parameters) if self.cty else None
         self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
         self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
 
-    def _get_jwt_headers(self) -> Mapping[str, Any]:
+    def _get_jwt_headers(self) -> dict[str, Any]:
         headers = self._additional_jwt_headers.eval(self.config)
         if any(prop in headers for prop in ["kid", "alg", "typ", "cty"]):
             raise ValueError("'kid', 'alg', 'typ', 'cty' are reserved headers and should not be set as part of 'additional_jwt_headers'")
@@ -84,9 +83,9 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         headers["alg"] = self._algorithm
         return headers
 
-    def _get_jwt_payload(self) -> Mapping[str, Any]:
+    def _get_jwt_payload(self) -> dict[str, Any]:
         now = int(datetime.now().timestamp())
-        exp = now + self._token_duration
+        exp = now + self._token_duration if isinstance(self._token_duration, int) else now
         nbf = now
 
         payload = self._additional_jwt_payload.eval(self.config)
@@ -108,7 +107,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
     def _get_secret_key(self) -> str:
         secret_key: str = self._secret_key.eval(self.config)
-        return base64.b64encode(secret_key.encode()).decode() if self._base64_encode_secret_key.eval(self.config) else secret_key
+        return base64.b64encode(secret_key.encode()).decode() if self._base64_encode_secret_key else secret_key
 
     def _get_signed_token(self) -> str:
         try:
@@ -121,7 +120,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         except Exception as e:
             raise ValueError(f"Failed to sign token: {e}")
 
-    def _get_header_prefix(self) -> str:
+    def _get_header_prefix(self) -> Union[str, None]:
         return self._header_prefix.eval(self.config) if self._header_prefix else None
 
     @property

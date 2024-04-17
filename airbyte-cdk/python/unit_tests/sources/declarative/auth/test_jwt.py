@@ -30,6 +30,7 @@ class TestJwtAuthenticator:
             parameters={},
             algorithm=algorithm,
             secret_key="test_key",
+            token_duration=1200,
             kid=kid,
             typ=typ,
             cty=cty,
@@ -43,6 +44,7 @@ class TestJwtAuthenticator:
             parameters={},
             algorithm="ALGORITHM",
             secret_key="test_key",
+            token_duration=1200,
             additional_jwt_headers={"kid": "test_kid"},
         )
         with pytest.raises(ValueError):
@@ -104,6 +106,7 @@ class TestJwtAuthenticator:
             parameters={},
             secret_key=secret_key,
             algorithm="test_algo",
+            token_duration=1200,
             base64_encode_secret_key=base64_encode_secret_key,
         )
         assert authenticator._get_secret_key() == expected
@@ -121,7 +124,7 @@ class TestJwtAuthenticator:
         assert authenticator._get_signed_token() == jwt.encode(
             payload=authenticator._get_jwt_payload(),
             key=authenticator._get_secret_key(),
-            algorithm=authenticator._algorithm.eval(authenticator.config),
+            algorithm=authenticator._algorithm,
             headers=authenticator._get_jwt_headers(),
         )
 
@@ -157,6 +160,7 @@ class TestJwtAuthenticator:
             parameters={},
             secret_key="key",
             algorithm="test_algo",
+            token_duration=1200,
             header_prefix=header_prefix,
         )
         assert authenticator._get_header_prefix() == expected
