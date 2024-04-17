@@ -376,16 +376,8 @@ def export_schema_response():
     return setup_response(
         200,
         {
-            "$browser": {"count": 6},
+            "$DYNAMIC_FIELD": {"count": 6},
             "$browser_version": {"count": 6},
-            "$current_url": {"count": 6},
-            "mp_lib": {"count": 6},
-            "noninteraction": {"count": 6},
-            "$event_name": {"count": 6},
-            "$duration_s": {},
-            "$event_count": {},
-            "$origin_end": {},
-            "$origin_start": {},
         },
     )
 
@@ -398,7 +390,16 @@ def test_export_schema(requests_mock, export_schema_response, config):
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
 
     records_length = sum(1 for _ in records)
-    assert records_length == 10
+    assert records_length == 2
+
+def test_export_get_json_schema(requests_mock, export_schema_response, config):
+
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", export_schema_response)
+
+    stream = Export(authenticator=MagicMock(), **config)
+    schema = stream.get_json_schema()
+
+    assert "DYNAMIC_FIELD" in  schema['properties']
 
 
 @pytest.fixture
