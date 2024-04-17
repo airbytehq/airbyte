@@ -2,7 +2,7 @@ data:
   connectorSubtype: unknown
   connectorType: destination
   definitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.4
   dockerRepository: airbyte/destination-e2e-test
   githubIssueLabel: destination-e2e-test
   icon: airbyte.svg
