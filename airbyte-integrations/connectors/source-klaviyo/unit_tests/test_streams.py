@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.source import SourceKlaviyo
-from source_klaviyo.streams import ArchivedRecordsStream, Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
+from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
 
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
@@ -401,7 +401,13 @@ class TestCampaignsStream:
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
         ]
-        assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == expected_records
+
+        records = []
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                records.append(record)
+
+        assert records == expected_records
 
     @pytest.mark.parametrize(
         ("latest_record", "current_stream_state", "expected_state"),
@@ -441,6 +447,85 @@ class TestCampaignsStream:
     def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
         stream = Campaigns(api_key=API_KEY)
         assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+
+    def test_stream_slices(self):
+        stream = Campaigns(api_key=API_KEY)
+        assert stream.stream_slices(sync_mode=SyncMode.full_refresh) == [{"archived": False}, {"archived": True}]
+
+    @pytest.mark.parametrize(
+        ("stream_state", "stream_slice", "next_page_token", "expected_params"),
+        (
+            ({}, {"archived": False}, None, {"sort": "updated_at"}),
+            ({}, {"archived": True}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00"},
+                {"archived": False},
+                None,
+                {"filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)", "sort": "updated_at"},
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                },
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00"},
+                {"archived": False},
+                {"page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {"archived": {"updated_at": "2023-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                {"page[cursor]": "next_page_cursor"},
+                {
+                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                    "page[cursor]": "next_page_cursor",
+                },
+            ),
+            (
+                {},
+                {"archived": True},
+                {"page[cursor]": "next_page_cursor"},
+                {"filter": "equals(archived,true)", "sort": "updated_at", "page[cursor]": "next_page_cursor"},
+            ),
+            (
+                {},
+                {"archived": False},
+                {"page[cursor]": "next_page_cursor"},
+                {"sort": "updated_at", "page[cursor]": "next_page_cursor"},
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2024-10-10T00:00:00+00:00"}},
+                {"archived": False},
+                None,
+                {"filter": "greater-than(updated_at,2023-10-10T00:00:00+00:00)", "sort": "updated_at"},
+            ),
+            (
+                {"updated_at": "2023-10-10T00:00:00+00:00", "archived": {"updated_at": "2022-10-10T00:00:00+00:00"}},
+                {"archived": True},
+                None,
+                {
+                    "filter": "and(greater-than(updated_at,2022-10-10T00:00:00+00:00),equals(archived,true))",
+                    "sort": "updated_at",
+                },
+            ),
+        ),
+    )
+    def test_request_params(self, stream_state, stream_slice, next_page_token, expected_params):
+        stream = Campaigns(api_key=API_KEY)
+        assert stream.request_params(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        ) == expected_params
 
 
 class TestCampaignsDetailedStream:
@@ -493,49 +578,3 @@ class TestCampaignsDetailedStream:
         record = {"id": "123123", "attributes": {"name": "Campaign"}}
         stream._set_campaign_message(record)
         assert "campaign_message" not in record
-
-
-class TestArchivedRecordsStream:
-    @pytest.mark.parametrize(
-        "stream_state, next_page_token, expected_params",
-        [
-            ({}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
-            (
-                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
-                None,
-                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at"},
-            ),
-            (
-                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
-                {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
-                    "page[cursor]": "next_page_cursor",
-                },
-                {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
-                    "page[cursor]": "next_page_cursor",
-                },
-            ),
-            (
-                {},
-                {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
-                    "page[cursor]": "next_page_cursor",
-                },
-                {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
-                    "page[cursor]": "next_page_cursor",
-                },
-            ),
-        ],
-    )
-    def test_request_params(self, stream_state, next_page_token, expected_params):
-        base_stream = Campaigns(api_key="API_KEY")
-        archived_stream = ArchivedRecordsStream(base_stream)
-        assert archived_stream.request_params(
-            stream_state=stream_state, next_page_token=next_page_token
-        ) == expected_params
