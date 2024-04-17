@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.82.0
-low-code: Add JWTAuthenticator
-
 ## 0.81.6
 Upgrade to recent version of langchain
 
