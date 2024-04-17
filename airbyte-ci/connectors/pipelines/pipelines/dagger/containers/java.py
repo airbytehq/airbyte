@@ -76,7 +76,6 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
         "jq",
         "sshpass",
         "git",
-        "shadow-utils",
     ]
 
     additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
