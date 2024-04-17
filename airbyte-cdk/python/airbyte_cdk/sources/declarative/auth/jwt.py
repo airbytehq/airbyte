@@ -109,7 +109,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         secret_key: str = self._secret_key.eval(self.config)
         return base64.b64encode(secret_key.encode()).decode() if self._base64_encode_secret_key else secret_key
 
-    def _get_signed_token(self) -> str:
+    def _get_signed_token(self) -> Union[str, Any]:
         try:
             return jwt.encode(
                 payload=self._get_jwt_payload(),
