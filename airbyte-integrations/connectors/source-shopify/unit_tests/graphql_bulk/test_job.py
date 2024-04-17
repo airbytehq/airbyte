@@ -294,6 +294,50 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
+    stream.job_manager.job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
+
+    
+@pytest.mark.parametrize(
+    "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
+    [
+        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 5.5),
+    ],
+    ids=[
+        "Expand Slice Size",
+    ],
+)   
+def test_expand_stream_slices_job_size(
+    request,
+    requests_mock,
+    bulk_job_completed_response,
+    stream,
+    json_content_example,
+    last_job_elapsed_time,
+    previous_slice_size,
+    adjusted_slice_size,
+    auth_config,
+) -> None:
+    
+    stream = stream(auth_config)
+    # get the mocked job_result_url
+    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
+    # mocking the result url with jsonl content
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    # getting mock response
+    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
+    # mocking nested api call to get data from result url
+    requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
+
+    # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
+    # fake current slice interval value
+    stream.job_manager.job_size = previous_slice_size
+    # fake `last job elapsed time` 
+    if last_job_elapsed_time:
+        stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
+    # parsing result from completed job
+    list(stream.parse_response(test_bulk_response))
+    # check the next slice
+    assert stream.job_manager.job_size == adjusted_slice_size
