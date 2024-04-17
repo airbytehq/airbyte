@@ -28,7 +28,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
         "tar",  # required to untar java connector binary distributions.
         "openssl",  # required because we need to ssh and scp sometimes.
         "findutils",  # required for xargs, which is shipped as part of findutils.
-        "shadow-utils", # required for useradd.
+        "shadow-utils",  # required for useradd.
     ]
     return (
         context.dagger_client.container(platform=build_platform)
@@ -177,11 +177,9 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
     connector_container = await finalize_build(context, connector_container)
     connector_container = (
-        connector_container
-          .with_exec(["useradd", "airbyte"], skip_entrypoint=True)
-          .with_exec(["chown", "-R", "airbyte", "/airbyte"], skip_entrypoint=True)
-          .with_exec(["chmod", "777", "/tmp"], skip_entrypoint=True)
-          .with_user("airbyte")
+        connector_container.with_exec(["useradd", "airbyte"], skip_entrypoint=True)
+        .with_exec(["chown", "-R", "airbyte", "/airbyte"], skip_entrypoint=True)
+        .with_exec(["chmod", "777", "/tmp"], skip_entrypoint=True)
+        .with_user("airbyte")
     )
     return connector_container
-
