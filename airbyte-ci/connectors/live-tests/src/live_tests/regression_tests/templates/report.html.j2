@@ -219,8 +219,8 @@
                     <li><b><a href="{{connection_url}}" target="_blank">Connection</a></b></li>
                     <li>Tester: <span class="monospace">{{ user }}</span></li>
                     <li>Test date: <span class="monospace">{{ test_date }}</span></li>
-                    <li>Workspace ID: <span class="monospace">{{ workspace_id }}</span></li>
-                    <li>Connection ID: <span class="monospace">{{ connection_id }}</span></li>
+                    <li>Workspace ID: <span class="monospace">{{ workspace_id if connection_id else "Not available - connection ID not provided" }}</span></li>
+                    <li>Connection ID: <span class="monospace">{{ connection_id | default("Not provided", true) }}</span></li>
                     <li>Connector image: <span class="monospace">{{ connector_image }}</span></li>
                     <li>Control version: <span class="monospace">{{ control_version }}</span></li>
                     <li>Target version: <span class="monospace">{{ target_version }}</span></li>

@@ -91,7 +91,7 @@ def pytest_configure(config: Config) -> None:
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
-    config.stash[stash_keys.CONNECTION_ID] = get_option_or_fail(config, "--connection-id")
+    config.stash[stash_keys.CONNECTION_ID] = config.getoption("--connection-id", "")
 
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
     config.stash[stash_keys.CONTROL_VERSION] = get_option_or_fail(config, "--control-version")
@@ -102,27 +102,52 @@ def pytest_configure(config: Config) -> None:
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
-    retrieval_reason = f"Running regression tests on connection {config.stash[stash_keys.CONNECTION_ID]} for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on the control ({config.stash[stash_keys.CONTROL_VERSION]}) and target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+    retrieval_reason = f"Running regression tests{' on connection ' + config.stash[stash_keys.CONNECTION_ID] if config.stash[stash_keys.CONNECTION_ID] else ''} for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on the control ({config.stash[stash_keys.CONTROL_VERSION]}) and target versions ({config.stash[stash_keys.TARGET_VERSION]})."
     try:
-        config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
-            {
-                ConnectionObject.SOURCE_CONFIG,
-                ConnectionObject.CATALOG,
-                ConnectionObject.CONFIGURED_CATALOG,
-                ConnectionObject.STATE,
-                ConnectionObject.WORKSPACE_ID,
-                ConnectionObject.SOURCE_DOCKER_IMAGE,
-                ConnectionObject.SOURCE_ID,
-                ConnectionObject.DESTINATION_ID,
-            },
-            config.stash[stash_keys.CONNECTION_ID],
-            Path(custom_source_config_path) if custom_source_config_path else None,
-            Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
-            Path(custom_state_path) if custom_state_path else None,
-            retrieval_reason,
-            fail_if_missing_objects=False,
-            connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
-        )
+        if config.stash.get(stash_keys.CONNECTION_ID, ""):
+            config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
+                {
+                    ConnectionObject.SOURCE_CONFIG,
+                    ConnectionObject.CATALOG,
+                    ConnectionObject.CONFIGURED_CATALOG,
+                    ConnectionObject.STATE,
+                    ConnectionObject.WORKSPACE_ID,
+                    ConnectionObject.SOURCE_DOCKER_IMAGE,
+                    ConnectionObject.SOURCE_ID,
+                    ConnectionObject.DESTINATION_ID,
+                },
+                config.stash[stash_keys.CONNECTION_ID],
+                Path(custom_source_config_path) if custom_source_config_path else None,
+                Path(custom_configured_catalog_path)
+                if custom_configured_catalog_path
+                else None,
+                Path(custom_state_path) if custom_state_path else None,
+                retrieval_reason,
+                fail_if_missing_objects=False,
+                connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
+            )
+        else:
+            assert (
+                custom_source_config_path and custom_configured_catalog_path
+            ), "--config-path and --catalog-path must be provided to run regression tests without a connection ID."
+            if (
+                config.stash.get(stash_keys.SHOULD_READ_WITH_STATE, False)
+                and not custom_state_path
+            ):
+                raise ValueError(
+                    "--state-path must be provided to run tests against state if no --connection-id was provided."
+                )
+
+            config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
+                set(),
+                config.stash[stash_keys.CONNECTION_ID],
+                Path(custom_source_config_path),
+                Path(custom_configured_catalog_path),
+                Path(custom_state_path) if custom_state_path else None,
+                retrieval_reason,
+                fail_if_missing_objects=False,
+                connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
+            )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, NotPermittedError) as exc:
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)

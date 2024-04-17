@@ -146,11 +146,17 @@ class Report:
             len(self.connection_objects.configured_catalog.streams) if self.connection_objects.configured_catalog else 0
         )
         catalog_stream_count = len(self.connection_objects.catalog.streams) if self.connection_objects.catalog else 0
-        return {
+        metrics = {
             "Available in catalog": str(catalog_stream_count),
             "In use (in configured catalog)": str(configured_catalog_stream_count),
-            "Coverage": f"{(configured_catalog_stream_count / catalog_stream_count) * 100:.2f}%",
+            "Coverage": "0%",  # We do not fetch a catalog when no connection ID is passed in
         }
+        if catalog_stream_count:
+            metrics["Coverage"] = (
+                f"{(configured_catalog_stream_count / catalog_stream_count) * 100:.2f}%",
+            )
+
+        return metrics
 
     def get_record_count_per_stream(
         self,

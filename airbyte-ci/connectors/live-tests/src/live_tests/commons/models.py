@@ -395,6 +395,21 @@ class ExecutionResult:
         if updated_configuration is None:
             return
 
+        if self.actor_id is None:
+            # In this case, the user has not passed in a connection ID.
+            # We'll hit this codepath if live tests are being run with local config/catalog/state that the user has
+            # downloaded, either as part of an OC investigation or to run tests against internal configuration before
+            # running tests more broadly.
+            # This presents a risk if the control message is being used to update a single use refresh token, as it
+            # will require the connection owner to re-authenticate.
+            # However, when running tests against an external connection we expect the connection ID to be passed in so
+            # to a first approximation this should only affect internal connections, and should happen rarely so
+            # is worth the slight risk that it poses.
+            self.logger.warning(
+                f"Could not update configuration for {self.connector_under_test.name}, no actor provided. If the connection associated with the provided config is using a single use refresh token you may need to update it manually."
+            )
+            return
+
         self.logger.warning(f"Updating configuration for {self.connector_under_test.name}, actor {self.actor_id}")
         url = f"https://api.airbyte.com/v1/{self.connector_under_test.actor_type.value}s/{self.actor_id}"
 
