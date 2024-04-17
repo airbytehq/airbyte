@@ -55,10 +55,11 @@ class TestIncludeDeleted(TestCase):
             get_account_request().build(),
             get_account_response(),
         )
-        filters = (
-            '[{"field":"ad.effective_status","operator":"IN","value":["ACTIVE","ARCHIVED"]},'
-            '{"field":"ad.updated_time","operator":"GREATER_THAN","value":1672531200}]'
-        )
+        # filter used to retrieve records by status and base filter by date
+        filters = [
+            {"field": "ad.effective_status", "operator": "IN", "value": self.statuses},
+            {"field": "ad.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+        ]
         fields = [
             "bid_type",
             "account_id",
@@ -90,7 +91,7 @@ class TestIncludeDeleted(TestCase):
         output = self._read(config().with_ad_statuses(self.statuses), "ads")
         assert len(output.records) == 1
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag"
+        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2023-03-21T22:41:46-0700"}
 
     @HttpMocker()
@@ -99,11 +100,11 @@ class TestIncludeDeleted(TestCase):
             get_account_request().build(),
             get_account_response(),
         )
-
-        filters = (
-            '[{"field":"campaign.effective_status","operator":"IN","value":["ACTIVE","ARCHIVED"]},'
-            '{"field":"campaign.updated_time","operator":"GREATER_THAN","value":1672531200}]'
-        )
+        # filter used to retrieve records by status and base filter by date
+        filters = [
+            {"field": "campaign.effective_status", "operator": "IN", "value": self.statuses},
+            {"field": "campaign.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+        ]
         fields = [
             "account_id",
             "adlabels",
@@ -140,7 +141,7 @@ class TestIncludeDeleted(TestCase):
         assert len(output.records) == 1
 
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag"
+        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2024-03-12T15:02:47-0700"}
 
     @HttpMocker()
@@ -149,11 +150,11 @@ class TestIncludeDeleted(TestCase):
             get_account_request().build(),
             get_account_response(),
         )
-
-        filters = (
-            '[{"field":"adset.effective_status","operator":"IN","value":["ACTIVE","ARCHIVED"]},'
-            '{"field":"adset.updated_time","operator":"GREATER_THAN","value":1672531200}]'
-        )
+        # filter used to retrieve records by status and base filter by date
+        filters = [
+            {"field": "adset.effective_status", "operator": "IN", "value": self.statuses},
+            {"field": "adset.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+        ]
         fields = [
             "name",
             "end_time",
@@ -184,5 +185,5 @@ class TestIncludeDeleted(TestCase):
         assert len(output.records) == 1
 
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag"
+        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2024-03-02T15:02:47-0700"}
