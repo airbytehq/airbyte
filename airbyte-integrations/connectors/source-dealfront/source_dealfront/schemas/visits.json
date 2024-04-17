@@ -296,9 +296,6 @@
         "null"
       ]
     },
-    "started_at_date": {
-      "type": "string"
-    },
     "type": {
       "type": [
         "string",
