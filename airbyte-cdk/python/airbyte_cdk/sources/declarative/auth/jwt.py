@@ -12,7 +12,25 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+# from airbyte_cdk.sources.declarative.models import Algorithm as JwtAlgorithm
 
+class JwtAlgorithm(str):
+    """
+    Enum for supported JWT algorithms
+    """
+
+    HS256 = "HS256"
+    HS384 = "HS384"
+    HS512 = "HS512"
+    RS256 = "RS256"
+    RS384 = "RS384"
+    RS512 = "RS512"
+    ES256 = "ES256"
+    ES384 = "ES384"
+    ES512 = "ES512"
+    PS256 = "PS256"
+    PS384 = "PS384"
+    PS512 = "PS512"
 
 @dataclass
 class JwtAuthenticator(DeclarativeAuthenticator):
@@ -20,7 +38,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     secret_key: Union[InterpolatedString, str]
-    algorithm: Union[InterpolatedString, str]
+    algorithm: Union[str, JwtAlgorithm]
     base64_encode_secret_key: Union[InterpolatedBoolean, bool] = False
     token_duration: int = None
     header_prefix: Union[InterpolatedString, str] = None
@@ -36,7 +54,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__init__()
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
-        self._algorithm = InterpolatedString.create(self.algorithm, parameters=parameters)
+        self._algorithm = JwtAlgorithm(self.algorithm) if isinstance(self.algorithm, str) else self.algorithm
         self._base64_encode_secret_key = InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
         self._token_duration = self.token_duration
         self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters)
@@ -60,7 +78,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             headers["typ"] = self._typ.eval(self.config)
         if self._cty:
             headers["cty"] = self._cty.eval(self.config)
-        headers["alg"] = self._algorithm.eval(self.config)
+        headers["alg"] = self._algorithm
         return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
@@ -94,7 +112,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
             return jwt.encode(
                 payload=self._get_jwt_payload(),
                 key=self._get_secret_key(),
-                algorithm=self._algorithm.eval(self.config),
+                algorithm=self._algorithm,
                 headers=self._get_jwt_headers(),
             )
         except Exception as e:

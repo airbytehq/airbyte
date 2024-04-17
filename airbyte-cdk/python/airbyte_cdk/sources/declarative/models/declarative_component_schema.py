@@ -251,6 +251,23 @@ class LegacyToPerPartitionStateMigration(BaseModel):
     type: Optional[Literal['LegacyToPerPartitionStateMigration']] = None
 
 
+class Algorithm(Enum):
+    HS256 = 'HS256'
+    HS384 = 'HS384'
+    HS512 = 'HS512'
+    ES256 = 'ES256'
+    ES256K = 'ES256K'
+    ES384 = 'ES384'
+    ES512 = 'ES512'
+    RS256 = 'RS256'
+    RS384 = 'RS384'
+    RS512 = 'RS512'
+    PS256 = 'PS256'
+    PS384 = 'PS384'
+    PS512 = 'PS512'
+    EdDSA = 'EdDSA'
+
+
 class JwtHeaders(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -288,7 +305,7 @@ class JwtAuthenticator(BaseModel):
         False,
         description='When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.',
     )
-    algorithm: str = Field(
+    algorithm: Algorithm = Field(
         ..., description='Algorithm used to sign the JSON web token.', examples=['ES256', 'HS256', 'RS256', "{{ config['algorithm'] }}"]
     )
     token_duration: Optional[int] = Field(
