@@ -110,6 +110,7 @@ class RecordUnnester:
                 f"{top_level_name}_{name}": value for (top_level_name, data) in data_to_unnest.items() for (name, value) in data.items()
             }
             final = {**record, **unnested_data}
+            final.pop("properties", None)  # HACK: Disable field in Airbyte does not work for a moment :(
             yield final
 
 
@@ -311,7 +312,7 @@ class API:
                 "createdAt": {"type": ["null", "string"], "format": "date-time"},
                 "updatedAt": {"type": ["null", "string"], "format": "date-time"},
                 "archived": {"type": ["null", "boolean"]},
-                "properties": {"type": ["null", "object"], "properties": properties},
+                # "properties": {"type": ["null", "object"], "properties": properties},  # HACK: Disable field in Airbyte does not work for a moment :(
                 "associations": {"type": ["null", "object"], "properties": {}},
                 **unnested_properties,
             },
@@ -453,7 +454,8 @@ class Stream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
-            properties = {"properties": {"type": "object", "properties": self.properties}}
+            properties = {}  # HACK: Disable field in Airbyte does not work for a moment :(
+            # properties = {"properties": {"type": "object", "properties": self.properties}}
             unnested_properties = {
                 f"properties_{property_name}": property_value for (property_name, property_value) in self.properties.items()
             }
