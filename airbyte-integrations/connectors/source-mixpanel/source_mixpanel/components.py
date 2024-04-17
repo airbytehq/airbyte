@@ -200,7 +200,7 @@ class FunnelsDpathExtractor(DpathExtractor):
 class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
-        Add 'funnel_name' to the slice
+        Add 'funnel_name' to the slice, the rest code is exactly the same as in super().stream_slices(...)
         """
         if not self.parent_stream_configs:
             yield from []

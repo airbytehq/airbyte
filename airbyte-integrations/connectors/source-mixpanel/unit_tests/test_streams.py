@@ -238,7 +238,9 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnel_ids_resp
         "funnel_id": 36152117,
         "name": "test"
     }
-
+    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0])
+    records = list(records)
+    assert len(records) == 2
 
 @pytest.fixture
 def engage_schema_response():
@@ -258,10 +260,7 @@ def engage_schema_response():
 
 
 def test_engage_schema(requests_mock, engage_schema_response, config_raw, config):
-    #stream = Engage(authenticator=MagicMock(), **config)
-
     stream = init_stream('engage', config=config_raw)
-
     requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
     assert stream.get_json_schema() == {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -356,10 +355,8 @@ def revenue_response():
     )
 def test_revenue_stream(requests_mock, revenue_response, config_raw):
 
-    # stream = Revenue(authenticator=MagicMock(), **config)
     stream = init_stream('revenue', config=config_raw)
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", revenue_response)
-    # requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
     stream_slice = StreamSlice(partition={}, cursor_slice= {
         "start_time": "2021-01-25",
         "end_time": "2021-07-25"
