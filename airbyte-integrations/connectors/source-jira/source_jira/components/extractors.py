@@ -2,9 +2,8 @@
 
 from typing import Any, List, Mapping, Union
 
-import requests
-
 import dpath.util
+import requests
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from requests_cache import Response
@@ -56,6 +55,7 @@ class UnionListsRecordExtractor(DpathExtractor):
         -> {"key 1": [{}, {}, ...], "key 2": [{}, {}, ...], "key n": [{}, {}, ...], ...}
         <- [{}, {}, ..., {}, {}, ..., {}, {}, ...,]
     """
+
     field_path: Union[InterpolatedString, str]
 
     def __post_init__(self, parameters: Mapping[str, Any]):

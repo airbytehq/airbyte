@@ -437,7 +437,14 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     name: users
     primary_key: "accountId"
-    retriever: "#/definitions/retriever_no_pagination_use_cache"
+    retriever:
+      $ref: "#/definitions/retriever_no_pagination_use_cache"
+      paginator:
+        $ref: "#/definitions/paginator"
+        pagination_strategy:
+          class_name: "source_jira.components.paginators.UrlPaginationStrategy"
+          cursor_field_name: "startAt"
+          page_size: 50
     $parameters:
       path: "users/search"
       extract_field: "*"
@@ -667,7 +674,7 @@ definitions:
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/remotelink"
       extract_field: "*"
-  
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
   issue_transitions_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -693,7 +700,7 @@ definitions:
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/transitions"
       extract_field: "transitions"
-  
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
   issue_votes_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -814,7 +821,7 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_key }}/component"
       extract_field: "values"
-  
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
   project_email_stream:
     # TODO: add error handler
@@ -894,7 +901,7 @@ definitions:
     $parameters:
       path: "project/{{ stream_slice.project_key }}/version"
       extract_field: "values"
-  
+
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
   screen_tabs_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -987,6 +994,35 @@ definitions:
     $parameters:
       path: "board/{{ stream_slice.board_id }}/sprint"
       extract_field: "values"
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
+  users_groups_detailed_stream:
+    $ref: "#/definitions/full_refresh_stream"
+    name: users_groups_detailed
+    primary_key: "accountId"
+    retriever:
+      $ref: "#/definitions/retriever_no_pagination"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/users_stream"
+            parent_key: "accountId"
+            partition_field: "user_account_id"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          accountId: "{{ stream_slice.user_account_id }}"
+          expand: "groups,applicationRoles"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: CustomRecordExtractor
+          class_name: "source_jira.components.extractors.SingleRecordExtractor"
+          field_path: ["*"]
+    $parameters:
+      path: "user"
+      extract_field: "*"
 
   # Incremental Streams
 
@@ -1213,7 +1249,8 @@ streams:
   # - "#/definitions/project_versions_stream"
   # - "#/definitions/screen_tabs_stream"
   # - "#/definitions/screen_tab_fields_stream"
-  - "#/definitions/sprints_stream"
+  # - "#/definitions/sprints_stream"
+  - "#/definitions/users_groups_detailed_stream"
 
   # Incremental streams
 
@@ -1273,10 +1310,11 @@ check:
     # - project_permission_schemes
     # - project_versions
     # - screen_tabs
-    # - screen_tab_fields_stream
-    - sprints_stream
+    # - screen_tab_fields
+    # - sprints
+    - users_groups_detailed
 
     # - board_issues
     # - issues
     # - issue_comments
-    # - issue_worklogs_stream
+    # - issue_worklogs

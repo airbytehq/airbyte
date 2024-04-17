@@ -478,6 +478,16 @@
     },
     {
       "stream": {
+        "name": "users_groups_detailed",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["accountId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "board_issues",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
