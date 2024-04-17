@@ -28,6 +28,7 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
     api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    api 'com.fasterxml.jackson.module:jackson-module-kotlin'
     api 'com.google.guava:guava:33.0.0-jre'
     api 'commons-io:commons-io:2.15.1'
     api ('io.airbyte.airbyte-protocol:protocol-models:0.7.0') { exclude group: 'com.google.api-client', module: 'google-api-client' }
