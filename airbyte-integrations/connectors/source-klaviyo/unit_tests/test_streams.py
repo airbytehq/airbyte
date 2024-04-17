@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.source import SourceKlaviyo
-from source_klaviyo.streams import ArchivedRecordsStream, Campaigns, IncrementalKlaviyoStream, KlaviyoStream
+from source_klaviyo.streams import ArchivedRecordsStream, Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
 
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
@@ -443,6 +443,58 @@ class TestCampaignsStream:
         assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
 
 
+class TestCampaignsDetailedStream:
+    def test_set_recipient_count(self, requests_mock):
+        stream = CampaignsDetailed(api_key=API_KEY)
+        campaign_id = "1"
+        record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
+        estimated_recipient_count = 5
+
+        requests_mock.register_uri(
+            "GET",
+            f"https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}",
+            status_code=200,
+            json={"data": {"attributes": {"estimated_recipient_count": estimated_recipient_count}}},
+        )
+        stream._set_recipient_count(record)
+        assert record["estimated_recipient_count"] == estimated_recipient_count
+
+    def test_set_recipient_count_not_found(self, requests_mock):
+        stream = CampaignsDetailed(api_key=API_KEY)
+        campaign_id = "1"
+        record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
+
+        requests_mock.register_uri(
+            "GET",
+            f"https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}",
+            status_code=404,
+            json={},
+        )
+        stream._set_recipient_count(record)
+        assert record["estimated_recipient_count"] == 0
+
+    def test_set_campaign_message(self, requests_mock):
+        stream = CampaignsDetailed(api_key=API_KEY)
+        message_id = "1"
+        record = {"id": "123123", "attributes": {"name": "Campaign", "message": message_id}}
+        campaign_message_data = {"type": "campaign-message", "id": message_id}
+
+        requests_mock.register_uri(
+            "GET",
+            f"https://a.klaviyo.com/api/campaign-messages/{message_id}",
+            status_code=200,
+            json={"data": campaign_message_data},
+        )
+        stream._set_campaign_message(record)
+        assert record["campaign_message"] == campaign_message_data
+
+    def test_set_campaign_message_no_message_id(self):
+        stream = CampaignsDetailed(api_key=API_KEY)
+        record = {"id": "123123", "attributes": {"name": "Campaign"}}
+        stream._set_campaign_message(record)
+        assert "campaign_message" not in record
+
+
 class TestArchivedRecordsStream:
     @pytest.mark.parametrize(
         "stream_state, next_page_token, expected_params",
@@ -482,7 +534,8 @@ class TestArchivedRecordsStream:
         ],
     )
     def test_request_params(self, stream_state, next_page_token, expected_params):
-        archived_stream = ArchivedRecordsStream(api_key="API_KEY", cursor_field="updated_at", path="path")
+        base_stream = Campaigns(api_key="API_KEY")
+        archived_stream = ArchivedRecordsStream(base_stream)
         assert archived_stream.request_params(
             stream_state=stream_state, next_page_token=next_page_token
         ) == expected_params

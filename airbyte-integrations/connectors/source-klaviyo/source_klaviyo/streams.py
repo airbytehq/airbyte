@@ -165,26 +165,20 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
 
 
 class ArchivedRecordsStream(IncrementalKlaviyoStream):
-    def __init__(
-        self,
-        path: str,
-        cursor_field: str,
-        start_date: Optional[str] = None,
-        api_revision: Optional[str] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(start_date=start_date, **kwargs)
-        self._path = path
-        self._cursor_field = cursor_field
-        if api_revision:
-            self.api_revision = api_revision
+    def __init__(self, base_stream: KlaviyoStream) -> None:
+        super().__init__(api_key=base_stream._api_key, start_date=base_stream._start_ts)
+        self.api_revision = base_stream.api_revision
+        self._base_stream = base_stream
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return self._cursor_field
+        return self._base_stream.cursor_field
 
-    def path(self, **kwargs) -> str:
-        return self._path
+    def path(self, **kwargs: Mapping[str, Any]) -> str:
+        return self._base_stream.path(**kwargs)
+
+    def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        yield from self._base_stream.parse_response(response, **kwargs)
 
     def request_params(
         self,
@@ -202,12 +196,12 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
         return params
 
 
-class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
+class StreamWithArchivedRecords(IncrementalKlaviyoStream, ABC):
     """A mixin class which should be used when archived records need to be read"""
 
     @property
     def archived_stream(self) -> ArchivedRecordsStream:
-        return ArchivedRecordsStream(self.path(), self.cursor_field, self._start_ts, self.api_revision, api_key=self._api_key)
+        return ArchivedRecordsStream(self)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -235,7 +229,7 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
         yield from self.archived_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
-class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):
+class Campaigns(StreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns"""
 
     cursor_field = "updated_at"
@@ -245,7 +239,40 @@ class Campaigns(ArchivedRecordsMixin, IncrementalKlaviyoStream):
         return "campaigns"
 
 
-class Flows(ArchivedRecordsMixin, IncrementalKlaviyoStream):
+class CampaignsDetailed(Campaigns):
+    raise_on_http_errors = False
+
+    def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        for record in super().parse_response(response, **kwargs):
+            yield self._transform_record(record)
+
+    def _transform_record(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        self._set_recipient_count(record)
+        self._set_campaign_message(record)
+        return record
+
+    def _set_recipient_count(self, record: Mapping[str, Any]) -> None:
+        campaign_id = record["id"]
+        recipient_count_request = self._create_prepared_request(
+            path=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+            headers=self.request_headers(),
+        )
+        recipient_count_response = self._send_request(recipient_count_request, {})
+        record["estimated_recipient_count"] = (
+            recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
+        )
+
+    def _set_campaign_message(self, record: Mapping[str, Any]) -> None:
+        message_id = record.get("attributes", {}).get("message")
+        if message_id:
+            campaign_message_request = self._create_prepared_request(
+                path=f"{self.url_base}campaign-messages/{message_id}", headers=self.request_headers()
+            )
+            campaign_message_response = self._send_request(campaign_message_request, {})
+            record["campaign_message"] = campaign_message_response.json().get("data")
+
+
+class Flows(StreamWithArchivedRecords):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""
 
     cursor_field = "updated"
