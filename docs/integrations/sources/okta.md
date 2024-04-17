@@ -79,6 +79,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.18 | 2024-04-15 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.17 | 2024-04-12 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | schema descriptions |
 | 0.1.16  | 2023-07-07 | [20833](https://github.com/airbytehq/airbyte/pull/20833) | Fix infinite loop for GroupMembers stream                                      |
 | 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                                                     |

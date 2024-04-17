@@ -36,6 +36,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37229](https://github.com/airbytehq/airbyte/pull/37229) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37229](https://github.com/airbytehq/airbyte/pull/37229) | schema descriptions |
 | 0.2.0   | 2023-10-02 | [30969](https://github.com/airbytehq/airbyte/pull/30969)   | Migrated to Low code
 | 0.1.5   | 2022-05-18 | [12942](https://github.com/airbytehq/airbyte/pull/12942) | Fix example inputs                              |

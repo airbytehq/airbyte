@@ -60,6 +60,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------|
+| 0.1.5 | 2024-04-15 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.4 | 2024-04-12 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | schema descriptions |
 | 0.1.3   | 2023-03-21 | [24247](https://github.com/airbytehq/airbyte/pull/24247) | Specified date formatting in specification                     |
 | 0.1.2   | 2023-03-15 | [24085](https://github.com/airbytehq/airbyte/pull/24085) | Set additionalProperties: true, add TypeTransformer to Refunds |

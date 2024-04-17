@@ -50,6 +50,7 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.2 | 2024-04-15 | [37141](https://github.com/airbytehq/airbyte/pull/37141) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37141](https://github.com/airbytehq/airbyte/pull/37141) | schema descriptions |
 | 0.2.0  | 2023-08-24 | [29384](https://github.com/airbytehq/airbyte/pull/29384) | Migrate to low code |
 | 0.1.1  | 2023-08-23 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Fix schemas |

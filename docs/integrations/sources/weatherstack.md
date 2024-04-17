@@ -35,6 +35,7 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2024-04-15 | [37286](https://github.com/airbytehq/airbyte/pull/37286) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37286](https://github.com/airbytehq/airbyte/pull/37286) | schema descriptions |
 | 0.1.0 | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
 

@@ -29,5 +29,6 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.2 | 2024-04-15 | [37200](https://github.com/airbytehq/airbyte/pull/37200) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37200](https://github.com/airbytehq/airbyte/pull/37200) | schema descriptions |
 | 0.1.0   | 2022-11-08 | [18745](https://github.com/airbytehq/airbyte/pull/18745) | 🎉 New Source: N8n [low-code cdk] |

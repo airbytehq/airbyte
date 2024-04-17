@@ -68,6 +68,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------|
+| 0.2.3 | 2024-04-15 | [37170](https://github.com/airbytehq/airbyte/pull/37170) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.2 | 2024-04-12 | [37170](https://github.com/airbytehq/airbyte/pull/37170) | schema descriptions |
 | 0.2.1   | 2023-05-30 | [27236](https://github.com/airbytehq/airbyte/pull/27236) | Autoformat code                                              |
 | 0.2.0   | 2023-05-30 | [26775](https://github.com/airbytehq/airbyte/pull/26775) | Remove `authSpecification` from spec; update stream schemas. |

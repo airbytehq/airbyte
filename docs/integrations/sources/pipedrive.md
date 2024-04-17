@@ -114,6 +114,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 2.2.4 | 2024-04-15 | [37224](https://github.com/airbytehq/airbyte/pull/37224) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 2.2.3 | 2024-04-12 | [37224](https://github.com/airbytehq/airbyte/pull/37224) | schema descriptions |
 | 2.2.2   | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib                                                        |
 | 2.2.1   | 2023-11-06 | [31147](https://github.com/airbytehq/airbyte/pull/31147) | Bugfix: handle records with a null data field                              |

@@ -50,6 +50,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version  | Date       | Pull Request                                                       | Subject                              |
 | :------- | :--------- | :----------------------------------------------------------------- | :----------------------------------- |
+| 0.2.2 | 2024-04-15 | [37216](https://github.com/airbytehq/airbyte/pull/37216) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37216](https://github.com/airbytehq/airbyte/pull/37216) | schema descriptions |
 | 0.2.0    | 2023-10-20 | [31160](https://github.com/airbytehq/airbyte/pull/31160)           | Migrate to low code                  |
 | 0.1.23   | 2021-11-12 | [125](https://github.com/faros-ai/airbyte-connectors/pull/125)     | Add Pagerduty source and destination |

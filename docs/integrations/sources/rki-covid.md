@@ -53,6 +53,7 @@ Select start date
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2024-04-15 | [37250](https://github.com/airbytehq/airbyte/pull/37250) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.3 | 2024-04-12 | [37250](https://github.com/airbytehq/airbyte/pull/37250) | schema descriptions |
 | 0.1.2 | 2022-08-25 | [15667](https://github.com/airbytehq/airbyte/pull/15667) | Add message when no data available |
 | 0.1.1 | 2022-05-30 | [11732](https://github.com/airbytehq/airbyte/pull/11732) | Fix docs |

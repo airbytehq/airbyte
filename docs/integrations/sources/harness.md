@@ -49,6 +49,7 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 | Version    | Date       | Pull Request                                                        | Subject                                               |
 | :--------- | :--------- | :------------------------------------------------------------------ | :---------------------------------------------------- |
+| 0.1.2 | 2024-04-15 | [37174](https://github.com/airbytehq/airbyte/pull/37174) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37174](https://github.com/airbytehq/airbyte/pull/37174) | schema descriptions |
 | 0.1.0      | 2023-10-10 | [31103](https://github.com/airbytehq/airbyte/pull/31103) | Migrate to low code                                   |
 | 0.1.23     | 2021-11-16 | [153](https://github.com/faros-ai/airbyte-connectors/pull/153)      | Add Harness source and Faros destination's converter  |

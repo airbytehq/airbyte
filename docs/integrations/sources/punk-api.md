@@ -61,5 +61,6 @@ Punk API's [API reference](https://punkapi.com/documentation/v2) has v2 at prese
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.2 | 2024-04-15 | [37236](https://github.com/airbytehq/airbyte/pull/37236) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37236](https://github.com/airbytehq/airbyte/pull/37236) | schema descriptions |
 | 0.1.0   | 2022-10-31 | [Init](https://github.com/airbytehq/airbyte/pull/<yet>)| Initial commit |

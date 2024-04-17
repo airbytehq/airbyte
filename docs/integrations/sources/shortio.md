@@ -41,6 +41,7 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.2.2 | 2024-04-15 | [37259](https://github.com/airbytehq/airbyte/pull/37259) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37259](https://github.com/airbytehq/airbyte/pull/37259) | schema descriptions |
 |  0.2.0  | 2023-08-02 | [28950](https://github.com/airbytehq/airbyte/pull/28950) | Migrate to Low-Code CDK                                            |
 |  0.1.3  | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString`                                   |

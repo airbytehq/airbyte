@@ -32,6 +32,7 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.3.2 | 2024-04-15 | [37166](https://github.com/airbytehq/airbyte/pull/37166) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37166](https://github.com/airbytehq/airbyte/pull/37166) | schema descriptions |
 | 0.3.0   | 2023-10-05 | [#31099](https://github.com/airbytehq/airbyte/pull/31099) | Added customer_usage and wallet stream           |
 | 0.2.0   | 2023-09-19 | [#30572](https://github.com/airbytehq/airbyte/pull/30572) | Source GetLago: Support API URL           |

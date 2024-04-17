@@ -51,6 +51,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                             |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------|
+| 0.3.2 | 2024-04-15 | [37153](https://github.com/airbytehq/airbyte/pull/37153) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37153](https://github.com/airbytehq/airbyte/pull/37153) | schema descriptions |
 | 0.3.0   | 2023-08-05 | [29121](https://github.com/airbytehq/airbyte/pull/29121) | Migrate Python CDK to Low Code CDK                                  |
 | 0.2.7   | 2023-06-09 | [27202](https://github.com/airbytehq/airbyte/pull/27202) | Remove authSpecification in favour of advancedAuth in specification |

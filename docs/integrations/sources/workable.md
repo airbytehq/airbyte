@@ -51,6 +51,7 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.2 | 2024-04-15 | [37290](https://github.com/airbytehq/airbyte/pull/37290) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37290](https://github.com/airbytehq/airbyte/pull/37290) | schema descriptions |
 | 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033)   | New Source: Workable                                |
 
