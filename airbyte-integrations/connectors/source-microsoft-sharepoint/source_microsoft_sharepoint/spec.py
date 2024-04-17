@@ -23,7 +23,7 @@ class OAuthCredentials(BaseModel):
     auth_type: Literal["Client"] = Field("Client", const=True)
     grant_type: str = Field(
         title="OAuth Type",
-        description="Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
+        description="Determines the OAuth grant type for authentication. 'authorization_code' allows access via refresh tokens. 'client_credentials' uses only the client ID and secret for authentication.",
         default="authorization_code",
         enum=["authorization_code", "client_credentials"],
     )
