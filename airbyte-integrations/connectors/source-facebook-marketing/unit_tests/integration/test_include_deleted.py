@@ -92,7 +92,7 @@ class TestIncludeDeleted(TestCase):
         assert len(output.records) == 1
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
-        assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2023-03-21T22:41:46-0700"}
+        assert account_state == {"filter_statuses": self.statuses, "updated_time": "2023-03-21T22:41:46-0700"}
 
     @HttpMocker()
     def test_campaigns_stream(self, http_mocker: HttpMocker):
@@ -142,7 +142,7 @@ class TestIncludeDeleted(TestCase):
 
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
-        assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2024-03-12T15:02:47-0700"}
+        assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-12T15:02:47-0700"}
 
     @HttpMocker()
     def test_ad_sets_stream(self, http_mocker: HttpMocker):
@@ -186,4 +186,4 @@ class TestIncludeDeleted(TestCase):
 
         account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
-        assert account_state == {"filter_statuses": ["ACTIVE", "ARCHIVED"], "updated_time": "2024-03-02T15:02:47-0700"}
+        assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-02T15:02:47-0700"}
