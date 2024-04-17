@@ -1,14 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import base64
-from dataclasses import InitVar, dataclass
 import time
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import dpath.util
 import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
@@ -18,7 +16,6 @@ from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 
 from .source import SourceMixpanel
 from .streams.engage import EngageSchema
@@ -27,9 +24,6 @@ from .streams.engage import EngageSchema
 class MixpanelHttpRequester(HttpRequester):
     reqs_per_hour_limit = 60
     is_first_request = True
-
-    # def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-    #     super().__post_init__(parameters)
 
     def get_url_base(self) -> str:
         """

@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Iterable, Mapping
 
 import requests
 
-from .base import IncrementalMixpanelStream, MixpanelStream
+from .base import MixpanelStream
 
 
 class EngageSchema(MixpanelStream):

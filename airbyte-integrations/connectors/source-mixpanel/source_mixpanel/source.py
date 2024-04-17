@@ -4,7 +4,7 @@
 
 import base64
 import copy
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import FailureType

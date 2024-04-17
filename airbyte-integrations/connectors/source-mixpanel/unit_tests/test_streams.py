@@ -180,44 +180,6 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
     # assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
-# def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config_raw):
-#     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
-#     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
-#
-#     # stream = CohortMembers(authenticator=MagicMock(), **config)
-#     stream = init_stream('cohort_members', config=config_raw)
-#
-#     stream_state = {"created": "2008-12-12T11:20:47"}
-#     records = stream.read_records(
-#         sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
-#     )
-#
-#     records = [item for item in records]
-#     assert len(records) == 1
-#     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
-
-#
-# @pytest.fixture
-# def funnels_list_response():
-#     return setup_response(200, [{"funnel_id": 1, "name": "Signup funnel"}])
-#
-#
-# def test_funnels_list_stream(requests_mock, config, funnels_list_response):
-#     stream = FunnelsList(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_list_response)
-#
-#     records = stream.read_records(sync_mode=SyncMode.full_refresh)
-#
-#     records_length = sum(1 for _ in records)
-#     assert records_length == 1
-#
-#
-# @pytest.fixture
-# def funnels_list_url(config):
-#     funnel_list = FunnelsList(authenticator=MagicMock(), **config)
-#     return get_url_to_mock(funnel_list)
-#
-
 @pytest.fixture
 def funnels_response(start_date):
     first_date = start_date + timedelta(days=1)
@@ -275,43 +237,8 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnel_ids_resp
     } == {
         "funnel_id": 36152117,
         "name": "test"
-        }
+    }
 
-
-# def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_url):
-#     stream = Funnels(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", funnels_list_url, funnels_list_response)
-#     requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_response)
-#
-#     stream_slices = stream.stream_slices(sync_mode=SyncMode.incremental)
-#
-#     records_arr = []
-#     for stream_slice in stream_slices:
-#         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
-#         for record in records:
-#             records_arr.append(record)
-#
-#     assert len(records_arr) == 4
-#     last_record = records_arr[-1]
-#     # Test without current state date
-#     new_state = stream.get_updated_state(current_stream_state={}, latest_record=records_arr[-1])
-#     assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
-#
-#     # Test with current state, that lesser than last record date
-#     last_record_date = pendulum.parse(last_record["date"]).date()
-#     new_state = stream.get_updated_state(
-#         current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date - timedelta(days=1))}},
-#         latest_record=records_arr[-1],
-#     )
-#     assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
-#
-#     # Test with current state, that is greater, than last record date
-#     new_state = stream.get_updated_state(
-#         current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}},
-#         latest_record=records_arr[-1],
-#     )
-#     assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
-#
 
 @pytest.fixture
 def engage_schema_response():
@@ -389,7 +316,7 @@ def annotations_response():
     return setup_response(
         200,
         {
-            "annotations": [
+            "results": [
                 {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
                 {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
             ]
@@ -397,51 +324,51 @@ def annotations_response():
     )
 
 
-# def test_annotations_stream(requests_mock, annotations_response, config_raw):
-#     stream = init_stream('annotations', config=config_raw)
-#     # stream = Annotations(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/app/projects/annotations", annotations_response)
-#
-#     stream_slice = StreamSlice(partition={}, cursor_slice= {
-#         "start_date": "2017-01-25T00:00:00Z",
-#         "end_date": "2017-02-25T00:00:00Z"
-#     })
-#
-#     # read records for single slice
-#     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-#     records = list(records)
-#     records_length = sum(1 for _ in records)
-#     assert records_length == 2
+def test_annotations_stream(requests_mock, annotations_response, config_raw):
+    stream = init_stream('annotations', config=config_raw)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/app/projects/annotations", annotations_response)
 
-#
-# @pytest.fixture
-# def revenue_response():
-#     return setup_response(
-#         200,
-#         {
-#             "computed_at": "2021-07-03T12:43:48.889421+00:00",
-#             "results": {
-#                 "$overall": {"amount": 0.0, "count": 124, "paid_count": 0},
-#                 "2021-06-01": {"amount": 0.0, "count": 124, "paid_count": 0},
-#                 "2021-06-02": {"amount": 0.0, "count": 124, "paid_count": 0},
-#             },
-#             "session_id": "162...",
-#             "status": "ok",
-#         },
-#     )
-#
-#
-# def test_revenue_stream(requests_mock, revenue_response, config):
-#
-#     stream = Revenue(authenticator=MagicMock(), **config)
-#     requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
-#
-#     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-#     # read records for single slice
-#     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
-#
-#     records_length = sum(1 for _ in records)
-#     assert records_length == 2
+    stream_slice = StreamSlice(partition={}, cursor_slice= {
+        "start_time": "2021-01-25",
+        "end_time": "2021-07-25"
+    })
+    # read records for single slice
+    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+    records = list(records)
+    records_length = sum(1 for _ in records)
+    assert records_length == 2
+
+
+@pytest.fixture
+def revenue_response():
+    return setup_response(
+        200,
+        {
+            "computed_at": "2021-07-03T12:43:48.889421+00:00",
+            "results": {
+                "$overall": {"amount": 0.0, "count": 124, "paid_count": 0},
+                "2021-06-01": {"amount": 0.0, "count": 124, "paid_count": 0},
+                "2021-06-02": {"amount": 0.0, "count": 124, "paid_count": 0},
+            },
+            "session_id": "162...",
+            "status": "ok",
+        },
+    )
+def test_revenue_stream(requests_mock, revenue_response, config_raw):
+
+    # stream = Revenue(authenticator=MagicMock(), **config)
+    stream = init_stream('revenue', config=config_raw)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", revenue_response)
+    # requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
+    stream_slice = StreamSlice(partition={}, cursor_slice= {
+        "start_time": "2021-01-25",
+        "end_time": "2021-07-25"
+    })
+    # read records for single slice
+    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+    records = list(records)
+
+    assert len(records) == 2
 
 
 @pytest.fixture
@@ -551,39 +478,3 @@ def test_export_iter_dicts(config):
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
     # drop record parts because they are not standing nearby
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
-
-#
-# @pytest.mark.parametrize(
-#     ("http_status_code", "should_retry", "log_message"),
-#     [
-#         (402, False, "Unable to perform a request. Payment Required: "),
-#     ],
-# )
-# def test_should_retry_payment_required(http_status_code, should_retry, log_message, config, caplog):
-#     response_mock = MagicMock()
-#     response_mock.status_code = http_status_code
-#     response_mock.json = MagicMock(return_value={"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"})
-#     streams = [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]
-#     for stream_class in streams:
-#         stream = stream_class(authenticator=MagicMock(), **config)
-#         assert stream.should_retry(response_mock) == should_retry
-#         assert log_message in caplog.text
-
-#
-# def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
-#     streams = []
-#     for cls in [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]:
-#         stream = cls(authenticator=MagicMock(), **config)
-#         requests_mock.register_uri(stream.http_method, get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-#         streams.append(stream)
-#
-#     for stream in streams:
-#         records = []
-#         with pytest.raises(AirbyteTracedException) as e:
-#             for slice_ in stream.stream_slices(sync_mode="full_refresh"):
-#                 records.extend(stream.read_records("full_refresh", stream_slice=slice_))
-#         assert records == []
-#         assert (
-#             str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. "
-#             "See more details: Unable to authenticate request"
-#         )
