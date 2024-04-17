@@ -264,6 +264,45 @@ definitions:
             - path:
               - visit_route
               value: '{{ record.attributes.visit_route }}'
+    visit_routes:
+      type: DeclarativeStream
+      name: visit_routes
+      primary_key:
+        - visit_id
+        - page_url
+      retriever:
+        $ref: '#/definitions/streams/visits/retriever'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_dealfront.components.UnnestingDpathExtractor
+            field_path:
+              - data
+            unnest_extractor:
+              type: CustomRecordExtractor
+              class_name: source_dealfront.components.UnnestingDpathExtractor
+              field_path:
+                - attributes
+                - visit_route
+      incremental_sync:
+        $ref: '#/definitions/streams/visits/incremental_sync'
+        cursor_field: visit_date
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - visit_id
+              value: '{{ record.id }}'
+            - path:
+                - visit_date
+              value: '{{ record.attributes.date }}'
+        - type: RemoveFields
+          field_pointers:
+            - [id]
+            - [type]
+            - [attributes]
+            - [relationships]
   base_requester:
     type: HttpRequester
     url_base: https://api.leadfeeder.com
@@ -279,6 +318,7 @@ streams:
   - $ref: '#/definitions/streams/accounts'
   - $ref: '#/definitions/streams/leads'
   - $ref: '#/definitions/streams/visits'
+  - $ref: '#/definitions/streams/visit_routes'
 
 spec:
   type: Spec
@@ -319,3 +359,4 @@ metadata:
     accounts: true
     leads: true
     visits: true
+    visit_routes: true

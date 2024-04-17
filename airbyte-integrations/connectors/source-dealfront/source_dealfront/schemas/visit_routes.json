@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "visit_id": {
+      "type": "string"
+    },
+    "visit_date": {
+      "type": "string"
+    },
+    "display_page_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hostname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_page_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_on_page": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "visit_id",
+    "page_url",
+    "visit_date"
+  ],
+  "type": "object"
+}

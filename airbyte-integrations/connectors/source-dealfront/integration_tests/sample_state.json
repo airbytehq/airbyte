@@ -24,5 +24,18 @@
         }
       }
     ]
+  },
+  "visit_routes": {
+    "states": [
+      {
+        "cursor": {
+          "visit_date": "2024-04-14"
+        },
+        "partition": {
+          "account_id": "222886",
+          "parent_slice": {}
+        }
+      }
+    ]
   }
 }
