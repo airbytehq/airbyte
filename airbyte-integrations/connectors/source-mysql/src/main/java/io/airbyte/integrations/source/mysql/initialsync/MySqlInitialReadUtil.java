@@ -40,7 +40,6 @@ import io.airbyte.integrations.source.mysql.cdc.MySqlCdcStateHandler;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
@@ -117,8 +116,8 @@ public class MySqlInitialReadUtil {
 
     final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
 
-    final MySqlInitialLoadSourceOperations sourceOperations =
-        new MySqlInitialLoadSourceOperations(
+    final MySqlSourceOperations sourceOperations =
+        new MySqlSourceOperations(
             Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
     return new MySqlInitialLoadHandler(sourceConfig, database,
         sourceOperations,
@@ -148,8 +147,8 @@ public class MySqlInitialReadUtil {
   }
 
   public static boolean isSavedOffsetStillPresentOnServer(final JdbcDatabase database,
-                                                           final ConfiguredAirbyteCatalog catalog,
-                                                           final StateManager stateManager) {
+                                                          final ConfiguredAirbyteCatalog catalog,
+                                                          final StateManager stateManager) {
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
     final JsonNode sourceConfig = database.getSourceConfig();
     final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
@@ -178,10 +177,10 @@ public class MySqlInitialReadUtil {
   }
 
   public static MySqlInitialLoadGlobalStateManager getMySqlInitialLoadGlobalStateManager(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final StateManager stateManager,
-      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-      final String quoteString) {
+                                                                                         final ConfiguredAirbyteCatalog catalog,
+                                                                                         final StateManager stateManager,
+                                                                                         final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                                         final String quoteString) {
     final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
@@ -267,7 +266,6 @@ public class MySqlInitialReadUtil {
    */
   public static InitialLoadStreams cdcStreamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog,
-                                                                      final SyncMode allowedSyncMode,
                                                                       final boolean savedOffsetStillPresentOnServer) {
 
     if (!savedOffsetStillPresentOnServer) {
@@ -275,7 +273,6 @@ public class MySqlInitialReadUtil {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
-              .filter(c -> c.getSyncMode().equals(allowedSyncMode))
               .collect(Collectors.toList()),
           new HashMap<>());
     }
@@ -367,7 +364,7 @@ public class MySqlInitialReadUtil {
         .forEach(streamsForPkSync::add);
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
-        Collections.unmodifiableSet(alreadySeenStreamPairs), SyncMode.INCREMENTAL);
+        Collections.unmodifiableSet(alreadySeenStreamPairs));
     streamsForPkSync.addAll(newlyAddedStreams);
     return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()),
         pairToInitialLoadStatus);
@@ -444,7 +441,6 @@ public class MySqlInitialReadUtil {
                                                   final ConfiguredAirbyteStream stream,
                                                   final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                   final String quoteString) {
-    final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     final String fullyQualifiedTableName =
         DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable

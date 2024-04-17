@@ -192,11 +192,12 @@ protected constructor(driverClassName: String) :
 
     // Optional - perform any initialization logic before read. For example, source connector
     // can choose to load up state manager here.
-    protected open fun initializeForStateManager(database: Database,
-                                                 catalog: ConfiguredAirbyteCatalog,
-                                                 tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
-                                                 stateManager: StateManager) {
-    }
+    protected open fun initializeForStateManager(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        stateManager: StateManager
+    ) {}
 
     @Throws(SQLException::class)
     protected fun validateCursorFieldForIncrementalTables(
