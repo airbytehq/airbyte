@@ -13,12 +13,11 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assert
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.cdcStreamsForInitialPrimaryKeyLoad;
+import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
+import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.convertNameNamespacePairFromV0;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlFullRefreshInitialLoadHandler;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlInitialLoadGlobalStateManager;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlInitialLoadHandler;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyInfoMap;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.isSavedOffsetStillPresentOnServer;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.streamsForInitialPrimaryKeyLoad;
 import static java.util.stream.Collectors.toList;
 
@@ -29,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
-import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -57,9 +55,15 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
+import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
+import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
@@ -335,7 +339,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                     .identity()));
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
-    
+
     initializeForStateManager(database, catalog, fullyQualifiedTableNameToInfo, stateManager);
 
     DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
@@ -454,7 +458,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using PK + CDC");
-      return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, initialLoadStateManager, emittedAt, getQuoteString());
+      return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
         LOGGER.info("Syncing via Primary Key");

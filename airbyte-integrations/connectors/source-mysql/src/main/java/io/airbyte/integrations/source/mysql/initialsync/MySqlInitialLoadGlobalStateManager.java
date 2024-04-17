@@ -138,7 +138,7 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     return pairToPrimaryKeyInfo.get(pair);
   }
 
-  protected AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());

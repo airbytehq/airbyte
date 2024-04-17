@@ -31,6 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
+import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
@@ -266,6 +267,7 @@ public class MySqlInitialReadUtil {
    */
   public static InitialLoadStreams cdcStreamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog,
+                                                                      final SyncMode allowedSyncMode,
                                                                       final boolean savedOffsetStillPresentOnServer) {
 
     if (!savedOffsetStillPresentOnServer) {
@@ -273,6 +275,7 @@ public class MySqlInitialReadUtil {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
+              .filter(c -> c.getSyncMode().equals(allowedSyncMode))
               .collect(Collectors.toList()),
           new HashMap<>());
     }
@@ -364,7 +367,7 @@ public class MySqlInitialReadUtil {
         .forEach(streamsForPkSync::add);
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
-        Collections.unmodifiableSet(alreadySeenStreamPairs));
+        Collections.unmodifiableSet(alreadySeenStreamPairs), SyncMode.INCREMENTAL);
     streamsForPkSync.addAll(newlyAddedStreams);
     return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()),
         pairToInitialLoadStatus);

@@ -97,7 +97,9 @@ class TestBaseInsightsStream:
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -124,8 +126,11 @@ class TestBaseInsightsStream:
         2. if read slice 2, 3 state not changed
             if read slice 2, 3, 1 state changed to 3
         """
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+
         job = mocker.Mock(spec=AsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -146,6 +151,38 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
+
+    def test_read_records_add_account_id(self, mocker, api, some_config):
+        rec_without_account = mocker.Mock()
+        rec_without_account.export_all_data.return_value = {}
+
+        rec_with_account = mocker.Mock()
+        rec_with_account.export_all_data.return_value = {"account_id": "some_account_id"}
+
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = [rec_without_account, rec_with_account]
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
+
+        assert len(records) == 2
+        for record in records:
+            assert record.get("account_id")
 
     @pytest.mark.parametrize(
         "state,result_state",

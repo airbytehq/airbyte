@@ -34,7 +34,6 @@ object StateManagerFactory {
     ): StateManager {
         if (initialState != null && !initialState.isEmpty()) {
             val airbyteStateMessage = initialState[0]
-            LOGGER.info("state message: {}", airbyteStateMessage)
             when (supportedStateType) {
                 AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                     LOGGER.info(

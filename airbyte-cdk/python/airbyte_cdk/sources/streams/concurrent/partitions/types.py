@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Any, Union
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -20,6 +20,11 @@ class PartitionCompleteSentinel:
         :param partition: The partition that was processed
         """
         self.partition = partition
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, PartitionCompleteSentinel):
+            return self.partition == other.partition
+        return False
 
 
 """
