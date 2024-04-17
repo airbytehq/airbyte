@@ -34,6 +34,7 @@ from airbyte_cdk.sources.declarative.models import DeclarativeStream as Declarat
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models import JwtAuthenticator as JwtAuthenticatorModel
+from airbyte_cdk.sources.declarative.models import Algorithm as JwtAlgorithmModel
 from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
@@ -1930,7 +1931,7 @@ def test_create_custom_schema_loader():
             authenticator:
                 type: JwtAuthenticator
                 secret_key: "{{ config['secret_key'] }}"
-                algorithm: algorithm
+                algorithm: HS256
                 additional_jwt_headers:
                     custom_header: "custom header value"
                 additional_jwt_payload:
@@ -1938,18 +1939,32 @@ def test_create_custom_schema_loader():
             """,
             {
                 "secret_key": "secret_key",
-                "algorithm": "algorithm",
+                "algorithm": "HS256",
                 "base64_encode_secret_key": False,
                 "token_duration": 1200,
                 "jwt_headers": {
                     "typ": "JWT",
-                    "alg": "algorithm",
+                    "alg": "HS256",
                     "custom_header": "custom header value",
 
                 },
                 "jwt_payload": {
                     "custom_payload": "custom payload value",
                 },
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: invalid_algorithm
+            """,
+            {
+                "expect_error": True,
             }
         ),
     ],
@@ -1960,13 +1975,20 @@ def test_create_jwt_authenticator(config, manifest, expected):
 
     authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
 
+    if expected.get("expect_error"):
+        with pytest.raises(ValueError):
+            authenticator = factory.create_component(
+                model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
+            )
+        return
+
     authenticator = factory.create_component(
         model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
     )
 
     assert isinstance(authenticator, JwtAuthenticator)
     assert authenticator._secret_key.eval(config) == expected["secret_key"]
-    assert authenticator._algorithm.eval(config) == expected["algorithm"]
+    assert authenticator._algorithm == expected["algorithm"]
     assert authenticator._base64_encode_secret_key.eval(config) == expected["base64_encode_secret_key"]
     assert authenticator._token_duration == expected["token_duration"]
     if "header_prefix" in expected:
