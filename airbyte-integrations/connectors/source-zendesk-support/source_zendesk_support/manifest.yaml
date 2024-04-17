@@ -120,7 +120,7 @@ definitions:
     page_token_option:
       type: RequestPath
 
-  links_next_paginator_with_paze_size:
+  links_next_paginator_with_page_size:
     $ref: "#/definitions/links_next_paginator"
     page_size_option:
       type: RequestOption
@@ -170,17 +170,13 @@ definitions:
   brands_stream:
     # ToDo: add incremental sync
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     $parameters:
       name: "brands"
       path: "brands"
-      primary_key: "id"
-
-  custom_roles_stream:
-    # The data have updated and created fields but does not support filtering and sorting
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "custom_roles"
-      path: "custom_roles"
       primary_key: "id"
 
   user_fields_stream:
@@ -188,25 +184,6 @@ definitions:
     $parameters:
       name: "user_fields"
       path: "user_fields"
-      primary_key: "id"
-
-  schedules_stream:
-    # The data have updated and created fields but does not support filtering and sorting
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "schedules"
-      path: "business_hours/schedules.json"
-      cursor_field: "updated_at"
-      primary_key: "id"
-
-  sla_policies_stream:
-    # The data have updated and created fields but does not support filtering and sorting
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "sla_policies"
-      path: "slas/policies.json"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   tags_stream:
@@ -249,7 +226,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_paze_size"
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     incremental_sync:
       class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
       type: CustomIncrementalSync
@@ -272,6 +249,25 @@ definitions:
       path: "audit_logs"
       cursor_field: "created_at"
       cursor_filter: "filter[created_at][]"
+      primary_key: "id"
+
+  custom_roles_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "custom_roles"
+      path: "custom_roles"
+      data_path: "custom_roles"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   group_memberships_stream:
@@ -339,7 +335,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
         page_token_option:
           type: RequestPath
     $parameters:
@@ -386,12 +382,46 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     $parameters:
       name: "satisfaction_ratings"
       path: "satisfaction_ratings"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
+      primary_key: "id"
+
+  schedules_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/retriever/paginator"
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+    $parameters:
+      name: "schedules"
+      path: "business_hours/schedules.json"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  sla_policies_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "sla_policies"
+      path: "slas/policies.json"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   ticket_activities_stream:
@@ -473,6 +503,14 @@ definitions:
           type: CustomRecordExtractor
           class_name: source_zendesk_support.components.ZendeskSupportExtractorEvents
           field_path: ["ticket_events", "*", "child_events", "*"]
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "ticket_comments"
       path: "incremental/ticket_events.jsopn"
@@ -485,7 +523,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
@@ -516,7 +554,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     $parameters:
       name: "ticket_metric_events"
       path: "incremental/ticket_metric_events"
@@ -528,8 +566,9 @@ definitions:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/links_next_paginator_with_page_size"
     $parameters:
       name: "ticket_metrics"
       path: "ticket_metrics"
@@ -565,7 +604,7 @@ definitions:
       cursor_datetime_formats:
         - "%s"
       datetime_format: "%s"
-      cursor_field: "{{ parameters.get('generated_timestamp') }}"
+      cursor_field: "{{ parameters.get('cursor_field') }}"
       start_datetime:
         datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
       start_time_option:
