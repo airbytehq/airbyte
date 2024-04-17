@@ -21,6 +21,13 @@ class OAuthCredentials(BaseModel):
 
     # Fields for the OAuth authentication, including tenant_id, client_id, client_secret, and refresh_token
     auth_type: Literal["Client"] = Field("Client", const=True)
+    grant_type: str = Field(
+        title="OAuth Type",
+        description="Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
+        default="authorization_code",
+        enum=["authorization_code", "client_credentials"],
+    )
+
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft SharePoint user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",

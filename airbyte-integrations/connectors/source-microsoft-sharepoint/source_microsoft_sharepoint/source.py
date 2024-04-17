@@ -58,7 +58,10 @@ class SourceMicrosoftSharePoint(FileBasedSource):
                     oauth_user_input_from_connector_config_specification={
                         "type": "object",
                         "additionalProperties": False,
-                        "properties": {"tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]}},
+                        "properties": {
+                            "tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]},
+                            "grant_type": {"type": "string", "path_in_connector_config": ["credentials", "grant_type"]},
+                        },
                     },
                 ),
             ),
