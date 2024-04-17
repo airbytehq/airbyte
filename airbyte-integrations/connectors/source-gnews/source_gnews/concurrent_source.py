@@ -115,6 +115,10 @@ class GenericDateTimeStreamStateConverter(DateTimeStreamStateConverter):
     _GRANULARITY = timedelta(microseconds=1)
     _zero_value = ""  # FIXME this should be removed
 
+    def __init__(self, record_cursor_datetime_format):
+        super().__init__(is_sequential_state=False)
+        self._record_cursor_datetime_format = record_cursor_datetime_format
+
     @property
     def zero_value(self) -> datetime:
         return datetime.min
@@ -126,8 +130,7 @@ class GenericDateTimeStreamStateConverter(DateTimeStreamStateConverter):
         return timestamp.strftime(self._STATE_DATETIME_FORMAT)
 
     def parse_timestamp(self, timestamp: str) -> datetime:
-        # FIXME the _STATE_DATETIME_FORMAT here is the one from the API which might be weird
-        return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        return datetime.strptime(timestamp, self._record_cursor_datetime_format).replace(tzinfo=timezone.utc)
 
 
 _NO_NAMESPACE = None
@@ -148,7 +151,7 @@ search_stream = SearchStream(
         state,
         message_repository,
         ConnectorStateManager(stream_instance_map={_SEARCH_STREAM_NAME: _SEARCH_AIRBYTE_STREAM}, state=state),
-        GenericDateTimeStreamStateConverter(is_sequential_state=False),
+        GenericDateTimeStreamStateConverter("%Y-%m-%dT%H:%M:%SZ"),
         CursorField(_SEARCH_CURSOR_FIELD),
         ("start", "end"),
         _START_DATETIME,
