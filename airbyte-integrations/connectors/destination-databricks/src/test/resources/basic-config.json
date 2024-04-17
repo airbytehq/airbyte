@@ -2,6 +2,7 @@
   "accept_terms": true,
   "hostname": "test_hostname",
   "http_path": "test_http_path",
+  "database": "test",
   "api_authentication": {
     "auth_type": "PERSONAL_ACCESS_TOKEN",
     "token": "deadbeef00001111"

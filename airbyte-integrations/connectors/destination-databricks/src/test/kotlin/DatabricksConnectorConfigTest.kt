@@ -1,10 +1,8 @@
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.airbyte.commons.jackson.MoreMappers
-import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class DatabricksConnectorConfigTest {
@@ -15,9 +13,9 @@ class DatabricksConnectorConfigTest {
         val jsonString = MoreResources.readResource("basic-config.json");
         val objectMapper = MoreMappers.initMapper()
         objectMapper.registerModule(kotlinModule())
-        val deserializedConfig = objectMapper.readValue(jsonString, DatabricksConnectorConfig::class.java)
-//        assertEquals(config, deserializedConfig)
+        val jsonNode = objectMapper.readValue(jsonString, JsonNode::class.java)
+        val typedConfig = DatabricksConnectorConfig.deserialize(jsonNode)
         println(jsonString)
-        println(deserializedConfig)
+        println(typedConfig)
     }
 }

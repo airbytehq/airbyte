@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
+import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.integrations.destination.databricks.staging.DatabricksFlushFunction
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -37,8 +38,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer {
 
-        val defaultNamespace =
-            if (config.has("schema") && config.get("schema").isTextual) Optional.of(config["schema"].asText()) else Optional.empty()
+        val connectorConfig = DatabricksConnectorConfig.deserialize(config)
 
         return AsyncStreamConsumer(
             outputRecordCollector = outputRecordCollector,
@@ -47,7 +47,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             onFlush = DatabricksFlushFunction(128*1024*1024L),
             catalog = catalog,
             bufferManager = BufferManager((Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong()),
-            defaultNamespace = defaultNamespace,
+            defaultNamespace = Optional.of(connectorConfig.schema),
             airbyteMessageDeserializer = AirbyteMessageDeserializer()
         )
     }
