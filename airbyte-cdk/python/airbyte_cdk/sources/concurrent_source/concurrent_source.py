@@ -149,7 +149,7 @@ class ConcurrentSource:
         elif isinstance(queue_item, Record):
             yield from concurrent_stream_processor.on_record(queue_item)
         else:
-            raise ValueError(f"Unknown queue item type: {type(queue_item)}")
+            raise ValueError(f"Unknown queue item type: {type(queue_item)} - {queue_item}")
 
     def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:
         """
