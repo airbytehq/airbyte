@@ -34,6 +34,7 @@ class TestMigrateAccountIdToArray:
     TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_old_config.json")
     NEW_TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_new_config.json")
     UPGRADED_TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_upgraded_config.json")
+    NEW_CONFIG_WITHOUT_ACCOUNT_ID = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_new_config_without_account_id.json")
 
     @staticmethod
     def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
@@ -90,6 +91,14 @@ class TestMigrateAccountIdToArray:
 
     def test_should_not_migrate_upgraded_config(self):
         new_config = load_config(self.UPGRADED_TEST_CONFIG_PATH)
+        migration_instance = MigrateAccountIdToArray()
+        assert not migration_instance.should_migrate(new_config)
+
+    def test_should_not_migrate_config_without_account_id(self):
+        # OC Issue: https://github.com/airbytehq/oncall/issues/4131
+        # Newly created sources will not have the deprecated `account_id` field, and we should not attempt to migrate
+        # because it is already in the new `account_ids` format
+        new_config = load_config(self.NEW_CONFIG_WITHOUT_ACCOUNT_ID)
         migration_instance = MigrateAccountIdToArray()
         assert not migration_instance.should_migrate(new_config)
 
