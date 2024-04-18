@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           authenticator:
@@ -26,9 +26,9 @@ definitions:
           request_parameters:
             Action: ReceiveMessage
             # MessageAttributeNames: '{{ config[''attributes_to_return'']|split('','') }}'
-            QueueUrl: '{{ config[''queue_url''] }}'
-            VisibilityTimeout: '{{ config[''visibility_timeout''] }}'
-            WaitTimeSeconds: '{{ config[''max_wait_time''] }}'
+            QueueUrl: "{{ config['queue_url'] }}"
+            VisibilityTimeout: "{{ config['visibility_timeout'] }}"
+            WaitTimeSeconds: "{{ config['max_wait_time'] }}"
           request_headers:
             Content-Type: application/x-amz-json-1.0
         record_selector:
@@ -45,13 +45,13 @@ definitions:
             field_name: MaxNumberOfMessages
           pagination_strategy:
             type: PageIncrement
-            page_size: '{{ config[''max_batch_size''] }}'
+            page_size: "{{ config['max_batch_size'] }}"
   base_requester:
     type: HttpRequester
-    url_base: 'https://sqs.{{ config[''region''] }}.amazonaws.com'
+    url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
 
 streams:
-  - $ref: '#/definitions/streams/QueueMessages'
+  - $ref: "#/definitions/streams/QueueMessages"
 
 spec:
   type: Spec
@@ -119,20 +119,20 @@ spec:
           read. If Disabled, messages are left in the queue and can be read more
           than once. WARNING: Enabling this option can result in data loss in
           cases of failure, use with caution, see documentation for more
-          detail. 
+          detail.
       max_batch_size:
         type: integer
         order: 3
         title: Max Batch Size
         examples:
-          - '5'
+          - "5"
         description: Max amount of messages to get in one batch (10 max)
       max_wait_time:
         type: integer
         order: 4
         title: Max Wait Time
         examples:
-          - '5'
+          - "5"
         description: >-
           Max amount of time in seconds to wait for messages in a single poll
           (20 max)
@@ -148,7 +148,7 @@ spec:
         order: 6
         title: Message Visibility Timeout
         examples:
-          - '15'
+          - "15"
         description: >-
           Modify the Visibility Timeout of the individual message from the
           Queue's default (seconds).
