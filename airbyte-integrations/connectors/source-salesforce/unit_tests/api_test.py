@@ -2,22 +2,34 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import csv
 import io
 import logging
 import re
-from datetime import datetime
-from unittest.mock import Mock
+from datetime import datetime, timedelta
+from typing import List
+from unittest.mock import Mock, patch
 
 import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
-from requests.exceptions import HTTPError
+from requests.exceptions import ChunkedEncodingError, HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
@@ -25,9 +37,47 @@ from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
+    BulkSalesforceSubStream,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
+
+_A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
+_A_JSON_RESPONSE = {"id": "any id"}
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = {"state": "JobComplete"}
+_A_PK = "a_pk"
+_A_STREAM_NAME = "a_stream_name"
+
+_NUMBER_OF_DOWNLOAD_TRIES = 5
+_FIRST_CALL_FROM_JOB_CREATION = 1
+
+_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CONFIG = {}
+_ANY_STATE = None
+
+
+@pytest.mark.parametrize(
+    "stream_slice_step, expected_error_message",
+    [
+        ("2023", "Stream slice step Interval should be provided in ISO 8601 format."),
+        ("PT0.1S", "Stream slice step Interval is too small. It should be no less than 1 second."),
+        ("PT1D", "Unable to parse string"),
+        ("P221S", "Unable to parse string"),
+    ],
+    ids=[
+        "incorrect_ISO_8601_format",
+        "too_small_duration_provided",
+        "incorrect_date_format",
+        "incorrect_time_format",
+    ],
+)
+def test_stream_slice_step_validation(stream_slice_step: str, expected_error_message):
+    _ANY_CONFIG.update({"stream_slice_step": stream_slice_step})
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    logger = logging.getLogger("airbyte")
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logger, _ANY_CONFIG)
+    assert expected_error_message in e.value.message
 
 
 @pytest.mark.parametrize(
@@ -56,7 +106,7 @@ from source_salesforce.streams import (
 def test_login_authentication_error_handler(
     stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
 ):
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
     requests_mock.register_uri(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
@@ -223,9 +273,7 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
     "start_date_provided,stream_name,expected_start_date",
     [
         (True, "Account", "2010-01-18T21:18:20Z"),
-        (False, "Account", None),
         (True, "ActiveFeatureLicenseMetric", "2010-01-18T21:18:20Z"),
-        (False, "ActiveFeatureLicenseMetric", None),
     ],
 )
 def test_stream_start_date(
@@ -335,7 +383,7 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
 def test_check_connection_rate_limit(
     stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
 ):
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
 
     with requests_mock.Mocker() as m:
@@ -372,10 +420,9 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     stream_1.page_size = 6
     stream_1.state_checkpoint_interval = 5
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = streams
-    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
@@ -399,18 +446,18 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
                 m.register_uri("DELETE", stream.path() + f"/{job_id}")
 
             m.register_uri("POST", stream.path(), creation_responses)
-
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
+        result = read(source=source, config=stream_config, catalog=bulk_catalog, state=state)
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
         ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
-        records = [item for item in result if item.type == Type.RECORD]
+        records = result.records
         assert len(records) == 6  # stream page size: 6
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
+        state_record = result.state_messages[0]
+        assert state_record.state.stream.stream_descriptor == StreamDescriptor(name="Account")
+        assert state_record.state.stream.stream_state == AirbyteStateBlob(LastModifiedDate="2021-10-05T00:00:00+00:00")
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
@@ -426,13 +473,12 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
 
     stream_1.state_checkpoint_interval = 3
+    streams = [stream_1, stream_2]
     configure_request_params_mock(stream_1, stream_2)
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
-    source.streams.return_value = [stream_1, stream_2]
-
-    logger = logging.getLogger("airbyte")
+    source.streams.return_value = streams
 
     next_page_url = "/services/data/v57.0/query/012345"
     response_1 = {
@@ -468,18 +514,19 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         m.register_uri("GET", stream_1.path(), json=response_1, status_code=200)
         m.register_uri("GET", next_page_url, json=response_2, status_code=403)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=rest_catalog, state=state)]
+        result = read(source=source, config=stream_config, catalog=rest_catalog, state=state)
 
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
         ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
-        records = [item for item in result if item.type == Type.RECORD]
+        records = result.records
         assert len(records) == 5
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
+        state_record = result.state_messages[0]
+        assert state_record.state.stream.stream_descriptor == StreamDescriptor(name="KnowledgeArticle")
+        assert state_record.state.stream.stream_state == AirbyteStateBlob(LastModifiedDate="2021-11-17T00:00:00+00:00")
 
 
 def test_pagination_rest(stream_config, stream_api):
@@ -549,6 +596,52 @@ def test_csv_reader_dialect_unix():
         assert result == data
 
 
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_retryable_error_when_download_data_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.iter_content.side_effect = [HTTPError(), _A_CHUNKED_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).download_data(url="any url")
+    assert send_http_request_patch.call_count == 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
+    sf_api = Mock()
+    sf_api.generate_schema.return_value = {}
+    sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
+    job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
+    send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
+    send_http_request_patch.return_value.iter_content.side_effect = HTTPError()
+
+    with pytest.raises(Exception):
+        list(BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=sf_api, pk=_A_PK).read_records(SyncMode.full_refresh))
+
+    assert send_http_request_patch.call_count == (len(job_creation_return_values) + _NUMBER_OF_DOWNLOAD_TRIES) * 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.json.side_effect = [HTTPError(), _A_JSON_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+    assert send_http_request_patch.call_count == 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_fail_with_http_errors_when_create_stream_job_then_handle_error(send_http_request_patch):
+    mocked_response = Mock()
+    mocked_response.status_code = 666
+    send_http_request_patch.return_value.json.side_effect = HTTPError(response=mocked_response)
+
+    with pytest.raises(HTTPError):
+        BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_retryable_error_that_are_not_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.json.side_effect = [ChunkedEncodingError(), _A_JSON_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+    assert send_http_request_patch.call_count == 2
+
+
 @pytest.mark.parametrize(
     "stream_names,catalog_stream_names,",
     (
@@ -613,7 +706,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        source = SourceSalesforce()
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
         source.catalog = catalog
         streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
@@ -621,8 +714,79 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
 
     for stream in streams:
         if stream.name != "Describe":
-            assert stream.sobject_options == {"flag1": True, "queryable": True}
+            if isinstance(stream, StreamFacade):
+                assert stream._legacy_stream.sobject_options == {"flag1": True, "queryable": True}
+            else:
+                assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
+
+
+@pytest.mark.parametrize(
+    "stream_names,catalog_stream_names,",
+    (
+        (
+            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
+        ),
+        (
+            ["stream_1", "stream_2", "stream_3", "Describe"],
+            ["stream_1", "Describe"],
+        ),
+    ),
+)
+def test_full_refresh_streams_are_concurrent(stream_config, stream_names, catalog_stream_names) -> None:
+    for stream in _get_streams(stream_config, stream_names, catalog_stream_names, SyncMode.full_refresh):
+        assert isinstance(stream, StreamFacade)
+
+
+def _get_streams(stream_config, stream_names, catalog_stream_names, sync_type) -> List[Stream]:
+    sobjects_matcher = re.compile("/sobjects$")
+    token_matcher = re.compile("/token$")
+    describe_matcher = re.compile("/describe$")
+    catalog = None
+    if catalog_stream_names:
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name=catalog_stream_name, supported_sync_modes=[sync_type], json_schema={"type": "object"}),
+                    sync_mode=sync_type,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+                for catalog_stream_name in catalog_stream_names
+            ]
+        )
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", token_matcher, json={"instance_url": "https://fake-url.com", "access_token": "fake-token"})
+        m.register_uri(
+            "GET",
+            describe_matcher,
+            json={
+                "fields": [
+                    {
+                        "name": "field",
+                        "type": "string",
+                    }
+                ]
+            },
+        )
+        m.register_uri(
+            "GET",
+            sobjects_matcher,
+            json={
+                "sobjects": [
+                    {
+                        "name": stream_name,
+                        "flag1": True,
+                        "queryable": True,
+                    }
+                    for stream_name in stream_names
+                    if stream_name != "Describe"
+                ],
+            },
+        )
+        source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+        source.catalog = catalog
+        return source.streams(config=stream_config)
 
 
 def test_csv_field_size_limit():
@@ -783,21 +947,37 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
 
 
 @freezegun.freeze_time("2023-01-01")
-def test_bulk_stream_slices(stream_config_date_format, stream_api):
+@pytest.mark.parametrize(
+    "lookback, stream_slice_step, expected_len_stream_slices, expect_error",
+    [(None, "P30D", 0, True), (0, "P30D", 158, False), (10, "P1D", 4732, False), (10, "PT12H", 9463, False), (-1, "P30D", 0, True)],
+    ids=["lookback-is-none", "lookback-is-0-step-30D", "lookback-is-valid-step-1D", "lookback-is-valid-step-12H", "lookback-is-negative"],
+)
+def test_bulk_stream_slices(
+    stream_config_date_format, stream_api, lookback, expect_error, stream_slice_step: str, expected_len_stream_slices: int
+):
+    stream_config_date_format["stream_slice_step"] = stream_slice_step
     stream: BulkIncrementalSalesforceStream = generate_stream("FakeBulkStream", stream_config_date_format, stream_api)
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-    expected_slices = []
-    today = pendulum.today(tz="UTC")
-    start_date = pendulum.parse(stream.start_date, tz="UTC")
-    while start_date < today:
-        expected_slices.append(
-            {
-                "start_date": start_date.isoformat(timespec="milliseconds"),
-                "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
-            }
-        )
-        start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
-    assert expected_slices == stream_slices
+    with patch("source_salesforce.streams.LOOKBACK_SECONDS", lookback):
+        if expect_error:
+            with pytest.raises(AssertionError):
+                list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+        else:
+            stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+
+            expected_slices = []
+            today = pendulum.today(tz="UTC")
+            start_date = pendulum.parse(stream.start_date, tz="UTC") - timedelta(seconds=lookback)
+            while start_date < today:
+                end_date = start_date + stream.stream_slice_step
+                expected_slices.append(
+                    {
+                        "start_date": start_date.isoformat(timespec="milliseconds"),
+                        "end_date": min(today, end_date).isoformat(timespec="milliseconds"),
+                    }
+                )
+                start_date += stream.stream_slice_step
+            assert expected_slices == stream_slices
+            assert len(stream_slices) == expected_len_stream_slices
 
 
 @freezegun.freeze_time("2023-04-01")
@@ -806,7 +986,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
 
-    source = SourceSalesforce()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     source.streams = Mock()
     source.streams.return_value = [stream]
 
@@ -836,9 +1016,10 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     logger = logging.getLogger("airbyte")
     state = {"Account": {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}}
     bulk_catalog.streams.pop(1)
-    result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
+    with patch("source_salesforce.streams.LOOKBACK_SECONDS", 0):
+        result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
 
-    actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
+    actual_state_values = [item.state.stream.stream_state.dict().get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params
     assert (
         "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
@@ -857,3 +1038,53 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     # if connector meets record with cursor `2023-04-01` out of current slice range 2023-01-31 <> 2023-03-02, we ignore all other values and set state to slice end_date
     expected_state_values = ["2023-01-15T00:00:00+00:00", "2023-03-02T10:10:10+00:00", "2023-04-01T00:00:00+00:00"]
     assert actual_state_values == expected_state_values
+
+
+def test_request_params_incremental(stream_config_date_format, stream_api):
+    stream = generate_stream("ContentDocument", stream_config_date_format, stream_api)
+    params = stream.request_params(stream_state={}, stream_slice={"start_date": "2020", "end_date": "2021"})
+
+    assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocument WHERE LastModifiedDate >= 2020 AND LastModifiedDate < 2021"}
+
+
+def test_request_params_substream(stream_config_date_format, stream_api):
+    stream = generate_stream("ContentDocumentLink", stream_config_date_format, stream_api)
+    params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
+
+    assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
+
+
+@freezegun.freeze_time("2023-03-20")
+def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
+    """Test BulkSalesforceSubStream for ContentDocumentLink (+ parent ContentDocument)
+
+    ContentDocument return 1 record for each slice request.
+    Given start/end date leads to 3 date slice for ContentDocument, thus 3 total records
+
+    ContentDocumentLink
+    It means that ContentDocumentLink should have 2 slices, with 2 and 1 records in each
+    """
+    stream_config["start_date"] = "2023-01-01"
+    stream: BulkSalesforceSubStream = generate_stream("ContentDocumentLink", stream_config, stream_api)
+    stream.SLICE_BATCH_SIZE = 2  # each ContentDocumentLink should contain 2 records from parent ContentDocument stream
+
+    job_id = "fake_job"
+    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    requests_mock.register_uri(
+        "GET",
+        stream.path() + f"/{job_id}/results",
+        [{"text": "Field1,LastModifiedDate,ID\ntest,2021-11-16,123", "headers": {"Sforce-Locator": "null"}}],
+    )
+    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
+
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    assert stream_slices == [
+        {
+            "parents": [
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
+            ]
+        },
+        {"parents": [{"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"}]},
+    ]

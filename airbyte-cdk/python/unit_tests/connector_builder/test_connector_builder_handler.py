@@ -499,7 +499,19 @@ def test_config_update():
 
 @patch("traceback.TracebackException.from_exception")
 def test_read_returns_error_response(mock_from_exception):
+    class MockDeclarativeStream:
+        @property
+        def primary_key(self):
+            return [[]]
+
+        @property
+        def cursor_field(self):
+            return []
+
     class MockManifestDeclarativeSource:
+        def streams(self, config):
+            return [MockDeclarativeStream()]
+
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
 
@@ -769,8 +781,8 @@ def test_read_source_single_page_single_slice(mock_http_stream):
     "deployment_mode, url_base, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com/api/v1/characters", None, id="test_cloud_read_with_public_endpoint"),
-        pytest.param("CLOUD", "https://10.0.27.27", "ValueError", id="test_cloud_read_with_private_endpoint"),
-        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "ValueError", id="test_cloud_read_with_localhost"),
+        pytest.param("CLOUD", "https://10.0.27.27", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "AirbyteTracedException", id="test_cloud_read_with_localhost"),
         pytest.param("CLOUD", "http://unsecured.protocol/api/v1", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
@@ -820,7 +832,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
     "deployment_mode, token_url, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
-        pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "ValueError", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
         pytest.param("CLOUD", "http://unsecured.protocol/tokens/bearer", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),

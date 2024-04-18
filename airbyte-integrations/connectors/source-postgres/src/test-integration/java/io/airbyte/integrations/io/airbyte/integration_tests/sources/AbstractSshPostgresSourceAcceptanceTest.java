@@ -13,11 +13,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
-import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -25,6 +25,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
@@ -37,18 +39,18 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
 
   private final SshBastionContainer bastion = new SshBastionContainer();
   private PostgresTestDatabase testdb;
-  private JsonNode config;
 
   private void populateDatabaseTestData() throws Exception {
-    final var builder = testdb.makeConfigBuilder()
-        .put("schemas", List.of("public"))
-        .put("ssl", false);
-    final var outerConfig = bastion.getTunnelConfig(getTunnelMethod(), builder, false);
+    final var outerConfig = testdb.integrationTestConfigBuilder()
+        .withSchemas("public")
+        .withoutSsl()
+        .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), false))
+        .build();
     SshTunnel.sshWrap(
         outerConfig,
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
+        (CheckedConsumer<JsonNode, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
               ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -73,21 +75,12 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
-
   // todo (cgardens) - dynamically create data by generating a database with a random name instead of
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withNetwork");
-    bastion.initAndStartBastion(testdb.container.getNetwork());
-    final var builder = testdb.makeConfigBuilder()
-        .put("schemas", List.of("public"))
-        .put("ssl", false);
-    config = bastion.getTunnelConfig(getTunnelMethod(), builder, true);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
+    bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
   }
 
@@ -98,7 +91,17 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    try {
+      return testdb.integrationTestConfigBuilder()
+          .withSchemas("public")
+          .withoutSsl()
+          .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), true))
+          .build();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -129,11 +132,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

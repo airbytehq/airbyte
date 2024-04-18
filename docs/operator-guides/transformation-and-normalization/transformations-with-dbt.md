@@ -1,6 +1,14 @@
+---
+products: oss-*
+---
+
 # Transformations with dbt (Part 2/3)
 
-## Overview
+:::warning
+Normalization and Custom Transformation are deprecated features. 
+Destinations using Normalization will be replaced by [Typing and Deduping](/using-airbyte/core-concepts/typing-deduping.md).
+Custom Transformation will be removed on March 31. For more information, visit [here](https://github.com/airbytehq/airbyte/discussions/34860).
+:::
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: dbt.
 

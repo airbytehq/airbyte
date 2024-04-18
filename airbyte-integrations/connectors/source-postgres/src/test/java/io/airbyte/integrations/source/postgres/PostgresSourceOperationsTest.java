@@ -11,8 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +35,7 @@ class PostgresSourceOperationsTest {
 
   @BeforeEach
   public void init() {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withConf");
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF);
   }
 
   @AfterEach
@@ -64,7 +65,7 @@ class PostgresSourceOperationsTest {
     }
 
     final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = testdb.container.createConnection("")) {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * FROM " + tableName + " WHERE " + cursorColumn + " > ?");
       postgresSourceOperations.setCursorField(preparedStatement,
@@ -104,7 +105,7 @@ class PostgresSourceOperationsTest {
     }
 
     final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = testdb.container.createConnection("")) {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
       postgresSourceOperations.setCursorField(preparedStatement,
@@ -137,7 +138,7 @@ class PostgresSourceOperationsTest {
   }
 
   protected void executeQuery(final String query) throws SQLException {
-    try (final Connection connection = testdb.container.createConnection("")) {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
       connection.createStatement().execute(query);
     }
   }

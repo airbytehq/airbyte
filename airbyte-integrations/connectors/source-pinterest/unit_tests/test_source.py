@@ -41,16 +41,14 @@ def test_check_wrong_date_connection(wrong_date_config):
 
 @responses.activate
 def test_check_connection_expired_token(test_config):
-    responses.add(
-        responses.POST,
-        "https://api.pinterest.com/v5/oauth/token",
-        status=401
-    )
+    responses.add(responses.POST, "https://api.pinterest.com/v5/oauth/token", status=401)
     source = SourcePinterest()
     logger_mock = MagicMock()
-    assert source.check_connection(logger_mock, test_config) == (False,
-        'Try to re-authenticate because current refresh token is not valid. ' \
-        '401 Client Error: Unauthorized for url: https://api.pinterest.com/v5/oauth/token')
+    assert source.check_connection(logger_mock, test_config) == (
+        False,
+        "Try to re-authenticate because current refresh token is not valid. "
+        "401 Client Error: Unauthorized for url: https://api.pinterest.com/v5/oauth/token",
+    )
 
 
 def test_get_authenticator(test_config):

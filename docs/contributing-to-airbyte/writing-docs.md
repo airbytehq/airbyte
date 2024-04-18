@@ -1,3 +1,6 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Updating Documentation
 
 We welcome contributions to the Airbyte documentation! 
@@ -13,7 +16,7 @@ The Docs team maintains a list of [#good-first-issues](https://github.com/airbyt
 
 ## Contributing to Airbyte docs
 
-Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../project-overview/code-of-conduct.md).
+Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../community/code-of-conduct.md).
 
 :::tip
 If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
@@ -30,9 +33,19 @@ To make minor changes (example: fixing typos) or edit a single file, you can edi
 
 ### Editing on your local machine
 
+#### Prerequisites
+
+To contribute to our documentation, please ensure following required technologies are installed on your local machine:
+
+1. [`Node.js`](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
+2. [`pnpm`](https://pnpm.io/installation)
+
+#### Setup and Making Changes
+
 To make complex changes or edit multiple files, edit the files on your local machine:
 
 1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the Airbyte [repository](https://github.com/airbytehq/airbyte).
+
 2. Clone the fork on your local machine:
 
    ```bash
@@ -49,19 +62,27 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
 
-3. Test changes locally:
+3. Create a feature branch from which to make changes:
+
+   ```bash
+   git checkout -b {YOUR_USERNAME}/{FEATURE/BUG}
+   ```
+
+   (e.g. `jdoe/source-stock-api-stream-fix`)
+
+4. Test changes locally:
 
    To install the docs locally, run the following commands in your terminal:
 
    ```bash
    cd docusaurus
-   yarn install
+   pnpm install
    ```
 
    To see changes as you make them, run:
 
    ```bash
-   yarn start
+   pnpm start
    ```
 
    Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
@@ -69,20 +90,20 @@ To make complex changes or edit multiple files, edit the files on your local mac
    You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
 
    ```bash
-   yarn build
-   yarn serve
+   pnpm build
+   pnpm serve
    ```
   
    Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
 
 
-4. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
+5. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
 
     :::note
     Before we accept any contributions, you'll need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
     :::
 
-5. Assign `airbytehq/docs` as a Reviewer for your pull request. 
+6. Assign `airbytehq/docs` as a Reviewer for your pull request. 
 
 ### Custom markdown extensions for connector docs
 Airbyte's markdown documentation—particularly connector-specific documentation—needs to gracefully support multiple different contexts: key details may differ between open-source builds and Airbyte Cloud, and the more exhaustive explanations appropriate for https://docs.airbyte.com may bury key details when rendered as inline documentation within the Airbyte application. In order to support all these different contexts without resorting to multiple overlapping files that must be maintained in parallel, Airbyte's documentation tooling supports multiple nonstandard features. 
@@ -92,6 +113,62 @@ Please familiarize yourself with all the tools available to you when writing doc
 :::note
 As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
+
+#### Select between mutually-exclusive content options with `<Tabs>`
+Tabs are a built-in feature of Docusaurus, the tool we use to build `https://docs.airbyte.com`; please refer to [their documentation](https://docusaurus.io/docs/markdown-features/tabs) for their options and behavior in this context. For better site-agnostic documentation, and because we like the feature, we maintain a separate `Tabs` implementation with limited, one-way API compatibility: all usage options we document should behave the same in-app and on `https://docs.airbyte.com`. If you find a discrepancy or breakage, we would appreciate if you [report it as a bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2Carea%2Fdocumentation+needs-triage&projects=&template=8-documentation.yaml)! The reverse is not necessarily true, however: Docusaurus supports many use cases besides ours, so supporting its every usage pattern is a deliberate non-goal.
+
+:::info
+Because Docusaurus uses an mdx component, you must include the following import lines in any markdown file which uses tabs:
+
+```js
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+```
+
+This is not optional: if these lines are missing, the documentation site will have errors. They won't show up in the rendered document, however.
+:::
+
+Here's an example set of tabs; note that you can put any number of `<TabItem value="..." label="...">...</TabItem>` tags inside a `<Tabs>`.
+
+```md
+<Tabs>
+<TabItem value="http-basic" label="Basic HTTP authentication">
+
+When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
+
+As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
+
+</TabItem>
+<TabItem value="oauth" label="OAuth authentication" default>
+
+When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
+
+</TabItem>
+</Tabs>
+```
+
+That renders as the following:
+
+<Tabs>
+<TabItem value="http-basic" label="Basic HTTP authentication">
+
+When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
+
+As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
+
+</TabItem>
+<TabItem value="oauth" label="OAuth authentication" default>
+
+When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
+
+</TabItem>
+</Tabs>
+
+- You don't need to mark any tab as `default`
+- If you don't, the first tab (here, Basic HTTP) will be the initial selection instead
+- You can use ordinary markdown syntax inside a `TabItem`
+- **however**, due to bugs in our in-app markdown rendering library, you should be dilligent about using empty lines to separate different formatting-related things (surrounding tags and their contents, paragraphs vs lists, etc)
+- You should also avoid indenting `TabItem` tags and their content according to html conventions, since text indented by four spaces (common for html nested inside two levels of tags) can be interpreted as a code block; different markdown rendering tools can handle this inconsistently.
 
 #### Jump to the relevant documentation section when specific connector setup inputs are focused with `<FieldAnchor>`
 In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
@@ -134,6 +211,10 @@ The `field` attribute must be a valid json path to one of the properties nested 
 ```
 
 The selection keys are `CDC` and `STANDARD`, so you can wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag, and it will be highlighted if the user selects CDC replication in the UI.
+
+:::tip
+Because of their close connection with the connector setup form fields, `<FieldAnchor>` tags are only enabled for the source and destination setup pages.
+:::
 
 #### Prevent specific content from rendering in the UI with `<HideInUI>`
 Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 
@@ -261,6 +342,27 @@ Back to ordinary markdown content.
 ```
 Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
+#### Documenting PyAirbyte usage
+
+PyAirbyte is a Python library that allows to run syncs within a Python script for a subset of connectors. Documentation around PyAirbyte connectors is automatically generated from the connector's JSON schema spec. There are a few approaches to combine full control over the documentation with automatic generation for common cases:
+
+* If a connector is PyAirbyte enabled (`remoteRegistries.pypi.enabled` set in the `metadata.yaml` file of the connector) and there is no second-level heading `Usage with PyAirbyte` in the documentation, the documentation will be automatically generated and placed above the `Changelog` section.
+* By manually specifying a `Usage with PyAirbyte` section, this automatism is disabled. The following is a good starting point for this section:
+
+```md
+<HideInUI>
+
+## Usage with PyAirbyte
+
+<PyAirbyteExample connector="source-google-sheets" />
+
+<SpecSchema connector="source-google-sheets" />
+
+</HideInUI>
+```
+
+The `PyAirbyteExample` component will generate a code example that can be run with PyAirbyte, excluding an auto-generated sample configuration based on the configuration schema. The `SpecSchema` component will generate a reference table with the connector's JSON schema spec, like a non-interactive version of the connector form in the UI. It can be used on any docs page.
+
 ## Additional guidelines
 
 - If you're updating a connector doc, follow the [Connector documentation template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw)
@@ -276,16 +378,7 @@ Eagle-eyed readers may note that _all_ markdown should support this feature sinc
 
 ### Adding a redirect
 
-To add a redirect, open the [`docusaurus.config.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/docusaurus.config.js#L22) file and locate the following commented section:
-
-```js
-//                        {
-//                         from: '/some-lame-path',
-//                         to: '/a-much-cooler-uri',
-//                        },
-```
-
-Copy this section, replace the values, and [test the changes locally](#editing-on-your-local-machine) by going to the path you created a redirect for and verify that the address changes to the new one.
+To add a redirect, open the [`docusaurus/redirects.yml`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/redirects.yml) file and add an entry from which old path to which new path a redirect should happen.
 
 :::note 
 Your path **needs** a leading slash `/` to work
@@ -326,3 +419,39 @@ cd airbyte
 git checkout <OLDER_BRANCH>
 ./tools/bin/deploy_docusaurus
 ```
+
+### Adding a diagram
+We have the docusaurus [Mermaid](https://mermaid.js.org/) plugin which has a variety of diagram
+types and syntaxes available.
+
+:::danger
+    The connector specific docs do **not** currently support this, only use this for general docs.
+:::
+
+Here is an example from the [Mermaid docs](https://mermaid.js.org/syntax/entityRelationshipDiagram.html) 
+you would add the following to your markdown wrapped in a code block.
+
+```md
+    ---
+    title: Order example
+    ---
+    erDiagram
+        CUSTOMER ||--o{ ORDER : places
+        ORDER ||--|{ LINE-ITEM : contains
+        CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+which produces the following diagram 
+
+```mermaid
+---
+title: Order example
+---
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+check out the rest of the Mermaid documentation for its capabilities just be aware that not all 
+the features are available to the docusaurus plugin.

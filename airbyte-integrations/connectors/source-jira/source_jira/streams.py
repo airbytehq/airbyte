@@ -5,21 +5,37 @@
 import re
 import urllib.parse as urlparse
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.logger import AirbyteLogger as Logger
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
 
 API_VERSION = 3
+
+
+class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Inherit from HttpAvailabilityStrategy with slight modification to 403 and 401 error messages.
+    """
+
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
+            requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+            requests.codes.NOT_FOUND: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
+        }
+        return reasons_for_codes
 
 
 class JiraStream(HttpStream, ABC):
@@ -31,16 +47,15 @@ class JiraStream(HttpStream, ABC):
     primary_key: Optional[str] = "id"
     extract_field: Optional[str] = None
     api_v1 = False
-    skip_http_status_codes = []
+    # Defines the HTTP status codes for which the slice should be skipped.
+    # Reference issue: https://github.com/airbytehq/oncall/issues/2133
+    # we should skip the slice with `board id` which doesn't support `sprints`
+    # it's generally applied to all streams that might have the same error hit in the future.
+    skip_http_status_codes = [requests.codes.BAD_REQUEST]
     raise_on_http_errors = True
-    error_messages = {
-        requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
-        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
-    }
-    config_error_status_codes = [
-        requests.codes.UNAUTHORIZED,
-    ]
     transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
+    # emitting state message after every page read
+    state_checkpoint_interval = page_size
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -52,6 +67,19 @@ class JiraStream(HttpStream, ABC):
         if self.api_v1:
             return f"https://{self._domain}/rest/agile/1.0/"
         return f"https://{self._domain}/rest/api/{API_VERSION}/"
+
+    @property
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return JiraAvailabilityStrategy()
+
+    def _get_custom_error(self, response: requests.Response) -> str:
+        """Method for specifying custom error messages for errors that will be skipped."""
+        return ""
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """Number of retries increased from default 5 to 10, based on issues with Jira. Max waiting time is still default 10 minutes."""
+        return 10
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
@@ -102,35 +130,22 @@ class JiraStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except HTTPError as e:
-            user_error_message = self.error_messages.get(e.response.status_code)
-            if user_error_message:
-                self.logger.error(user_error_message)
-            if e.response.status_code in self.config_error_status_codes:
-                raise AirbyteTracedException(
-                    message="Config validation error: " + user_error_message,
-                    internal_message=str(e),
-                    failure_type=FailureType.config_error,
-                ) from e
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
-            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
-            # we should skip the slice with `board id` which doesn't support `sprints`
-            # it's generally applied to all streams that might have the same error hit in the future.
-            errors = response.json().get("errorMessages")
-            self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        else:
-            # for all other HTTP errors the defaul handling is applied
-            return super().should_retry(response)
+            errors = e.response.json().get("errorMessages")
+            custom_error = self._get_custom_error(e.response)
+            self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {errors}. Skipping for now. {custom_error}")
 
 
 class StartDateJiraStream(JiraStream, ABC):
-    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
+    def __init__(
+        self,
+        start_date: Optional[pendulum.DateTime] = None,
+        lookback_window_minutes: pendulum.Duration = pendulum.duration(minutes=0),
+        **kwargs,
+    ):
         super().__init__(**kwargs)
+        self._lookback_window_minutes = lookback_window_minutes
         self._start_date = start_date
 
 
@@ -162,7 +177,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         if stream_state:
             stream_state_value = stream_state.get(self.cursor_field)
             if stream_state_value:
-                stream_state_value = pendulum.parse(stream_state_value)
+                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
                 return safe_max(stream_state_value, self._start_date)
         return self._start_date
 
@@ -186,10 +201,6 @@ class ApplicationRoles(JiraStream):
     """
 
     primary_key = "key"
-    skip_http_status_codes = [
-        # Application access permissions can only be edited or viewed by administrators.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "applicationrole"
@@ -216,11 +227,6 @@ class Boards(JiraStream):
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
 
-    skip_http_status_codes = [
-        # for user that have no valid license
-        requests.codes.FORBIDDEN
-    ]
-
     extract_field = "values"
     use_cache = True
     api_v1 = True
@@ -242,7 +248,7 @@ class Boards(JiraStream):
         return record
 
 
-class BoardIssues(IncrementalJiraStream):
+class BoardIssues(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
     """
@@ -253,6 +259,7 @@ class BoardIssues(IncrementalJiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._starting_point_cache = {}
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -266,14 +273,68 @@ class BoardIssues(IncrementalJiraStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["key", "created", "updated"]
-        jql = self.jql_compare_date(stream_state)
+        jql = self.jql_compare_date(stream_state, stream_slice)
         if jql:
             params["jql"] = jql
         return params
 
+    def jql_compare_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[str]:
+        compare_date = self.get_starting_point(stream_state, stream_slice)
+        if compare_date:
+            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} >= '{compare_date}'"
+
+    def _is_board_error(self, response):
+        """Check if board has error and should be skipped"""
+        if response.status_code == 500:
+            if "This board has no columns with a mapped status." in response.text:
+                return True
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if self._is_board_error(response):
+            return False
+
+        # for all other HTTP errors the default handling is applied
+        return super().should_retry(response)
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from read_full_refresh(self.boards_stream)
+
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for board in read_full_refresh(self.boards_stream):
-            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+        try:
+            yield from super().read_records(stream_slice={"board_id": stream_slice["id"]}, **kwargs)
+        except HTTPError as e:
+            if self._is_board_error(e.response):
+                # Wrong board is skipped
+                self.logger.warning(f"Board {stream_slice['id']} has no columns with a mapped status. Skipping.")
+            else:
+                raise
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        board_id = str(latest_record["boardId"])
+        stream_state_value = current_stream_state.get(board_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(board_id, {})[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        board_id = str(stream_slice["board_id"])
+        if self.cursor_field not in self._starting_point_cache:
+            self._starting_point_cache.setdefault(board_id, {})[self.cursor_field] = self._get_starting_point(
+                stream_state=stream_state, stream_slice=stream_slice
+            )
+        return self._starting_point_cache[board_id][self.cursor_field]
+
+    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if stream_state:
+            board_id = str(stream_slice["board_id"])
+            stream_state_value = stream_state.get(board_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value) - self._lookback_window_minutes
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
@@ -353,7 +414,9 @@ class Issues(IncrementalJiraStream):
     use_cache = True
     _expand_fields_list = ["renderedFields", "transitions", "changelog"]
 
-    skip_http_status_codes = [requests.codes.FORBIDDEN]
+    # Issue: https://github.com/airbytehq/airbyte/issues/26712
+    # we should skip the slice with wrong permissions on project level
+    skip_http_status_codes = [requests.codes.FORBIDDEN, requests.codes.BAD_REQUEST]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -372,10 +435,13 @@ class Issues(IncrementalJiraStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = "*all"
+
         jql_parts = [self.jql_compare_date(stream_state)]
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
+        params["jql"] += f" ORDER BY {self.cursor_field} asc"
+
         params["expand"] = ",".join(self._expand_fields_list)
         return params
 
@@ -384,6 +450,12 @@ class Issues(IncrementalJiraStream):
         record["projectKey"] = record["fields"]["project"]["key"]
         record["created"] = record["fields"]["created"]
         record["updated"] = record["fields"]["updated"]
+
+        # remove fields that are None
+        if "renderedFields" in record:
+            record["renderedFields"] = {k: v for k, v in record["renderedFields"].items() if v is not None}
+        if "fields" in record:
+            record["fields"] = {k: v for k, v in record["fields"].items() if v is not None}
         return record
 
     def get_project_ids(self):
@@ -401,20 +473,10 @@ class Issues(IncrementalJiraStream):
         else:
             yield from super().stream_slices(**kwargs)
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
-            # Issue: https://github.com/airbytehq/airbyte/issues/26712
-            # we should skip the slice with wrong permissions on project level
-            errors = response.json().get("errorMessages")
-            self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}."
-                f"Check permissions for this project. Skipping for now. "
-                f"The user doesn't have permission to the project. Please grant the user to the project."
-            )
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        else:
-            return super().should_retry(response)
+    def _get_custom_error(self, response: requests.Response) -> str:
+        if response.status_code == requests.codes.BAD_REQUEST:
+            return "The user doesn't have permission to the project. Please grant the user to the project."
+        return ""
 
 
 class IssueComments(IncrementalJiraStream):
@@ -472,10 +534,6 @@ class IssueFieldConfigurations(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access field configurations
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "fieldconfiguration"
@@ -494,6 +552,7 @@ class IssueCustomFieldContexts(JiraStream):
         requests.codes.NOT_FOUND,
         # Only Jira administrators can access custom field contexts.
         requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -525,6 +584,7 @@ class IssueCustomFieldOptions(JiraStream):
         requests.codes.NOT_FOUND,
         # Only Jira administrators can access custom field options.
         requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     extract_field = "values"
@@ -539,7 +599,6 @@ class IssueCustomFieldOptions(JiraStream):
         return f"field/{stream_slice['field_id']}/context/{stream_slice['context_id']}/option"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-
         for record in read_full_refresh(self.issue_custom_field_contexts_stream):
             if record.get("fieldType") == "option":
                 yield from super().read_records(stream_slice={"field_id": record["fieldId"], "context_id": record["id"]}, **kwargs)
@@ -567,10 +626,6 @@ class IssueNavigatorSettings(JiraStream):
     """
 
     primary_key = None
-    skip_http_status_codes = [
-        # You need Administrator permission to perform this operation.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "settings/columns"
@@ -607,7 +662,8 @@ class IssuePropertyKeys(JiraStream):
     use_cache = True
     skip_http_status_codes = [
         # Issue does not exist or you do not have permission to see it.
-        requests.codes.NOT_FOUND
+        requests.codes.NOT_FOUND,
+        requests.codes.BAD_REQUEST,
     ]
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -695,10 +751,6 @@ class IssueSecuritySchemes(JiraStream):
     """
 
     extract_field = "issueSecuritySchemes"
-    skip_http_status_codes = [
-        # You need to be a Jira administrator to perform this operation
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "issuesecurityschemes"
@@ -719,10 +771,6 @@ class IssueTypeSchemes(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access issue type schemes.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "issuetypescheme"
@@ -734,10 +782,6 @@ class IssueTypeScreenSchemes(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access issue type screen schemes.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "issuetypescreenscheme"
@@ -820,7 +864,8 @@ class IssueWatchers(StartDateJiraStream):
     primary_key = None
     skip_http_status_codes = [
         # Issue is not found or the user does not have permission to view it.
-        requests.codes.NOT_FOUND
+        requests.codes.NOT_FOUND,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -877,11 +922,6 @@ class JiraSettings(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
     """
 
-    skip_http_status_codes = [
-        # No permission
-        requests.codes.FORBIDDEN
-    ]
-
     def path(self, **kwargs) -> str:
         return "application-properties"
 
@@ -908,10 +948,6 @@ class Permissions(JiraStream):
 
     extract_field = "permissions"
     primary_key = "key"
-    skip_http_status_codes = [
-        # You need to have Administer permissions to view this resource
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "permissions"
@@ -961,6 +997,12 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -985,6 +1027,12 @@ class ProjectCategories(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
     """
+
+    skip_http_status_codes = [
+        # Project is not found or the user does not have permission to view the project.
+        requests.codes.UNAUTHORIZED,
+        requests.codes.NOT_FOUND,
+    ]
 
     def path(self, **kwargs) -> str:
         return "projectCategory"
@@ -1017,7 +1065,8 @@ class ProjectEmail(JiraStream):
     primary_key = "projectId"
     skip_http_status_codes = [
         # You cannot edit the configuration of this project.
-        requests.codes.FORBIDDEN
+        requests.codes.FORBIDDEN,
+        requests.codes.BAD_REQUEST,
     ]
 
     def __init__(self, **kwargs):
@@ -1065,10 +1114,6 @@ class ProjectRoles(JiraStream):
     """
 
     primary_key = "id"
-    skip_http_status_codes = [
-        # Application access permissions can only be edited or viewed by administrators.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "role"
@@ -1177,10 +1222,6 @@ class Screens(JiraStream):
 
     extract_field = "values"
     use_cache = True
-    skip_http_status_codes = [
-        # Only Jira administrators can manage screens.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "screens"
@@ -1254,10 +1295,6 @@ class ScreenSchemes(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access screen schemes.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
@@ -1276,28 +1313,17 @@ class Sprints(JiraStream):
         super().__init__(**kwargs)
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
-    def get_user_message_from_error_message(self, errors: List[str]) -> str:
-        for error_message in errors:
-            if "The board does not support sprints" in error_message:
-                return (
-                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-                    "does it have sprints enabled under project settings? If it's a company-managed one,"
-                    " check that it has at least one Scrum board associated with it."
-                )
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.bad_request:
+    def _get_custom_error(self, response: requests.Response) -> str:
+        if response.status_code == requests.codes.BAD_REQUEST:
             errors = response.json().get("errorMessages")
-            message = self.get_user_message_from_error_message(errors)
-            if message:
-                self.logger.error(
-                    f"Stream `{self.name}`. An error occurred, details: {errors}."
-                    f"Skipping for now. {self.get_user_message_from_error_message(errors)}"
-                )
-                setattr(self, "raise_on_http_errors", False)
-                return False
-        else:
-            return super().should_retry(response)
+            for error_message in errors:
+                if "The board does not support sprints" in error_message:
+                    return (
+                        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                        "does it have sprints enabled under project settings? If it's a company-managed one,"
+                        " check that it has at least one Scrum board associated with it."
+                    )
+        return ""
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"board/{stream_slice['board_id']}/sprint"
@@ -1374,10 +1400,6 @@ class TimeTracking(JiraStream):
     """
 
     primary_key = "key"
-    skip_http_status_codes = [
-        # This resource is only available to administrators
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "configuration/timetracking/list"
@@ -1431,10 +1453,6 @@ class Workflows(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access workflows.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "workflow/search"
@@ -1446,10 +1464,6 @@ class WorkflowSchemes(JiraStream):
     """
 
     extract_field = "values"
-    skip_http_status_codes = [
-        # Only Jira administrators can access workflow scheme associations.
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "workflowscheme"
@@ -1459,11 +1473,6 @@ class WorkflowStatuses(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     """
-
-    skip_http_status_codes = [
-        # for user that have no valid license
-        requests.codes.FORBIDDEN
-    ]
 
     def path(self, **kwargs) -> str:
         return "status"

@@ -10,7 +10,7 @@ A detailed tutorial has been written about this implementation. See: [Build a co
 ## Local development
 
 ### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
+- Webflow v1 API Key
 
 #### Minimum Python version required `= 3.9.11`
 

@@ -1,15 +1,19 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.11'
-    features = ['db-destinations', 's3-destinations']
+    cdkVersionRequired = '0.27.7'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
@@ -38,24 +42,6 @@ integrationTestJava {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-storage:1.113.16'
-    implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
     implementation 'net.snowflake:snowflake-jdbc:3.14.1'
-    implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
-    implementation "io.aesy:datasize:1.0.0"
-    implementation 'com.zaxxer:HikariCP:5.0.1'
-
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
-
-//    this is a configuration to make mockito work with final classes
-    testImplementation 'org.mockito:mockito-inline:2.13.0'
-
-    integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
-    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
-    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 }

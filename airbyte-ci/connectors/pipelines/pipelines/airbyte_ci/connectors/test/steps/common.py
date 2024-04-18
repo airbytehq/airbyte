@@ -8,31 +8,35 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
+from pathlib import Path
 from typing import ClassVar, List, Optional
 
-import requests
+import requests  # type: ignore
 import semver
-import yaml
-from connector_ops.utils import Connector
+import yaml  # type: ignore
 from dagger import Container, Directory
 from pipelines import hacks
-from pipelines.consts import CIContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
+from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts.pipeline_context import PipelineContext
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
+    context: ConnectorContext
     GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
-    should_run = True
 
     @property
-    def github_master_metadata_url(self):
+    def should_run(self) -> bool:
+        return True
+
+    @property
+    def github_master_metadata_url(self) -> str:
         return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
@@ -58,11 +62,11 @@ class VersionCheck(Step, ABC):
 
     @property
     def success_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     @property
     def failure_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.FAILURE, stderr=self.failure_message)
+        return StepResult(step=self, status=StepStatus.FAILURE, stderr=self.failure_message)
 
     @abstractmethod
     def validate(self) -> StepResult:
@@ -70,16 +74,17 @@ class VersionCheck(Step, ABC):
 
     async def _run(self) -> StepResult:
         if not self.should_run:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
-        if self.context.ci_context in [CIContext.MASTER, CIContext.NIGHTLY_BUILDS]:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
+        if self.context.ci_context == CIContext.MASTER:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class VersionIncrementCheck(VersionCheck):
+    context: ConnectorContext
     title = "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
@@ -114,77 +119,77 @@ class VersionIncrementCheck(VersionCheck):
         return self.success_result
 
 
-class VersionFollowsSemverCheck(VersionCheck):
-    title = "Connector version semver check"
+class QaChecks(SimpleDockerStep):
+    """A step to run QA checks for a connectors.
+    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
+    """
 
-    @property
-    def failure_message(self) -> str:
-        return f"The dockerImageTag in {METADATA_FILE_NAME} is not following semantic versioning or was decremented. Master version is {self.master_connector_version}, current version is {self.current_connector_version}"
+    def __init__(self, context: ConnectorContext) -> None:
+        code_directory = context.connector.code_directory
+        documentation_file_path = context.connector.documentation_file_path
+        migration_guide_file_path = context.connector.migration_guide_file_path
+        icon_path = context.connector.icon_path
+        technical_name = context.connector.technical_name
 
-    def validate(self) -> StepResult:
-        try:
-            if not self.current_connector_version >= self.master_connector_version:
-                return self.failure_result
-        except ValueError:
-            return self.failure_result
-        return self.success_result
+        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
+        if context.connector.technical_name.endswith("-strict-encrypt"):
+            technical_name = technical_name.replace("-strict-encrypt", "")
+            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
+            if documentation_file_path:
+                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
+            if migration_guide_file_path:
+                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
+            if icon_path:
+                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
 
-
-class QaChecks(Step):
-    """A step to run QA checks for a connector."""
-
-    title = "QA checks"
-
-    async def _run(self) -> StepResult:
-        """Run QA checks on a connector.
-
-        The QA checks are defined in this module:
-        https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/qa_checks.py
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-        Returns:
-            StepResult: Failure or success of the QA checks with stdout and stderr.
-        """
-        connector_ops = await internal_tools.with_connector_ops(self.context)
-        include = [
-            str(self.context.connector.code_directory),
-            str(self.context.connector.documentation_file_path),
-            str(self.context.connector.migration_guide_file_path),
-            str(self.context.connector.icon_path),
-        ]
-        if (
-            self.context.connector.technical_name.endswith("strict-encrypt")
-            or self.context.connector.technical_name == "source-file-secure"
-        ):
-            original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
-            include += [
-                str(original_connector.code_directory),
-                str(original_connector.documentation_file_path),
-                str(original_connector.icon_path),
-                str(original_connector.migration_guide_file_path),
-            ]
-
-        filtered_repo = self.context.get_repo_dir(
-            include=include,
+        super().__init__(
+            title=f"Run QA checks for {technical_name}",
+            context=context,
+            paths_to_mount=[
+                MountPath(code_directory),
+                # These paths are optional
+                # But their absence might make the QA check fail
+                MountPath(documentation_file_path, optional=True),
+                MountPath(migration_guide_file_path, optional=True),
+                MountPath(icon_path, optional=True),
+            ],
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
+            ],
+            secrets={
+                k: v
+                for k, v in {
+                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
+                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
+                }.items()
+                if v
+            },
+            command=["connectors-qa", "run", f"--name={technical_name}"],
         )
-
-        qa_checks = (
-            connector_ops.with_mounted_directory("/airbyte", filtered_repo)
-            .with_workdir("/airbyte")
-            .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
-        )
-
-        return await self.get_step_result(qa_checks)
 
 
 class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 
+    context: ConnectorContext
     title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
     skipped_exit_code = 5
+    accept_extra_params = True
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        """Default pytest options.
+
+        Returns:
+            dict: The default pytest options.
+        """
+        return super().default_params | {
+            "-ra": [],  # Show extra test summary info in the report for all but the passed tests
+            "--disable-warnings": [],  # Disable warnings in the pytest report
+            "--durations": ["3"],  # Show the 3 slowest tests in the report
+        }
 
     @property
     def base_cat_command(self) -> List[str]:
@@ -192,23 +197,21 @@ class AcceptanceTests(Step):
             "python",
             "-m",
             "pytest",
-            "--disable-warnings",
-            "--durations=3",  # Show the 3 slowest tests in the report
-            "-ra",  # Show extra test summary info in the report for all but the passed tests
             "-p",  # Load the connector_acceptance_test plugin
             "connector_acceptance_test.plugin",
             "--acceptance-test-config",
             self.CONTAINER_TEST_INPUT_DIRECTORY,
         ]
+
         if self.concurrent_test_run:
             command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
 
-    def __init__(self, context: PipelineContext, concurrent_test_run: Optional[bool] = False) -> None:
+    def __init__(self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False) -> None:
         """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
 
         Args:
-            context (PipelineContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
             concurrent_test_run (Optional[bool], optional): Whether to run acceptance tests in parallel. Defaults to False.
         """
         super().__init__(context)
@@ -224,7 +227,7 @@ class AcceptanceTests(Step):
         if "integration_tests" in await connector_dir.entries():
             if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
                 cat_command += ["-p", "integration_tests.acceptance"]
-        return cat_command
+        return cat_command + self.params_as_cli_options
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
@@ -237,7 +240,7 @@ class AcceptanceTests(Step):
         """
 
         if not self.context.connector.acceptance_test_config:
-            return StepResult(self, StepStatus.SKIPPED)
+            return StepResult(step=self, status=StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
@@ -252,7 +255,7 @@ class AcceptanceTests(Step):
                     break
         return step_result
 
-    async def get_cache_buster(self) -> str:
+    def get_cache_buster(self) -> str:
         """
         This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
@@ -283,11 +286,11 @@ class AcceptanceTests(Step):
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
-            .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
-            .with_new_file("/tmp/container_id.txt", str(connector_container_id))
+            .with_env_variable("CACHEBUSTER", self.get_cache_buster())
+            .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await secrets.mounted_connector_secrets(self.context, "/test_input/secrets"))
+            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
@@ -298,29 +301,3 @@ class AcceptanceTests(Step):
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
-
-
-class CheckBaseImageIsUsed(Step):
-    title = "Check our base image is used"
-
-    async def _run(self, *args, **kwargs) -> StepResult:
-        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
-        if not is_certified:
-            return self.skip("Connector is not certified, it does not require the use of our base image.")
-
-        is_using_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None
-        migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image <PR NUMBER>' and commit the changes."
-        if not is_using_base_image:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but does not use our base image. {migration_hint}",
-            )
-        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include="Dockerfile")).entries()
-        if has_dockerfile:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
-            )
-        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")

@@ -15,6 +15,10 @@ data:
   icon: asana.svg
   license: MIT
   name: Asana
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-asana
   registries:
     cloud:
       enabled: true
@@ -24,4 +28,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

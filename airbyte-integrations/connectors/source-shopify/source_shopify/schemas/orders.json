@@ -447,6 +447,9 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
+          "channel_liable": {
+            "type": ["null", "boolean"]
+          },
           "price": {
             "type": ["null", "number"]
           },
@@ -837,6 +840,50 @@
               "type": ["null", "boolean"]
             }
           }
+        },
+        "email_marketing_consent": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "state": {
+              "type": ["null", "string"]
+            },
+            "opt_in_level": {
+              "type": ["null", "string"]
+            },
+            "consent_updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "consent_collected_from": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "sms_marketing_consent": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "state": {
+              "type": ["null", "string"]
+            },
+            "opt_in_level": {
+              "type": ["null", "string"]
+            },
+            "consent_updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "consent_collected_from": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "tax_exemptions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         }
       }
     },
@@ -1157,6 +1204,9 @@
                   "items": {
                     "type": ["null", "object"],
                     "properties": {
+                      "channel_liable": {
+                        "type": ["null", "boolean"]
+                      },
                       "price": {
                         "type": ["null", "number"]
                       },
@@ -1339,6 +1389,30 @@
                     }
                   }
                 }
+              }
+            }
+          },
+          "origin_address": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "address1": {
+                "type": ["null", "string"]
+              },
+              "address2": {
+                "type": ["null", "string"]
+              },
+              "city": {
+                "type": ["null", "string"]
+              },
+              "country_code": {
+                "type": ["null", "string"]
+              },
+              "province_code": {
+                "type": ["null", "string"]
+              },
+              "zip": {
+                "type": ["null", "string"]
               }
             }
           }
@@ -1547,6 +1621,9 @@
             "items": {
               "type": ["null", "object"],
               "properties": {
+                "channel_liable": {
+                  "type": ["null", "boolean"]
+                },
                 "price": {
                   "type": ["null", "number"]
                 },
@@ -1915,6 +1992,45 @@
                 },
                 "user_id": {
                   "type": ["null", "integer"]
+                },
+                "payment_details": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "avs_result_code": {
+                      "type": ["null", "string"]
+                    },
+                    "buyer_action_info": {
+                      "type": ["null", "string"]
+                    },
+                    "credit_card_bin": {
+                      "type": ["null", "string"]
+                    },
+                    "credit_card_company": {
+                      "type": ["null", "string"]
+                    },
+                    "credit_card_expiration_month": {
+                      "type": ["null", "integer"]
+                    },
+                    "credit_card_expiration_year": {
+                      "type": ["null", "integer"]
+                    },
+                    "credit_card_name": {
+                      "type": ["null", "string"]
+                    },
+                    "credit_card_number": {
+                      "type": ["null", "string"]
+                    },
+                    "credit_card_wallet": {
+                      "type": ["null", "string"]
+                    },
+                    "cvv_result_code": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "payment_id": {
+                  "type": ["null", "string"]
                 }
               }
             }
@@ -2130,6 +2246,9 @@
                       "items": {
                         "type": ["null", "object"],
                         "properties": {
+                          "channel_liable": {
+                            "type": ["null", "boolean"]
+                          },
                           "price": {
                             "type": ["null", "string"]
                           },
@@ -2209,7 +2328,112 @@
                           }
                         }
                       }
+                    },
+                    "duties": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "duty_id": {
+                            "type": ["null", "integer"]
+                          },
+                          "amount_set": {
+                            "properties": {
+                              "shop_money": {
+                                "properties": {
+                                  "currency_code": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "amount": {
+                                    "type": ["null", "number"]
+                                  }
+                                },
+                                "type": ["null", "object"]
+                              },
+                              "presentment_money": {
+                                "properties": {
+                                  "currency_code": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "amount": {
+                                    "type": ["null", "number"]
+                                  }
+                                },
+                                "type": ["null", "object"]
+                              }
+                            },
+                            "type": ["null", "object"]
+                          }
+                        }
+                      }
                     }
+                  }
+                }
+              }
+            }
+          },
+          "duties": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "duty_id": {
+                  "type": ["null", "integer"]
+                },
+                "amount_set": {
+                  "properties": {
+                    "shop_money": {
+                      "properties": {
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        },
+                        "amount": {
+                          "type": ["null", "number"]
+                        }
+                      },
+                      "type": ["null", "object"]
+                    },
+                    "presentment_money": {
+                      "properties": {
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        },
+                        "amount": {
+                          "type": ["null", "number"]
+                        }
+                      },
+                      "type": ["null", "object"]
+                    }
+                  },
+                  "type": ["null", "object"]
+                }
+              }
+            }
+          },
+          "total_duties_set": {
+            "type": ["null", "object"],
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
                   }
                 }
               }

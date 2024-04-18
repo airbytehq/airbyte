@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.mongodb.MongoUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
@@ -28,10 +28,10 @@ public class MongodbDestinationStrictEncrypt extends SpecModifyingDestination im
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
     // If the MongoDb destination connector is not set up to use a TLS connection, then check should
     // fail
-    if (instance.equals(MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+    if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
       throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
     }
     return super.check(config);

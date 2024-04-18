@@ -44,4 +44,5 @@ List of available streams:
 
 | Version | Date       | Pull Request                                               | Subject                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-12-03 | [20046](https://github.com/airbytehq/airbyte/pull/20046)   | 🎉 New Source: todoist                           |
+| 0.2.0   | 2023-12-19 | [32690](https://github.com/airbytehq/airbyte/pull/32690)   | Migrate to low-code                             |
+| 0.1.0   | 2022-12-03 | [20046](https://github.com/airbytehq/airbyte/pull/20046)   | 🎉 New Source: todoist                          |

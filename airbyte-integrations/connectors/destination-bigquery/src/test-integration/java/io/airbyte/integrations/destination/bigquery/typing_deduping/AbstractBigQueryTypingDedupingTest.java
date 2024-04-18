@@ -87,7 +87,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected SqlGenerator<?> getSqlGenerator() {
+  protected SqlGenerator getSqlGenerator() {
     return new BigQuerySqlGenerator(getConfig().get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), null);
   }
 

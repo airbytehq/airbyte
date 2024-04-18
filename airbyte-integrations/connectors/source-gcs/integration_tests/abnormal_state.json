@@ -26,5 +26,19 @@
         "name": "example_2"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "_ab_source_file_last_modified": "2024-03-21T16:13:20.571000Z\"_https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz",
+        "history": {
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/simple_test.csv.gz": "2024-03-21T16:13:20.571000Z"
+        }
+      },
+      "stream_descriptor": {
+        "name": "example_gzip"
+      }
+    }
   }
 ]

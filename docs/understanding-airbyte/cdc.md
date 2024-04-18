@@ -33,7 +33,7 @@ We add some metadata columns for CDC sources:
 * [Postgres](../integrations/sources/postgres.md) \(For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte)\)
 * [MySQL](../integrations/sources/mysql.md)
 * [Microsoft SQL Server / MSSQL](../integrations/sources/mssql.md)
-
+* [MongoDB](../integrations/sources/mongodb-v2.md)
 ## Coming Soon
 
 * Oracle DB

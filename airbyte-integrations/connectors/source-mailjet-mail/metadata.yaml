@@ -2,12 +2,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 56582331-5de2-476b-b913-5798de77bbdf
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-mailjet-mail
   githubIssueLabel: source-mailjet-mail
   icon: mailjetmail.svg
   license: MIT
   name: Mailjet Mail
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mailjet-mail
   registries:
     cloud:
       enabled: false
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
