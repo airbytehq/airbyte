@@ -3,7 +3,7 @@
 :::warning
 This tool is in active development. Airbyte strives to provide high quality, reliable software, however there may be
 bugs or usability issues with this command. If you find an issue with the `abctl` command, please report it as a github 
-issue [here](https://github.com/airbytehq/airbyte/issues) with the tpye of "Issue: 🤷 Others issues requests..." please 
+issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "Issue: 🤷 Others issues requests..." please 
 add the `area/quickstart` label.
 
 :::
