@@ -16,7 +16,7 @@ from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
-FACEBOOK_RATE_LIMIT_ERROR_CODES = (
+FACEBOOK_RATE_LIMIT_ERROR_CODES = {
     4,
     17,
     32,
@@ -29,7 +29,7 @@ FACEBOOK_RATE_LIMIT_ERROR_CODES = (
     80005,
     80006,
     80008,
-)
+}
 FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
@@ -85,6 +85,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
 
+    def give_up(details):
+        if isinstance(details["exception"], FacebookRequestError):
+            raise traced_exception(details["exception"])
+
     def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
         According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
@@ -119,6 +123,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         jitter=None,
         on_backoff=[log_retry_attempt, reduce_request_record_limit],
         on_success=[revert_request_record_limit],
+        on_giveup=[give_up],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )
@@ -174,6 +179,14 @@ def traced_exception(fb_exception: FacebookRequestError):
                 "Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh "
                 "access token with all required permissions."
             )
+
+    elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
+        return AirbyteTracedException(
+            message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",
+            internal_message=str(fb_exception),
+            failure_type=FailureType.transient_error,
+            exception=fb_exception,
+        )
 
     else:
         failure_type = FailureType.system_error
