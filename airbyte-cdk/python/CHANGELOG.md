@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
 ## 0.81.6
 Upgrade to recent version of langchain
 
