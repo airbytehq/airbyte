@@ -29,7 +29,7 @@ brew install abctl
 
 - Install `Docker Desktop`  \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
 - After `Docker Desktop` is installed, you must enable `Kubernetes` \(see [instructions](https://docs.docker.com/desktop/kubernetes/)\).
-- Download the latest version of `abctl` from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:
+- If you did not use Brew to install `abctl` then download the latest version of `abctl` from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:
 
 :::info
 Mac users may need to use the finder and Open With > Terminal to run the `abctl` command. After the first run
