@@ -21,13 +21,6 @@ class OAuthCredentials(BaseModel):
 
     # Fields for the OAuth authentication, including tenant_id, client_id, client_secret, and refresh_token
     auth_type: Literal["Client"] = Field("Client", const=True)
-    grant_type: str = Field(
-        title="OAuth Type",
-        description="Determines the OAuth grant type for authentication. 'authorization_code' allows access via refresh tokens. 'client_credentials' uses only the client ID and secret for authentication.",
-        default="authorization_code",
-        enum=["authorization_code", "client_credentials"],
-    )
-
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft SharePoint user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
@@ -39,7 +32,7 @@ class OAuthCredentials(BaseModel):
         description="Client Secret of your Microsoft developer application",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
+    refresh_token: Optional[str] = Field(
         title="Refresh Token",
         description="Refresh Token of your Microsoft developer application",
         airbyte_secret=True,
