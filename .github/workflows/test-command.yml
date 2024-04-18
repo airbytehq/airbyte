@@ -1,4 +1,4 @@
-name: Deprecation message for test slash command
+name: On-Demand Connector Tests for PRs
 on:
   workflow_dispatch:
     inputs:
@@ -13,18 +13,11 @@ on:
         description: "The git ref to check out from the specified repository."
         required: false
         default: master
+      pr:
+        description: "Pull request number. Used to link the comment to the PR."
+        required: false
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
-        required: false
-      uuid:
-        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
-        required: false
-      connector-acceptance-test-version:
-        description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
-        required: false
-        default: "latest"
-      local_cdk:
-        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
         required: false
 jobs:
   write-deprecation-message:
