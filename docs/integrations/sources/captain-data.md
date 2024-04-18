@@ -62,7 +62,7 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.1.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.1.3 | 2024-04-18 | [37130](https://github.com/airbytehq/airbyte/pull/37130) | Manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-15 | [37130](https://github.com/airbytehq/airbyte/pull/37130) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37130](https://github.com/airbytehq/airbyte/pull/37130) | schema descriptions |
 | 0.1.0   | 2023-04-15 | [Init](https://github.com/airbytehq/airbyte/pull/25230) | Initial commit |

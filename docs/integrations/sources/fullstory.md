@@ -70,7 +70,7 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
-| 0.1.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.1.3 | 2024-04-18 | [37163](https://github.com/airbytehq/airbyte/pull/37163) | Manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-15 | [37163](https://github.com/airbytehq/airbyte/pull/37163) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37163](https://github.com/airbytehq/airbyte/pull/37163) | schema descriptions |
 | 0.1.0   | 2023-04-25 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |

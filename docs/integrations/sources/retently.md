@@ -46,7 +46,7 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.3 | 2024-04-18 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37248](https://github.com/airbytehq/airbyte/pull/37248) | schema descriptions |
 | 0.2.0 | 2023-08-03 | [29040](https://github.com/airbytehq/airbyte/pull/29040) | Migrate to Low-Code CDK |

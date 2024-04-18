@@ -101,7 +101,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 0.6.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.6.4 | 2024-04-18 | [37119](https://github.com/airbytehq/airbyte/pull/37119) | Manage dependencies with Poetry. |
 | 0.6.3 | 2024-04-15 | [37119](https://github.com/airbytehq/airbyte/pull/37119) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.6.2 | 2024-04-12 | [37119](https://github.com/airbytehq/airbyte/pull/37119) | schema descriptions |
 | 0.6.1 | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access |

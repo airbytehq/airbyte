@@ -101,7 +101,7 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
-| 0.2.6 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.6 | 2024-04-18 | [37289](https://github.com/airbytehq/airbyte/pull/37289) | Manage dependencies with Poetry. |
 | 0.2.5 | 2024-04-15 | [37289](https://github.com/airbytehq/airbyte/pull/37289) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.4 | 2024-04-12 | [37289](https://github.com/airbytehq/airbyte/pull/37289) | schema descriptions |
 | 0.2.3 | 2023-06-02 | [26955](https://github.com/airbytehq/airbyte/pull/26955) | Added `block_context` and `author` properties to the `Products` stream |

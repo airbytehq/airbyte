@@ -110,7 +110,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------|
-| 1.0.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 1.0.5 | 2024-04-18 | [37187](https://github.com/airbytehq/airbyte/pull/37187) | Manage dependencies with Poetry. |
 | 1.0.4 | 2024-04-15 | [37187](https://github.com/airbytehq/airbyte/pull/37187) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.0.3 | 2024-04-12 | [37187](https://github.com/airbytehq/airbyte/pull/37187) | schema descriptions |
 | 1.0.2 | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams |
