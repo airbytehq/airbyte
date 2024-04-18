@@ -127,6 +127,13 @@ public class MySqlInitialReadUtil {
         getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
   }
 
+  public static CdcState createCdcState(final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final StateManager stateManager) {
+    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+    return getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+  }
+
   private static CdcState getCdcState(final JdbcDatabase database,
                                       final ConfiguredAirbyteCatalog catalog,
                                       final StateManager stateManager,
@@ -203,7 +210,7 @@ public class MySqlInitialReadUtil {
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                                 final StateManager stateManager,
-                                                                                final MySqlInitialLoadStateManager initialLoadStateManager,
+                                                                                final MySqlInitialLoadGlobalStateManager initialLoadGlobalStateManager,
                                                                                 final Instant emittedAt,
                                                                                 final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -217,13 +224,13 @@ public class MySqlInitialReadUtil {
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-    final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+    final CdcState stateToBeUsed = initialLoadGlobalStateManager.getCdcState();
 
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
 
       final MySqlInitialLoadHandler initialLoadHandler =
-          getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager, metadataInjector);
+          getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadGlobalStateManager, metadataInjector);
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),

@@ -351,6 +351,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertStateTypes(stateMessages, 4);
   }
 
+  @Override
+  protected void assertExpectedStateMessagesForFullRefresh(final List<? extends AirbyteStateMessage> stateMessages) {
+    // Full refresh will only send 6 state messages - one for each record (including the final one).
+    assertEquals(6, stateMessages.size());
+  }
+
+
+
   protected void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount) {
     long actualRecordCount = 0L;
     for (final AirbyteStateMessage message : stateMessages) {
@@ -402,6 +410,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
       final AirbyteGlobalState global = stateMessage.getGlobal();
       assertNotNull(global.getSharedState());
+      System.out.println("debug: global: " + global);
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
