@@ -64,7 +64,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
-| 1.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 1.2.3 | 2024-04-18 | [37137](https://github.com/airbytehq/airbyte/pull/37137) | Manage dependencies with Poetry. |
 | 1.2.1 | 2024-04-12 | [37137](https://github.com/airbytehq/airbyte/pull/37137) | schema descriptions |
 | 1.2.0 | 2023-08-13 | [29288](https://github.com/airbytehq/airbyte/pull/29288) | Migrate python cdk to low-code |
 | 1.1.0 | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream |
