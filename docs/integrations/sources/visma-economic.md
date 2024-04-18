@@ -51,7 +51,7 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                        | Subject                            |
 | :------ |:-----------|:----------------------------------------------------|:-----------------------------------|
-| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.3 | 2024-04-18 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | schema descriptions |
 | 0.2.0 | 2023-10-20 | [30991](https://github.com/airbytehq/airbyte/pull/30991) | Migrate to Low-code Framework |
