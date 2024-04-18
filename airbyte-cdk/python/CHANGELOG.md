@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
 ## 0.81.7
 Concurrent CDK: Fix to update partitioned state only when partition is successful
 
