@@ -28,7 +28,7 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.1.4 | 2024-04-18 | [37262](https://github.com/airbytehq/airbyte/pull/37262) | Manage dependencies with Poetry. |
 | 0.1.3 | 2024-04-15 | [37262](https://github.com/airbytehq/airbyte/pull/37262) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.2 | 2024-04-12 | [37262](https://github.com/airbytehq/airbyte/pull/37262) | schema descriptions |
 | 0.1.1   | 2023-02-11 l [22868](https://github.com/airbytehq/airbyte/pull/22868) | Specified date formatting in specification |
