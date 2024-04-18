@@ -368,6 +368,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
          * This method is deprecated. It verifies table creation, but not insert right to a newly
          * created table. Use attemptTableOperations with the attemptInsert argument instead.
          */
+        @JvmStatic
         @Deprecated("")
         @Throws(Exception::class)
         fun attemptSQLCreateAndDropTableOperations(
