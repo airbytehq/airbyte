@@ -69,7 +69,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date       | Pull Request                                                 | Subject                                                                     |
 | :------ | :--------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 2.1.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 2.1.4 | 2024-04-18 | [37115](https://github.com/airbytehq/airbyte/pull/37115) | Manage dependencies with Poetry. |
 | 2.1.3 | 2024-04-15 | [37115](https://github.com/airbytehq/airbyte/pull/37115) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 2.1.2 | 2024-04-12 | [37115](https://github.com/airbytehq/airbyte/pull/37115) | schema descriptions |
 | 2.1.1 | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
