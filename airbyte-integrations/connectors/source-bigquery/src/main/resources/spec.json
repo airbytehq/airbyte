@@ -23,6 +23,36 @@
         "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.",
         "title": "Credentials JSON",
         "airbyte_secret": true
+      },
+      "streams": {
+        "title": "The list of streams to sync",
+        "description": "Each instance of this configuration defines a <a href=\"https://docs.airbyte.com/cloud/core-concepts#stream\">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.",
+        "order": 10,
+        "type": "array",
+        "items": {
+          "title": "FileBasedStreamConfig",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name of the stream.",
+              "type": "string"
+            },
+            "validation_policy": {
+              "title": "Validation Policy",
+              "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
+              "default": "Emit Record",
+              "enum": ["Emit Record", "Skip Record", "Wait for Discover"]
+            },
+            "days_to_sync_if_history_is_full": {
+              "title": "Days To Sync If History Is Full",
+              "description": "When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
+              "default": 3,
+              "type": "integer"
+            }
+          },
+          "required": ["name", "format"]
+        }
       }
     }
   }
