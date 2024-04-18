@@ -32,11 +32,11 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from freezegun import freeze_time
 
-_ANY_SYNC_MODE = SyncMode.full_refresh
+_DEFAULT_SYNC_MODE = SyncMode.incremental
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 _STREAM_NAME = "stream"
-_ANY_CURSOR = Mock()
+_ANY_CURSOR = Mock(spec=FileBasedConcurrentCursor)
 
 
 @pytest.mark.parametrize(
@@ -56,13 +56,13 @@ def test_file_based_stream_partition_generator(sync_mode):
     stream.stream_slices.return_value = stream_slices
 
     partition_generator = FileBasedStreamPartitionGenerator(
-        stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR
+        stream, message_repository, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR
     )
 
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
     assert slices == stream_slices
-    stream.stream_slices.assert_called_once_with(sync_mode=_ANY_SYNC_MODE, cursor_field=_ANY_CURSOR_FIELD, stream_state=_ANY_STATE)
+    stream.stream_slices.assert_called_once_with(sync_mode=_DEFAULT_SYNC_MODE, cursor_field=_ANY_CURSOR_FIELD, stream_state=_ANY_STATE)
 
 
 @pytest.mark.parametrize(
@@ -87,10 +87,9 @@ def test_file_based_stream_partition(transformer, expected_records):
     stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
     _slice = None
-    sync_mode = SyncMode.full_refresh
     cursor_field = None
     state = None
-    partition = FileBasedStreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, message_repository, cursor_field, state, _ANY_CURSOR)
 
     a_log_message = AirbyteMessage(
         type=MessageType.LOG,
@@ -124,7 +123,7 @@ def test_file_based_stream_partition_raising_exception(exception_type, expected_
     message_repository = InMemoryMessageRepository()
     _slice = None
 
-    partition = FileBasedStreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, message_repository, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     stream.read_records.side_effect = Exception()
 
@@ -149,7 +148,7 @@ def test_file_based_stream_partition_raising_exception(exception_type, expected_
 def test_file_based_stream_partition_hash(_slice, expected_hash):
     stream = Mock()
     stream.name = "stream"
-    partition = FileBasedStreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, Mock(), _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     _hash = partition.__hash__()
     assert _hash == expected_hash

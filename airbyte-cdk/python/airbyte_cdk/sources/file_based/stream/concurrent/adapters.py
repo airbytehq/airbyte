@@ -198,7 +198,6 @@ class FileBasedStreamPartition(Partition):
         stream: AbstractFileBasedStream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: "AbstractConcurrentFileBasedCursor",
@@ -206,7 +205,6 @@ class FileBasedStreamPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._message_repository = message_repository
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
@@ -216,7 +214,7 @@ class FileBasedStreamPartition(Partition):
         try:
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
-                sync_mode=SyncMode.full_refresh,
+                sync_mode=SyncMode.incremental,  # TODO: check why this was full refresh
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
             ):
@@ -297,7 +295,6 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
                             self._stream,
                             {"files": [copy.deepcopy(file)]},
                             self._message_repository,
-                            self._sync_mode,
                             self._cursor_field,
                             self._state,
                             self._cursor,
