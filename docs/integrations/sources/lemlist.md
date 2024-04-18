@@ -37,8 +37,9 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                           | Subject         |
 | :------ | :--------- | :----------------------------------------------------- | :-------------- |
+| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37186](https://github.com/airbytehq/airbyte/pull/37186) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37186](https://github.com/airbytehq/airbyte/pull/37186) | schema descriptions |
-| 0.2.0   | 2023-08-14 | [29406](https://github.com/airbytehq/airbyte/pull/29406)    | Migrated to LowCode Cdk  |
+| 0.2.0 | 2023-08-14 | [29406](https://github.com/airbytehq/airbyte/pull/29406) | Migrated to LowCode Cdk |
 | 0.1.1   | Unknown    | Unknown                                                | Bump Version             |
 | 0.1.0   | 2021-10-14 | [7062](https://github.com/airbytehq/airbyte/pull/7062) | Initial Release          |

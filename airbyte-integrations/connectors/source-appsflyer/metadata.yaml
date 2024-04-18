@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 16447954-e6a8-4593-b140-43dea13bc457
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/source-appsflyer
   documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
   githubIssueLabel: source-appsflyer

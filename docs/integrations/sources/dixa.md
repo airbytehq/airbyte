@@ -51,11 +51,12 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.3.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.3.2 | 2024-04-15 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | schema descriptions |
-| 0.3.0   | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework  |
-| 0.2.0   | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream                            |
-| 0.1.3   | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3                                    |
-| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                       |
-| 0.1.1   | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367)   | Migrated to CI Sandbox, refactorred code structure for future support |
-| 0.1.0   | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358)   | New source                                                            |
+| 0.3.0 | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework |
+| 0.2.0 | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream |
+| 0.1.3 | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3 |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1 | 2021-08-12 | [5367](https://github.com/airbytehq/airbyte/pull/5367) | Migrated to CI Sandbox, refactorred code structure for future support |
+| 0.1.0 | 2021-07-07 | [4358](https://github.com/airbytehq/airbyte/pull/4358) | New source |

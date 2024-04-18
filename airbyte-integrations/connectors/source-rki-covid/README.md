@@ -1,140 +1,55 @@
-# RKI Covid Source
+# Rki-Covid source connector
 
-This is the repository for the RkI (Robert Koch-Institut - von Marlon Lückert) Covid-19 source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/rki-covid).
+
+This is the repository for the Rki-Covid source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/rki-covid).
 
 ## Local development
-### Developed Streams (Endpoints)
-```
-Germany:
-    1. /germany
-    2. /germany/age-groups
-    3. /germany/history/cases/:days
-    4. /germany/history/incidence/:days
-    5. /germany/history/deaths/:days
-    6. /germany/history/recovered/:days
-    7. /germany/history/frozen-incidence/:days
-    8. /germany/history/hospitalization/:days
-    9. /germany/states
-    10. /germany/states/age-groups
-    11. /germany/states/history/cases/:days
-    12. /germany/states/history/incidence/:days
-    13. /germany/states/history/frozen-incidence/:days
-    14. /germany/states/history/deaths/:days
-    15. /germany/states/history/recovered/:days
-    16. /germany/states/history/hospitalization/:days
-```
 
 ### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
+* Python (~=3.9)
+* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-#### Minimum Python version required `= 3.7.0`
 
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
+### Installing the connector
+From this connector directory, run:
+```bash
+poetry install --with dev
 ```
-python -m venv .venv
-```
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install '.[tests]'
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
-
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/rki-covid)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_rki_covid/spec.json` file.
+### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/rki-covid)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_rki_covid/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source rki-covid test creds`
-and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-rki-covid spec
+poetry run source-rki-covid check --config secrets/config.json
+poetry run source-rki-covid discover --config secrets/config.json
+poetry run source-rki-covid read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Locally running the connector docker image
+### Running unit tests
+To run unit tests locally, from the connector directory run:
+```
+poetry run pytest unit_tests
+```
 
-
-
-
-#### Use `airbyte-ci` to build your connector
-The Airbyte way of building this connector is to use our `airbyte-ci` tool.
-You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
-Then running the following command will build your connector:
-
+### Building the docker image
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name source-rki-covid build
-```
-Once the command is done, you will find your connector image in your local docker registry: `airbyte/source-rki-covid:dev`.
-
-##### Customizing our build process
-When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
-You can customize our build process by adding a `build_customization.py` module to your connector.
-This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
-It will be imported at runtime by our build process and the functions will be called if they exist.
-
-Here is an example of a `build_customization.py` module:
-```python
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    # Feel free to check the dagger documentation for more information on the Container object and its methods.
-    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
-    from dagger import Container
-
-
-async def pre_connector_install(base_image_container: Container) -> Container:
-    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
-
-async def post_connector_install(connector_container: Container) -> Container:
-    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+airbyte-ci connectors --name=source-rki-covid build
 ```
 
-#### Build your own connector image
-This connector is built using our dynamic built process in `airbyte-ci`.
-The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
-The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
-It does not rely on a Dockerfile.
+An image will be available on your host with the tag `airbyte/source-rki-covid:dev`.
 
-If you would like to patch our connector and build your own a simple approach would be to:
 
-1. Create your own Dockerfile based on the latest version of the connector image.
-```Dockerfile
-FROM airbyte/source-rki-covid:latest
-
-COPY . ./airbyte/integration_code
-RUN pip install ./airbyte/integration_code
-
-# The entrypoint and default env vars are already set in the base image
-# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-```
-Please use this as an example. This is not optimized.
-
-2. Build your image:
-```bash
-docker build -t airbyte/source-rki-covid:dev .
-# Running the spec command against your patched connector
-docker run airbyte/source-rki-covid:dev spec
-```
-#### Run
+### Running as a docker container
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-rki-covid:dev spec
@@ -143,28 +58,34 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-rki-covid:dev discover
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-rki-covid:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-## Testing
+### Running our CI test suite
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
 airbyte-ci connectors --name=source-rki-covid test
 ```
 
 ### Customizing acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
-## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
+### Dependency Management
+All of your dependencies should be managed via Poetry. 
+To add a new dependency, run:
+```bash
+poetry add <package-name>
+```
 
-### Publishing a new version of the connector
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
+
+## Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-rki-covid test`
-2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/rki-covid.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/rki-covid.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

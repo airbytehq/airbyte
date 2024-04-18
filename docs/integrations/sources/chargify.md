@@ -42,9 +42,10 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.4.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.4.2 | 2024-04-15 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.4.1 | 2024-04-12 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | schema descriptions |
-| 0.4.0   | 2023-10-16 | [31116](https://github.com/airbytehq/airbyte/pull/31116) | Add Coupons, Transactions, Invoices Streams |
-| 0.3.0   | 2023-08-10 | [29130](https://github.com/airbytehq/airbyte/pull/29130) | Migrate Python CDK to Low Code |
-| 0.2.0   | 2023-08-08 | [29218](https://github.com/airbytehq/airbyte/pull/29218) | Fix schema                     |
-| 0.1.0   | 2022-03-16 | [10853](https://github.com/airbytehq/airbyte/pull/10853) | Initial release                |
+| 0.4.0 | 2023-10-16 | [31116](https://github.com/airbytehq/airbyte/pull/31116) | Add Coupons, Transactions, Invoices Streams |
+| 0.3.0 | 2023-08-10 | [29130](https://github.com/airbytehq/airbyte/pull/29130) | Migrate Python CDK to Low Code |
+| 0.2.0 | 2023-08-08 | [29218](https://github.com/airbytehq/airbyte/pull/29218) | Fix schema |
+| 0.1.0 | 2022-03-16 | [10853](https://github.com/airbytehq/airbyte/pull/10853) | Initial release |

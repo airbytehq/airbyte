@@ -55,17 +55,18 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37125](https://github.com/airbytehq/airbyte/pull/37125) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37125](https://github.com/airbytehq/airbyte/pull/37125) | schema descriptions |
-| 0.2.0   | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code                              |
-| 0.1.10  | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
-| 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                       |
-| 0.1.8   | 2022-12-15 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream                                   |
-| 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                    |
-| 0.1.6   | 2022-07-27 | [14940](https://github.com/airbytehq/airbyte/pull/14940) | Fix infinite loop when the page stream goes beyond one page |
-| 0.1.5   | 2022-01-31 | [9935](https://github.com/airbytehq/airbyte/pull/9935)   | Correct date-time columns for `orders` (v2 stream)          |
-| 0.1.4   | 2022-01-13 | [9516](https://github.com/airbytehq/airbyte/pull/9516)   | Add Catalog Products Stream and fix date-time parsing       |
-| 0.1.3   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications           |
-| 0.1.2   | 2021-12-07 | [8416](https://github.com/airbytehq/airbyte/pull/8416)   | Correct Incremental Function                                |
-| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                             |
-| 0.1.0   | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521)   | Initial Release. Source BigCommerce                         |
+| 0.2.0 | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code |
+| 0.1.10 | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams |
+| 0.1.9 | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0 |
+| 0.1.8 | 2022-12-15 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream |
+| 0.1.7 | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond |
+| 0.1.6 | 2022-07-27 | [14940](https://github.com/airbytehq/airbyte/pull/14940) | Fix infinite loop when the page stream goes beyond one page |
+| 0.1.5 | 2022-01-31 | [9935](https://github.com/airbytehq/airbyte/pull/9935) | Correct date-time columns for `orders` (v2 stream) |
+| 0.1.4 | 2022-01-13 | [9516](https://github.com/airbytehq/airbyte/pull/9516) | Add Catalog Products Stream and fix date-time parsing |
+| 0.1.3 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+| 0.1.2 | 2021-12-07 | [8416](https://github.com/airbytehq/airbyte/pull/8416) | Correct Incremental Function |
+| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.0 | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source BigCommerce |

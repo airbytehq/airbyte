@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-datadog
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   githubIssueLabel: source-datadog

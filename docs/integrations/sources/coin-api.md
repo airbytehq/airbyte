@@ -50,6 +50,7 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
+| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | schema descriptions |
 | 0.2.0   | 2024-02-05 | [#34826](https://github.com/airbytehq/airbyte/pull/34826) | Fix catalog types for fields `bid_price` and `bid_size` in stream  `quotes_historical_data`. |
