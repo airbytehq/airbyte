@@ -100,7 +100,8 @@ class ConcurrentReadProcessor:
         partition = sentinel.partition
 
         try:
-            partition.close()
+            if sentinel.is_successful:
+                partition.close()
         except Exception as exception:
             self._flag_exception(partition.stream_name(), exception)
             yield AirbyteTracedException.from_exception(
