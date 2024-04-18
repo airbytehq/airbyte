@@ -38,6 +38,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 
 | 0.2.2 | 2024-04-15 | [37176](https://github.com/airbytehq/airbyte/pull/37176) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37176](https://github.com/airbytehq/airbyte/pull/37176) | schema descriptions |
