@@ -33,7 +33,7 @@ brew install abctl
 
 :::info
 Mac users may need to use the finder and Open With > Terminal to run the `abctl` command. After the first run
-users should be able to run the command from the terminal.
+users should be able to run the command from the terminal. Airbyte suggests mac users to use `brew` if it is available.
 
 :::
 
