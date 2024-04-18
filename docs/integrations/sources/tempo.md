@@ -46,9 +46,10 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.3.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [37268](https://github.com/airbytehq/airbyte/pull/37268) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.2 | 2024-04-12 | [37268](https://github.com/airbytehq/airbyte/pull/37268) | schema descriptions |
-| 0.3.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                   |
-| 0.3.0   | 2022-11-02 | [18936](https://github.com/airbytehq/airbyte/pull/18936) | Migrate to low code + certify to Beta + migrate to API v4 |
-| 0.2.6   | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs                |
-| 0.2.4   | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649)   | Migrate to the CDK                                        |
+| 0.3.1 | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version |
+| 0.3.0 | 2022-11-02 | [18936](https://github.com/airbytehq/airbyte/pull/18936) | Migrate to low code + certify to Beta + migrate to API v4 |
+| 0.2.6 | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs |
+| 0.2.4 | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649) | Migrate to the CDK |
