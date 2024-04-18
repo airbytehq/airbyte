@@ -465,7 +465,7 @@ class BulkSalesforceStream(SalesforceStream):
                     raise error
             job_id = job_info["id"]
             if job_status != job_info["state"]:
-                self.logger.info(f"Job {self.name}/{job_id} status changed from {job_status} to {job_info["state"]}")
+                self.logger.info(f"Job {self.name}/{job_id} status changed from {job_status} to {job_info['state']}")
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 if job_status != "JobComplete":
@@ -476,7 +476,7 @@ class BulkSalesforceStream(SalesforceStream):
                         error_message = job_info
                     self.logger.error(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
                 else:
-                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}")
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
