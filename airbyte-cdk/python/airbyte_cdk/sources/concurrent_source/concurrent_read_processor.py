@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Dict, Iterable, List, Mapping, Optional, Set
+from typing import Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
