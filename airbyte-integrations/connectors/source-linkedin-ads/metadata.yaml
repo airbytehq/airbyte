@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 0.8.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -29,6 +29,25 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This upgrade brings changes in primary key to *-analytics streams.
+        upgradeDeadline: "2024-04-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
   suggestedStreams:
     streams:
       - accounts

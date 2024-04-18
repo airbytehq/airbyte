@@ -372,7 +372,12 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
 @pytest.mark.parametrize(
     "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
     (
-        (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}], 200, {}, "API Call limit is exceeded"),
+        (
+            403,
+            [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}],
+            200,
+            {},
+            "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"),
         (
             200,
             {"access_token": "access_token", "instance_url": "https://instance_url"},
