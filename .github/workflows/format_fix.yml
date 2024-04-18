@@ -1,10 +1,4 @@
-name: Fix formatting on a branch
-run-name: Fix formatting on ${{ github.ref }}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel any previous runs on the same branch if they are still in progress
-  cancel-in-progress: true
+name: Fix formatting on a PR
 
 on:
   workflow_dispatch:
@@ -15,6 +9,12 @@ on:
       comment-id:
         description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
         required: false
+
+run-name: "Fix formatting on PR #${{ github.event.inputs.pr }}"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
 
 jobs:
   format-fix:
