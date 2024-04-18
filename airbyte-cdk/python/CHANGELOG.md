@@ -43,7 +43,7 @@ Fix CDK version mismatch introduced in 0.78.8
 Update error messaging/type for missing streams. Note: version mismatch, please use 0.78.9 instead
 
 ## 0.78.6
-low-code: add backward compatibility for old close slice behavior
+low-code: add backward compatibility for old close slice behavior 
 
 ## 0.78.5
 low-code: fix stop_condition instantiation in the cursor pagination
@@ -55,7 +55,7 @@ low-code: Add last_record and last_page_size interpolation variables to paginati
 Fix dependencies for file-based extras
 
 ## 0.78.2
-low-code: fix retrieving partition key for legacy state migration
+low-code: fix retrieving partition key for legacy state migration 
 
 ## 0.78.1
 connector-builder: return full url-encoded URL instead of separating parameters
@@ -363,7 +363,7 @@ File CDK: Avoid listing all files for check command
 Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
 
 ## 0.51.40
-Add filters for base64 encode and decode in Jinja Interpolation
+Add filters for base64 encode and decode in Jinja Interpolation 
 
 ## 0.51.39
 Few bug fixes for concurrent cdk
@@ -692,8 +692,8 @@ Publishing Docker image for source-declarative-manifest
 ## 0.29.0
 **Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
 
-The changes are:
-* Deprecated the concept of Stream Slicers in favor of two individual concepts: Incremental Syncs, and Partition Routers:
+The changes are: 
+* Deprecated the concept of Stream Slicers in favor of two individual concepts: Incremental Syncs, and Partition Routers: 
   * Stream will define an `incremental_sync` field which is responsible for defining how the connector should support incremental syncs using a cursor field. `DatetimeStreamSlicer` has been renamed to `DatetimeBasedCursor` and can be used for this field.
   * `Retriever`s will now define a `partition_router` field. The remaining slicers are now called `SubstreamPartitionRouter` and `ListPartitionRouter`, both of which can be used here as they already have been.
   * The `CartesianProductStreamSlicer` because `partition_router` can accept a list of values and will generate that same cartesian product by default.
@@ -872,7 +872,7 @@ Low-code: Fix a few bugs with the stream slicers
 Low-code: Add support for custom error messages on error response filters
 
 ## 0.3.0
-Publish python typehints via `py.typed` file.
+Publish python typehints via `py.typed` file. 
 
 ## 0.2.3
 - Propagate options to InterpolatedRequestInputProvider
