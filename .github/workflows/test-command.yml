@@ -23,12 +23,57 @@ jobs:
   write-deprecation-message:
     runs-on: ubuntu-latest
     steps:
-      - name: Print deprecation message
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :warning: The test slash command is now deprecated.<br>
-            The connector tests are automatically triggered as CI checks.<br>
-            Please use /legacy-test if you need to test CDK or CAT changes.<br>
-            Please join post to #pipeline-complaint-hotline slack channel if something is not working as expected.<br>
+    - name: Create URL to the run output
+      id: vars
+      run: echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+    - name: Append comment with job run link
+      id: first-comment-action
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        comment-id: ${{ github.event.inputs.comment-id }}
+        issue-number: ${{ github.event.inputs.pr }}
+        body: |
+
+          > PR test job started... [Check job output.][1]
+
+          [1]: ${{ steps.vars.outputs.run-url }}
+
+    - name: Checkout Airbyte
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+    - name: Checkout PR (${{ github.event.inputs.pr }})
+      uses: dawidd6/action-checkout-pr@v1
+      with:
+        pr: ${{ github.event.inputs.pr }}
+
+    - name: Get PR info
+      id: pr-info
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+        echo "repo=$(echo $PR_JSON | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+        echo "branch=$(echo $PR_JSON | jq -r .head.ref)" >> $GITHUB_OUTPUT
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install `airbyte-ci` CLI
+      # We use the stable `airbyte-ci` from `master`. Intentionally ignores any CI changes
+      # local to this branch.
+      run: >
+        pip install
+        git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
+
+    - name: Run `airbyte-ci` test
+      env:
+        GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      run: >
+        airbyte-ci connector
+        --name=${{ github.event.inputs.connector }}
+        test
