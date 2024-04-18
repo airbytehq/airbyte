@@ -114,7 +114,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
-| 2.2.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 2.2.5 | 2024-04-18 | [37224](https://github.com/airbytehq/airbyte/pull/37224) | Manage dependencies with Poetry. |
 | 2.2.4 | 2024-04-15 | [37224](https://github.com/airbytehq/airbyte/pull/37224) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 2.2.3 | 2024-04-12 | [37224](https://github.com/airbytehq/airbyte/pull/37224) | schema descriptions |
 | 2.2.2 | 2024-01-11 | [34153](https://github.com/airbytehq/airbyte/pull/34153) | prepare for airbyte-lib |
