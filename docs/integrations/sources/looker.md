@@ -78,6 +78,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.11 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.2.10 | 2024-04-15 | [37190](https://github.com/airbytehq/airbyte/pull/37190) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.9 | 2024-04-12 | [37190](https://github.com/airbytehq/airbyte/pull/37190) | schema descriptions |
 | 0.2.8 | 2022-12-07 | [20182](https://github.com/airbytehq/airbyte/pull/20182) | Fix schema transformation issue |
