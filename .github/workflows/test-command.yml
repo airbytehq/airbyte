@@ -78,10 +78,11 @@ jobs:
         test
 
     - name: Upload pipeline reports
-      uses: actions/upload-artifact@v2
+      id: upload-artifact
+      uses: actions/upload-artifact@v4
       with:
         name: pipeline-reports
-        path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports
+        path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/connectors
 
     - name: Append success comment
       uses: peter-evans/create-or-update-comment@v4
@@ -90,7 +91,9 @@ jobs:
         comment-id: ${{ github.event.inputs.comment-id }}
         reactions: hooray
         body: |
-          > ✅ Tests passed.
+          > ✅ Tests passed. [🔗][1]
+
+          [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
 
     - name: Append failure comment
       if: failure()
@@ -100,4 +103,6 @@ jobs:
         comment-id: ${{ github.event.inputs.comment-id }}
         reactions: confused
         body: |
-          > ❌ Tests failed.
+          > ❌ Tests failed. [🔗][1]
+
+          [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
