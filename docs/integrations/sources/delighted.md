@@ -51,7 +51,7 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| 0.2.6 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.6 | 2024-04-18 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | Manage dependencies with Poetry. |
 | 0.2.5 | 2024-04-15 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.4 | 2024-04-12 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | schema descriptions |
 | 0.2.3 | 2023-09-08 | [27946](https://github.com/airbytehq/airbyte/pull/27946) | Changed `Date Since` input field title to `Replication Start Date` |
