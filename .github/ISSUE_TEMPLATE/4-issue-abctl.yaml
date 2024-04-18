@@ -38,12 +38,12 @@ body:
       label: Abctl Version
       value: |
         <details>
-        
+
         ```console
         $ abctl version
         # paste output here
         ```
-        
+
         </details>
     validations:
       required: true
@@ -53,12 +53,12 @@ body:
       label: Docker Version
       value: |
         <details>
-        
+
         ```console
         $ docker version
         # paste output here
         ```
-        
+
         </details>
     validations:
       required: true
@@ -68,21 +68,21 @@ body:
       label: OS Version
       value: |
         <details>
-        
+
         ```console
         # On Linux:
         $ cat /etc/os-release
         # paste output here
-        
+
         # On Mac:
         $ uname -a
         # paste output here
-        
+
         # On Windows:
         C:\> wmic os get Caption, Version, BuildNumber, OSArchitecture
         # paste output here
         ```
-        
+
         </details>
     validations:
       required: true
