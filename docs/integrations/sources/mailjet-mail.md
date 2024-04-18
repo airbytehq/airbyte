@@ -34,6 +34,7 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.1.4 | 2024-04-15 | [37194](https://github.com/airbytehq/airbyte/pull/37194) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.3 | 2024-04-12 | [37194](https://github.com/airbytehq/airbyte/pull/37194) | schema descriptions |
 | 0.1.2   | 2022-12-18 | [#30924](https://github.com/airbytehq/airbyte/pull/30924) | Adds Subject field to `message` stream     |
