@@ -100,7 +100,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.6.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 1.6.4 | 2024-04-18 | [37264](https://github.com/airbytehq/airbyte/pull/37264) | Manage dependencies with Poetry. |
 | 1.6.3 | 2024-04-15 | [37264](https://github.com/airbytehq/airbyte/pull/37264) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.6.2 | 2024-04-12 | [37264](https://github.com/airbytehq/airbyte/pull/37264) | schema descriptions |
 | 1.6.1 | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream |
