@@ -19,7 +19,6 @@ body:
         Thanks for taking the time to fill out this bug report...
         Make sure to update this issue with a concise title and provide all information you have to 
         help us debug the problem together. Issues not following the template will be closed.
-
   - type: textarea
     id: problem
     attributes:
@@ -27,14 +26,12 @@ body:
       description: Please give any additional information you have and steps to reproduce the problem.
     validations:
       required: true
-
   - type: textarea
     id: expected
     attributes:
       label: What did you expect to happen?
     validations:
       required: true
-
   - type: textarea
     id: abctlVersion
     attributes:
@@ -50,7 +47,6 @@ body:
         </details>
     validations:
       required: true
-
   - type: textarea
     id: dockerVersion
     attributes:
@@ -66,7 +62,6 @@ body:
         </details>
     validations:
       required: true
-
   - type: textarea
     id: osVersion
     attributes:
