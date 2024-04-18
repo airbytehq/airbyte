@@ -187,7 +187,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     ObjectMapper mapper = new ObjectMapper();
 
     assertTrue(recordMessages.get(0).getData().equals(
-        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\", \"userid\":null}}")));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -203,7 +203,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
     assertTrue(secondSyncRecords.get(0).getData().equals(
-        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}}")));
 
   }
 
