@@ -38,8 +38,9 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.1.4 | 2024-04-15 | [37279](https://github.com/airbytehq/airbyte/pull/37279) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.3 | 2024-04-12 | [37279](https://github.com/airbytehq/airbyte/pull/37279) | schema descriptions |
-| 0.1.2   | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
-| 0.1.1   | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream         |
+| 0.1.2 | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
+| 0.1.1 | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream |
 | 0.1.0   | 2022-11-01 | [18883](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
