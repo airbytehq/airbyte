@@ -128,7 +128,7 @@ TelemetryDockerUp()
     sleep 1
   done
 
-  TelemetrySend "failed" "install" "webapp was not running within 600 seconds"
+  TelemetrySend "failed" "install" "webapp was not running within 1200 seconds"
 }
 
 readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
