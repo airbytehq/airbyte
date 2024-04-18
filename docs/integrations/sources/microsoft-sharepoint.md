@@ -27,7 +27,7 @@ This page contains the setup guide and reference information for the Microsoft S
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-8. The **OAuth2.0** authorization is selected by default for authentication. You have the option to choose the `grant_type`: `authorization_code`, which uses a refresh token to maintain access without frequent re-authorizations, or `client_credentials`, which does not require a refresh token. After selecting the desired grant type, click **Authenticate your Microsoft SharePoint account**, log in, and authorize your Microsoft account to connect it with Airbyte.
+8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 10. Add a stream:
    1. Write the **File Type**
@@ -129,12 +129,12 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                             |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
-| 0.2.3   | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Add grant-type `client_credentials` For OAuth2 Flow |
-| 0.2.2   | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400                                    |
-| 0.2.1   | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK                                           |
-| 0.2.0   | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items                           |
-| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source                                          |
+| Version | Date       | Pull Request                                             | Subject                     |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------|
+| 0.2.3   | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Make refresh token optional |
+| 0.2.2   | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400            |
+| 0.2.1   | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK                   |
+| 0.2.0   | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items   |
+| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source                  |
 
 </HideInUI>
