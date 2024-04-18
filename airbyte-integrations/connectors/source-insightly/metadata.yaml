@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-insightly
   documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
   githubIssueLabel: source-insightly
