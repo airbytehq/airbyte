@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
@@ -20,8 +20,6 @@ ALL_LANGUAGES = [
 ]
 
 ALL_TYPES = ["source", "destination"]
-
-ALL_SUPPORT_LEVELS = ["certified", "community"]
 
 
 class CheckCategory(Enum):
@@ -138,13 +136,13 @@ class Check(ABC):
         raise NotImplementedError("Subclasses must implement category property/attribute")
 
     @property
-    def applies_to_connector_support_levels(self) -> List[str]:
+    def applies_to_connector_support_levels(self) -> Optional[List[str]]:
         """The connector's support levels that the QA check applies to
 
         Returns:
-            List[str]: The connector's support levels that the QA check applies to
+            List[str]: None if connector's support levels that the QA check applies to is not specified
         """
-        return ALL_SUPPORT_LEVELS
+        return None
 
     def run(self, connector: Connector) -> CheckResult:
         if not self.runs_on_released_connectors and connector.is_released:
@@ -169,7 +167,7 @@ class Check(ABC):
                 connector,
                 f"Check does not apply to {connector.connector_type} connectors",
             )
-        if connector.support_level not in self.applies_to_connector_support_levels:
+        if self.applies_to_connector_support_levels and connector.support_level not in self.applies_to_connector_support_levels:
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.support_level} connectors",
