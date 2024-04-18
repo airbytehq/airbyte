@@ -87,7 +87,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 |:--------| :--------- | :------------------------------------------------------  | :---------------------------------------- |
-| 0.2.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.5 | 2024-04-18 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Manage dependencies with Poetry. |
 | 0.2.4 | 2024-04-15 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.3 | 2024-04-12 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | schema descriptions |
 | 0.2.2 | 2022-09-16 | [17684](https://github.com/airbytehq/airbyte/pull/17684) | Fix custom field validation retrieve |
