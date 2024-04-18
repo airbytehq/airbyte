@@ -72,3 +72,9 @@ jobs:
         connectors
         --name=${{ github.event.inputs.connector }}
         test
+
+    - name: Upload pipeline reports
+      uses: actions/upload-artifact@v2
+      with:
+        name: pipeline-reports
+        path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports
