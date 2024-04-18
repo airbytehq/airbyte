@@ -101,7 +101,7 @@ class Destination(Connector, ABC):
             except AirbyteTracedException as traced_exc:
                 connection_status = traced_exc.as_connection_status_message()
                 if connection_status and cmd == "check":
-                    yield connection_status.json(exclude_unset=True)
+                    yield connection_status
                     return
                 raise traced_exc
 
