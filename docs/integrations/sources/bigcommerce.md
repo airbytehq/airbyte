@@ -55,7 +55,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.3 | 2024-04-18 | [37125](https://github.com/airbytehq/airbyte/pull/37125) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37125](https://github.com/airbytehq/airbyte/pull/37125) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37125](https://github.com/airbytehq/airbyte/pull/37125) | schema descriptions |
 | 0.2.0 | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code |
