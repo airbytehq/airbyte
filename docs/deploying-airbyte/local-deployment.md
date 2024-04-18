@@ -10,23 +10,42 @@ issue [here](https://github.com/airbytehq/airbyte/issues) with the `area/quickst
 :::info
 These instructions have been tested on MacOS, Windows, Ubuntu and Fedora.
 
+If you are looking for instructions for the `run_ab_platform.sh` script, please refer to the [Docker Compose](/deploying-airbyte/docker-compose) documentation.
+Note that the `abctl` command does not currently allow for customizations via .env files.
 :::
 
 ## Setup & launch Airbyte
+
+:::info
+Mac users can use Brew to install the `abctl` command
+
+```bash
+brew tap airbytehq/tap
+brew install abctl 
+```
+
+:::
 
 - Install `Docker Desktop`  \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
 - After `Docker Desktop` is installed, you must enable `Kubernetes` \(see [instructions](https://docs.docker.com/desktop/kubernetes/)\).
 - Download the latest version of `abctl` from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:
 
+:::info
+Mac users may need to use the finder and Open With > Terminal to run the `abctl` command. After the first run
+users should be able to run the command from the terminal.
+
+:::
+
+
 ```bash
-abctl local install
+./abctl local install
 ```
 
 - Your browser should open to the Airbyte Application, if it does not visit [http://localhost](http://localhost)
 - You will be asked for a username and password. By default, that's username `airbyte` and password `password`. You can set these values through command line flags or environment variables. For example, to set the username and password to `foo` and `bar` respectively, you can run the following command:
 
 ```bash
-abctl local install --username foo --password bar
+./abctl local install --username foo --password bar
 
 # Or as Environment Variables
 ABCTL_LOCAL_INSTALL_PASSWORD=foo
