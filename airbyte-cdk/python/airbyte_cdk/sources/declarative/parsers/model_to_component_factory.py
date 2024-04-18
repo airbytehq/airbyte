@@ -814,8 +814,8 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_jwt_authenticator(model: JwtAuthenticatorModel, config: Config, **kwargs: Any) -> JwtAuthenticator:
-        model.jwt_headers = JwtHeadersModel(kid=None, typ="JWT", cty=None) if not None else model.jwt_headers
-        model.jwt_payload = JwtPayloadModel(iss=None, sub=None, aud=None) if not None else model.jwt_payload
+        model.jwt_headers = JwtHeadersModel(kid=None, typ="JWT", cty=None) if model.jwt_payload is None else model.jwt_headers
+        model.jwt_payload = JwtPayloadModel(iss=None, sub=None, aud=None) if model.jwt_payload is None else model.jwt_payload
         return JwtAuthenticator(
             config=config,
             parameters=model.parameters or {},
