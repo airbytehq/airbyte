@@ -110,9 +110,10 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------|
+| 1.0.5 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 1.0.4 | 2024-04-15 | [37187](https://github.com/airbytehq/airbyte/pull/37187) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.0.3 | 2024-04-12 | [37187](https://github.com/airbytehq/airbyte/pull/37187) | schema descriptions |
-| 1.0.2   | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams                             |
-| 1.0.1   | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported |
-| 1.0.0   | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks                      |
-| 0.1.0   | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release                                      |
+| 1.0.2 | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams |
+| 1.0.1 | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported |
+| 1.0.0 | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks |
+| 0.1.0 | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release |
