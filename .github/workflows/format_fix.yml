@@ -8,6 +8,14 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number. Used to pull the proper branch ref, including on forks."
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
 jobs:
   format-fix:
     name: "Run airbyte-ci format fix all"
@@ -16,10 +24,25 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
           # Important that this is set so that CI checks are triggered again
           # Without this we would be forever waiting on required checks to pass
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          fetch-depth: 1
+
+      - name: Checkout PR (${{ github.event.inputs.pr }})
+        uses: dawidd6/action-checkout-pr@v1
+        with:
+          pr: ${{ github.event.inputs.pr }}
+
+      - name: Get PR info
+        id: pr-info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          echo "::set-output name=repo::$(echo "$PR_JSON" | jq -r .head.repo.full_name)"
+          echo "::set-output name=branch::$(echo "$PR_JSON" | jq -r .head.ref)"
 
       - name: Run airbyte-ci format fix all
         uses: ./.github/actions/run-airbyte-ci
