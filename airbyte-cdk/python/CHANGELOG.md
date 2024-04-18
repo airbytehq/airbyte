@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.82.0
+Connector builder: emit state messages
+
 ## 0.81.8
 Concurrent CDK: Break Python application with status 1 on exception
 
