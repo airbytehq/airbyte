@@ -67,6 +67,7 @@ jobs:
       run: airbyte-ci --help
 
     - name: Run `airbyte-ci` test
+      id: test-on-demand
       env:
         GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
       run: >
@@ -81,3 +82,22 @@ jobs:
       with:
         name: pipeline-reports
         path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports
+
+    - name: Append success comment
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.inputs.pr }}
+        comment-id: ${{ github.event.inputs.comment-id }}
+        reactions: hooray
+        body: |
+          > ✅ Tests passed.
+
+    - name: Append failure comment
+      if: failure()
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.inputs.pr }}
+        comment-id: ${{ github.event.inputs.comment-id }}
+        reactions: confused
+        body: |
+          > ❌ Tests failed.
