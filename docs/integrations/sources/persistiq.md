@@ -40,7 +40,7 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                           | Subject                  |
 | :------ | :--------- | :----------------------------------------------------- | :----------------------- |
-| 0.2.3 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.3 | 2024-04-18 | [37221](https://github.com/airbytehq/airbyte/pull/37221) | Manage dependencies with Poetry. |
 | 0.2.2 | 2024-04-15 | [37221](https://github.com/airbytehq/airbyte/pull/37221) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1 | 2024-04-12 | [37221](https://github.com/airbytehq/airbyte/pull/37221) | schema descriptions |
 | 0.2.0   | 2023-10-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to low code |
