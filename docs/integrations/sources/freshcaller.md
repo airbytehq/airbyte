@@ -43,7 +43,7 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
-| 0.3.4 | 2024-04-17 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.3.4 | 2024-04-18 | [37160](https://github.com/airbytehq/airbyte/pull/37160) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [37160](https://github.com/airbytehq/airbyte/pull/37160) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.2 | 2024-04-12 | [37160](https://github.com/airbytehq/airbyte/pull/37160) | schema descriptions |
 | 0.3.1 | 2023-11-28 | [32874](https://github.com/airbytehq/airbyte/pull/32874) | 🐛 Source: fix page_size_option parameter in spec |
