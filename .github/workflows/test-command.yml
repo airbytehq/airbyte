@@ -91,7 +91,7 @@ jobs:
         comment-id: ${{ github.event.inputs.comment-id }}
         reactions: hooray
         body: |
-          > ✅ Tests passed. [🔗][1]
+          > ✅ Tests passed. [📎][1]
 
           [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
 
@@ -103,6 +103,6 @@ jobs:
         comment-id: ${{ github.event.inputs.comment-id }}
         reactions: confused
         body: |
-          > ❌ Tests failed. [🔗][1]
+          > ❌ Tests failed. [📎][1]
 
           [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
