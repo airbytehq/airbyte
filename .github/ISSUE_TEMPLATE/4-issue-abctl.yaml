@@ -1,6 +1,6 @@
-name: 🐛 [abctl] Report an issue with the abctl quickstart tool
+name: 🐛 [abctl] Report an issue with the abctl tool
 description: Use this template when you experience an issue with the abctl tool
-labels: [type/bug, area/quickstart, needs-triage]
+labels: [type/bug, area/abctl, needs-triage]
 body:
   - type: markdown
     attributes:
