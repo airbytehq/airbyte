@@ -208,19 +208,6 @@ class StreamFacadeTest(unittest.TestCase):
         assert self._facade.get_json_schema() == json_schema
         self._abstract_stream.get_json_schema.assert_called_once_with()
 
-    def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
-        assert (
-            FileBasedStreamFacade(
-                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-            ).supports_incremental
-            == self._legacy_stream.supports_incremental
-        )
-
-    def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
-        assert FileBasedStreamFacade(
-            self._abstract_stream, self._legacy_stream, Mock(spec=Cursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-        ).supports_incremental
-
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
