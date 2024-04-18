@@ -64,6 +64,7 @@ object JdbcUtils {
         )
     @JvmStatic val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
 
+    @JvmStatic
     val defaultJSONFormat: JSONFormat = JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT)
 
     @JvmStatic
@@ -85,6 +86,7 @@ object JdbcUtils {
         }
     }
 
+    @JvmStatic
     @JvmOverloads
     fun parseJdbcParameters(
         jdbcPropertiesString: String,
