@@ -62,7 +62,7 @@ from source_zendesk_support.streams import (
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
 
-TICKET_SUBSTREAMS = [TicketSubstream, TicketAudits, TicketMetrics]
+TICKET_SUBSTREAMS = [TicketSubstream, TicketMetrics]
 
 # prepared config
 STREAM_ARGS = {
@@ -365,7 +365,7 @@ class TestAllStreams:
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
             (Tags, "tags"),
-            (TicketAudits, "tickets/13/audits"),
+            (TicketAudits, "ticket_audits"),
             (TicketComments, "incremental/ticket_events.json"),
             (TicketFields, "ticket_fields"),
             (TicketForms, "ticket_forms"),
@@ -656,6 +656,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
                 },
                 {"page[after]": "<after_cursor>"},
             ),
+            (TicketAudits, {}, None),
             (SatisfactionRatings, {}, None),
             (
                 OrganizationMemberships,
@@ -684,6 +685,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
+            "TicketAudits",
             "SatisfactionRatings",
             "OrganizationMemberships",
             "TicketSkips",
@@ -719,6 +721,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (GroupMemberships, {"page[size]": 100, "sort_by": "asc", "start_time": 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
             (TicketMetricEvents, {"page[size]": 100, "start_time": 1622505600}),
+            (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 200}),
             (SatisfactionRatings, {"page[size]": 100, "sort_by": "created_at", "start_time": 1622505600}),
             (OrganizationMemberships, {"page[size]": 100, "start_time": 1622505600}),
             (TicketSkips, {"page[size]": 100, "start_time": 1622505600}),
@@ -727,6 +730,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
+            "TicketAudits",
             "SatisfactionRatings",
             "OrganizationMemberships",
             "TicketSkips",
@@ -1150,3 +1154,29 @@ class TestTicketSubstream:
         mocked_response.json.return_value = {"ticket_metric": {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}}
         records = list(stream.parse_response(mocked_response, stream_state=stream_state))
         assert records == [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]
+
+
+def test_read_ticket_audits_504_error(requests_mock, caplog):
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = (
+        "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
+    )
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+@pytest.mark.parametrize(
+    "start_date, stream_state, audits_response, expected",
+    [
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "2020-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+    ]
+)
+def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date=start_date)
+    response_mock = Mock()
+    response_mock.json.return_value = {"audits": audits_response}
+    assert stream._validate_response(response_mock, stream_state) == expected

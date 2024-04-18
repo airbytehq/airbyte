@@ -651,22 +651,86 @@ class Macros(SourceZendeskSupportStream):
     """Macros stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/"""
 
 
-class TicketAudits(TicketSubstream):
-    """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket"""
+class TicketAudits(IncrementalZendeskSupportStream):
+    """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-
-    response_list_name = "audits"
+    # can request a maximum of 1,000 results
+    page_size = 200
+    # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
-
-    def path(
+    # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
+    response_list_name = "audits"
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
+    def request_params(
         self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size}
+        if next_page_token:
+            params.pop("start_time", None)
+            params.update(next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
+        response_json = response.json()
+        return {"cursor": response.json().get("before_cursor")} if response_json.get("before_cursor") else None
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return f"tickets/{stream_slice['ticket_id']}/audits"
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
+            else:
+                raise e
+
+    def _validate_response(self, response: requests.Response, stream_state: Mapping[str, Any]) -> bool:
+        """
+        Ticket Audits endpoint doesn't allow filtering by date, but all data sorted by descending.
+        This method used to stop making requests once we receive a response with cursor value greater than actual cursor.
+        This action decreases sync time as we don't filter extra records in parse response.
+        """
+        data = response.json().get(self.response_list_name)
+        created_at = data[0].get(self.cursor_field)
+        cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
+        return created_at >= cursor_date
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+            if not self._validate_response(response, stream_state):
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class Tags(FullRefreshZendeskSupportStream):

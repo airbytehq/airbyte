@@ -164,7 +164,7 @@ class SourceZendeskSupport(AbstractSource):
             SatisfactionRatings(**args),
             SlaPolicies(**args),
             Tags(**args),
-            TicketAudits(parent=tickets, **args),
+            TicketAudits(**args),
             TicketComments(**args),
             TicketFields(**args),
             TicketMetrics(parent=tickets, **args),
