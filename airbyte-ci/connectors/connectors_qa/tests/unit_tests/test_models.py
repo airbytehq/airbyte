@@ -85,7 +85,7 @@ class TestCheck:
         # Act
         results = []
         for check in ENABLED_CHECKS:
-            if connector.support_level not in check.applies_to_connector_support_levels:
+            if check.applies_to_connector_support_levels and connector.support_level not in check.applies_to_connector_support_levels:
                 results.append(check.run(connector))
 
         # Assert
