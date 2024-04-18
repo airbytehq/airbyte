@@ -34,6 +34,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
 _ANY_AIRBYTE_MESSAGE = Mock(spec=AirbyteMessage)
+_IS_SUCCESSFUL = True
 
 
 class TestConcurrentReadProcessor(unittest.TestCase):
@@ -559,6 +560,27 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             )
         ]
+
+    def test_given_partition_completion_is_not_success_then_do_not_close_partition(self):
+        stream_instances_to_read_from = [self._stream, self._another_stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
+        list(handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream)))
+
+        list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._an_open_partition, not _IS_SUCCESSFUL)))
+
+        assert self._an_open_partition.close.call_count == 0
 
     def test_is_done_is_false_if_there_are_any_instances_to_read_from(self):
         stream_instances_to_read_from = [self._stream]
