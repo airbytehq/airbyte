@@ -54,6 +54,7 @@ object RelationalDbQueryUtils {
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
+    @JvmStatic
     fun getFullyQualifiedTableName(schemaName: String?, tableName: String): String {
         return if (schemaName != null) "$schemaName.$tableName" else tableName
     }

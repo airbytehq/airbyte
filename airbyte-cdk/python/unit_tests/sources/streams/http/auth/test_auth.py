@@ -170,4 +170,4 @@ class TestOauth2Authenticator:
             refresh_access_token_authenticator=TestOauth2Authenticator.refresh_access_token_authenticator,
         )
         expected_headers = {"Authorization": "Basic Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="}
-        assert expected_headers == oauth.get_refresh_access_token_headers()
+        assert oauth.get_refresh_access_token_headers() == expected_headers

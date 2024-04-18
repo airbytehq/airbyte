@@ -19,7 +19,7 @@ constructor(
      *
      * @return
      */
-    val namespace: String,
+    val namespace: String?,
     val outputSchemaName: String,
     val tmpTableName: String?,
     val outputTableName: String?,

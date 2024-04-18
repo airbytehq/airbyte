@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
   license: MIT
+  maxSecondsBetweenMessages: 120
   name: Mailchimp
   remoteRegistries:
     pypi:

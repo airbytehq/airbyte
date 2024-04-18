@@ -31,7 +31,7 @@ public class CdcMysqlSourceWithSpecialDbNameTest extends CdcMysqlSourceTest {
 
     @Override
     public String getDatabaseName() {
-      return INVALID_DB_NAME;
+      return withNamespace(INVALID_DB_NAME);
     }
 
   }
