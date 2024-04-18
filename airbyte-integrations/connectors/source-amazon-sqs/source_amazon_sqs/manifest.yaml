@@ -13,7 +13,7 @@ definitions:
       type: DeclarativeStream
       name: QueueMessages
       primary_key:
-        - MessageId
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -46,6 +46,22 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: "{{ config['max_batch_size'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['MessageId'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - body
+              value: "{{ record['Body'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - attributes
+              value: "{{ record['MessageAttributes'] }}"
   base_requester:
     type: HttpRequester
     url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
