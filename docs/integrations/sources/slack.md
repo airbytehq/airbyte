@@ -86,9 +86,10 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
 5. **Required** Enter your `start_date`.
 6. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
-7. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+7. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 8. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
-9. Click **Set up source**.
+9. Toggle `include_private_channels` if you want to sync data from private channels. You will need to manually add the bot to private channels, `join_channel` does not work with private channels.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -100,8 +101,9 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 4. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
 5. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
-7. Enter your `api_token`.
-8. Click **Set up source**.
+7. Toggle `include_private_channels` if you want to sync data from private channels. You will need to manually add the bot to private channels, `join_channel` does not work with private channels.
+8. Enter your `api_token`.
+9. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -122,7 +124,7 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 * [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 * [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
+* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public  and private channels that the Slack App is a member of.
 * [Users](https://api.slack.com/methods/users.list)
 * [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
@@ -163,6 +165,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels
 | 1.0.0   | 2024-04-02 | [35477](https://github.com/airbytehq/airbyte/pull/35477) | Migration to low-code CDK                                                            |
 | 0.4.1   | 2024-03-27 | [36579](https://github.com/airbytehq/airbyte/pull/36579) | Upgrade airbyte-cdk version to emit record counts as floats                          |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                      |
