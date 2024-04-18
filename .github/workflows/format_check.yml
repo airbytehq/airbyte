@@ -12,13 +12,13 @@ jobs:
   format-check:
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
-    if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
-      (github.event.pull_request.head.repo.fork == false)
+    # Do not run this job on forks
+    # Forked PRs are handled by the community_ci.yml workflow
+    if: github.event.pull_request.head.repo.fork != true
     runs-on: tooling-test-small
     steps:
       - name: Checkout Airbyte (with credentials)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
@@ -91,6 +91,7 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
 
+  # TODO alafanechere: move it to community_ci.yml and make it use the run-airbyte-ci action
   format-check-from-forks:
     # Same-named job as above, in order to ensure 'required checks' pass either way.
     # This should run all the same checks as above, except not requiring any credentials.
