@@ -66,6 +66,6 @@ jobs:
       env:
         GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
       run: >
-        airbyte-ci connector
+        airbyte-ci connectors
         --name=${{ github.event.inputs.connector }}
         test
