@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Dict, Iterable, List, Optional, Set, Mapping
+from typing import Dict, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
@@ -21,7 +21,7 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-from airbyte_protocol.models import StreamDescriptor, FailureType
+from airbyte_protocol.models import FailureType, StreamDescriptor
 
 
 class ConcurrentReadProcessor:
@@ -176,11 +176,6 @@ class ConcurrentReadProcessor:
         else:
             return None
 
-    @staticmethod
-    def _generate_failed_streams_error_message(stream_failures: Mapping[str, List[Exception]]) -> str:
-        failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exceptions in stream_failures.items() for exception in exceptions])
-        return f"During the sync, the following streams did not sync successfully: {failures}"
-
     def is_done(self) -> bool:
         """
         This method is called to check if the sync is done.
@@ -196,7 +191,9 @@ class ConcurrentReadProcessor:
             # We still raise at least one exception when a stream raises an exception because the platform currently relies
             # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
             # type because this combined error isn't actionable, but rather the previously emitted individual errors.
-            raise AirbyteTracedException(message=error_message, internal_message="Concurrent read failure", failure_type=FailureType.config_error)
+            raise AirbyteTracedException(
+                message=error_message, internal_message="Concurrent read failure", failure_type=FailureType.config_error
+            )
         return is_done
 
     def _is_stream_done(self, stream_name: str) -> bool:

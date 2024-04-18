@@ -6,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -19,7 +20,6 @@ from airbyte_cdk.models import (
     StreamDescriptor,
     SyncMode,
 )
-from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
