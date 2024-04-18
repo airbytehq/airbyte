@@ -1,0 +1,165 @@
+version: 0.78.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - address
+
+definitions:
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+      inject_on_first_request: true
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - objects
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_date
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%S.%f'
+      - '%Y-%m-%dT%H:%M:%S'
+    datetime_format: '%Y-%m-%dT%H:%M:%S'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%d'
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: updated_date__gt
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: updated_date__lt
+    step: P1D
+    cursor_granularity: PT1S
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /resources/Customer/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    employees:
+      type: DeclarativeStream
+      name: employees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /resources/Employee/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /resources/Order/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    order_items:
+      type: DeclarativeStream
+      name: order_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /resources/OrderItem/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.qa.revelup.io/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config[''api_key''] }}:{{ config[''api_secret''] }}'
+      inject_into:
+        type: RequestOption
+        field_name: API-AUTHENTICATION
+        inject_into: header
+    http_method: GET
+    request_headers:
+      Client-Id: '{{ config[''client_id''] }}'
+    request_parameters:
+      created_date__gte: '{{ config[''start_date''] }}'
+streams:
+  - $ref: '#/definitions/streams/customers'
+  - $ref: '#/definitions/streams/employees'
+  - $ref: '#/definitions/streams/orders'
+  - $ref: '#/definitions/streams/order_items'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 0
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: true
+    orders: true
+    order_items: true

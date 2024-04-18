@@ -1,0 +1,547 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "applied_discounts": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "applied_service_fee": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "applied_taxes": {
+      "items": {
+        "properties": {
+          "actual_tax_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fiscal_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flat_tax_units": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "local_tax_id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_quantity_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_threshold": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "min_quantity_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_threshold": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "on_full_price": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "order_item": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resource_uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rounding_type": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tax_amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tax_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tax_type": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "catering_complete": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "combo_fraction_part": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "combo_saving_amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "combo_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "commission_amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commissions": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "cost": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "course_number": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "crv_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cup_qty": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cup_weight": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "dining_option": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "discount_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discount_tax_amount_included": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ervc_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "exclude_from_discounts": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "ingredientitems": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "initial_price": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "is_cold": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_discounted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_layaway": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_store_credit": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "item_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "manual_unit_price_adjustment": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "modifier_amount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "modifier_cost": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "modifieritems": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "not_returnable": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "on_hold": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "order": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "order_local_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "price": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "price_to_display": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "printed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "product": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_name_override": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pure_sales": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "quantity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "reference_discount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reference_discounts": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seat_number": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "sent": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "service_fee_tax": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_fee_taxed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_fee_untaxed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shared": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "sold_by_weight": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "split_parts": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "split_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "split_with_seat": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "station": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_amount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_included": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "tax_rate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_rebate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "taxed_flag": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "temp_sort": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "voided_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "weight": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "wholesale_saving_amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

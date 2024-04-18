@@ -1,0 +1,52 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "employees",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "orders",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "order_items",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "employee_card": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "employee_start": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exempt": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "external_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failed_login_attempts": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "first_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "last_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "locked_account": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "mileage_reimbursement": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "picture": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pplc_notification": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    },
+    "user": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

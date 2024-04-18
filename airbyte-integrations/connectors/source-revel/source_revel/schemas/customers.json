@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "accept_checks": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "addresses": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "charge_account": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "company_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer_groups": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email_opt_in": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "expensify_account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gender": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "gift_card_numbers": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "is_visitor": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "last_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lic_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "loyalty_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "loyalty_ref_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ok_to_email": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone_opt_in": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "pin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "post_opt_in": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "ref_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reward_card_numbers": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_exempt": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "total_purchases": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "total_visits": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "track_as_company": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vehicles": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "version_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

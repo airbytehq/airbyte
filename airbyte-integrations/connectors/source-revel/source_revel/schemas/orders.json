@@ -1,0 +1,607 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "applied_discounts": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "applied_service_fee": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "applied_taxes": {
+      "items": {
+        "properties": {
+          "fiscal_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "is_prevailing": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "local_tax_id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_quantity_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_threshold": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "min_quantity_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_threshold": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "on_full_price": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "order": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resource_uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rounding_type": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tax_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tax_type": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "asap": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "auto_grat_pct": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "bill_number": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "bill_parent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bills_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "check_sum": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "closed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "crv_taxed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "crv_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "customer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer_address_distance": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "deleted_discounts": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dining_option": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "discount_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discount_total_amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "final_total": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "gift_reward_data": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gratuity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "gratuity_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ha_applied": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_delivery_info": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_history": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_items": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "is_discounted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_invoice": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_readonly": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_unpaid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "kitchen_status": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "last_updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notification_email_sent": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "notification_text_sent": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "number_of_people": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "orderhistory": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "package": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "pickup_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "points_added": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "points_redeemed": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "pos_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prevailing_surcharge": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "prevailing_tax": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "printed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "remaining_due": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "reporting_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rounding_delta": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "running_tax_number": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "sent": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "service_charge": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "service_fee_tax": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_fee_taxed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_fee_untaxed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "smart_order": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "smartpay_gratuity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "smartpay_tip": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "subtotal": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "surcharge": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "surcharge_excluded": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "table": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_excluded_amount": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_rebate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_rounding_model": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "taxable_surcharge": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "taxable_surcharge_excluded": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "virtual_data": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "web_order": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}
