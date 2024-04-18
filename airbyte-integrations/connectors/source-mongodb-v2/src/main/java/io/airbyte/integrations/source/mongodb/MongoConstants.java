@@ -17,6 +17,7 @@ public class MongoConstants {
   public static final Duration CHECKPOINT_DURATION = DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
   public static final String COLLECTION_STATISTICS_COUNT_KEY = "count";
   public static final String COLLECTION_STATISTICS_STORAGE_SIZE_KEY = "size";
+  public static final String COLLECTIONS_INCLUSION_KEY = "collections";
   public static final String CONNECTION_STRING_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
   public static final String COUNT_KEY = "count";
   public static final String CREDENTIALS_PLACEHOLDER = MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;

@@ -123,14 +123,21 @@ public class MongoUtil {
    *        unique fields for a collection.
    * @param isSchemaEnforced True if the connector is running in schema mode, false if running in
    *        schemaless (packed) mode
+   * @param collections The list of collections to include in the discovery process. If null or empty, all
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
   public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient,
                                                       final String databaseName,
                                                       final Integer sampleSize,
-                                                      final boolean isSchemaEnforced) {
+                                                      final boolean isSchemaEnforced,
+                                                      final List<String> collections) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
+
+    if ( collections != null && !collections.isEmpty() ) {
+      authorizedCollections.removeIf(c -> !collections.contains(c));
+    }
+
     return authorizedCollections.parallelStream()
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
         .filter(Optional::isPresent)
