@@ -63,13 +63,13 @@ class Calls(CalltouchStream):
         date_from: datetime,
         date_to: datetime,
         site_id: str,
-        calls_bind_to: str | None,
-        calls_attribution: int | None,
+        calls_bind_to: Optional[str],
+        calls_attribution: Optional[int],
     ):
         super().__init__(authenticator, date_from, date_to)
         self._site_id: str = site_id
-        self._calls_bind_to: str | None = calls_bind_to
-        self._calls_attribution: int | None = calls_attribution
+        self._calls_bind_to: Optional[str] = calls_bind_to
+        self._calls_attribution: Optional[int] = calls_attribution
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)

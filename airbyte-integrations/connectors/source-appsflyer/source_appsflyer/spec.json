@@ -6,7 +6,7 @@
     "type": "object",
     "required": [
       "app_id",
-      "access_token",
+      "credentials",
       "date_range"
     ],
     "additionalProperties": false,
@@ -16,11 +16,77 @@
         "type": "string",
         "description": "App identifier as found in AppsFlyer."
       },
-      "access_token": {
-        "order": 1,
-        "type": "string",
-        "description": "Pull API token for authentication V2.",
-        "airbyte_secret": true
+      "credentials": {
+        "title": "Authorization",
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access token",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access token",
+                "description": "Client ID",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "auth_type",
+              "access_token"
+            ]
+          },
+          {
+            "title": "CredentialsCraft",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft host",
+                "description": "CredentialsCraft host",
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
+                "type": "string",
+                "order": 1
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft access token",
+                "description": "CredentialsCraft access token (not static token id)",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft token id",
+                "description": "ID of static token in CredentialsCraft",
+                "examples": [
+                  123
+                ],
+                "type": "integer",
+                "order": 3
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
       },
       "date_range": {
         "title": "Date Range",

@@ -1,10 +1,15 @@
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class AppsflyerAuthenticator(TokenAuthenticator):
+    """
+    Builds auth header, based on the token provided.
+    The token is attached to each request via the `auth_header` header.
+    """
+
     @property
     def auth_header(self) -> str:
         return self._auth_header
@@ -17,20 +22,17 @@ class AppsflyerAuthenticator(TokenAuthenticator):
 
     @property
     def token(self) -> str:
-        print("token", self._token)
-        return f"{self._auth_method} {self._token}"
+        return self._token
 
     def __init__(
         self,
         token: str,
         auth_method: str = "Bearer",
         auth_header: str = "Authorization",
-        additional_headers: dict = {},
+        additional_headers: Optional[dict] = None,
     ):
-        self._auth_header = auth_header
-        self._auth_method = auth_method
-        self._token = token
-        self.additional_headers = additional_headers
+        super().__init__(token, auth_method, auth_header)
+        self.additional_headers = additional_headers if additional_headers is not None else {}
 
 
 class CredentialsCraftAuthenticator(TokenAuthenticator):

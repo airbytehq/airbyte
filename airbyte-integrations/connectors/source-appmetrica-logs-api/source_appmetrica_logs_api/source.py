@@ -4,7 +4,6 @@
 
 
 import csv
-import json
 import logging
 import os
 import sys
@@ -22,8 +21,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from .auth import CredentialsCraftAuthenticator
 
+from .auth import CredentialsCraftAuthenticator
 from .fields import AVAILABLE_FIELDS
 
 logger = logging.getLogger("airbyte")
@@ -54,9 +53,6 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         filters: List[Mapping[str, str]] = [],
         date_dimension: str = "default",
         event_name_list: List[str] = [None],
-        client_name: str = "",
-        product_name: str = "",
-        custom_json: Optional[Mapping[str, str]] = {},
         iter_content_chunk_size: int = 8192,
         field_name_map: Optional[dict[str, any]],
     ):
@@ -76,9 +72,6 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         self.source = source
         self.filters = filters
         self.date_dimension = date_dimension
-        self.client_name = client_name
-        self.product_name = product_name
-        self.custom_json = custom_json
         self._is_report_ready_to_load: bool = False
         self.iter_content_chunk_size = iter_content_chunk_size
         self.field_name_map = field_name_map if field_name_map is not None else {}
@@ -123,10 +116,6 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         for field_name in self.fields:
             lookup_field_type = AVAILABLE_FIELDS[self.source]["fields"].get(field_name, "string")
             schema["properties"][field_name] = {"type": ["null", lookup_field_type]}
-        extra_properties = ["__productName", "__clientName"]
-        extra_properties.extend(self.custom_json.keys())
-        for key in extra_properties:
-            schema["properties"][key] = {"type": ["null", "string"]}
 
         for key, value in self.field_name_map.items():
             if key in schema["properties"]:
@@ -135,13 +124,6 @@ class AppmetricaLogsApiStream(HttpStream, ABC):
         return schema
 
     def postprocess_record(self, record):
-        constants = {
-            "__productName": self.product_name,
-            "__clientName": self.client_name,
-        }
-        constants.update(self.custom_json)
-        record.update(constants)
-
         for key, value in self.field_name_map.items():
             if key in record:
                 record[value] = record.pop(key)
@@ -284,11 +266,6 @@ class SourceAppmetricaLogsApi(AbstractSource):
         if config.get("event_name_list") and first_stream_source["source_name"] != "events":
             return False, f'event_name_list is not available for source {first_stream_source["source_name"]}'
 
-        try:
-            json.loads(config.get("custom_json", "{}"))
-        except Exception as msg:
-            return False, f"Invalid Custom Constants JSON: {msg}"
-
         for filter_n, filter_ in enumerate(first_stream_source.get("filters", [])):
             name = filter_["name"]
             if name not in available_fields:
@@ -386,12 +363,9 @@ class SourceAppmetricaLogsApi(AbstractSource):
                 fields=source.get("fields", []),
                 source=source["source_name"],
                 filters=source.get("filters", []),
-                date_dimension=config.get("date_dimension", "default"),
-                product_name=config.get("product_name", ""),
-                client_name=config.get("client_name", ""),
-                custom_json=json.loads(config.get("custom_json", "{}")),
-                event_name_list=config.get("event_name_list"),
-                iter_content_chunk_size=config.get("iter_content_chunk_size", 8192),
+                date_dimension=source.get("date_dimension", "default"),
+                event_name_list=source.get("event_name_list"),
+                iter_content_chunk_size=source.get("iter_content_chunk_size", 8192),
                 field_name_map=source["field_name_map"],
             )
             for source in config["sources"]

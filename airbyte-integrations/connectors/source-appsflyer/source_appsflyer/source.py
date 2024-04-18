@@ -3,7 +3,6 @@
 #
 
 import csv
-import http.client as http_client
 import logging
 from abc import ABC
 from datetime import datetime, timedelta
@@ -21,6 +20,7 @@ from typing import (
     MutableMapping,
     Optional,
     Tuple,
+    Union,
 )
 
 import pendulum
@@ -30,15 +30,12 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.tz.timezone import Timezone
 
 from . import fields
-from .utils import memoized_method
-
 from .auth import CredentialsCraftAuthenticator, AppsflyerAuthenticator
+from .utils import memoized_method
 
 
 # Simple transformer
@@ -59,7 +56,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: AppsflyerAuthenticator,
+        authenticator: Union[AppsflyerAuthenticator, CredentialsCraftAuthenticator],
         app_id: str,
         backward_dates_campatibility_mode: bool,
         timezone: str,
@@ -686,15 +683,18 @@ class SourceAppsflyer(AbstractSource):
 
         return True, None
 
-    def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> Union[AppsflyerAuthenticator, CredentialsCraftAuthenticator]:
         if config["credentials"]["auth_type"] == "access_token_auth":
-            return TokenAuthenticator(token=config["credentials"]["access_token"])
+            return AppsflyerAuthenticator(token=config["credentials"]["access_token"])
         elif config["credentials"]["auth_type"] == "credentials_craft_auth":
             return CredentialsCraftAuthenticator(
                 credentials_craft_host=config["credentials"]["credentials_craft_host"],
                 credentials_craft_token=config["credentials"]["credentials_craft_token"],
                 credentials_craft_token_id=config["credentials"]["credentials_craft_token_id"],
             )
+        else:
+            raise Exception("Invalid Auth type. Available: access_token_auth and credentials_craft_auth")
 
     def spec(self, logger: logging.Logger):
         spec = super().spec(logger)

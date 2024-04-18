@@ -12,22 +12,22 @@
     "additionalProperties": false,
     "properties": {
       "credentials": {
-        "title": "Авторизация",
+        "title": "Authorization",
         "order": 0,
         "type": "object",
         "oneOf": [
           {
-            "title": "Токен доступа",
+            "title": "Access token",
             "type": "object",
             "properties": {
               "auth_type": {
-                "title": "Тип авторизации",
+                "title": "Auth type",
                 "const": "access_token_auth",
                 "order": 0,
                 "type": "string"
               },
               "access_token": {
-                "title": "Токен доступа",
+                "title": "Access token",
                 "description": "Client ID",
                 "type": "string",
                 "airbyte_secret": true
@@ -43,14 +43,14 @@
             "type": "object",
             "properties": {
               "auth_type": {
-                "title": "Тип авторизации",
+                "title": "Auth type",
                 "const": "credentials_craft_auth",
                 "order": 0,
                 "type": "string"
               },
               "credentials_craft_host": {
-                "title": "Хост CredentialsCraft",
-                "description": "Хост CredentialsCraft.",
+                "title": "CredentialsCraft host",
+                "description": "CredentialsCraft host",
                 "examples": [
                   "https://credentialscraft.mysite.com"
                 ],
@@ -58,15 +58,15 @@
                 "order": 1
               },
               "credentials_craft_token": {
-                "title": "Токен доступа к CredentialsCraft",
-                "description": "Токен для авторизации в сервисе CredentialsCraft (не токен ВК).",
+                "title": "CredentialsCraft access token",
+                "description": "CredentialsCraft access token (not static token id)",
                 "type": "string",
                 "airbyte_secret": true,
                 "order": 2
               },
               "credentials_craft_token_id": {
-                "title": "ID Токена в CredentialsCraft",
-                "desctiption": "ID токена ВК в сервисе CredentialsCraft",
+                "title": "CredentialsCraft token id",
+                "description": "ID of static token in CredentialsCraft",
                 "examples": [
                   123
                 ],
