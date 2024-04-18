@@ -12,7 +12,8 @@ on:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 jobs:
-  write-deprecation-message:
+  on-demand-connector-tests:
+    name: On-Demand Connector Tests
     runs-on: ubuntu-latest
     steps:
     - name: Create URL to the run output
