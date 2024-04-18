@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Dict, Iterable, List, Optional, Set
+from typing import Dict, Iterable, List, Optional, Set, Mapping
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
@@ -19,8 +19,9 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCom
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-from airbyte_protocol.models import StreamDescriptor
+from airbyte_protocol.models import StreamDescriptor, FailureType
 
 
 class ConcurrentReadProcessor:
@@ -175,6 +176,11 @@ class ConcurrentReadProcessor:
         else:
             return None
 
+    @staticmethod
+    def _generate_failed_streams_error_message(stream_failures: Mapping[str, List[Exception]]) -> str:
+        failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exceptions in stream_failures.items() for exception in exceptions])
+        return f"During the sync, the following streams did not sync successfully: {failures}"
+
     def is_done(self) -> bool:
         """
         This method is called to check if the sync is done.
@@ -183,7 +189,15 @@ class ConcurrentReadProcessor:
         2. There are no more streams to read from
         3. All partitions for all streams are closed
         """
-        return all([self._is_stream_done(stream_name) for stream_name in self._stream_name_to_instance.keys()])
+        is_done = all([self._is_stream_done(stream_name) for stream_name in self._stream_name_to_instance.keys()])
+        if is_done and self._exceptions_per_stream_name:
+            error_message = self._generate_failed_streams_error_message(self._exceptions_per_stream_name)
+            self._logger.info(error_message)
+            # We still raise at least one exception when a stream raises an exception because the platform currently relies
+            # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
+            # type because this combined error isn't actionable, but rather the previously emitted individual errors.
+            raise AirbyteTracedException(message=error_message, internal_message="Concurrent read failure", failure_type=FailureType.config_error)
+        return is_done
 
     def _is_stream_done(self, stream_name: str) -> bool:
         return stream_name in self._streams_done

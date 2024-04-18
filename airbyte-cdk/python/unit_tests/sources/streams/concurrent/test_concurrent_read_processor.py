@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import Mock, call
 
 import freezegun
+import pytest
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -30,6 +31,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
@@ -560,6 +562,8 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             )
         ]
+        with pytest.raises(AirbyteTracedException):
+            handler.is_done()
 
     def test_given_partition_completion_is_not_success_then_do_not_close_partition(self):
         stream_instances_to_read_from = [self._stream, self._another_stream]
