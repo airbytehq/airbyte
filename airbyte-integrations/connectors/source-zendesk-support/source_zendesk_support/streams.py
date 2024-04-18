@@ -658,9 +658,12 @@ class TicketAudits(IncrementalZendeskSupportStream):
     page_size = 200
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
+
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(
         self,
