@@ -65,6 +65,7 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------  | :--------------------------------------------------- |
+| 0.2.5 | 2024-04-19 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Updating to 0.80.0 CDK |
 | 0.2.4 | 2024-04-18 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Manage dependencies with Poetry. |
 | 0.2.3 | 2024-04-15 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.2 | 2024-04-12 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | schema descriptions |
