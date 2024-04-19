@@ -101,6 +101,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.0.5 | 2024-04-19 | [37158](https://github.com/airbytehq/airbyte/pull/37158) | Updating to 0.80.0 CDK |
 | 6.0.4 | 2024-04-12 | [37158](https://github.com/airbytehq/airbyte/pull/37158) | schema descriptions |
 | 6.0.3 | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count'  an optional config parameter. |
 | 6.0.2 | 2024-02-12 | [35174](https://github.com/airbytehq/airbyte/pull/35174) | Manage dependencies with Poetry. |
