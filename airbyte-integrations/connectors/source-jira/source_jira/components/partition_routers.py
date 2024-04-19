@@ -54,7 +54,7 @@ class SubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
                         yield from []
 
 
-class SprintIssuesSubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
+class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         fields_parent_stream_config, *parent_stream_configs = self.parent_stream_configs
