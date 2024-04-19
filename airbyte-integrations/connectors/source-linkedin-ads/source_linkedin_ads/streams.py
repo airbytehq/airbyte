@@ -369,8 +369,7 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     """
     Get AdDirectSponsoredContents data using `account_id` slicing.
     More info about LinkedIn Ads / adDirectSponsoredContents:
-    https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api?view=li-lms-2024-03&tabs=http
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video?tabs=http#finders
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video-legacy?view=li-lms-unversioned&viewFallbackFrom=li-lms-2024-04&tabs=http#create-an-addirectsponsoredcontent
     """
 
     endpoint = "adDirectSponsoredContents"
