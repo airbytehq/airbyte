@@ -945,7 +945,6 @@ definitions:
               - object
             additionalProperties: true
             properties:
-              description: Bank account information associated with the subscription.
               bank_account_holder_type:
                 description: Type of bank account holder (e.g., individual, business)
                 type:
