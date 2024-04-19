@@ -3,10 +3,10 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.0"
+version = "0.1.1"
 name = "source-revel"
 description = "Source implementation for revel."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = [ "Michal Krawczyk <michal@corraldata.com>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/revel"

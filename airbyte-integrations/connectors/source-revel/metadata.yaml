@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9b28134a-26b3-43d1-8b0d-20054ab6233b
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-revel
   githubIssueLabel: source-revel
   icon: revel.svg
