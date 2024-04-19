@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.19"
+version = "0.1.20"
 name = "source-okta"
 description = "Source implementation for Okta."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,7 @@ include = "source_okta"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 pendulum = "==1.2.0"
-airbyte-cdk = "==0.44.3"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-okta = "source_okta.run:run"
