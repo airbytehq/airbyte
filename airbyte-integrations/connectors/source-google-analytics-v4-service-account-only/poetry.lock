@@ -1155,6 +1155,25 @@ files = [
 ]
 
 [[package]]
+name = "source-google-analytics-v4"
+version = "0.3.1"
+description = "Source implementation for Google Analytics V4."
+optional = false
+python-versions = "^3.9,<3.12"
+files = []
+develop = true
+
+[package.dependencies]
+airbyte-cdk = "^0"
+cryptography = "==41.0.5"
+PyJWT = "==2.8.0"
+requests = "==2.31.0"
+
+[package.source]
+type = "directory"
+url = "../source-google-analytics-v4"
+
+[[package]]
 name = "tenacity"
 version = "8.2.3"
 description = "Retry code until it succeeds"
@@ -1317,4 +1336,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "f4428ddfac7b7be457bca42fff2d9edbc1ae70ee4e7424f5bc984340f0e56109"
+content-hash = "8b9cbed43fc8acce56fe2d190b85b29d7d4f13adc558febc299fb26c86961a59"
