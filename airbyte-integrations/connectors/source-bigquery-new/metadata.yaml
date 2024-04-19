@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - bigquery.googleapis.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bigquery-new
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bc3d2215-57df-450e-8150-7268effd56b7
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-bigquery-new
+  githubIssueLabel: source-bigquery-new
+  icon: bigquery-new.svg
+  license: MIT
+  name: Bigquery New
+  releaseDate: "2024-04-15"
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery-new
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"
