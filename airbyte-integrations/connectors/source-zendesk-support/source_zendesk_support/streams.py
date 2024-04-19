@@ -706,8 +706,8 @@ class TicketAudits(IncrementalZendeskSupportStream):
         This method used to stop making requests once we receive a response with cursor value greater than actual cursor.
         This action decreases sync time as we don't filter extra records in parse response.
         """
-        data = response.json().get(self.response_list_name)
-        created_at = data[0].get(self.cursor_field)
+        data = response.json().get(self.response_list_name, [{}])
+        created_at = data[0].get(self.cursor_field, "")
         cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
         return created_at >= cursor_date
 

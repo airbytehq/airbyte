@@ -1180,3 +1180,17 @@ def test_validate_response_ticket_audits(start_date, stream_state, audits_respon
     response_mock = Mock()
     response_mock.json.return_value = {"audits": audits_response}
     assert stream._validate_response(response_mock, stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "audits_response, expected",
+    [
+        ({"no_audits": []}, False),
+        ({}, False),
+    ]
+)
+def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    response_mock = Mock()
+    response_mock.json.return_value = audits_response
+    assert stream._validate_response(response_mock, {}) == expected
