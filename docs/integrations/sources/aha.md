@@ -37,6 +37,7 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.3.5 | 2024-04-19 | [36627](https://github.com/airbytehq/airbyte/pull/36627) | Updating to 0.80.0 CDK |
 | 0.3.4 | 2024-04-18 | [36627](https://github.com/airbytehq/airbyte/pull/36627) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [36627](https://github.com/airbytehq/airbyte/pull/36627) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.2 | 2024-04-12 | [36627](https://github.com/airbytehq/airbyte/pull/36627) | schema descriptions |
