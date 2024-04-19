@@ -98,6 +98,13 @@ class DeclarativeStream(Stream):
         cursor = self._stream_cursor_field.eval(self.config)
         return cursor if cursor else []
 
+    @property
+    # todo blai: Pending the platform might use the term `is_resumable` in the protocol, could be worth aligning the terms
+    def supports_checkpointing(self) -> bool:
+        # Declarative sources always implement state getter/setter, but whether it supports checkpointing is based on
+        # if the retriever has a cursor defined.
+        return self.retriever.cursor is not None if hasattr(self.retriever, "cursor") else False
+
     def read_records(
         self,
         sync_mode: SyncMode,

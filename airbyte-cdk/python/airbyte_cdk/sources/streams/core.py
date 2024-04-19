@@ -145,25 +145,12 @@ class Stream(ABC):
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
-        checkpoint_mode = self._checkpoint_mode
-        if checkpoint_mode == CheckpointMode.INCREMENTAL:
-            slices = self.stream_slices(
-                cursor_field=cursor_field,
-                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
-                stream_state=stream_state,
-            )
-            # yikes more backwards compatibility cruft. Because of poor foresight, we wrote the default stream_slices() method to return
-            # [None], which is not only confusing, but we 've now normalized this behavior for connector developers. Now we have connectors
-            # that also return [None]. This is objectively misleading and the ideal interface is return [{}] to indicate we still want
-            # to iterate a first slice, but w/ no specific slice values. None is bad, and now I feel bad that I have to write this hack
-            if slices == [None]:
-                slices = [{}]
-            logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
-            checkpoint_reader = IncrementalCheckpointReader(stream_slices=slices)
-        elif checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
-            checkpoint_reader = ResumableFullRefreshCheckpointReader(stream_state=stream_state)
-        else:
-            checkpoint_reader = FullRefreshCheckpointReader()
+        # we can index on not focusing on the optimal python CDK experience for managing state, with a focus on if low-code is okay
+        # for the 80% we can live with that.
+
+        checkpoint_reader = self._get_checkpoint_reader(
+            logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
+        )
 
         has_slices = False
         next_slice = checkpoint_reader.next()
@@ -185,39 +172,48 @@ class Stream(ABC):
                 ):
                     record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
 
-                    # BL: Thanks I hate it. RFR fundamentally doesn't fit with the concept of the legacy Stream.get_updated_state()
-                    # method because RFR streams rely on pagination as a cursor and get_updated_state() was designed to have
-                    # the CDK manage state using specifically the last seen record.
-
-                    # todo QUESTION: Altho this only affects the incremental legacy case, and we still have cursor protection,
-                    #  if we split observe into observe_slice vs observe_record then we could get rid of this condition entirely assuming
-                    #  the bug below is fixed
+                    # Thanks I hate it. RFR fundamentally doesn't fit with the concept of the legacy Stream.get_updated_state()
+                    # method because RFR streams rely on pagination as a cursor. Stream.get_updated_state() was designed to make
+                    # the CDK manage state using specifically the last seen record. don't @ brian.lai
+                    #
+                    # Also, because the legacy incremental state case decouples observing incoming records from emitting state, it
+                    # requires that we separate CheckpointReader.observe() and CheckpointReader.get_checkpoint() which could
+                    # otherwise be combined.
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        self._observe_state_wrapper(checkpoint_reader, self.get_updated_state(stream_state, record_data))
+                        self._observe_state(checkpoint_reader, self.get_updated_state(stream_state, record_data))
                     record_counter += 1
 
                     if sync_mode == SyncMode.incremental:
                         # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
                         checkpoint_interval = self.state_checkpoint_interval
                         if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            airbyte_state_message = self._new_checkpoint_state(
-                                checkpoint_reader=checkpoint_reader, state_manager=state_manager
-                            )
+                            airbyte_state_message = self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager=state_manager)
                             yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
                         break
-            self._observe_state_wrapper(checkpoint_reader)
-            airbyte_state_message = self._new_checkpoint_state(checkpoint_reader=checkpoint_reader, state_manager=state_manager)
-            # airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
-            yield airbyte_state_message
+            self._observe_state(checkpoint_reader)
+            checkpoint_state = checkpoint_reader.get_checkpoint()
+            if checkpoint_state is not None:
+                airbyte_state_message = self._checkpoint_state(checkpoint_state, state_manager=state_manager)
+                yield airbyte_state_message
 
             next_slice = checkpoint_reader.next()
 
+        # A stream should still emit a state if there were no slices. For an incremental, if there were no slices we should emit
+        # the original incoming state. To preserve the legacy state case where a stream doesn't manage state, it uses the
+        # incoming stream_state value as a backup if Stream.state is undefined
+        # Also likely handled by Ella's work, but left in so I can test RFR
         if not has_slices:
-            airbyte_state_message = self._new_checkpoint_state(checkpoint_reader=checkpoint_reader, state_manager=state_manager)
+            self._observe_state(checkpoint_reader, stream_state)
+            checkpoint = checkpoint_reader.get_checkpoint()
+        else:
+            checkpoint = checkpoint_reader.final_checkpoint()
+
+        if checkpoint is not None:
+            airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
 
     @abstractmethod
@@ -244,13 +240,20 @@ class Stream(ABC):
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+        stream = AirbyteStream(
+            name=self.name,
+            json_schema=dict(self.get_json_schema()),
+            supported_sync_modes=[SyncMode.full_refresh],
+            # This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73/files
+            # The logic may also be tweaked pending the protocol review discussions
+            # is_resumable=self.supports_checkpointing,
+        )
 
         if self.namespace:
             stream.namespace = self.namespace
 
         # If we can offer incremental we always should. RFR is always less reliable than incremental which uses a real cursor value
-        if not self.supports_resumable_full_refresh and self.supports_incremental:
+        if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
             stream.default_cursor_field = self._wrapped_cursor_field()
@@ -267,6 +270,21 @@ class Stream(ABC):
         :return: True if this stream supports incrementally reading data
         """
         return len(self._wrapped_cursor_field()) > 0
+
+    @property
+    def supports_checkpointing(self) -> bool:
+        """
+        :return: True if this stream allows the checkpointing of sync progress. This differs from supports_incremental
+        because certain types like resumable full refresh streams can checkpoint progress in between attempts for improved
+        fault tolerance. However, they will start from the beginning on the next sync.
+        """
+        if hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
+            # Modern case where a stream manages state using getter/setter
+            return True
+        else:
+            # Legacy case where the CDK manages state via the get_updated_state method. This is determined by
+            # whether the stream's get_updated_state is different than the base class and therefore overridden
+            return type(self).get_updated_state != Stream.get_updated_state
 
     def _wrapped_cursor_field(self) -> List[str]:
         return [self.cursor_field] if isinstance(self.cursor_field, str) else self.cursor_field
@@ -368,20 +386,40 @@ class Stream(ABC):
         """
         return {}
 
-    @property
-    def _supports_state(self) -> bool:
-        if hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
-            # Modern case where a stream manages state using getter/setter
-            return True
+    def _get_checkpoint_reader(
+        self,
+        logger: logging.Logger,
+        cursor_field: Optional[List[str]],
+        sync_mode: SyncMode,
+        stream_state: MutableMapping[str, Any],
+    ) -> CheckpointReader:
+        checkpoint_mode = self._checkpoint_mode
+        if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+            return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
         else:
-            # Legacy case where the CDK manages state via the get_updated_state method
-            return type(self).get_updated_state != Stream.get_updated_state
+            slices = self.stream_slices(
+                cursor_field=cursor_field,
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                stream_state=stream_state,
+            )
+            # todo blai:
+            # Because of poor foresight, we wrote the default Stream.stream_slices() method to return [None] which is confusing and
+            # now normalized this behavior for connector developers. Now we have connectors that also return [None]. This
+            # is objectively misleading and a more ideal interface is [{}] to indicate we still want to iterate a first slice,
+            # but w/ no specific slice values. None is bad, and now I feel bad that I have to write this hack.
+            if slices == [None]:
+                slices = [{}]
+            logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
+            if checkpoint_mode == CheckpointMode.INCREMENTAL:
+                return IncrementalCheckpointReader(stream_slices=slices)
+            else:
+                return FullRefreshCheckpointReader(stream_slices=slices)
 
     @property
     def _checkpoint_mode(self) -> CheckpointMode:
-        if self._supports_state and len(self._wrapped_cursor_field()) > 0:
+        if self.supports_checkpointing and len(self._wrapped_cursor_field()) > 0:
             return CheckpointMode.INCREMENTAL
-        elif self._supports_state:
+        elif self.supports_checkpointing:
             return CheckpointMode.RESUMABLE_FULL_REFRESH
         else:
             return CheckpointMode.FULL_REFRESH
@@ -421,50 +459,29 @@ class Stream(ABC):
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
 
+    def _observe_state(self, checkpoint_reader: CheckpointReader, stream_state: Optional[Mapping[str, Any]] = None):
+        """
+        Convenience method that attempts to read the Stream's state using the recommended way of connector's managing their
+        own state via state setter/getter. But if we get back an AttributeError, then the legacy Stream.get_updated_state()
+        method is used as a fallback method.
+        """
+
+        try:
+            new_state = self.state  # type: ignore # we know the field might not exist...
+            checkpoint_reader.observe(new_state)
+        except AttributeError:
+            # For the final state its possible to observe no incoming stream_state param and the stream uses legacy state.
+            # For this case we should never zero out the state that previously observed
+            new_state = stream_state
+            if new_state:
+                checkpoint_reader.observe(new_state)
+
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         stream_state: Mapping[str, Any],
         state_manager,
     ) -> AirbyteMessage:
-        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
-        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
-        # instance's deprecated get_updated_state() method.
-        try:
-            state_manager.update_state_for_stream(
-                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
-            )
-
-        except AttributeError:
-            state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
-        return state_manager.create_state_message(self.name, self.namespace)
-
-    # Below is the one part of the interface that i'm a little iffy about because checkpoint_reader and the connector state manager
-    # feel like they do very similar things. If they were combined it would be cool, but not something that is show stopping
-
-    def _observe_state_wrapper(
-        self,
-        checkpoint_reader: CheckpointReader,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ):
-        # todo: BL some of this makes me feel like the checkpoint_reader feels eerily similar to our existing
-        #  connector state manager. I wonder if its realistic to combine these two concepts into one?
-
-        # Convenience method that attempts to read the Stream's state using the recommended way of connector's managing their
-        # own state via state setter/getter. But if we get back an AttributeError, then the legacy Stream.get_updated_state()
-        # method is used as a fallback method.
-        try:
-            new_state = self.state  # type: ignore # we know the field might not exist...
-        except AttributeError:
-            new_state = stream_state
-        checkpoint_reader.observe(new_state)
-
-    def _new_checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
-        self,
-        checkpoint_reader: CheckpointReader,
-        state_manager,
-    ) -> AirbyteMessage:
-        # todo: BL some of this makes me feel like the checkpoint_reader feels eerily similar to our existing
-        #  connector state manager. I wonder if its realistic to combine these two concepts into one?
-
-        state_manager.update_state_for_stream(self.name, self.namespace, checkpoint_reader.read_state())
+        # todo blai: there should just be one method on ConnectorStateManager.update_and_create_state_message(), but to
+        #  pare down the changes which also span concurrent, ignoring this for now
+        state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)

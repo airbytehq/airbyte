@@ -17,7 +17,6 @@ from airbyte_cdk.models import (
     FailureType,
     Status,
     StreamDescriptor,
-    SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -212,8 +211,14 @@ class AbstractSource(Source, ABC):
 
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
+        # stream_state = (
+        #     state_manager.get_stream_state(stream_name, stream_instance.namespace)
+        #     if configured_stream.sync_mode == SyncMode.incremental
+        #     else {}
+        # )
 
-        if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
+        if stream_state and "state" in dir(stream_instance):
+            # if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 

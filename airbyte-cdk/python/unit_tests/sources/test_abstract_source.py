@@ -233,6 +233,51 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
+class MockResumableFullRefreshStream(Stream):
+    def __init__(
+        self,
+        inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Mapping[str, Any]]] = None,
+        name: str = None,
+    ):
+        self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
+        self._name = name
+        self._state = {}
+
+    @property
+    def name(self):
+        return self._name
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
+        output = None
+        next_page_token = {}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        if self._inputs_and_mocked_outputs:
+            for _input, mocked_output in self._inputs_and_mocked_outputs:
+                if kwargs == _input:
+                    if "error" in mocked_output:
+                        raise AirbyteTracedException(message=mocked_output.get("error"))
+                    else:
+                        next_page_token = mocked_output.get("next_page")
+                        output = mocked_output.get("records")
+
+        if output is None:
+            raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
+
+        self.state = next_page_token
+        yield from output
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return "id"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
 def test_discover(mocker):
     """Tests that the appropriate AirbyteCatalog is returned from the discover method"""
     airbyte_stream1 = AirbyteStream(
@@ -412,8 +457,8 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
 def test_valid_full_refresh_read_no_slices(mocker):
     """Tests that running a full refresh sync on streams which don't specify slices produces the expected AirbyteMessages"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
-    s1 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
-    s2 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
+    s1 = MockStream([({"stream_slice": {}, "stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = MockStream([({"stream_slice": {}, "stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
@@ -488,10 +533,14 @@ def test_valid_full_refresh_read_with_slices(mocker):
     assert messages == expected
 
 
+# Delete this test as it's no longer relevant since we honor incoming state
 def test_full_refresh_does_not_use_incoming_state(mocker):
     """Tests that running a full refresh sync does not use an incoming state message from the platform"""
     slices = [{"1": "1"}, {"2": "2"}]
     # When attempting to sync a slice, just output that slice as a record
+
+    # We've actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
+    # So in reality we can probably get rid of this test entirely
     s1 = MockStream(
         [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s1",
@@ -637,22 +686,26 @@ class TestIncrementalRead:
         stream_1 = MockStreamWithState(
             [
                 (
-                    {"sync_mode": SyncMode.incremental, "stream_state": old_state},
+                    {"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": old_state},
                     stream_output,
                 )
             ],
             name="s1",
         )
         stream_2 = MockStreamWithState(
-            [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s2",
         )
         mocker.patch.object(MockStreamWithState, "get_updated_state", return_value={})
+
+        # Mock the stream's getter property
+        getter_mock = Mock(wraps=MockStreamWithState.state.fget)
+        getter_mock.return_value = new_state_from_connector
+        mock_get_property = MockStreamWithState.state.getter(getter_mock)
         state_property = mocker.patch.object(
             MockStreamWithState,
             "state",
-            new_callable=mocker.PropertyMock,
-            return_value=new_state_from_connector,
+            mock_get_property,
         )
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
         src = MockSource(streams=[stream_1, stream_2])
@@ -682,11 +735,10 @@ class TestIncrementalRead:
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
         assert messages == expected
-        assert state_property.mock_calls == [
-            call(old_state),  # set state for s1
-            call(),  # get state in the end of slice for s1
-            call(),  # get state in the end of slice for s2
-        ]
+
+        # The state getter is called when we call the stream's observe method. We call observe once for each record (4 times)
+        # and at the end of each slice (2 times)
+        assert len(state_property.fget.mock_calls) == 6
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -706,11 +758,11 @@ class TestIncrementalRead:
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
-            [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s1",
         )
         stream_2 = MockStream(
-            [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s2",
         )
         state = {"cursor": "value"}
@@ -775,11 +827,11 @@ class TestIncrementalRead:
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
-            [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s1",
         )
         stream_2 = MockStream(
-            [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s2",
         )
         state = {"cursor": "value"}
@@ -1204,6 +1256,168 @@ class TestIncrementalRead:
         assert messages == expected
 
 
+class TestResumableFullRefreshRead:
+    def test_resumable_full_refresh_multiple_pages(self, mocker):
+        """Tests that running a resumable full refresh sync from the first attempt with no prior state"""
+        responses = [
+            {"records": [{"1": "1"}, {"2": "2"}], "next_page": {"page": 1}},
+            {"records": [{"3": "3"}, {"4": "4"}], "next_page": {"page": 2}},
+            {"records": [{"3": "3"}, {"4": "4"}]},
+        ]
+        # When attempting to sync a slice, just output that slice as a record
+
+        # We've actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
+        # So in reality we can probably get rid of this test entirely
+        s1 = MockResumableFullRefreshStream(
+            [
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"first_slice": True}}, responses[0]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 1}}, responses[1]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 2}}, responses[2]),
+            ],
+            name="s1",
+        )
+
+        mocker.patch.object(MockResumableFullRefreshStream, "get_json_schema", return_value={})
+
+        src = MockSource(streams=[s1])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                _configured_stream(s1, SyncMode.full_refresh),
+            ]
+        )
+
+        expected = _fix_emitted_at(
+            [
+                _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+                _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+                *_as_records("s1", responses[0]["records"]),
+                _as_state("s1", {"page": 1}),
+                *_as_records("s1", responses[1]["records"]),
+                _as_state("s1", {"page": 2}),
+                *_as_records("s1", responses[2]["records"]),
+                _as_state("s1", {}),
+                _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            ]
+        )
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
+
+        assert messages == expected
+
+    def test_resumable_full_refresh_with_incoming_state(self, mocker):
+        """Tests that running a resumable full refresh sync from the second attempt with partial state passed in"""
+        responses = [
+            {"records": [{"100": "100"}, {"200": "200"}], "next_page": {"page": 11}},
+            {"records": [{"300": "300"}, {"400": "400"}], "next_page": {"page": 12}},
+            {"records": [{"500": "500"}, {"600": "600"}], "next_page": {"page": 13}},
+            {"records": [{"700": "700"}, {"800": "800"}]},
+        ]
+        # When attempting to sync a slice, just output that slice as a record
+
+        # We've actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
+        # So in reality we can probably get rid of this test entirely
+        s1 = MockResumableFullRefreshStream(
+            [
+                ({"stream_state": {"page": 10}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 10}}, responses[0]),
+                ({"stream_state": {"page": 10}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 11}}, responses[1]),
+                ({"stream_state": {"page": 10}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 12}}, responses[2]),
+                ({"stream_state": {"page": 10}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 13}}, responses[3]),
+            ],
+            name="s1",
+        )
+
+        mocker.patch.object(MockResumableFullRefreshStream, "get_json_schema", return_value={})
+
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="s1"),
+                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                ),
+            )
+        ]
+
+        src = MockSource(streams=[s1])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                _configured_stream(s1, SyncMode.full_refresh),
+            ]
+        )
+
+        expected = _fix_emitted_at(
+            [
+                _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+                _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+                *_as_records("s1", responses[0]["records"]),
+                _as_state("s1", {"page": 11}),
+                *_as_records("s1", responses[1]["records"]),
+                _as_state("s1", {"page": 12}),
+                *_as_records("s1", responses[2]["records"]),
+                _as_state("s1", {"page": 13}),
+                *_as_records("s1", responses[3]["records"]),
+                _as_state("s1", {}),
+                _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            ]
+        )
+
+        messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state)))
+
+        assert messages == expected
+
+    def test_resumable_full_refresh_partial_failure(self, mocker):
+        """Tests that running a resumable full refresh sync from the first attempt that fails before completing successfully"""
+        expected_error_message = "I have failed you Anakin."
+        responses = [
+            {"records": [{"1": "1"}, {"2": "2"}], "next_page": {"page": 1}},
+            {"records": [{"3": "3"}, {"4": "4"}], "next_page": {"page": 2}},
+            {"error": expected_error_message},
+        ]
+        # When attempting to sync a slice, just output that slice as a record
+
+        # We've actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
+        # So in reality we can probably get rid of this test entirely
+        s1 = MockResumableFullRefreshStream(
+            [
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"first_slice": True}}, responses[0]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 1}}, responses[1]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 2}}, responses[2]),
+            ],
+            name="s1",
+        )
+
+        mocker.patch.object(MockResumableFullRefreshStream, "get_json_schema", return_value={})
+
+        src = MockSource(streams=[s1])
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                _configured_stream(s1, SyncMode.full_refresh),
+            ]
+        )
+
+        expected = _fix_emitted_at(
+            [
+                _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+                _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+                *_as_records("s1", responses[0]["records"]),
+                _as_state("s1", {"page": 1}),
+                *_as_records("s1", responses[1]["records"]),
+                _as_state("s1", {"page": 2}),
+                _as_stream_status("s1", AirbyteStreamStatus.INCOMPLETE),
+                _as_error_trace("s1", expected_error_message, None, FailureType.system_error, None),
+            ]
+        )
+
+        messages = []
+        with pytest.raises(AirbyteTracedException) as exc:
+            for message in src.read(logger, {}, catalog):
+                messages.append(_remove_stack_trace(message))
+
+        assert _fix_emitted_at(messages) == expected
+        assert "s1" in exc.value.message
+        assert exc.value.failure_type == FailureType.config_error
+
+
 def test_checkpoint_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
     managers_stream = StreamNoStateMethod()
@@ -1401,9 +1615,9 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
     the sync when one stream fails with an error.
     """
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
-    s1 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s1 = MockStream([({"stream_state": {}, "stream_slice": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
     s2 = StreamRaisesException(AirbyteTracedException(message="I was born only to crash like Icarus"))
-    s3 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+    s3 = MockStream([({"stream_state": {}, "stream_slice": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})

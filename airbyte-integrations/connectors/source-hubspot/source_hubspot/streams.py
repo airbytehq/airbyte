@@ -1460,7 +1460,7 @@ class ContactsFormSubmissions(ContactsAllBase, StateMixin, ABC):
                 records = self._filter_old_records(records)
             yield from self.record_unnester.unnest(records)
 
-            self.state = self.next_page_token(response)
+            self.state = self.next_page_token(response) or {}
 
             # Always return an empty generator just in case no records were ever yielded
             yield from []

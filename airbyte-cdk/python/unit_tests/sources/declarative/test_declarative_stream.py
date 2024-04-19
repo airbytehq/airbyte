@@ -151,6 +151,37 @@ def test_no_state_migration_is_applied_if_the_state_should_not_be_migrated():
     assert not state_migration.migrate.called
 
 
+@pytest.mark.parametrize(
+    "use_cursor, expected_supports_checkpointing",
+    [
+        pytest.param(True, True, id="test_retriever_has_cursor"),
+        pytest.param(False, False, id="test_retriever_has_cursor"),
+    ]
+)
+def test_supports_checkpointing(use_cursor, expected_supports_checkpointing):
+    schema_loader = _schema_loader()
+
+    state = MagicMock()
+
+    retriever = MagicMock()
+    retriever.state = state
+    retriever.cursor = MagicMock() if use_cursor else None
+
+    config = {"api_key": "open_sesame"}
+
+    stream = DeclarativeStream(
+        name=_name,
+        primary_key=_primary_key,
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=schema_loader,
+        retriever=retriever,
+        config=config,
+        parameters={"cursor_field": "created_at"},
+    )
+
+    assert stream.supports_checkpointing == expected_supports_checkpointing
+
+
 def _schema_loader():
     schema_loader = MagicMock()
     schema_loader.get_json_schema.return_value = _json_schema

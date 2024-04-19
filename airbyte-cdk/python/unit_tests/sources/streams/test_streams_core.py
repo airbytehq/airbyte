@@ -2,14 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, Iterable, List, Mapping
+import logging
+from typing import Any, Iterable, List, Mapping, MutableMapping
 from unittest import mock
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import StateMixin, Stream
+from airbyte_cdk.sources.streams.checkpoint import (
+    FullRefreshCheckpointReader,
+    IncrementalCheckpointReader,
+    ResumableFullRefreshCheckpointReader,
+)
 
+logger = logging.getLogger("airbyte")
 
 class StreamStubFullRefresh(Stream):
     """
@@ -42,10 +48,11 @@ def test_as_airbyte_stream_full_refresh(mocker):
     assert exp == airbyte_stream
 
 
-class StreamStubIncremental(Stream):
+class StreamStubIncremental(Stream, StateMixin):
     """
     Stub full incremental class to assist with testing.
     """
+    _state = {}
 
     def read_records(
         self,
@@ -59,6 +66,65 @@ class StreamStubIncremental(Stream):
     cursor_field = "test_cursor"
     primary_key = "primary_key"
     namespace = "test_namespace"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+
+class StreamStubResumableFullRefresh(Stream, StateMixin):
+    """
+    Stub full incremental class to assist with testing.
+    """
+    _state = {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        pass
+
+    primary_key = "primary_key"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+
+class StreamStubLegacyStateInterface(Stream):
+    """
+    Stub full incremental class to assist with testing.
+    """
+    _state = {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        pass
+
+    cursor_field = "test_cursor"
+    primary_key = "primary_key"
+    namespace = "test_namespace"
+
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        return {}
 
 
 class StreamStubIncrementalEmptyNamespace(Stream):
@@ -182,3 +248,39 @@ def test_get_json_schema_is_cached(mocked_method):
     for i in range(5):
         stream.get_json_schema()
     assert mocked_method.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "stream, expected_checkpoint_reader_type",
+    [
+        pytest.param(StreamStubIncremental(), IncrementalCheckpointReader, id="test_incremental_checkpoint_reader"),
+        pytest.param(StreamStubFullRefresh(), FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader"),
+        pytest.param(StreamStubResumableFullRefresh(), ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"),
+        pytest.param(StreamStubLegacyStateInterface(), IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"),
+    ]
+)
+def test_get_checkpoint_reader(stream: Stream, expected_checkpoint_reader_type):
+    checkpoint_reader = stream._get_checkpoint_reader(
+        logger=logger,
+        cursor_field=["updated_at"],
+        sync_mode=SyncMode.incremental,
+        stream_state={},
+    )
+
+    assert isinstance(checkpoint_reader, expected_checkpoint_reader_type)
+
+
+def test_checkpoint_reader_with_no_partitions():
+    """
+    Tests the edge case where an incremental stream might not generate any partitions, but should still attempt at least
+    one iteration of calling read_records()
+    """
+    stream = StreamStubIncremental()
+    checkpoint_reader = stream._get_checkpoint_reader(
+        logger=logger,
+        cursor_field=["updated_at"],
+        sync_mode=SyncMode.incremental,
+        stream_state={},
+    )
+
+    assert checkpoint_reader.next() == {}

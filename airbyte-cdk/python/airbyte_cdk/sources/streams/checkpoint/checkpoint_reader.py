@@ -15,7 +15,7 @@ class CheckpointReader(ABC):
     @abstractmethod
     def next(self) -> Optional[MutableMapping[str, Any]]:
         """
-        Returns the next slice to process
+        Returns the next slice that will be used to fetch the next group of records
         """
 
     @abstractmethod
@@ -26,12 +26,24 @@ class CheckpointReader(ABC):
         WARNING: This is used to retain backwards compatibility with streams using the legacy get_stream_state() method.
         In order to uptake Resumable Full Refresh, connectors must migrate streams to use the state setter/getter methods.
         """
+        # todo blai: Ideally observe and get_checkpoint should just be one method, but because of the legacy state behavior
+        #  observation and reading Stream.state checkpoint are not 1:1 with each other
 
     @abstractmethod
-    def read_state(self) -> MutableMapping[str, Any]:
+    def get_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
         """
         This is interesting. With this move, we've turned checkpoint reader to resemble even more of a cursor because we are acting
         even more like an intermediary since we are more regularly assigning Stream.state to CheckpointReader._state via observe
+        """
+
+    # It would be interesting if we wanted to get rid of this. Right now the main use case for a different get_checkpoint
+    # and final_checkpoint is for a full refresh substream we don't want to checkpoint after every slice because there is not
+    # a meaningful state value to emit.
+    @abstractmethod
+    def final_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
+        """
+        Certain types of streams like full_refresh don't checkpoint per-slice, but should always emit a final state at the end of
+        a sync.
         """
 
 
@@ -47,34 +59,41 @@ class IncrementalCheckpointReader(CheckpointReader):
             return None
 
     def observe(self, new_state: Mapping[str, Any]):
-        # This is really only needed for backward compatibility with the legacy state management implementations.
-        # We only update the underlying _state value for legacy, otherwise managing state is done by the connector implementation
         self._state = new_state
 
-    def read_state(self) -> MutableMapping[str, Any]:
+    def get_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
         return self._state
+
+    def final_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
+        return None
 
 
 class ResumableFullRefreshCheckpointReader(CheckpointReader):
     def __init__(self, stream_state: MutableMapping[str, Any]):
-        self._state: Optional[MutableMapping[str, Any]] = stream_state
+        self._state: Optional[MutableMapping[str, Any]] = stream_state or {"first_slice": True}
         # can i have a dummy for first iteration to trigger the loop, and subsequent ones, we see {} and then therefor end the loop
 
     def next(self) -> Optional[MutableMapping[str, Any]]:
-        return self._state
+        # todo blai: Does it feel weird that we only observe real maps, but treat empty map as stop iterating?
+        #  I don't love forcing the developer to do more, but a terminal state finished value might be nice instead of assuming {}
+        #  I think this is my main concern with the interface is that it puts a lot of onus on the connector developer to structure
+        #  their state object correctly to coincide with how the checkpoint_reader interprets values.
+        return None if self._state == {} else self._state
+        # return None if self._state.get("is_done") else self._state
 
     def observe(self, new_state: Mapping[str, Any]):
-        # observe() was originally just for backwards compatibility, but we can potentially fold it more into the the read_records()
-        # flow as I've coded out so far.
         self._state = new_state
 
-    def read_state(self) -> MutableMapping[str, Any]:
+    def get_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
         return self._state or {}
+
+    def final_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
+        return self._state  # removed this part which I think we can do because we only emit final state if needed: or {}
 
 
 class FullRefreshCheckpointReader(CheckpointReader):
-    def __init__(self):
-        self._stream_slices = iter([{}])
+    def __init__(self, stream_slices: Iterable[Optional[Mapping[str, Any]]]):
+        self._stream_slices = iter(stream_slices)
 
     def next(self) -> Optional[MutableMapping[str, Any]]:
         try:
@@ -85,5 +104,8 @@ class FullRefreshCheckpointReader(CheckpointReader):
     def observe(self, new_state: Mapping[str, Any]):
         pass
 
-    def read_state(self) -> MutableMapping[str, Any]:
-        return {"__ab_is_sync_complete": True}  # replace this with the new terminal value from ella
+    def get_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
+        return None
+
+    def final_checkpoint(self) -> Optional[MutableMapping[str, Any]]:
+        return {"__ab_full_refresh_state_message": True}  # replace this with the new terminal value from ella
