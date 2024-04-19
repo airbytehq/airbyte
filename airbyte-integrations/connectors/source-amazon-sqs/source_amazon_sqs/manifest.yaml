@@ -23,14 +23,6 @@ definitions:
           authenticator:
             type: CustomAuthenticator
             class_name: source_amazon_sqs.components.AmazonSQSAuthenticator
-          request_parameters:
-            Action: ReceiveMessage
-            # MessageAttributeNames: '{{ config[''attributes_to_return'']|split('','') }}'
-            QueueUrl: "{{ config['queue_url'] }}"
-            VisibilityTimeout: "{{ config['visibility_timeout'] }}"
-            WaitTimeSeconds: "{{ config['max_wait_time'] }}"
-          request_headers:
-            Content-Type: application/x-amz-json-1.0
         record_selector:
           type: RecordSelector
           extractor:
