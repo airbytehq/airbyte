@@ -12,7 +12,6 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor.abstract_concurrent_file_based_cursor import AbstractConcurrentFileBasedCursor
-from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 from airbyte_cdk.sources.message.repository import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -27,9 +26,9 @@ _NULL_FILE = ""
 
 class FileBasedConcurrentCursor(AbstractConcurrentFileBasedCursor):
     CURSOR_FIELD = "_ab_source_file_last_modified"
-    DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = DefaultFileBasedCursor.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
+    DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL = 3
     DEFAULT_MAX_HISTORY_SIZE = 10_000
-    DATE_TIME_FORMAT = DefaultFileBasedCursor.DATE_TIME_FORMAT
+    DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     zero_value = datetime.min
     zero_cursor_value = f"0001-01-01T00:00:00.000000Z_{_NULL_FILE}"
 
