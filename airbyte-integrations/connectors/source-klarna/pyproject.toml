@@ -17,7 +17,7 @@ include = "source_klarna"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.44"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-klarna = "source_klarna.run:run"

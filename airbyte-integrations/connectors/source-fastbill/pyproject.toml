@@ -17,7 +17,7 @@ include = "source_fastbill"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.4"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-fastbill = "source_fastbill.run:run"

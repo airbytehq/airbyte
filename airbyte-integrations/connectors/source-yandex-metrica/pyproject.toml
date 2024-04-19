@@ -17,7 +17,7 @@ include = "source_yandex_metrica"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.30.3"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-yandex-metrica = "source_yandex_metrica.run:run"

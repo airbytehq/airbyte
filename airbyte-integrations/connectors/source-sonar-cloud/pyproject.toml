@@ -17,7 +17,7 @@ include = "source_sonar_cloud"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.29.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-sonar-cloud = "source_sonar_cloud.run:run"

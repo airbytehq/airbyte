@@ -19,7 +19,7 @@ include = "source_rss"
 python = "^3.9,<3.12"
 pytz = "==2022.6"
 feedparser = "==6.0.10"
-airbyte-cdk = "==0.79.1"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-rss = "source_rss.run:run"

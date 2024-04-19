@@ -17,7 +17,7 @@ include = "source_chartmogul"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.53.2"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-chartmogul = "source_chartmogul.run:run"

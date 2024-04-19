@@ -17,7 +17,7 @@ include = "source_babelforce"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.5"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-babelforce = "source_babelforce.run:run"

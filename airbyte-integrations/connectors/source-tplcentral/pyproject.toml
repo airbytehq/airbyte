@@ -17,7 +17,7 @@ include = "source_tplcentral"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.1.46"
+airbyte-cdk = "0.80.0"
 arrow = "==1.2.1"
 
 [tool.poetry.scripts]

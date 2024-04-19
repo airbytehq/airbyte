@@ -17,7 +17,7 @@ include = "source_freshsales"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.53.4"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-freshsales = "source_freshsales.run:run"

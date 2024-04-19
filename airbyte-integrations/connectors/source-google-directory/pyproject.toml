@@ -20,7 +20,7 @@ python = "^3.9,<3.12"
 google-api-python-client = "==1.12.8"
 google-auth-oauthlib = "==0.4.2"
 backoff = "==1.10.0"
-airbyte-cdk = "==0.42.0"
+airbyte-cdk = "0.80.0"
 google-auth-httplib2 = "==0.0.4"
 
 [tool.poetry.scripts]

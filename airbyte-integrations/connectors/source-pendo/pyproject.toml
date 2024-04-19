@@ -17,7 +17,7 @@ include = "source_pendo"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.33.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-pendo = "source_pendo.run:run"

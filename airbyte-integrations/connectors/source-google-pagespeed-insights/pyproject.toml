@@ -17,7 +17,7 @@ include = "source_google_pagespeed_insights"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.37.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-google-pagespeed-insights = "source_google_pagespeed_insights.run:run"

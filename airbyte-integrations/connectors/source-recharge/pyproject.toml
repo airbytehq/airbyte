@@ -17,7 +17,7 @@ include = "source_recharge"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.60.1"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-recharge = "source_recharge.run:run"

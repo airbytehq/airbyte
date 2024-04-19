@@ -17,7 +17,7 @@ include = "source_orbit"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.52.2"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-orbit = "source_orbit.run:run"

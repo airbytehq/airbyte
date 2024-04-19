@@ -18,7 +18,7 @@ include = "source_okta"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 pendulum = "==1.2.0"
-airbyte-cdk = "==0.44.3"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-okta = "source_okta.run:run"

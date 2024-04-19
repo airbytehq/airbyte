@@ -17,7 +17,7 @@ include = "source_chargify"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.38"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-chargify = "source_chargify.run:run"

@@ -17,7 +17,7 @@ include = "source_glassfrog"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.8"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-glassfrog = "source_glassfrog.run:run"

@@ -17,7 +17,7 @@ include = "source_visma_economic"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.41"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-visma-economic = "source_visma_economic.run:run"

@@ -17,7 +17,7 @@ include = "source_news_api"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.36.1"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-news-api = "source_news_api.run:run"

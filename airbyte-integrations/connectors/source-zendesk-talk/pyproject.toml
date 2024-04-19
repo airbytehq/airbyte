@@ -17,7 +17,7 @@ include = "source_zendesk_talk"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.58.8"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-zendesk-talk = "source_zendesk_talk.run:run"

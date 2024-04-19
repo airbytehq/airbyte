@@ -17,7 +17,7 @@ include = "source_braze"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.52.10"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-braze = "source_braze.run:run"

@@ -17,7 +17,7 @@ include = "source_pardot"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.15.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-pardot = "source_pardot.run:run"

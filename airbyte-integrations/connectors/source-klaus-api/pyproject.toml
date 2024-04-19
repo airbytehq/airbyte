@@ -17,7 +17,7 @@ include = "source_klaus_api"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.55.2"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-klaus-api = "source_klaus_api.run:run"

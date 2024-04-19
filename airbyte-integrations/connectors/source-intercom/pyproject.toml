@@ -17,7 +17,7 @@ include = "source_intercom"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = ">=0.62.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-intercom = "source_intercom.run:run"

@@ -17,7 +17,7 @@ include = "source_pivotal_tracker"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.52.2"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-pivotal-tracker = "source_pivotal_tracker.run:run"

@@ -17,7 +17,7 @@ include = "source_apple_search_ads"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.44.4"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-apple-search-ads = "source_apple_search_ads.run:run"

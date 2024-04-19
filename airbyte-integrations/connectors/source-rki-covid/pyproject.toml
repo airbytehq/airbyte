@@ -17,7 +17,7 @@ include = "source_rki_covid"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.11.3"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-rki-covid = "source_rki_covid.run:run"

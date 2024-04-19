@@ -17,7 +17,7 @@ include = "source_bamboo_hr"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.1.94"
+airbyte-cdk = "0.80.0"
 PyBambooHR = "==0.8.1"
 
 [tool.poetry.scripts]
