@@ -9,7 +9,7 @@ import io.airbyte.commons.jackson.MoreMappers
 
 data class DatabricksConnectorConfig(
     @JsonProperty("accept_terms") val termsAccepted: Boolean,
-    @JsonProperty("hostname") val hostName: String,
+    @JsonProperty("hostname") val hostname: String,
     @JsonProperty("port") val port: Int = 443,
     @JsonProperty("http_path") val httpPath: String,
     val database: String,

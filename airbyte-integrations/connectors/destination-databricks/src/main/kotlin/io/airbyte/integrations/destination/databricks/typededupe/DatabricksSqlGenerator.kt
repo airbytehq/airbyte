@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.databricks.sql
+package io.airbyte.integrations.destination.databricks.typededupe
 
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -47,7 +47,7 @@ class DatabricksSqlGenerator : SqlGenerator {
         namespace: String?,
         tableName: String?
     ): Sql {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not allowed in Databricks and should not be called")
     }
 
     override fun clearLoadedAt(streamId: StreamId): Sql {
