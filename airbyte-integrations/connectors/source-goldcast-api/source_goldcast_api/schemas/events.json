@@ -72,57 +72,7 @@
       "favicon": {"type": ["null", "string"]},
       "show_discussion_rooms": {"type": "boolean"},
       "title": {"type": "string"},
-      "description": {"type": "string"},
-      "theme_obj": {
-        "type": "object",
-        "properties": {
-          "logos": {"type": "array"},
-          "font_type": {"type": "string"},
-          "auth_theme": {"type": "boolean"},
-          "theme_type": {"type": "string"},
-          "show_borders": {"type": "boolean"},
-          "sidebar_blur": {"type": "string"},
-          "sidebar_alpha": {"type": "number"},
-          "theme_font_src": {"type": "string"},
-          "page_item_alpha": {"type": "number"},
-          "theme_font_link": {"type": ["null", "string"]},
-          "theme_font_name": {"type": "string"},
-          "event_background": {"type": "string"},
-          "name_card_radius": {"type": "string"},
-          "splash_font_type": {"type": "string"},
-          "splash_page_hero": {"type": "string"},
-          "stage_background": {"type": "string"},
-          "stage_text_color": {"type": "string"},
-          "onEditScreenSaver": {"type": "boolean"},
-          "splash_text_color": {"type": "string"},
-          "primary_text_color": {"type": "string"},
-          "splash_shade_alpha": {"type": "string"},
-          "theme_primary_color": {"type": "string"},
-          "ctrl_bar_shade_alpha": {"type": "number"},
-          "name_card_background": {"type": "string"},
-          "name_card_text_color": {"type": "string"},
-          "secondary_text_color": {"type": "string"},
-          "p2p_panel_shade_alpha": {"type": "number"},
-          "splash_theme_font_src": {"type": "string"},
-          "theme_secondary_color": {"type": "string"},
-          "lower_third_background": {"type": "string"},
-          "lower_third_text_color": {"type": "string"},
-          "splash_gradient_height": {"type": "string"},
-          "splash_theme_font_link": {"type": ["null", "string"]},
-          "splash_theme_font_name": {"type": "string"},
-          "mobile_event_background": {"type": "string"},
-          "mobile_splash_page_hero": {"type": "string"},
-          "mobile_stage_background": {"type": "string"},
-          "name_card_title_display": {"type": "string"},
-          "screen_saver_background": {"type": "string"},
-          "screen_saver_text_color": {"type": "string"},
-          "splash_background_color": {"type": "string"},
-          "splash_background_shade": {"type": "string"},
-          "primary_background_shade": {"type": "string"},
-          "splash_text_onimage_color": {"type": "string"},
-          "alt_primary_background_shade": {"type": "string"}
-        }
-      }
+      "description": {"type": "string"}
     },
     "required": [
       "id",
@@ -161,8 +111,7 @@
       "logo_url",
       "show_discussion_rooms",
       "title",
-      "description",
-      "theme_obj"
+      "description"
     ]
   }
   

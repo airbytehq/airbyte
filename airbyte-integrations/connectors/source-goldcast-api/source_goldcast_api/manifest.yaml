@@ -30,6 +30,14 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  organizations_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organizations"
+    description: "Organizations stream. Events are the base object of Goldcast."
+    primary_key: "id"
+    $parameters:
+      path: "/core/organization/"
+
   events_stream:
     $ref: "#/definitions/base_stream"
     name: "events"
@@ -46,6 +54,14 @@ definitions:
     $parameters:
       path: "/event/agenda-item/"
 
+  discussion_groups_stream:
+    $ref: "#/definitions/base_stream"
+    name: "discussion_groups"
+    description: "Discussion groups stream. Discussion groups of events."
+    primary_key: "id"
+    $parameters:
+      path: "/event/discussion-groups/"
+
 #  webinars_stream:
 #    $ref: "#/definitions/base_stream"
 #    name: "webinars"
@@ -55,11 +71,11 @@ definitions:
 #      - type: ParentStreamConfig
 #        stream: "#/definitions/events_stream"
 #        parent_key: "id"
-#        partition_field: "id"
+#        partition_field: "webinar_id"
 #    $parameters:
 #      name: "webinars"
 #      primary_key: "id"
-#      path: "/event/webinars/{{ stream_slice.id }}"
+#      path: "/event/webinars/{{ stream_slice.webinar_id }}"
 #    transformations:
 #      - type: AddFields
 #        fields:
@@ -81,15 +97,19 @@ definitions:
 #              action: IGNORE
 
 streams:
+  - "#/definitions/organizations_stream"
   - "#/definitions/events_stream"
   - "#/definitions/agenda_items_stream"
- # - "#/definitions/webinars_stream"
+  - "#/definitions/discussion_groups_stream"
+#  - "#/definitions/webinars_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "events"
     - "agenda_items"
+    - "organizations"
+    - "discussion_groups"
 
 spec: 
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
