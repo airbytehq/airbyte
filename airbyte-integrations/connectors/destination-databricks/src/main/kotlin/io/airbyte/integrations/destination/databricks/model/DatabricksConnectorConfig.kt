@@ -14,6 +14,7 @@ data class DatabricksConnectorConfig(
     @JsonProperty("http_path") val httpPath: String,
     val database: String,
     val schema: String = "default",
+    val rawSchemaOverride: String = "airbyte_internal",
     val enableSchemaEvolution: Boolean = false,
     @JsonProperty("api_authentication") val apiAuthentication: ApiAuthentication,
     @JsonProperty("jdbc_authentication") val jdbcAuthentication: JdbcAuthentication

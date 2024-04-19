@@ -2,7 +2,9 @@ package io.airbyte.integrations.destination.databricks.sync
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.destination.databricks.typededupe.DatabricksDestinationHandler
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
+import io.airbyte.integrations.destination.sync.StreamOperations
 import io.airbyte.integrations.destination.sync.SyncOperations
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -11,7 +13,8 @@ private val log = KotlinLogging.logger {}
 
 class DatabricksSyncOperations(
     private val parsedCatalog: ParsedCatalog,
-    private val destinationHandler: DatabricksDestinationHandler
+    private val destinationHandler: DatabricksDestinationHandler,
+    private val streamOperations: StreamOperations<MinimumDestinationState.Impl>
 ) : SyncOperations {
     override fun initializeStreams() {
         log.info {
@@ -27,7 +30,7 @@ class DatabricksSyncOperations(
         // writeDateTime = Instant.now() done once as a static var and passed to all
         val streamsInitialStates = destinationHandler.gatherInitialState(parsedCatalog.streams)
 
-        streamsInitialStates.forEach { it -> it.initialRawTableStatus }
+        streamsInitialStates.forEach { streamOperations.initialize(it) }
     }
 
     override fun flushStreams() {

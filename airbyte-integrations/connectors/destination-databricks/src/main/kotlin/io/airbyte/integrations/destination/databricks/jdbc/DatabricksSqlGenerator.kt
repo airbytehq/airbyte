@@ -1,5 +1,6 @@
-package io.airbyte.integrations.destination.databricks.typededupe
+package io.airbyte.integrations.destination.databricks.jdbc
 
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
@@ -8,13 +9,20 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import java.time.Instant
 import java.util.*
 
-class DatabricksSqlGenerator : SqlGenerator {
+class DatabricksSqlGenerator(val namingTransformer: NamingConventionTransformer) : SqlGenerator {
     override fun buildStreamId(
         namespace: String,
         name: String,
         rawNamespaceOverride: String
     ): StreamId {
-        TODO("Not yet implemented")
+        return StreamId(
+            namingTransformer.getNamespace(namespace),
+            namingTransformer.getIdentifier(name),
+            namingTransformer.getNamespace(rawNamespaceOverride),
+            namingTransformer.getIdentifier(StreamId.concatenateRawTableName(namespace, name)),
+            namespace,
+            name
+        )
     }
 
     override fun buildColumnId(name: String, suffix: String?): ColumnId {

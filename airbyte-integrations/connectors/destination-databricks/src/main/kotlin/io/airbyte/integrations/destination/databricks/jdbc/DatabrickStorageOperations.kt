@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.databricks.sql
+package io.airbyte.integrations.destination.databricks.jdbc
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -13,14 +13,14 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
 
-private val log = KotlinLogging.logger {}
-class DatabricksSqlOperations (
+class DatabrickStorageOperations (
     private val sqlGenerator: SqlGenerator,
-    private val destinationHandler: DestinationHandler<MinimumDestinationState>
-) : SqlOperations<MinimumDestinationState> {
+    private val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
+) {
 
+    private val log = KotlinLogging.logger {}
     private val overwriteFinalTableWithTmp: AtomicBoolean = AtomicBoolean(false)
-    override fun prepare(destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState>): Result<Unit> {
+    fun prepare(destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>): Result<Unit> {
         return kotlin.runCatching {
             val streamConfig = destinationInitialStatus.streamConfig
             prepareStagingTable(streamConfig.id, streamConfig.destinationSyncMode!!)
@@ -35,7 +35,8 @@ class DatabricksSqlOperations (
 
         // TODO: Optimize by running SHOW TABLES; truncate or create based on mode
         // Create raw tables.
-        val createRawTableSql = Sql.of("""
+        val createRawTableSql = Sql.of(
+            """
                 CREATE TABLE IF NOT EXISTS ${streamId.rawNamespace}.${streamId.rawName} (
                     ${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID} STRING,
                     ${JavaBaseConstants.COLUMN_NAME_DATA} STRING,
@@ -43,7 +44,8 @@ class DatabricksSqlOperations (
                     ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} TIMESTAMP,
                     ${JavaBaseConstants.COLUMN_NAME_AB_META} STRING
                 )
-            """.trimIndent())
+            """.trimIndent()
+        )
         destinationHandler.execute(createRawTableSql)
         // Truncate the raw table if sync in OVERWRITE.
         if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
@@ -52,7 +54,7 @@ class DatabricksSqlOperations (
         }
     }
 
-    private fun prepareFinalTableForOverwrite(initialStatus: DestinationInitialStatus<MinimumDestinationState>) {
+    private fun prepareFinalTableForOverwrite(initialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>) {
         val stream = initialStatus.streamConfig
         if (!initialStatus.isFinalTableEmpty || initialStatus.isSchemaMismatch) {
             // We want to overwrite an existing table. Write into a tmp table.
@@ -77,7 +79,7 @@ class DatabricksSqlOperations (
         }
     }
 
-    private fun prepareFinalTable(initialStatus: DestinationInitialStatus<MinimumDestinationState>) {
+    private fun prepareFinalTable(initialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>) {
         val stream = initialStatus.streamConfig
         // No special handling if final table doesn't exist, just create and return
         if (!initialStatus.isFinalTablePresent) {
@@ -119,11 +121,11 @@ class DatabricksSqlOperations (
     }
 
 
-    override fun copyIntoTableFromStage(stageId: String, streamId: StreamId): Result<Unit> {
+    fun copyIntoTableFromStage(stageId: String, streamId: StreamId): Result<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun updateFinalTable(streamConfig: StreamConfig): Result<Unit> {
+    fun updateFinalTable(streamConfig: StreamConfig): Result<Unit> {
         TODO("Not yet implemented")
     }
 

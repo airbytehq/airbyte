@@ -4,17 +4,17 @@ import com.databricks.sdk.WorkspaceClient
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import java.io.InputStream
 
-class DatabricksStagingOperations(val workspaceClient: WorkspaceClient) : StagingOperations {
+class DatabricksStagingOperations(val workspaceClient: WorkspaceClient) {
 
-    override fun create(streamId: StreamId): Result<Unit> {
+    fun create(streamId: StreamId): Result<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun upload(streamId: StreamId, contents: InputStream): Result<String> {
+    fun upload(streamId: StreamId, contents: InputStream): Result<String> {
         TODO("Not yet implemented")
     }
 
-    override fun delete(streamId: StreamId): Result<Unit> {
+    fun delete(streamId: StreamId): Result<Unit> {
         TODO("Not yet implemented")
     }
 

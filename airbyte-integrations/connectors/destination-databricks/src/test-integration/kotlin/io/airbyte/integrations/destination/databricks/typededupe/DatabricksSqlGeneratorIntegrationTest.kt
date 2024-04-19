@@ -1,37 +1,51 @@
 package io.airbyte.integrations.destination.databricks.typededupe
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.integrations.destination.databricks.ConnectorClientsFactory
+import io.airbyte.integrations.destination.databricks.DatabricksNamingTransformer
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
+import io.airbyte.integrations.destination.databricks.jdbc.DatabrickStorageOperations
+import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
+import java.nio.file.Files
+import java.nio.file.Path
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 
-class DatabricksSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<MinimumDestinationState>() {
+class DatabricksSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<MinimumDestinationState.Impl>() {
     companion object {
-        private lateinit var jdbcDatabase: JdbcDatabase;
+        private lateinit var jdbcDatabase: JdbcDatabase
+        private lateinit var connectorConfig: DatabricksConnectorConfig
         @JvmStatic
         @BeforeAll
         fun setupDatabase() {
-            jdbcDatabase =
+            val rawConfig = Files.readString(Path.of("secrets/new_config.json"))
+            val connectorConfig = DatabricksConnectorConfig.deserialize(Jsons.deserialize(rawConfig))
+            jdbcDatabase = DefaultJdbcDatabase(ConnectorClientsFactory.createDataSource(connectorConfig))
         }
     }
 
-    override val destinationHandler: DestinationHandler<MinimumDestinationState>
-        get() = TODO("Not yet implemented")
+    override val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
+        get() = DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase, connectorConfig.rawSchemaOverride)
     override val sqlGenerator: SqlGenerator
-        get() = TODO("Not yet implemented")
+        get() = DatabricksSqlGenerator(DatabricksNamingTransformer())
+    val sqlOperations: DatabrickStorageOperations = DatabrickStorageOperations(sqlGenerator, destinationHandler)
 
 
     override fun createNamespace(namespace: String?) {
-        super.namespace
-        TODO("Not yet implemented")
+        sqlGenerator.createSchema(namespace)
     }
 
     override fun createRawTable(streamId: StreamId) {
-        TODO("Not yet implemented")
+        sqlOperations.createRawTable(streamId.rawNamespace!!, streamId.rawName!!)
     }
 
     override fun createV1RawTable(v1RawTable: StreamId) {
@@ -67,7 +81,13 @@ class DatabricksSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Mi
         TODO("Not yet implemented")
     }
 
+    @Disabled
     override fun testCreateTableIncremental() {
-        TODO("Not yet implemented")
+
+    }
+
+    @Disabled ("No V1 Table migration for databricks")
+    override fun testV1V2migration() {
+
     }
 }
