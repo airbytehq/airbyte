@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.3"
+version = "1.0.4"
 name = "source-freshsales"
 description = "Source implementation for Freshsales."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_freshsales"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.53.4"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-freshsales = "source_freshsales.run:run"
