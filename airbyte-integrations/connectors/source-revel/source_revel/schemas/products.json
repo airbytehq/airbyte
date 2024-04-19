@@ -1,0 +1,688 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "allow_price_override": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "alternate_lookup": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "attribute_1_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attribute_2_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attribute_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "barcode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bin_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "categories": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "color_code": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "combo_discount_products": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "combo_productsets": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "combo_upcharge": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "comments": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commission": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commission_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "conv_ordering_disp": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "cost": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "crv_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "crv_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "crv_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "default_inventory": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "dept": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dining_options": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disable_modifier_popup": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "discountable": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "display_on_kiosk": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "display_online": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "ebt_no": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "eligible_for_purchase_rewards": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "export": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "external_shipping_addresses": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "flat_tax_units": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "increase_group_combo_price_based_on_upcharge": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_alcohol": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_cold": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_combo": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "is_drink": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_food": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "kds_tags": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "kitchen_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kitchen_print_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "label_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limit_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "limit_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "list_printers": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "manufacturer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "max_price": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "negative_sales_restricted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "not_returnable": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "pos_column_width": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "prep_recipe": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "preparation_time": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "prevent_sales": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "price": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "price_embedded": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "price_tiers": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "print_tags": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "printers": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "product_brand": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_group": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "product_height_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_length_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_weight_unit": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "product_width_unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "productclass": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "promotional_product": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "prompt_for_quantity": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "prompt_for_upsell": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "purchase_product_age": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "purchase_product_age_msg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "purchase_reward_multiplier": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "quick_pick_group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "require_serial_number": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "retail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rti_combo": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "seasonal_item": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "service_duration": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "set_price_per_group_for_combos": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "shelf_label_quantity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "shopify_sku": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "show_on_pos": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "sku": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sold_by_weight": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "sorting": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "surcharge": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tax_class": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_codes": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tax_included": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "third_party_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "track_in_inventory": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "track_recipe": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "unit_size": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uom": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    },
+    "upsell_combo_price": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "upsell_combos": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "uuid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "variable_pricing": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "variable_pricing_by": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

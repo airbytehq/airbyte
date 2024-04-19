@@ -1,0 +1,217 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "color_code": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "conv_ordering_disp": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "is_service": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "lock_add_product": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "lock_add_subcategory": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sorting": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "subcategories": {
+      "items": {
+        "properties": {
+          "active": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "color_code": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conv_ordering_disp": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "created_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "establishment": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "is_service": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "lock_add_product": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lock_add_subcategory": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resource_uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sorting": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "subcategories": {
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "updated_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

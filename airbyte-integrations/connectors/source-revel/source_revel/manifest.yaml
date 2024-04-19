@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - address
+    - companies
 
 definitions:
   paginator:
@@ -50,6 +50,20 @@ definitions:
     step: P1D
     cursor_granularity: PT1S
   streams:
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /enterprise/Company/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
     customers:
       type: DeclarativeStream
       name: customers
@@ -58,7 +72,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: '#/definitions/incremental_requester'
           path: /resources/Customer/
         record_selector:
           $ref: '#/definitions/record_selector'
@@ -74,7 +88,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: '#/definitions/incremental_requester'
           path: /resources/Employee/
         record_selector:
           $ref: '#/definitions/record_selector'
@@ -90,7 +104,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: '#/definitions/incremental_requester'
           path: /resources/Order/
         record_selector:
           $ref: '#/definitions/record_selector'
@@ -106,8 +120,56 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: '#/definitions/incremental_requester'
           path: /resources/OrderItem/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    payments:
+      type: DeclarativeStream
+      name: payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/incremental_requester'
+          path: /resources/Payment/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/incremental_requester'
+          path: /resources/Product/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync'
+    product_categories:
+      type: DeclarativeStream
+      name: product_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /products/ProductCategory/
         record_selector:
           $ref: '#/definitions/record_selector'
         paginator:
@@ -128,13 +190,19 @@ definitions:
     http_method: GET
     request_headers:
       Client-Id: '{{ config[''client_id''] }}'
+  incremental_requester:
+    $ref: '#/definitions/base_requester'
     request_parameters:
       created_date__gte: '{{ config[''start_date''] }}'
 streams:
+  - $ref: '#/definitions/streams/companies'
   - $ref: '#/definitions/streams/customers'
   - $ref: '#/definitions/streams/employees'
   - $ref: '#/definitions/streams/orders'
   - $ref: '#/definitions/streams/order_items'
+  - $ref: '#/definitions/streams/payments'
+  - $ref: '#/definitions/streams/products'
+  - $ref: '#/definitions/streams/product_categories'
 
 spec:
   type: Spec
@@ -145,21 +213,35 @@ spec:
       - start_date
       - api_key
     properties:
-      start_date:
+      client_id:
         type: string
-        title: Start date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        title: Client ID
         order: 0
       api_key:
         type: string
         title: API Key
         airbyte_secret: true
         order: 1
+      api_secret:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 2
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 3
     additionalProperties: true
 
 metadata:
   autoImportSchema:
+    companies: true
     customers: true
+    employees: true
     orders: true
     order_items: true
+    products: true
+    product_categories: true
+    payments: true
