@@ -112,6 +112,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
         self.response_json = response.json()
 
         for record in self.response_json:
+            # send data, key, submission date and endtime
             record_id = record.get("KEY")
             submission_date = record.get("SubmissionDate")
             endtime = record.get("endtime")
