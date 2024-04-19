@@ -25,7 +25,8 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.source import TState
 from avro import datafile
 from pydantic import AnyUrl
@@ -70,7 +71,7 @@ class InMemoryFilesSource(FileBasedSource):
             discovery_policy=discovery_policy or DefaultDiscoveryPolicy(),
             parsers=parsers,
             validation_policies=validation_policies or DEFAULT_SCHEMA_VALIDATION_POLICIES,
-            cursor_cls=cursor_cls or DefaultFileBasedCursor,
+            cursor_cls=cursor_cls or FileBasedConcurrentCursor,
         )
 
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
