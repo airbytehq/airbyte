@@ -141,6 +141,7 @@ class SourceFacebookMarketing(AbstractSource):
             end_date=config.end_date,
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
+            filter_statuses=config.ad_statuses
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -307,6 +308,12 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
+                filter_statuses=(
+                    config.ad_statuses if insight.level == "ad"
+                    else config.adset_statuses if insight.level == "adset"
+                    else config.campaign_statuses if insight.level == "campaign"
+                    else []
+                )
             )
             streams.append(stream)
         return streams
