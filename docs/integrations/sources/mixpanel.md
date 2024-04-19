@@ -55,6 +55,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 2.2.2 | 2024-04-19 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Updating to 0.80.0 CDK |
 | 2.2.1 | 2024-04-12 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | schema descriptions |
 | 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 2.1.0   | 2024-02-13 | [35203](https://github.com/airbytehq/airbyte/pull/35203) | Update stream Funnels schema with custom_event_id and custom_event fields                                   |
