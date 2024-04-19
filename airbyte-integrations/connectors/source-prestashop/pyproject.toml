@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.3"
+version = "1.0.4"
 name = "source-prestashop"
 description = "Source implementation for PrestaShop."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_prestashop"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.43.2"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-prestashop = "source_prestashop.run:run"
