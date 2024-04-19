@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,6 +51,10 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -59,6 +64,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -79,6 +85,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   private static final String INVALID_TIMEZONE_CEST = "CEST";
 
   private static final Random RANDOM = new Random();
+
+  private static final String TEST_DATE_STREAM_NAME = "TEST_DATE_TABLE";
+  private static final String COL_DATE_TIME = "CAR_DATE";
+  private static final List<JsonNode> DATE_TIME_RECORDS = ImmutableList.of(
+      Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_DATE_TIME, "'2023-00-00 20:37:47'")));
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
@@ -732,6 +743,70 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
+  }
+
+  private void writeDateRecords(
+                                final JsonNode recordJson,
+                                final String dbName,
+                                final String streamName,
+                                final String idCol,
+                                final String dateCol) {
+    testdb.with("INSERT INTO `%s` .`%s` (%s, %s) VALUES (%s, %s);", dbName, streamName,
+        idCol, dateCol,
+        recordJson.get(idCol).asInt(), recordJson.get(dateCol).asText());
+  }
+
+  @Test
+  public void testInvalidDatetime_metaChangesPopulated() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
+
+    // Add a datetime stream to the catalog
+    testdb
+        .withoutStrictMode()
+        .with(createTableSqlFmt(), getDatabaseName(), TEST_DATE_STREAM_NAME,
+            columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_DATE_TIME, "DATETIME"), Optional.of(COL_ID)));
+
+    for (final JsonNode recordJson : DATE_TIME_RECORDS) {
+      writeDateRecords(recordJson, getDatabaseName(), TEST_DATE_STREAM_NAME, COL_ID, COL_DATE_TIME);
+    }
+
+    final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(
+            TEST_DATE_STREAM_NAME,
+            getDatabaseName(),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_DATE_TIME, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            .withSupportedSyncModes(
+                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
+    airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+
+    final List<ConfiguredAirbyteStream> streams = new ArrayList<>();
+    streams.add(airbyteStream);
+    configuredCatalog.withStreams(streams);
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), configuredCatalog, null);
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read1);
+
+    // Sync is expected to succeed with one record. However, the meta changes column should be populated
+    // for this record
+    // as it is an invalid date. As a result, this field will be omitted as Airbyte is unable to
+    // serialize the source value.
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
+    assertEquals(recordMessages.size(), 1);
+    final AirbyteRecordMessage invalidDateRecord = recordMessages.stream().findFirst().get();
+
+    final AirbyteRecordMessageMetaChange expectedChange =
+        new AirbyteRecordMessageMetaChange().withReason(Reason.SOURCE_SERIALIZATION_ERROR).withChange(
+            Change.NULLED).withField(COL_DATE_TIME);
+    final AirbyteRecordMessageMeta expectedMessageMeta = new AirbyteRecordMessageMeta().withChanges(List.of(expectedChange));
+    assertEquals(expectedMessageMeta, invalidDateRecord.getMeta());
+
+    ObjectMapper mapper = new ObjectMapper();
+    final JsonNode expectedDataWithoutCdcFields = mapper.readTree("{\"id\":120}");
+    removeCDCColumns((ObjectNode) invalidDateRecord.getData());
+    assertEquals(expectedDataWithoutCdcFields, invalidDateRecord.getData());
   }
 
   private void createTablesToIncreaseSchemaHistorySize() {

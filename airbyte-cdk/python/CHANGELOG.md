@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.82.0
+Connector builder: emit state messages
+
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
 ## 0.81.4
 Adding stream_descriptor as part of AirbyteTracedException.__init__
 
