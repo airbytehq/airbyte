@@ -230,6 +230,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         modelCol, modelVal, COL_ID, 11);
   }
 
+  @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
+  }
+
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());
@@ -356,8 +361,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     // Full refresh will only send 6 state messages - one for each record (including the final one).
     assertEquals(6, stateMessages.size());
   }
-
-
 
   protected void assertExpectedStateMessagesWithTotalCount(final List<AirbyteStateMessage> stateMessages, final long totalRecordCount) {
     long actualRecordCount = 0L;

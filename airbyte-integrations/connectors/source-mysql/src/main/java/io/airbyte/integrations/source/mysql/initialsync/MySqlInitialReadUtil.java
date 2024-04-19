@@ -128,8 +128,8 @@ public class MySqlInitialReadUtil {
   }
 
   public static CdcState createCdcState(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final StateManager stateManager) {
+                                        final ConfiguredAirbyteCatalog catalog,
+                                        final StateManager stateManager) {
     final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     return getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
   }

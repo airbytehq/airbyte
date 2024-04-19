@@ -138,7 +138,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     return pairToPrimaryKeyInfo.get(pair);
   }
 
-  public CdcState getCdcState() {return cdcState;}
+  public CdcState getCdcState() {
+    return cdcState;
+  }
 
   private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
