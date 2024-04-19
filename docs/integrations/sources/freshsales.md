@@ -69,6 +69,7 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------|
+| 1.0.4 | 2024-04-19 | [37161](https://github.com/airbytehq/airbyte/pull/37161) | Updating to 0.80.0 CDK |
 | 1.0.3 | 2024-04-18 | [37161](https://github.com/airbytehq/airbyte/pull/37161) | Manage dependencies with Poetry. |
 | 1.0.2 | 2024-04-15 | [37161](https://github.com/airbytehq/airbyte/pull/37161) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.0.1 | 2024-04-12 | [37161](https://github.com/airbytehq/airbyte/pull/37161) | schema descriptions |
