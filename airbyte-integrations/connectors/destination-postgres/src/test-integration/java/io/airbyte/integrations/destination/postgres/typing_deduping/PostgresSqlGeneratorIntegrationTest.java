@@ -42,6 +42,11 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   private static String databaseName;
   private static JdbcDatabase database;
 
+  @Override
+  protected boolean getSupportsSafeCast() {
+    return true;
+  }
+
   @BeforeAll
   public static void setupPostgres() {
     testContainer = PostgresTestDatabase.in(PostgresTestDatabase.BaseImage.POSTGRES_13);
