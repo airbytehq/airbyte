@@ -206,6 +206,12 @@ definitions:
                 partition_field: project_id
                 stream:
                   $ref: "#/definitions/streams/projects"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - project_id
+              value: '{{ record[''project''][''id''] }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,20 +238,21 @@ streams:
 
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pivotal-tracker
   connection_specification:
-    type: object
     $schema: http://json-schema.org/draft-07/schema#
+    title: Pivotal Tracker Spec
+    type: object
     required:
-      - api_token
+    - api_token
+    additionalProperties: true
     properties:
       api_token:
         type: string
         description: Pivotal Tracker API token
         examples:
-          - 5c054d0de3440452190fdc5d5a04d871
+        - 5c054d0de3440452190fdc5d5a04d871
         airbyte_secret: true
-        order: 0
-    additionalProperties: true
 
 metadata:
   autoImportSchema:
