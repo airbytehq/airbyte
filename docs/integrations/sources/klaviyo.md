@@ -63,6 +63,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.2 | 2024-04-19 | [36647](https://github.com/airbytehq/airbyte/pull/36647) | Updating to 0.80.0 CDK |
 | 2.3.1 | 2024-04-12 | [36647](https://github.com/airbytehq/airbyte/pull/36647) | schema descriptions |
 | `2.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                               |
 | `2.2.0`  | 2024-02-27 | [35637](https://github.com/airbytehq/airbyte/pull/35637)   | Fix `predictive_analytics` field in stream `profiles`                                                                         |
