@@ -7,7 +7,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import java.util.stream.Stream
-import lombok.SneakyThrows
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -99,7 +98,6 @@ class DestinationV1V2MigratorTest {
         )
     }
 
-    @SneakyThrows
     @Test
     @Throws(Exception::class)
     fun testMigrate() {

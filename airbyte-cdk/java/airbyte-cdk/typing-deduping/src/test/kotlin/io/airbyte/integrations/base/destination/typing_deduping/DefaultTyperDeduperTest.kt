@@ -19,7 +19,6 @@ import kotlin.collections.List
 import kotlin.collections.MutableMap
 import kotlin.collections.emptyList
 import kotlin.collections.set
-import lombok.SneakyThrows
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,7 +58,6 @@ class DefaultTyperDeduperTest {
 
     private val MIGRATION_REQUIRING_SOFT_RESET: Migration<MockState> =
         object : Migration<MockState> {
-            @SneakyThrows
             override fun migrateIfNecessary(
                 destinationHandler: DestinationHandler<MockState>,
                 stream: StreamConfig,

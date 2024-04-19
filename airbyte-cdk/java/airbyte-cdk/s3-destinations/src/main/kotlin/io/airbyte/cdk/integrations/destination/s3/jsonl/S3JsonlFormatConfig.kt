@@ -12,9 +12,7 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
 import java.util.*
-import lombok.ToString
 
-@ToString
 class S3JsonlFormatConfig(val flatteningType: Flattening, val compressionType: CompressionType) :
     S3FormatConfig {
     constructor(
