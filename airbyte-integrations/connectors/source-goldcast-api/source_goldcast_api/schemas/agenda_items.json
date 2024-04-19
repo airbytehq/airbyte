@@ -1,25 +1,35 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Event Schema",
-    "type": "array",
-    "items": {
-      "type": "object",
-      "properties": {
-        "id": {"type": "integer"},
-        "event": {"type": "string"},
-        "title": {"type": "string"},
-        "start_time": {"type": "string", "format": "date-time"},
-        "end_time": {"type": "string", "format": "date-time"},
-        "kind": {"type": "string"},
-        "is_live": {"type": "boolean"},
-        "description": {"type": ["string", "null"]},
-        "expected_end_time": {"type": "string", "format": "date-time"},
-        "allowed_end_time": {"type": "string", "format": "date-time"},
-        "allowed_start_time": {"type": "string", "format": "date-time"},
-        "live_start_time": {"type": ["string", "null"], "format": "date-time"},
-        "live_end_time": {"type": ["string", "null"], "format": "date-time"}
-      },
-      "required": ["id", "event", "title", "start_time", "end_time", "kind", "is_live", "expected_end_time", "allowed_end_time", "allowed_start_time"]
-    }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agenda Items Schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "integer" },
+      "event": { "type": "string" },
+      "title": { "type": "string" },
+      "start_time": { "type": "string", "format": "date-time" },
+      "end_time": { "type": "string", "format": "date-time" },
+      "kind": { "type": "string" },
+      "is_live": { "type": "boolean" },
+      "description": { "type": ["string", "null"] },
+      "expected_end_time": { "type": "string", "format": "date-time" },
+      "allowed_end_time": { "type": "string", "format": "date-time" },
+      "allowed_start_time": { "type": "string", "format": "date-time" },
+      "live_start_time": { "type": ["string", "null"], "format": "date-time" },
+      "live_end_time": { "type": ["string", "null"], "format": "date-time" }
+    },
+    "required": [
+      "id",
+      "event",
+      "title",
+      "start_time",
+      "end_time",
+      "kind",
+      "is_live",
+      "expected_end_time",
+      "allowed_end_time",
+      "allowed_start_time"
+    ]
   }
-  
+}
