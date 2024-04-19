@@ -26,7 +26,7 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 2.3.0  # See https://github.com/airbytehq/oncall/issues/5078
+      dockerImageTag: 2.3.0 # See https://github.com/airbytehq/oncall/issues/5078
     oss:
       enabled: true
   releaseStage: generally_available
