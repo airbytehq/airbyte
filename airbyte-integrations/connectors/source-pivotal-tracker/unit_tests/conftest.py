@@ -4,7 +4,9 @@
 
 import json
 import os
+
 from pytest import fixture
+
 
 def load_file(fn):
     return open(os.path.join("unit_tests", "responses", fn)).read()

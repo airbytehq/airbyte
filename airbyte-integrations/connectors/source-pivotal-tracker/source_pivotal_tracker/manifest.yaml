@@ -211,7 +211,7 @@ definitions:
           fields:
             - path:
                 - project_id
-              value: '{{ record[''project''][''id''] }}'
+              value: "{{ record['project']['id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -244,14 +244,14 @@ spec:
     title: Pivotal Tracker Spec
     type: object
     required:
-    - api_token
+      - api_token
     additionalProperties: true
     properties:
       api_token:
         type: string
         description: Pivotal Tracker API token
         examples:
-        - 5c054d0de3440452190fdc5d5a04d871
+          - 5c054d0de3440452190fdc5d5a04d871
         airbyte_secret: true
 
 metadata:

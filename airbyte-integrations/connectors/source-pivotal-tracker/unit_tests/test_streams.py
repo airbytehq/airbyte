@@ -4,10 +4,11 @@
 
 import json
 import os
-from pytest import fixture
 from typing import Any, Mapping
-from airbyte_cdk.sources.streams import Stream
+
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from pytest import fixture
 from source_pivotal_tracker.source import SourcePivotalTracker
 
 CONFIG = {
