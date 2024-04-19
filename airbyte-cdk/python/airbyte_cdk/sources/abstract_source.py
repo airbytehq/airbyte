@@ -6,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+from airbyte_cdk.exception_handler import generate_failed_streams_error_message
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -29,7 +30,6 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -177,7 +177,7 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         if len(stream_name_to_exception) > 0:
-            error_message = self._generate_failed_streams_error_message(stream_name_to_exception)
+            error_message = generate_failed_streams_error_message({key: [value] for key, value in stream_name_to_exception.items()})  # type: ignore  # for some reason, mypy can't figure out the types for key and value
             logger.info(error_message)
             # We still raise at least one exception when a stream raises an exception because the platform currently relies
             # on a non-zero exit code to determine if a sync attempt has failed. We also raise the exception as a config_error
@@ -275,11 +275,6 @@ class AbstractSource(Source, ABC):
         on the first error seen and emit a single error trace message for that stream.
         """
         return False
-
-    @staticmethod
-    def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
-        failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
-        return f"During the sync, the following streams did not sync successfully: {failures}"
 
     @staticmethod
     def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]) -> bool:
