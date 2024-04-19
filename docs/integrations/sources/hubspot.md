@@ -322,6 +322,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.2 | 2024-04-19 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Updating to 0.80.0 CDK |
 | 4.0.1 | 2024-04-12 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | schema descriptions |
 | 4.0.0   | 2024-03-10 | [35662](https://github.com/airbytehq/airbyte/pull/35662) | Update `Deals Property History` and `Companies Property History` schemas                                                                                                         |
 | 3.3.0   | 2024-02-16 | [34597](https://github.com/airbytehq/airbyte/pull/34597) | Make start date not required, sync all data from default value if it's not provided                                                                                              |
