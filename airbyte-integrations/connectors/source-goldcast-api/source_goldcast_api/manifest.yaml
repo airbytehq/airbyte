@@ -62,6 +62,14 @@ definitions:
     $parameters:
       path: "/event/discussion-groups/"
 
+  tracks_stream:
+    $ref: "#/definitions/base_stream"
+    name: "tracks"
+    description: "Tracks stream. Tasks of events."
+    primary_key: "id"
+    $parameters:
+      path: "/event/tracks/"
+
 #  webinars_stream:
 #    $ref: "#/definitions/base_stream"
 #    name: "webinars"
@@ -101,6 +109,7 @@ streams:
   - "#/definitions/events_stream"
   - "#/definitions/agenda_items_stream"
   - "#/definitions/discussion_groups_stream"
+  - "#/definitions/tracks_stream"
 #  - "#/definitions/webinars_stream"
 
 check:
@@ -110,6 +119,7 @@ check:
     - "agenda_items"
     - "organizations"
     - "discussion_groups"
+    - "tracks"
 
 spec: 
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
