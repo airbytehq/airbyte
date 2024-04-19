@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.3"
+version = "0.2.4"
 name = "source-dockerhub"
 description = "Source implementation for Dockerhub."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_dockerhub"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.5"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-dockerhub = "source_dockerhub.run:run"
