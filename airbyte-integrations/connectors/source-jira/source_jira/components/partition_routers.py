@@ -64,7 +64,8 @@ class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
         self.parent_stream_configs, parent_stream_configs = [self.fields_parent_stream_config], self.parent_stream_configs
         fields = [s.partition[self.fields_parent_stream_config.partition_field.eval(self.config)] for s in super().stream_slices()]
+        fields += ['key', 'status', 'created', 'updated']
         self.parent_stream_configs = parent_stream_configs
         for stream_slice in super().stream_slices():
-            setattr(stream_slice, "parent_stream_fields", fields)
+            stream_slice.partition.update({"parent_stream_fields": tuple(fields)})
             yield stream_slice

@@ -1228,7 +1228,7 @@ definitions:
       requester:
         $ref: "#/definitions/retriever_v1/requester"
         request_parameters:
-          fields: "{{ ['key', 'status', 'created', 'updated'] + stream_slice.parent_stream_fields }}"
+          fields: "[{{ stream_slice.partition.parent_stream_fields }}]"
           jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
     transformations:
       - type: AddFields
