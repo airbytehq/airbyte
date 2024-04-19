@@ -22,6 +22,7 @@
           "year": 2023
         }
       },
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
       "commentLikes": 0,
       "adUnitClicks": 0,
       "companyPageClicks": 0,
@@ -53,6 +54,7 @@
           "year": 2023
         }
       },
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
       "commentLikes": 0,
       "adUnitClicks": 0,
       "companyPageClicks": 0,

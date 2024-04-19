@@ -20,10 +20,11 @@ import static org.jooq.impl.DSL.val;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.commons.json.Jsons;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -34,6 +35,7 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep5;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
 import org.jooq.conf.Settings;
 import org.jooq.conf.StatementType;
 import org.jooq.impl.SQLDataType;
@@ -44,7 +46,6 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
-  public static final int REDSHIFT_SUPER_MAX_BYTE_SIZE = 1_000_000;
 
   public RedshiftSqlOperations() {}
 
@@ -115,7 +116,6 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         // > TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
         // > default
         for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
-          LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(
               connection,
               SQLDialect.POSTGRES,
@@ -156,8 +156,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                 val(Instant.ofEpochMilli(record.getRecord().getEmittedAt()).atOffset(ZoneOffset.UTC)),
                 val((OffsetDateTime) null));
           }
-          insert.execute();
-          LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
+          final String insertSQL = insert.getSQL(ParamType.INLINED);
+          LOGGER.info("Prepared batch size: {}, Schema: {}, Table: {}, SQL statement size {} MB", batch.size(), schemaName, tableName,
+              (insertSQL.getBytes(StandardCharsets.UTF_8).length) / (1024 * 1024L));
+          final long startTime = System.currentTimeMillis();
+          // Intentionally not using Jooq's insert.execute() as it was hiding the actual RedshiftException
+          // and also leaking the insert record values in the exception message.
+          connection.createStatement().execute(insertSQL);
+          LOGGER.info("Executed batch size: {}, Schema: {}, Table: {} in {} ms", batch.size(), schemaName, tableName,
+              (System.currentTimeMillis() - startTime));
         }
       });
     } catch (final Exception e) {

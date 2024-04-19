@@ -284,12 +284,11 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
 
 
 async def run_connector_migration_to_base_image_pipeline(
-    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str
+    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None
 ) -> Report:
     async with semaphore:
         steps_results = []
         async with context:
-            # DELETE DOCKERFILE
             delete_docker_file = DeleteConnectorFile(
                 context,
                 "Dockerfile",
@@ -330,16 +329,17 @@ async def run_connector_migration_to_base_image_pipeline(
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
 
-            # ADD CHANGELOG ENTRY
-            add_changelog_entry = AddChangelogEntry(
-                context,
-                bump_version_in_metadata_result.output,
-                new_version,
-                "Base image migration: remove Dockerfile and use the python-connector-base image",
-                pull_request_number,
-            )
-            add_changelog_entry_result = await add_changelog_entry.run()
-            steps_results.append(add_changelog_entry_result)
+            # ADD CHANGELOG ENTRY only if the PR number is provided.
+            if pull_request_number is not None:
+                add_changelog_entry = AddChangelogEntry(
+                    context,
+                    bump_version_in_metadata_result.output,
+                    new_version,
+                    "Base image migration: remove Dockerfile and use the python-connector-base image",
+                    pull_request_number,
+                )
+                add_changelog_entry_result = await add_changelog_entry.run()
+                steps_results.append(add_changelog_entry_result)
 
             # UPDATE DOC
             add_build_instructions_to_doc = AddBuildInstructionsToReadme(

@@ -6,4 +6,4 @@ package io.airbyte.cdk.integrations.destination.buffered_stream_consumer
 
 import io.airbyte.commons.concurrency.VoidCallable
 
-interface OnStartFunction : VoidCallable
+fun interface OnStartFunction : VoidCallable

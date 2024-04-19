@@ -309,6 +309,7 @@ class TenderTransactions(IncrementalShopifyStream):
     data_field = "tender_transactions"
     cursor_field = "processed_at"
     filter_field = "processed_at_min"
+    order_field = "processed_at"
 
 
 class Pages(IncrementalShopifyStreamWithDeletedEvents):

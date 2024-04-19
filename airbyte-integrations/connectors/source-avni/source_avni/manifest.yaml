@@ -1,0 +1,140 @@
+version: "0.52.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["content"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://app.avniproject.org/api"
+    http_method: "GET"
+    authenticator:
+      class_name: source_avni.components.CustomAuthenticator
+      username: "{{config['username']}}"
+      password: "{{config['password']}}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
+
+  incremental_base:
+    type: DatetimeBasedCursor
+    cursor_field: "last_modified_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_time_option:
+      field_name: "lastModifiedDateTime"
+      inject_into: "request_parameter"
+
+  transformations_base:
+    - type: AddFields
+      fields:
+        - path: ["last_modified_at"]
+          value: "{{ record['audit']['Last modified at'] }}"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  subjects_stream:
+    $ref: "#/definitions/base_stream"
+    name: "subjects"
+    primary_key: "ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/subjects"
+
+  program_encounters_stream:
+    $ref: "#/definitions/base_stream"
+    name: "program_encounters"
+    primary_key: "ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/programEncounters"
+
+  program_enrolments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "program_enrolments"
+    primary_key: "ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/programEnrolments"
+
+  encounters_stream:
+    $ref: "#/definitions/base_stream"
+    name: "encounters"
+    primary_key: "ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/encounters"
+
+streams:
+  - "#/definitions/subjects_stream"
+  - "#/definitions/program_enrolments_stream"
+  - "#/definitions/program_encounters_stream"
+  - "#/definitions/encounters_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "subjects"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/avni
+  connection_specification:
+    title: Avni Spec
+    type: object
+    required:
+      - username
+      - password
+      - start_date
+    additionalProperties: true
+    properties:
+      username:
+        type: string
+        description: Your avni platform Username
+      password:
+        type: string
+        description: Your avni platform password
+        airbyte_secret: true
+      start_date:
+        type: string
+        default: "2000-06-23T01:30:00.000Z"
+        description: Specify Date and time from which you want to fetch data
+        examples:
+          - "2000-10-31T01:30:00.000Z"

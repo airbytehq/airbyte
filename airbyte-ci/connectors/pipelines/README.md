@@ -68,7 +68,8 @@ make tools.airbyte-ci.clean
 
 ## Disabling telemetry
 
-We collect anonymous usage data to help improve the tool. If you would like to disable this, you can set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
+We collect anonymous usage data to help improve the tool. If you would like to disable this, you can
+set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
 
 ## Installation for development
 
@@ -145,6 +146,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
+- [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
 - [`format` command subgroup](#format-subgroup)
   - [`format check` command](#format-check-command)
   - [`format fix` command](#format-fix-command)
@@ -271,7 +273,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        airbyte_lib_validation[Run airbyte-lib validation tests]
+        pyairbyte_validation[Run PyAirbyte validation tests]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -279,7 +281,7 @@ flowchart TD
         unit-->build
         secret-->integration
         secret-->cat
-        secret-->airbyte_lib_validation
+        secret-->pyairbyte_validation
         build-->integration
         build-->cat
     end
@@ -512,16 +514,19 @@ Make a connector using a Dockerfile migrate to the base image by:
 - Updating its documentation to explain the build process
 - Bumping by a patch version
 
-### Examples
+#### Examples
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate_to_base_image`
 
-### Arguments
+### <a id="connectors-migrate-to-poetry"></a>`connectors migrate-to-poetry` command
 
-| Argument              | Description                                                 |
-| --------------------- | ----------------------------------------------------------- |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
+Migrate connectors the poetry package manager.
+
+#### Examples
+
+Migrate source-openweather to use the base image:
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
@@ -617,10 +622,13 @@ flowchart TD
 
 ### <a id="tests-command"></a>`tests` command
 
-This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry packages.
-Feel free to checkout this [Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9) to see the list of available options in `[tool.airbyte-ci]` section.
+This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry
+packages. Feel free to checkout this
+[Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9)
+to see the list of available options in `[tool.airbyte-ci]` section.
 
-You can find the list of internal packages [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
+You can find the list of internal packages
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
 
 #### Options
 
@@ -631,21 +639,28 @@ You can find the list of internal packages [here](https://github.com/airbytehq/a
 | `--ci-requirements`        | False    | False    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
-You can pass multiple `--poetry-package-path` options to run poe tasks.
 
-E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
-`airbyte-ci test --poetry-package-path=airbyte-ci/connectors/pipelines --poetry-package-path=airbyte-lib`
+You can pass multiple `--poetry-package-path` options to run poe tasks.
 
 E.G.: running Poe tasks on the modified internal packages of the current branch:
 `airbyte-ci test --modified`
 
-
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
-| ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206) | Revert poetry cache removal during nightly builds                                                                          |
-| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                       |
+| ------- | ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.7.3   | [#37101](https://github.com/airbytehq/airbyte/pull/37101)  | Pin PyAirbyte version.                                                                                                     |
+| 4.7.2   | [#36962](https://github.com/airbytehq/airbyte/pull/36962)  | Re-enable connector dependencies upload on publish.                                                                        |
+| 4.7.1   | [#36961](https://github.com/airbytehq/airbyte/pull/36961)  | Temporarily disable python connectors dependencies upload until we find a schema the data team can work with.              |
+| 4.7.0   | [#36892](https://github.com/airbytehq/airbyte/pull/36892)  | Upload Python connectors dependencies list to GCS on publish.                                                              |
+| 4.6.5   | [#36722](https://github.com/airbytehq/airbyte/pull/36527)  | Fix incorrect pipeline names                                                                                               |
+| 4.6.4   | [#36480](https://github.com/airbytehq/airbyte/pull/36480)  | Burst the Gradle Task cache if a new CDK version was released                                                              |
+| 4.6.3   | [#36527](https://github.com/airbytehq/airbyte/pull/36527)  | Handle extras as well as groups in `airbyte ci test` [poetry packages]                                                     |
+| 4.6.2   | [#36220](https://github.com/airbytehq/airbyte/pull/36220)  | Allow using `migrate-to-base-image` without PULL_REQUEST_NUMBER                                                            |
+| 4.6.1   | [#36319](https://github.com/airbytehq/airbyte/pull/36319)  | Fix `ValueError` related to PR number in migrate-to-poetry                                                                 |
+| 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |
+| 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                          |
+| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                          |
 | 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump_version command                                                                               |
 | 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                        |
 | 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                             |
