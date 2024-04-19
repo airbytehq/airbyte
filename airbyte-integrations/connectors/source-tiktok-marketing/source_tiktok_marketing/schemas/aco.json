@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "open_url": {
+      "type": ["string", "null"]
+    },
+    "title_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "open_url_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "open_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "app_name": {
+      "type": ["string", "null"]
+    },
+    "avatar_icon_list": {
+      "type": ["array", "null"]
+    },
+    "click_tracking_url": {
+      "type": "string"
+    },
+    "landing_page_urls": {
+      "type": ["array", "null"]
+    },
+    "profile_image": {
+      "type": ["string", "null"]
+    },
+    "pixel_id": {
+      "type": ["string", "null"]
+    },
+    "landing_page_url": {
+      "type": ["string", "null"]
+    },
+    "impression_tracking_url": {
+      "type": "string"
+    },
+    "page_list": {
+      "type": ["array", "null"]
+    },
+    "external_action": {
+      "type": ["string", "null"]
+    },
+    "call_to_action_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "display_name": {
+      "type": ["string", "null"]
+    },
+    "display_name_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "app_name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ad_id": {
+      "type": "integer"
+    },
+    "page_id": {
+      "type": ["string", "null"]
+    },
+    "media_info_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "media_info": {
+            "type": "object",
+            "properties": {
+              "image_info": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "file_name": {
+                      "type": ["string", "null"]
+                    },
+                    "web_uri": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "video_info": {
+                "type": "object",
+                "properties": {
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "video_id": {
+                    "type": "string"
+                  }
+                }
+              },
+              "image_mode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign_id": {
+      "type": "string"
+    },
+    "advertiser_id": {
+      "type": "string"
+    },
+    "app_id": {
+      "type": "string"
+    },
+    "pixel_id": {
+      "type": ["string", "null"]
+    },
+    "app_type": {
+      "type": "string"
+    },
+    "objective_type": {
+      "type": "string"
+    },
+    "campaign_name": {
+      "type": "string"
+    },
+    "is_smart_performance_campaign": {
+      "type": "boolean"
+    },
+    "operation_status": {
+      "type": "string"
+    },
+    "campaign_secondary_status": {
+      "type": "string"
+    },
+    "adgroup_secondary_status": {
+      "type": "string"
+    },
+    "campaign_type": {
+      "type": "string"
+    },
+    "app_promotion_type": {
+      "type": "string"
+    },
+    "optimization_goal": {
+      "type": "string"
+    },
+    "bid_type": {
+      "type": "string"
+    },
+    "deep_bid_type": {
+      "type": ["string", "null"]
+    },
+    "skip_learning_phase": {
+      "type": ["boolean", "null"]
+    },
+    "budget": {
+      "type": "number"
+    },
+    "budget_mode": {
+      "type": "string"
+    },
+    "scheduled_budget": {
+      "type": "number"
+    },
+    "promotion_type": {
+      "type": "string"
+    },
+    "optimization_event": {
+      "type": "string"
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "placement_type": {
+      "type": "string"
+    },
+    "promotion_website_type": {
+      "type": ["string", "null"]
+    },
+    "comment_disabled": {
+      "type": "boolean"
+    },
+    "share_disabled": {
+      "type": "boolean"
+    },
+    "video_download_disabled": {
+      "type": "boolean"
+    },
+    "location_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude_age_under_eighteen": {
+      "type": "boolean"
+    },
+    "excluded_audience_ids": {
+      "type": ["array", "null"]
+    },
+    "blocked_pangle_app_ids": {
+      "type": ["array", "null"]
+    },
+    "special_industries": {
+      "type": ["array", "null"]
+    },
+    "schedule_type": {
+      "type": "string"
+    },
+    "schedule_start_time": {
+      "type": "string"
+    },
+    "schedule_end_time": {
+      "type": "string"
+    },
+    "dayparting": {
+      "type": "string"
+    },
+    "billing_event": {
+      "type": "string"
+    },
+    "app_download_url": {
+      "type": "string"
+    },
+    "app_name": {
+      "type": "string"
+    },
+    "call_to_action_id": {
+      "type": ["string", "null"]
+    },
+    "call_to_action_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "call_to_action": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "media_info_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "media_info": {
+            "type": "object",
+            "properties": {
+              "video_info": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "identity_id": {
+                "type": ["string", "null"]
+              },
+              "image_info": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "web_uri": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "identity_type": {
+                "type": ["string", "null"]
+              },
+              "tiktok_item_id": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "title_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "page_list": {
+      "type": ["array", "null"]
+    },
+    "card_list": {
+      "type": ["array", "null"]
+    },
+    "landing_page_urls": {
+      "type": ["array", "null"]
+    },
+    "deeplink": {
+      "type": "string"
+    },
+    "deeplink_type": {
+      "type": "string"
+    },
+    "identity_id": {
+      "type": "string"
+    },
+    "identity_type": {
+      "type": "string"
+    },
+    "impression_tracking_url": {
+      "type": ["string", "null"]
+    },
+    "click_tracking_url": {
+      "type": "string"
+    },
+    "create_time": {
+      "type": "string"
+    },
+    "modify_time": {
+      "type": "string"
+    }
+  }
+}
