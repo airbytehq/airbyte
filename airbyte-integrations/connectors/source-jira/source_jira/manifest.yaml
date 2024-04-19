@@ -1160,16 +1160,16 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/issues_stream"
-            parent_key: "key"
-            partition_field: "project_key"
+            parent_key: "id"
+            partition_field: "issue_id"
     transformations:
       - type: AddFields
         fields:
           - path: ["issueId"]
             value_type: string
-            value: "{{ stream_slice.project_key }}"
+            value: "{{ stream_slice.issue_id }}"
     $parameters:
-      path: "issue/{{ stream_slice.project_key }}/comment"
+      path: "issue/{{ stream_slice.issue_id }}/comment"
       extract_field: "comments"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
@@ -1184,16 +1184,16 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/issues_stream"
-            parent_key: "key"
-            partition_field: "project_key"
+            parent_key: "id"
+            partition_field: "issue_id"
     transformations:
       - type: AddFields
         fields:
           - path: ["issueId"]
             value_type: string
-            value: "{{ stream_slice.project_key }}"
+            value: "{{ stream_slice.issue_id }}"
     $parameters:
-      path: "issue/{{ stream_slice.project_key }}/worklog"
+      path: "issue/{{ stream_slice.issue_id }}/worklog"
       extract_field: "worklogs"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
@@ -1228,7 +1228,7 @@ definitions:
       requester:
         $ref: "#/definitions/retriever_v1/requester"
         request_parameters:
-          fields: "[{{ stream_slice.partition.parent_stream_fields }}]"
+          fields: "{{ stream_slice._partition.parent_stream_fields }}"
           jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
     transformations:
       - type: AddFields

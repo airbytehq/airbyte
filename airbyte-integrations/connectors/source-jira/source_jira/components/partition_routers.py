@@ -67,5 +67,5 @@ class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
         fields += ['key', 'status', 'created', 'updated']
         self.parent_stream_configs = parent_stream_configs
         for stream_slice in super().stream_slices():
-            stream_slice.partition.update({"parent_stream_fields": tuple(fields)})
+            setattr(stream_slice, "parent_stream_fields", fields)
             yield stream_slice
