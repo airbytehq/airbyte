@@ -331,7 +331,9 @@ definitions:
           field_path: ["{{ parameters.get('data_field') }}"]
     incremental_sync:
       type: DatetimeBasedCursor
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
