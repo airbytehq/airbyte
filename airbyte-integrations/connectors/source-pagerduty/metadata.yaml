@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-pagerduty
   documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
   githubIssueLabel: source-pagerduty
