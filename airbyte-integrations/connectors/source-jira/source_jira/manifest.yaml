@@ -28,6 +28,10 @@ definitions:
     $ref: "#/definitions/requester"
     url_base: "https://{{ config['domain'] }}/rest/agile/1.0/"
 
+  # requester_jira_internal:
+  #   $ref: "#/definitions/requester"
+  #   url_base: "https://{{ config['domain'] }}/rest/dev-status/1.0/"
+
   # Selector
 
   selector:
@@ -88,6 +92,10 @@ definitions:
   retriever_v1:
     $ref: "#/definitions/retriever"
     requester: "#/definitions/requester_v1"
+  
+  # retriever_jira_internal:
+  #   $ref: "#/definitions/retriever"
+  #   requester: "#/definitions/requester_jira_internal"
 
   retriever_v1_use_cache:
     $ref: "#/definitions/retriever_v1"
@@ -514,7 +522,7 @@ definitions:
       extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
-  __issue_fields_substream:
+  __custom_issue_fields_substream:
     $ref: "#/definitions/issue_fields_stream"
     retriever:
       $ref: "#/definitions/retriever_no_pagination_use_cache"
@@ -536,7 +544,7 @@ definitions:
         class_name: "source_jira.components.partition_routers.SubstreamPartitionRouterWithContext"
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/__issue_fields_substream"
+            stream: "#/definitions/__custom_issue_fields_substream"
             parent_key: "id"
             partition_field: "field_id"
     transformations:
@@ -1195,6 +1203,115 @@ definitions:
       path: "issue/{{ stream_slice.project_key }}/worklog"
       extract_field: "worklogs"
 
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+  __story_points_issue_fields_substream:
+    $ref: "#/definitions/issue_fields_stream"
+    retriever:
+      $ref: "#/definitions/retriever_no_pagination_use_cache"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record.name in ['Story Points', 'Story point estimate'] }}"
+
+  # https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get
+  sprint_issues_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: sprint_issues
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever_v1"
+      partition_router:
+        type: CustomPartitionRouter
+        class_name: "source_jira.components.partition_routers.SprintIssuesSubstreamPartitionRouterWithContext"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/__story_points_issue_fields_substream"
+            parent_key: "id"
+            partition_field: "field_id"
+          - type: ParentStreamConfig
+            stream: "#/definitions/sprints_stream"
+            parent_key: "id"
+            partition_field: "sprint_id"
+      requester:
+        $ref: "#/definitions/retriever_v1/requester"
+        request_parameters:
+          fields: "{{ ['key', 'status', 'created', 'updated'] + stream_slice.parent_stream_fields }}"
+          jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["issueId"]
+            value_type: string
+            value: "{{ record.id }}"
+          - path: ["id"]
+            value_type: string
+            value: "{{ stream_slice.sprint_id }}-{{ record.id }}"
+          - path: ["sprintId"]
+            value_type: string
+            value: "{{ stream_slice.sprint_id }}"
+          - path: ["created"]
+            value_type: string
+            value: "{{ record.fields.created }}"
+          - path: ["updated"]
+            value_type: string
+            value: "{{ record.fields.updated }}"
+    $parameters:
+      path: "sprint/{{ stream_slice.sprint_id }}/issue"
+      extract_field: "issues"
+
+  # # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+  # __issue_development_issue_fields_substream:
+  #   $ref: "#/definitions/issue_fields_stream"
+  #   retriever:
+  #     $ref: "#/definitions/retriever_no_pagination_use_cache"
+  #     partition_router:
+  #       type: SubstreamPartitionRouter
+  #       parent_stream_configs:
+  #         - type: ParentStreamConfig
+  #           stream: "#/definitions/issues_stream"
+  #           parent_key: "id"
+  #           partition_field: "issue_id"
+  #     record_selector:
+  #       $ref: "#/definitions/selector"
+  #       record_filter:
+  #         condition: "{{ record.name in ['Development'] }}"
+
+  # pull_requests_stream:
+  #   $ref: "#/definitions/incremental_stream"
+  #   name: pull_requests
+  #   primary_key: "id"
+  #   retriever:
+  #     $ref: "#/definitions/retriever_jira_internal"
+  #     partition_router:
+  #       type: SubstreamPartitionRouter
+  #       parent_stream_configs:
+  #         - type: ParentStreamConfig
+  #           stream: "#/definitions/__issue_development_issue_fields_substream"
+  #           parent_key: "id"
+  #           partition_field: "issue_id"
+  #     requester:
+  #       $ref: "#/definitions/retriever_jira_internal/requester"
+  #       request_parameters:
+  #         issueId: "{{ stream_slice.issue_id }}"
+  #         applicationType: "GitHub"
+  #         dataType: "branch"
+  #     # record_selector:
+  #     #   $ref: "#/definitions/selector"
+  #     #   record_filter:
+  #     #     condition: "{{ record.name in ['Development'] }}"
+  #   transformations:
+  #     - type: AddFields
+  #       fields:
+  #         - path: ["id"]
+  #           value_type: string
+  #           value: "{{ record.id }}"
+  #         # - path: ["updated"]
+  #         #   value_type: string
+  #         #   value: "{{  }}"
+  #   $parameters:
+  #     path: "issue/detail"
+  #     extract_field: "detail"
+
 streams:
   # Full refresh streams
 
@@ -1250,7 +1367,7 @@ streams:
   # - "#/definitions/screen_tabs_stream"
   # - "#/definitions/screen_tab_fields_stream"
   # - "#/definitions/sprints_stream"
-  - "#/definitions/users_groups_detailed_stream"
+  # - "#/definitions/users_groups_detailed_stream"
 
   # Incremental streams
 
@@ -1258,6 +1375,7 @@ streams:
   # - "#/definitions/issues_stream"
   # - "#/definitions/issue_comments_stream"
   # - "#/definitions/issue_worklogs_stream"
+  - "#/definitions/sprint_issues_stream"
 
 check:
   type: CheckStream
@@ -1312,9 +1430,10 @@ check:
     # - screen_tabs
     # - screen_tab_fields
     # - sprints
-    - users_groups_detailed
+    # - users_groups_detailed
 
     # - board_issues
     # - issues
     # - issue_comments
     # - issue_worklogs
+    - sprint_issues

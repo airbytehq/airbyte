@@ -3,7 +3,7 @@
 #
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable, Mapping
 
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
@@ -52,3 +52,19 @@ class SubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
+
+
+class SprintIssuesSubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        fields_parent_stream_config, *parent_stream_configs = self.parent_stream_configs
+        self.fields_parent_stream_config = fields_parent_stream_config
+        self.parent_stream_configs = parent_stream_configs
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        self.parent_stream_configs, parent_stream_configs = [self.fields_parent_stream_config], self.parent_stream_configs
+        fields = [s.partition[self.fields_parent_stream_config.partition_field.eval(self.config)] for s in super().stream_slices()]
+        self.parent_stream_configs = parent_stream_configs
+        for stream_slice in super().stream_slices():
+            setattr(stream_slice, "parent_stream_fields", fields)
+            yield stream_slice
