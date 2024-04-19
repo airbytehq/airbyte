@@ -130,7 +130,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         try {
             node.put(columnName, resultSet.getShort(index))
         } catch (e: SQLException) {
-            node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getInt(index) })
+            node.put(columnName, resultSet.getInt(index))
         }
     }
 
@@ -149,7 +149,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         try {
             node.put(columnName, resultSet.getInt(index))
         } catch (e: SQLException) {
-            node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getLong(index) })
+            node.put(columnName, resultSet.getLong(index))
         }
     }
 
@@ -160,7 +160,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         resultSet: ResultSet,
         index: Int
     ) {
-        node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getLong(index) })
+        node.put(columnName, resultSet.getLong(index))
     }
 
     @Throws(SQLException::class)
@@ -170,13 +170,12 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         resultSet: ResultSet,
         index: Int
     ) {
-        node.put(
-            columnName,
-            DataTypeUtils.returnNullIfInvalid(
-                { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) },
-            ),
-        )
+        var double = resultSet.getDouble(index);
+        if (java.lang.Double.isFinite(double!!)) {
+            node.put(columnName, double)
+        } else {
+            throw SQLException("Parsed value of double is not finite.")
+        }
     }
 
     @Throws(SQLException::class)
@@ -186,13 +185,12 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         resultSet: ResultSet,
         index: Int
     ) {
-        node.put(
-            columnName,
-            DataTypeUtils.returnNullIfInvalid(
-                { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) },
-            ),
-        )
+        var float = resultSet.getFloat(index);
+        if (java.lang.Float.isFinite(float!!)) {
+            node.put(columnName, float)
+        } else {
+            throw SQLException("Parsed value of float is not finite.")
+        }
     }
 
     @Throws(SQLException::class)
