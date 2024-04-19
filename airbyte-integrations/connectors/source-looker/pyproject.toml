@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.11"
+version = "0.2.12"
 name = "source-looker"
 description = "Source implementation for Looker."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -19,7 +19,7 @@ include = "source_looker"
 python = "^3.9,<3.12"
 prance = "==0.21.8.0"
 types-requests = "==2.28.11.7"
-airbyte-cdk = "==0.17.0"
+airbyte-cdk = "0.80.0"
 openapi-spec-validator = "==0.3.3"
 
 [tool.poetry.scripts]
