@@ -926,7 +926,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["screenId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.screen_id }}"
     $parameters:
       path: "screens/{{ stream_slice.screen_id }}/tabs"
@@ -950,10 +950,10 @@ definitions:
       - type: AddFields
         fields:
           - path: ["tabId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.tab_id }}"
           - path: ["screenId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.parent_slice.screen_id }}"
     $parameters:
       path: "screens/{{ stream_slice.parent_slice.screen_id }}/tabs/{{ stream_slice.tab_id }}/fields"
@@ -986,7 +986,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["boardId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.board_id }}"
     $parameters:
       path: "board/{{ stream_slice.board_id }}/sprint"
@@ -1083,7 +1083,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["boardId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.board_id }}"
           - path: ["created"]
             value_type: string
@@ -1240,7 +1240,7 @@ definitions:
             value_type: string
             value: "{{ stream_slice.sprint_id }}-{{ record.id }}"
           - path: ["sprintId"]
-            value_type: string
+            value_type: integer
             value: "{{ stream_slice.sprint_id }}"
           - path: ["created"]
             value_type: string
