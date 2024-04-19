@@ -631,7 +631,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  protected void initializeForStateManager(final JdbcDatabase database, @NotNull final ConfiguredAirbyteCatalog catalog, @NotNull final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable, @NotNull final StateManager stateManager) {
+  protected void initializeForStateManager(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable, final StateManager stateManager) {
     var sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig)) {
       initialLoadStateManager = getMssqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
@@ -645,7 +645,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Nullable
   @Override
-  public InitialLoadHandler<JDBCType> getInitialLoadHandler(@NotNull final JdbcDatabase database, @NotNull final ConfiguredAirbyteStream airbyteStream, @Nullable final ConfiguredAirbyteCatalog catalog, @Nullable final StateManager stateManager) {
+  public InitialLoadHandler<JDBCType> getInitialLoadHandler(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream, final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
     var sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig)) {
       return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(), getQuoteString())

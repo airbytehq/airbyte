@@ -46,9 +46,8 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
-  @Nullable
   @Override
-  public AirbyteStateMessage createFinalStateMessage(@Nullable final ConfiguredAirbyteStream stream) {
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
     AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     final JsonNode incrementalState = getIncrementalState(pair);
 
@@ -62,9 +61,8 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
     return pairToOrderedColInfo.get(pair);
   }
 
-  @Nullable
   @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint(@Nullable final ConfiguredAirbyteStream stream) {
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     var ocStatus = getOrderedColumnLoadStatus(pair);
     return new AirbyteStateMessage()

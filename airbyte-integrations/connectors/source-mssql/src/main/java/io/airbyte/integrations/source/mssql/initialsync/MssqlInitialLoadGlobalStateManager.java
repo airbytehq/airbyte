@@ -99,9 +99,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
         .withStreamState(stateData);
   }
 
-  @Nullable
   @Override
-  public AirbyteStateMessage createFinalStateMessage(@Nullable final ConfiguredAirbyteStream airbyteStream) {
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
       streamsThatHaveCompletedSnapshot.add(pair);
