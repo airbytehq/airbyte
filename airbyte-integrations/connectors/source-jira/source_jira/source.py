@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-import pendulum
-
 from typing import Any, List, Mapping
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+
+import pendulum
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
-from .streams import PullRequests, IssueFields, Issues
+from .streams import IssueFields, Issues, PullRequests
 
 
 class SourceJira(YamlDeclarativeSource):
@@ -26,7 +26,7 @@ class SourceJira(YamlDeclarativeSource):
         config["lookback_window_minutes"] = pendulum.duration(minutes=config.get("lookback_window_minutes", 0))
         config["projects"] = config.get("projects", [])
         return config
-    
+
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
         return BasicHttpAuthenticator(config["email"], config["api_token"])

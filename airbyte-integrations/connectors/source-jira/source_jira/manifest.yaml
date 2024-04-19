@@ -1255,125 +1255,125 @@ definitions:
 streams:
   # Full refresh streams
 
-  # - "#/definitions/application_roles_stream"
-  # - "#/definitions/avatars_stream"
-  # - "#/definitions/boards_stream"
-  # - "#/definitions/dashboards_stream"
-  # - "#/definitions/filters_stream"
-  # - "#/definitions/groups_stream"
-  # - "#/definitions/issue_fields_stream"
-  # - "#/definitions/issue_field_configurations_stream"
-  # - "#/definitions/issue_link_types_stream"
-  # - "#/definitions/issue_navigator_settings_stream"
-  # - "#/definitions/issue_notification_schemes_stream"
-  # - "#/definitions/issue_priorities_stream"
-  # - "#/definitions/issue_resolutions_stream"
-  # - "#/definitions/issue_security_schemes_stream"
-  # - "#/definitions/issue_types_stream"
-  # - "#/definitions/issue_type_schemes_stream"
-  # - "#/definitions/issue_type_screen_schemes_stream"
-  # - "#/definitions/jira_settings_stream"
-  # - "#/definitions/labels_stream"
-  # - "#/definitions/permissions_stream"
-  # - "#/definitions/permission_schemes_stream"
-  # - "#/definitions/projects_stream"
-  # - "#/definitions/project_categories_stream"
-  # - "#/definitions/project_roles_stream"
-  # - "#/definitions/project_types_stream"
-  # - "#/definitions/screens_stream"
-  # - "#/definitions/screen_schemes_stream"
-  # - "#/definitions/time_tracking_stream"
-  # - "#/definitions/users_stream"
-  # - "#/definitions/workflows_stream"
-  # - "#/definitions/workflow_schemes_stream"
-  # - "#/definitions/workflow_statuses_stream"
-  # - "#/definitions/workflow_status_categories_stream"
+  - "#/definitions/application_roles_stream"
+  - "#/definitions/avatars_stream"
+  - "#/definitions/boards_stream"
+  - "#/definitions/dashboards_stream"
+  - "#/definitions/filters_stream"
+  - "#/definitions/groups_stream"
+  - "#/definitions/issue_fields_stream"
+  - "#/definitions/issue_field_configurations_stream"
+  - "#/definitions/issue_link_types_stream"
+  - "#/definitions/issue_navigator_settings_stream"
+  - "#/definitions/issue_notification_schemes_stream"
+  - "#/definitions/issue_priorities_stream"
+  - "#/definitions/issue_resolutions_stream"
+  - "#/definitions/issue_security_schemes_stream"
+  - "#/definitions/issue_types_stream"
+  - "#/definitions/issue_type_schemes_stream"
+  - "#/definitions/issue_type_screen_schemes_stream"
+  - "#/definitions/jira_settings_stream"
+  - "#/definitions/labels_stream"
+  - "#/definitions/permissions_stream"
+  - "#/definitions/permission_schemes_stream"
+  - "#/definitions/projects_stream"
+  - "#/definitions/project_categories_stream"
+  - "#/definitions/project_roles_stream"
+  - "#/definitions/project_types_stream"
+  - "#/definitions/screens_stream"
+  - "#/definitions/screen_schemes_stream"
+  - "#/definitions/time_tracking_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/workflows_stream"
+  - "#/definitions/workflow_schemes_stream"
+  - "#/definitions/workflow_statuses_stream"
+  - "#/definitions/workflow_status_categories_stream"
 
   # Substream based streams
 
-  # - "#/definitions/filter_sharing_stream"
-  # - "#/definitions/issue_custom_field_contexts_stream"
-  # - "#/definitions/issue_custom_field_options_stream"
-  # - "#/definitions/issue_properties_stream"
-  # - "#/definitions/issue_remote_links_stream"
-  # - "#/definitions/issue_transitions_stream"
-  # - "#/definitions/issue_votes_stream"
-  # - "#/definitions/issue_watchers_stream"
-  # - "#/definitions/project_avatars_stream"
-  # - "#/definitions/project_components_stream"
-  # - "#/definitions/project_email_stream"
-  # - "#/definitions/project_permission_schemes_stream"
-  # - "#/definitions/project_versions_stream"
-  # - "#/definitions/screen_tabs_stream"
-  # - "#/definitions/screen_tab_fields_stream"
-  # - "#/definitions/sprints_stream"
-  # - "#/definitions/users_groups_detailed_stream"
+  - "#/definitions/filter_sharing_stream"
+  - "#/definitions/issue_custom_field_contexts_stream"
+  - "#/definitions/issue_custom_field_options_stream"
+  - "#/definitions/issue_properties_stream"
+  - "#/definitions/issue_remote_links_stream"
+  - "#/definitions/issue_transitions_stream"
+  - "#/definitions/issue_votes_stream"
+  - "#/definitions/issue_watchers_stream"
+  - "#/definitions/project_avatars_stream"
+  - "#/definitions/project_components_stream"
+  - "#/definitions/project_email_stream"
+  - "#/definitions/project_permission_schemes_stream"
+  - "#/definitions/project_versions_stream"
+  - "#/definitions/screen_tabs_stream"
+  - "#/definitions/screen_tab_fields_stream"
+  - "#/definitions/sprints_stream"
+  - "#/definitions/users_groups_detailed_stream"
 
   # Incremental streams
 
-  # - "#/definitions/board_issues_stream"
+  - "#/definitions/board_issues_stream"
   - "#/definitions/issues_stream"
-  # - "#/definitions/issue_comments_stream"
-  # - "#/definitions/issue_worklogs_stream"
-  # - "#/definitions/sprint_issues_stream"
+  - "#/definitions/issue_comments_stream"
+  - "#/definitions/issue_worklogs_stream"
+  - "#/definitions/sprint_issues_stream"
 
 check:
   type: CheckStream
   stream_names:
-    # - application_roles
-    # - avatars
-    # - boards
-    # - dashboards
-    # - filters
-    # - groups
-    # - issue_fields
-    # - issue_field_configurations
-    # - issue_link_types
-    # - issue_navigator_settings
-    # - issue_notification_schemes
-    # - issue_priorities
-    # - issue_resolutions
-    # - issue_security_schemes
-    # - issue_types
-    # - issue_type_schemes
-    # - issue_type_screen_schemes
-    # - jira_settings
-    # - labels
-    # - permissions
-    # - permission_schemes
-    # - projects
-    # - project_categories
-    # - project_roles
-    # - project_types
-    # - screens
-    # - screen_schemes
-    # - time_tracking
-    # - users
-    # - workflows
-    # - workflow_schemes
-    # - workflow_statuses
-    # - workflow_status_categories
+    - application_roles
+    - avatars
+    - boards
+    - dashboards
+    - filters
+    - groups
+    - issue_fields
+    - issue_field_configurations
+    - issue_link_types
+    - issue_navigator_settings
+    - issue_notification_schemes
+    - issue_priorities
+    - issue_resolutions
+    - issue_security_schemes
+    - issue_types
+    - issue_type_schemes
+    - issue_type_screen_schemes
+    - jira_settings
+    - labels
+    - permissions
+    - permission_schemes
+    - projects
+    - project_categories
+    - project_roles
+    - project_types
+    - screens
+    - screen_schemes
+    - time_tracking
+    - users
+    - workflows
+    - workflow_schemes
+    - workflow_statuses
+    - workflow_status_categories
 
-    # - filter_sharing
-    # - issue_custom_field_contexts
-    # - issue_custom_field_options
-    # - issue_properties
-    # - issue_remote_links
-    # - issue_transitions
-    # - issue_votes
-    # - issue_watchers
-    # - project_avatars
-    # - project_components
-    # - project_email
-    # - project_permission_schemes
-    # - project_versions
-    # - screen_tabs
-    # - screen_tab_fields
-    # - sprints
-    # - users_groups_detailed
+    - filter_sharing
+    - issue_custom_field_contexts
+    - issue_custom_field_options
+    - issue_properties
+    - issue_remote_links
+    - issue_transitions
+    - issue_votes
+    - issue_watchers
+    - project_avatars
+    - project_components
+    - project_email
+    - project_permission_schemes
+    - project_versions
+    - screen_tabs
+    - screen_tab_fields
+    - sprints
+    - users_groups_detailed
 
-    # - board_issues
+    - board_issues
     - issues
-    # - issue_comments
-    # - issue_worklogs
-    # - sprint_issues
+    - issue_comments
+    - issue_worklogs
+    - sprint_issues
