@@ -35,12 +35,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mssql.MssqlCdcConnectorMetadataInjector;
-import io.airbyte.integrations.source.mssql.MssqlCdcSavedInfoFetcher;
-import io.airbyte.integrations.source.mssql.MssqlCdcStateHandler;
-import io.airbyte.integrations.source.mssql.MssqlCdcTargetPosition;
-import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
-import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
+import io.airbyte.integrations.source.mssql.*;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.airbyte.protocol.models.CommonField;
@@ -54,6 +49,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.JDBCType;
+import java.sql.SQLType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -81,12 +77,123 @@ public class MssqlInitialReadUtil {
 
   public record OrderedColumnInfo(String ocFieldName, JDBCType fieldType, String ocMaxValue) {}
 
-  public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
+  public static Optional<MssqlInitialLoadHandler> getMssqlFullRefreshInitialLoadHandler(final JdbcDatabase database,
                                                                                 final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                final MssqlInitialLoadStateManager initialLoadStateManager,
                                                                                 final StateManager stateManager,
+                                                                                final ConfiguredAirbyteStream fullRefreshStream,
                                                                                 final Instant emittedAt,
                                                                                 final String quoteString) {
+    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+    final InitialLoadStreams initialLoadStreams = cdcStreamsForInitialOrderedColumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
+
+    // State manager will need to know all streams in order to produce a state message
+    // But for initial load handler we only want to produce iterator on the single full refresh stream.
+    if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
+      // Filter on initialLoadStream
+      var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
+      var ocStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
+      Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> fullRefreshOcStatus;
+      if (ocStatus == null) {
+        fullRefreshOcStatus = Map.of();
+      } else {
+        fullRefreshOcStatus = Map.of(pair, ocStatus);
+      }
+
+      var fullRefreshStreamInitialLoad = new InitialLoadStreams(List.of(fullRefreshStream), fullRefreshOcStatus);
+      final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+      return Optional.of(getMssqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, metadataInjector));
+    }
+    return Optional.empty();
+  }
+
+  private static MssqlInitialLoadHandler getMssqlInitialLoadHandler(final JdbcDatabase database,
+                                                                    final Instant emittedAt,
+                                                                    final String quoteString,
+                                                                    final InitialLoadStreams initialLoadStreams,
+                                                                    final MssqlInitialLoadStateManager initialLoadStateManager,
+                                                                    final MssqlCdcConnectorMetadataInjector metadataInjector) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+
+
+    final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
+
+    final MssqlSourceOperations sourceOperations =
+        new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+
+    return new MssqlInitialLoadHandler(sourceConfig, database,
+        sourceOperations, quoteString, initialLoadStateManager,
+        namespacePair -> Jsons.emptyObject(),
+        getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+  }
+
+  private static CdcState getCdcState(final JdbcDatabase database,
+    final ConfiguredAirbyteCatalog catalog,
+    final StateManager stateManager,
+    final boolean savedOffsetStillPresentOnServer) {
+    if (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
+            || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
+      // Construct the initial state for Mssql. If there is already existing state, we use that instead
+      // since that is associated with the debezium state associated with the initial sync.
+      final MssqlDebeziumStateUtil mssqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
+      final JsonNode initialDebeziumState = mssqlDebeziumStateUtil.constructInitialDebeziumState(
+              getDebeziumProperties(database, catalog, false), catalog, database);
+      return new CdcState().withState(initialDebeziumState);
+    } else {
+      return stateManager.getCdcStateManager().getCdcState();
+    }
+  }
+
+  public static boolean isSavedOffsetStillPresentOnServer(final JdbcDatabase database,
+                                                  final ConfiguredAirbyteCatalog catalog,
+                                                  final StateManager stateManager) {
+    final MssqlDebeziumStateUtil mssqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
+    final JsonNode sourceConfig = database.getSourceConfig();
+    final JsonNode initialDebeziumState = mssqlDebeziumStateUtil.constructInitialDebeziumState(getDebeziumProperties(database, catalog, false), catalog, database);
+
+    final JsonNode state =
+            (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
+                    ? initialDebeziumState
+                    : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+
+
+    final Optional<MssqlDebeziumStateAttributes> savedOffset = mssqlDebeziumStateUtil.savedOffset(
+            getDebeziumProperties(database, catalog, true), catalog, state.get(MSSQL_CDC_OFFSET), sourceConfig);
+
+    final boolean savedOffsetStillPresentOnServer =
+            savedOffset.isPresent() && mssqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+
+    if (!savedOffsetStillPresentOnServer) {
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
+              INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
+        throw new ConfigErrorException(
+                "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency.");
+      }
+      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
+    }
+    return savedOffsetStillPresentOnServer;
+    }
+
+    public static MssqlInitialLoadGlobalStateManager getMssqlInitialLoadGlobalStateManager(final JdbcDatabase database,
+                                                                                           final ConfiguredAirbyteCatalog catalog,
+                                                                                           final StateManager stateManager,
+                                                                                           final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                           final String quoteString) {
+      final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+      final InitialLoadStreams initialLoadStreams = cdcStreamsForInitialOrderedColumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
+      final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+
+      return new MssqlInitialLoadGlobalStateManager(initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+              stateToBeUsed, catalog);
+    }
+    public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
+                                                                                  final ConfiguredAirbyteCatalog catalog,
+                                                                                  final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                                  final StateManager stateManager,
+                                                                                  final MssqlInitialLoadStateManager initialLoadStateManager,
+                                                                                  final Instant emittedAt,
+                                                                                  final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
@@ -95,63 +202,20 @@ public class MssqlInitialReadUtil {
     LOGGER.info("Queue size: {}", queueSize);
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
-    // Construct the initial state for Mssql. If there is already existing state, we use that instead
-    // since that is associated with the debezium state associated with the initial sync.
-    final MssqlDebeziumStateUtil mssqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
-    final JsonNode initialDebeziumState = mssqlDebeziumStateUtil.constructInitialDebeziumState(
-        getDebeziumProperties(database, catalog, false), catalog, database);
-
-    final JsonNode state =
-        (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
-            ? initialDebeziumState
-            : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
-
-    final Optional<MssqlDebeziumStateAttributes> savedOffset = mssqlDebeziumStateUtil.savedOffset(
-        getDebeziumProperties(database, catalog, true), catalog, state.get(MSSQL_CDC_OFFSET), sourceConfig);
-    final boolean savedOffsetStillPresentOnServer =
-        savedOffset.isPresent() && mssqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
-
-    if (!savedOffsetStillPresentOnServer) {
-      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
-      if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
-          INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
-        throw new ConfigErrorException(
-            "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency.");
-      }
-      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
-    }
-
+    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
-        cdcStreamsForInitialOrderedCoumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
-    final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
-        || stateManager.getCdcStateManager().getCdcState().getState() == null))
-            ? new CdcState().withState(initialDebeziumState)
-            : stateManager.getCdcStateManager().getCdcState();
-
+        cdcStreamsForInitialOrderedColumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
     final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+    final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+
     // If there are streams to sync via ordered column load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
-      LOGGER.info("Streams to be synced via ordered column : {}", initialLoadStreams.streamsForInitialLoad().size());
-      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
-      final MssqlInitialLoadStateManager initialLoadStateManager =
-          new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
-              initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog, namespacePair -> Jsons.emptyObject());
-
-      final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
-      final MssqlSourceOperations sourceOperations =
-          new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
-
-      final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
-          sourceOperations, quoteString, initialLoadStateManager,
-          getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
-
+      final MssqlInitialLoadHandler initialLoadHandler =
+              getMssqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager, metadataInjector);
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
           emittedAt));
-    } else {
-      LOGGER.info("No streams will be synced via ordered column");
     }
 
     // Build the incremental CDC iterators.
@@ -183,14 +247,14 @@ public class MssqlInitialReadUtil {
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
   }
 
-  public static InitialLoadStreams cdcStreamsForInitialOrderedCoumnLoad(final CdcStateManager stateManager,
+  public static InitialLoadStreams cdcStreamsForInitialOrderedColumnLoad(final CdcStateManager stateManager,
                                                                         final ConfiguredAirbyteCatalog fullCatalog,
                                                                         final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
+      // Add a filter here to identify resumable full refresh streams.
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
-              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
               .collect(Collectors.toList()),
           new HashMap<>());
     }
@@ -201,7 +265,9 @@ public class MssqlInitialReadUtil {
     // key load in progress.
     final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus = new HashMap<>();
     if (airbyteStateMessage != null && airbyteStateMessage.getGlobal() != null && airbyteStateMessage.getGlobal().getStreamStates() != null) {
+      LOGGER.info("Trying to extract streams need initial pk sync. State message: {}", airbyteStateMessage);
       airbyteStateMessage.getGlobal().getStreamStates().forEach(stateMessage -> {
+        LOGGER.info("State message in this stream: {}", stateMessage);
         final JsonNode streamState = stateMessage.getStreamState();
         final StreamDescriptor streamDescriptor = stateMessage.getStreamDescriptor();
         if (streamState == null || streamDescriptor == null) {
@@ -231,17 +297,17 @@ public class MssqlInitialReadUtil {
     return new InitialLoadStreams(streamForOcSync, pairToInitialLoadStatus);
   }
 
-  public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
+  public static Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
                                                                                                                                  final JdbcDatabase database,
                                                                                                                                  final InitialLoadStreams initialLoadStreams,
                                                                                                                                  final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                                                                                  final String quoteString) {
-    final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
     // For every stream that is in initial ordered column sync, we want to maintain information about
     // the current ordered column info associated with the stream
     initialLoadStreams.streamsForInitialLoad.forEach(stream -> {
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
-          new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final OrderedColumnInfo ocInfo = getOrderedColumnInfo(database, stream, tableNameToTable, quoteString);
       pairToOcInfoMap.put(pair, ocInfo);
     });
@@ -252,6 +318,17 @@ public class MssqlInitialReadUtil {
                                                 final ConfiguredAirbyteStream stream,
                                                 final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                 final String quoteString) {
+    final String fullyQualifiedTableName =
+            DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
+    final TableInfo<CommonField<JDBCType>> table = tableNameToTable
+            .get(fullyQualifiedTableName);
+    return getOrderedColumnInfo(database, stream, table, quoteString);
+  }
+
+  static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
+                                                final ConfiguredAirbyteStream stream,
+                                                final TableInfo<CommonField<JDBCType>> table,
+                                                final String quoteString) {
     // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle
     // the case where it does not exist when we support cursor-based syncs.
     // if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
@@ -261,10 +338,6 @@ public class MssqlInitialReadUtil {
     final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
     final String ocFieldName = clusterdIndexField != null ? clusterdIndexField : stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     LOGGER.info("selected ordered column field name: " + ocFieldName);
-    final String fullyQualifiedTableName =
-        DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
-    final TableInfo<CommonField<JDBCType>> table = tableNameToTable
-        .get(fullyQualifiedTableName);
     final JDBCType ocFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(ocFieldName))
         .findFirst().get().getType();
@@ -277,8 +350,8 @@ public class MssqlInitialReadUtil {
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+    // Add a filter here to identify resumable full refresh streams.
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
@@ -333,6 +406,23 @@ public class MssqlInitialReadUtil {
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
   }
+
+  public static Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(final JdbcDatabase database,
+                                                                                                      final InitialLoadStreams initialLoadStreams,
+                                                                                                      final TableInfo<CommonField<JDBCType>> table,
+                                                                                                      final String quoteString) {
+    final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
+    // For every stream that is in primary initial key sync, we want to maintain information about the
+    // current primary key info associated with the
+    // stream
+    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final OrderedColumnInfo ocInfo = getOrderedColumnInfo(database, stream, table, quoteString);
+      pairToOcInfoMap.put(pair, ocInfo);
+    });
+    return pairToOcInfoMap;
+  }
+
 
   private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");

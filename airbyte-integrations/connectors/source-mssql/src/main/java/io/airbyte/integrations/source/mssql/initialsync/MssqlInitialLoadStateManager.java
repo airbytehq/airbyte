@@ -9,9 +9,9 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.Sta
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,34 +30,19 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
 
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  /**
-   * Returns an intermediate state message for the initial sync.
-   *
-   * @param pair pair
-   * @param ocLoadStatus ordered column load status
-   * @return state message
-   */
-  public abstract AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair,
-                                                                     final OrderedColumnLoadStatus ocLoadStatus);
 
-  /**
-   * Updates the {@link OrderedColumnLoadStatus} for the state associated with the given pair.
-   *
-   * @param pair pair
-   * @param ocLoadStatus updated status
-   */
+  void setStreamStateForIncrementalRunSupplier(final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+  }
+    /**
+     * Updates the {@link OrderedColumnLoadStatus} for the state associated with the given pair.
+     *
+     * @param pair pair
+     * @param ocLoadStatus updated status
+     */
   public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
     pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
   }
-
-  /**
-   * Returns the final state message for the initial sync..
-   *
-   * @param pair pair
-   * @param streamStateForIncrementalRun incremental status
-   * @return state message
-   */
-  public abstract AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
   /**
    * Returns the previous state emitted. Represented as a {@link OrderedColumnLoadStatus} associated
@@ -87,10 +72,10 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
             Entry::getValue));
   }
 
-  @Override
-  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
-    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-    return createIntermediateStateMessage(pair, ocStatus);
+  protected JsonNode getIncrementalState(final AirbyteStreamNameNamespacePair pair) {
+    final OrderedColumnLoadStatus currentOcLoadStatus = getOrderedColumnLoadStatus(pair);
+    return (currentOcLoadStatus == null || currentOcLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+            : currentOcLoadStatus.getIncrementalState();
   }
 
   @Override
@@ -109,17 +94,11 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
-    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-    return createFinalStateMessage(pair, getIncrementalState(stream));
-  }
-
-  @Override
   public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
     return Objects.nonNull(getOrderedColumnInfo(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())));
   }
 
-  private JsonNode getIncrementalState(final ConfiguredAirbyteStream stream) {
+  protected JsonNode getIncrementalState(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     final OrderedColumnLoadStatus currentOcLoadStatus = getOrderedColumnLoadStatus(pair);
 

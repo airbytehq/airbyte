@@ -20,7 +20,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.StateType;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.math.BigDecimal;
