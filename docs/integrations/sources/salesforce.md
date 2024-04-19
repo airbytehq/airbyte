@@ -193,7 +193,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                     |
+| 2.5.6   | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                      |
+| 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                      |
 | 2.5.4   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                     |
 | 2.5.3   | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                                |
 | 2.5.2   | 2024-04-15 | [37105](https://github.com/airbytehq/airbyte/pull/37105) | Raise error when schema generation fails                                                                                             |
