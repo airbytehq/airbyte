@@ -51,6 +51,7 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.3.4 | 2024-04-19 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | Updating to 0.80.0 CDK |
 | 0.3.3 | 2024-04-18 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | Manage dependencies with Poetry. |
 | 0.3.2 | 2024-04-15 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37150](https://github.com/airbytehq/airbyte/pull/37150) | schema descriptions |
