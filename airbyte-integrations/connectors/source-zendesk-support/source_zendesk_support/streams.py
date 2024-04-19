@@ -608,9 +608,11 @@ class TicketMetrics(TicketSubstream):
             yield data
         else:
             cursor_date = (stream_state or {}).get(self.cursor_field)
-            updated = data[self.cursor_field]
-            if not cursor_date or updated >= cursor_date:
-                yield data
+            # no data in case of http errors
+            if data:
+                updated = data[self.cursor_field]
+                if not cursor_date or updated >= cursor_date:
+                    yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):
