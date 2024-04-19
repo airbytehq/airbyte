@@ -525,7 +525,6 @@ definitions:
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
   issue_custom_field_contexts_stream:
-    # TODO: add error handler
     $ref: "#/definitions/full_refresh_stream"
     name: issue_custom_field_contexts
     primary_key: "id"
@@ -768,7 +767,6 @@ definitions:
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
   project_avatars_stream:
-    # TODO: add error handler
     $ref: "#/definitions/full_refresh_stream"
     name: project_avatars
     primary_key: "id"
@@ -824,7 +822,6 @@ definitions:
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
   project_email_stream:
-    # TODO: add error handler
     $ref: "#/definitions/full_refresh_stream"
     name: project_email
     primary_key: "projectId"
@@ -1125,8 +1122,7 @@ definitions:
           $ref: "#/definitions/error_handler"
           response_filters:
             - http_codes: [400]
-              # TODO: consider use predicate
-              # predicate: "{{ 'Please grant the user to the project.' in response }}"
+              error_message: "The user doesn't have permission to the project. Please grant the user to the project."
               action: FAIL
     transformations:
       - type: AddFields
@@ -1143,7 +1139,11 @@ definitions:
           - path: ["updated"]
             value_type: string
             value: "{{ record.fields.updated }}"
-          # TODO: remove fields that are None
+      - type: RemoveFields
+        field_pointers:
+          - ["renderedFields.*", "fields.*"]
+        condition: "{{ property is none }}"
+
     $parameters:
       path: "search"
       extract_field: "issues"
@@ -1311,11 +1311,11 @@ streams:
 
   # Incremental streams
 
-  - "#/definitions/board_issues_stream"
+  # - "#/definitions/board_issues_stream"
   - "#/definitions/issues_stream"
-  - "#/definitions/issue_comments_stream"
-  - "#/definitions/issue_worklogs_stream"
-  - "#/definitions/sprint_issues_stream"
+  # - "#/definitions/issue_comments_stream"
+  # - "#/definitions/issue_worklogs_stream"
+  # - "#/definitions/sprint_issues_stream"
 
 check:
   type: CheckStream
@@ -1372,8 +1372,8 @@ check:
     # - sprints
     # - users_groups_detailed
 
-    - board_issues
+    # - board_issues
     - issues
-    - issue_comments
-    - issue_worklogs
-    - sprint_issues
+    # - issue_comments
+    # - issue_worklogs
+    # - sprint_issues
