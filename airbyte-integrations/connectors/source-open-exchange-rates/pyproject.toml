@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.3"
+version = "0.2.4"
 name = "source-open-exchange-rates"
 description = "Source implementation for Open Exchange Rates."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_open_exchange_rates"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.44"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-open-exchange-rates = "source_open_exchange_rates.run:run"
