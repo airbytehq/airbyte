@@ -35,21 +35,19 @@ definitions:
       $ref: "#/definitions/selective_authenticator" # Uncomment for development with low code
       # $ref: "#/definitions/oauth_authenticator"         # Uncomment for developing with connector builder
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              predicate: >-
-                {{ 'App Only access is not allowed' in response
-                }}
-              http_codes:
-                - 403
-                - 404
-                - 412
-                - 451
-              error_message: Resource is forbidden
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          predicate: >-
+            {{ 'App Only access is not allowed' in response
+            }}
+          http_codes:
+            - 403
+            - 404
+            - 412
+            - 451
+          error_message: Resource is forbidden
 
   token_paginator_base:
     type: DefaultPaginator
