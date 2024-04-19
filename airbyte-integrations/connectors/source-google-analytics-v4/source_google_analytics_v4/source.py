@@ -558,6 +558,7 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
             self.logger.warning(f"No reports in response: {res}")
             return []
 
+
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
 
