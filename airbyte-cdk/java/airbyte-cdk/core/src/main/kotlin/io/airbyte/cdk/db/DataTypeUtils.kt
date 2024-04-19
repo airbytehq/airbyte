@@ -87,7 +87,8 @@ object DataTypeUtils {
         // This method reduces error handling boilerplate.
         try {
             val value = valueProducer.apply()
-            return if (isValidFn.apply(value)) value else throw SQLException("Given value is not valid.")
+            return if (isValidFn.apply(value)) value
+            else throw SQLException("Given value is not valid.")
         } catch (e: SQLException) {
             return null
         }

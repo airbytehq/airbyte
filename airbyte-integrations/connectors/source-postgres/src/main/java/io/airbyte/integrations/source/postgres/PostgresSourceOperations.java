@@ -381,7 +381,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String moneyValue = parseMoneyValue(arrayResultSet.getString(2));
-      arrayNode.add(DataTypeUtils.throwExceptionIfInvalid(() -> DataTypeUtils.throwExceptionIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
+      arrayNode.add(
+          DataTypeUtils.throwExceptionIfInvalid(() -> DataTypeUtils.throwExceptionIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
   }
