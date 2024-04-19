@@ -8,9 +8,9 @@ from unit_tests.sources.file_based.helpers import LowHistoryLimitConcurrentCurso
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
-single_csv_input_state_is_earlier_scenario_concurrent = (
+single_csv_input_state_is_earlier_scenario = (
     TestScenarioBuilder()
-    .set_name("single_csv_input_state_is_earlier_concurrent")
+    .set_name("single_csv_input_state_is_earlier")
     .set_config(
         {
             "streams": [
@@ -106,9 +106,9 @@ single_csv_input_state_is_earlier_scenario_concurrent = (
     )
 ).build()
 
-single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent = (
+single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
     TestScenarioBuilder()
-    .set_name("single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent")
+    .set_name("single_csv_file_is_skipped_if_same_modified_at_as_in_history")
     .set_config(
         {
             "streams": [
@@ -186,9 +186,9 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent = (
     )
 ).build()
 
-single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurrent = (
+single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
     TestScenarioBuilder()
-    .set_name("single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurrent")
+    .set_name("single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history")
     .set_config(
         {
             "streams": [
@@ -284,9 +284,9 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurre
     )
 ).build()
 
-single_csv_no_input_state_scenario_concurrent = (
+single_csv_no_input_state_scenario = (
     TestScenarioBuilder()
-    .set_name("single_csv_input_state_is_earlier_again_concurrent")
+    .set_name("single_csv_input_state_is_earlier_again")
     .set_config(
         {
             "streams": [
@@ -374,9 +374,9 @@ single_csv_no_input_state_scenario_concurrent = (
     )
 ).build()
 
-multi_csv_same_timestamp_scenario_concurrent = (
+multi_csv_same_timestamp_scenario = (
     TestScenarioBuilder()
-    .set_name("multi_csv_same_timestamp_concurrent")
+    .set_name("multi_csv_same_timestamp")
     .set_config(
         {
             "streams": [
@@ -495,9 +495,9 @@ multi_csv_same_timestamp_scenario_concurrent = (
     )
 ).build()
 
-single_csv_input_state_is_later_scenario_concurrent = (
+single_csv_input_state_is_later_scenario = (
     TestScenarioBuilder()
-    .set_name("single_csv_input_state_is_later_concurrent")
+    .set_name("single_csv_input_state_is_later")
     .set_config(
         {
             "streams": [
@@ -596,9 +596,9 @@ single_csv_input_state_is_later_scenario_concurrent = (
     )
 ).build()
 
-multi_csv_different_timestamps_scenario_concurrent = (
+multi_csv_different_timestamps_scenario = (
     TestScenarioBuilder()
-    .set_name("multi_csv_stream_different_timestamps_concurrent")
+    .set_name("multi_csv_stream_different_timestamps")
     .set_config(
         {
             "streams": [
@@ -723,9 +723,9 @@ multi_csv_different_timestamps_scenario_concurrent = (
     )
 ).build()
 
-multi_csv_per_timestamp_scenario_concurrent = (
+multi_csv_per_timestamp_scenario = (
     TestScenarioBuilder()
-    .set_name("multi_csv_per_timestamp_concurrent")
+    .set_name("multi_csv_per_timestamp")
     .set_config(
         {
             "streams": [
@@ -880,9 +880,9 @@ multi_csv_per_timestamp_scenario_concurrent = (
     )
 ).build()
 
-multi_csv_skip_file_if_already_in_history_concurrent = (
+multi_csv_skip_file_if_already_in_history = (
     TestScenarioBuilder()
-    .set_name("skip_files_already_in_history_concurrent")
+    .set_name("skip_files_already_in_history")
     .set_config(
         {
             "streams": [
@@ -1026,9 +1026,9 @@ multi_csv_skip_file_if_already_in_history_concurrent = (
     )
 ).build()
 
-multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer = (
+multi_csv_include_missing_files_within_history_range_cursor_is_newer = (
     TestScenarioBuilder()
-    .set_name("multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer")
+    .set_name("multi_csv_include_missing_files_within_history_range_cursor_is_newer")
     .set_config(
         {
             "streams": [
@@ -1153,9 +1153,9 @@ multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer 
     )
 ).build()
 
-multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older = (
+multi_csv_include_missing_files_within_history_range_cursor_is_older = (
     TestScenarioBuilder()
-    .set_name("multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older")
+    .set_name("multi_csv_include_missing_files_within_history_range_cursor_is_older")
     .set_config(
         {
             "streams": [
@@ -1280,9 +1280,9 @@ multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older 
     )
 ).build()
 
-multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newer = (
+multi_csv_remove_old_files_if_history_is_full_scenario_cursor_is_newer = (
     TestScenarioBuilder()
-    .set_name("multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newer")
+    .set_name("multi_csv_remove_old_files_if_history_is_full_scenario_cursor_is_newer")
     .set_config(
         {
             "streams": [
@@ -1461,9 +1461,9 @@ multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newe
     )
 ).build()
 
-multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_older = (
+multi_csv_remove_old_files_if_history_is_full_scenario_cursor_is_older = (
     TestScenarioBuilder()
-    .set_name("multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_older")
+    .set_name("multi_csv_remove_old_files_if_history_is_full_scenario_cursor_is_older")
     .set_config(
         {
             "streams": [
@@ -1642,9 +1642,9 @@ multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_olde
     )
 ).build()
 
-multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_newer = (
+multi_csv_same_timestamp_more_files_than_history_size_scenario_cursor_is_newer = (
     TestScenarioBuilder()
-    .set_name("multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_newer")
+    .set_name("multi_csv_same_timestamp_more_files_than_history_size_scenario_cursor_is_newer")
     .set_config(
         {
             "streams": [
@@ -1824,9 +1824,9 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor
     )
 ).build()
 
-multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_older = (
+multi_csv_same_timestamp_more_files_than_history_size_scenario_cursor_is_older = (
     TestScenarioBuilder()
-    .set_name("multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_older")
+    .set_name("multi_csv_same_timestamp_more_files_than_history_size_scenario_cursor_is_older")
     .set_config(
         {
             "streams": [
@@ -2006,9 +2006,9 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor
     )
 ).build()
 
-multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_older = (
+multi_csv_sync_recent_files_if_history_is_incomplete_scenario_cursor_is_older = (
     TestScenarioBuilder()
-    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_older")
+    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete_scenario_cursor_is_older")
     .set_config(
         {
             "streams": [
@@ -2122,9 +2122,9 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_
     )
 ).build()
 
-multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_newer = (
+multi_csv_sync_recent_files_if_history_is_incomplete_scenario_cursor_is_newer = (
     TestScenarioBuilder()
-    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_newer")
+    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete_scenario_cursor_is_newer")
     .set_config(
         {
             "streams": [
@@ -2239,9 +2239,9 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_
 ).build()
 
 
-multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_older = (
+multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_cursor_is_older = (
     TestScenarioBuilder()
-    .set_name("multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_older")
+    .set_name("multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_cursor_is_older")
     .set_config(
         {
             "streams": [
@@ -2377,9 +2377,9 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
     )
 ).build()
 
-multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_newer = (
+multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_cursor_is_newer = (
     TestScenarioBuilder()
-    .set_name("multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_newer")
+    .set_name("multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_cursor_is_newer")
     .set_config(
         {
             "streams": [
@@ -2515,10 +2515,10 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
     )
 ).build()
 
-multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_newer = (
+multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_cursor_is_newer = (
     TestScenarioBuilder()
     .set_name(
-        "multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_newer"
+        "multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_cursor_is_newer"
     )
     .set_config(
         {
@@ -2679,10 +2679,10 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
     )
 ).build()
 
-multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_older = (
+multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_cursor_is_older = (
     TestScenarioBuilder()
     .set_name(
-        "multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_older"
+        "multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_cursor_is_older"
     )
     .set_config(
         {
