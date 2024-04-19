@@ -4,11 +4,11 @@
 package io.airbyte.cdk.integrations.destination.s3.avro
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.integrations.destination.s3.S3Format
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
 import org.apache.avro.file.CodecFactory
 
-class S3AvroFormatConfig : S3FormatConfig {
+class UploadAvroFormatConfig : UploadFormatConfig {
     val codecFactory: CodecFactory
 
     override val fileExtension: String = DEFAULT_SUFFIX
@@ -21,8 +21,8 @@ class S3AvroFormatConfig : S3FormatConfig {
         this.codecFactory = parseCodecConfig(formatConfig["compression_codec"])
     }
 
-    override val format: S3Format
-        get() = S3Format.AVRO
+    override val format: FileUploadFormat
+        get() = FileUploadFormat.AVRO
 
     enum class CompressionCodec(private val configValue: String) {
         NULL("no compression"),
