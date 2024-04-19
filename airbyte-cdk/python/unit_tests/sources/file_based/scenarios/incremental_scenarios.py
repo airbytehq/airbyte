@@ -38,7 +38,6 @@ single_csv_input_state_is_earlier_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
@@ -136,7 +135,6 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
@@ -216,7 +214,6 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
@@ -314,7 +311,6 @@ single_csv_no_input_state_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -412,7 +408,6 @@ multi_csv_same_timestamp_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -525,7 +520,6 @@ single_csv_input_state_is_later_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -634,7 +628,6 @@ multi_csv_different_timestamps_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -769,7 +762,6 @@ multi_csv_per_timestamp_scenario = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -926,7 +918,6 @@ multi_csv_skip_file_if_already_in_history = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -1072,7 +1063,6 @@ multi_csv_include_missing_files_within_history_range_cursor_is_newer = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
@@ -1199,7 +1189,6 @@ multi_csv_include_missing_files_within_history_range_cursor_is_older = (
             }
         )
         .set_file_type("csv")
-        .set_cursor_cls(FileBasedConcurrentCursor)
     )
     .set_expected_catalog(
         {
