@@ -193,6 +193,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.2 | 2024-04-19 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Updating to 0.80.0 CDK |
 | 2.4.1 | 2024-04-12 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | schema descriptions |
 | 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
 | 2.3.3   | 2024-03-04 | [35791](https://github.com/airbytehq/airbyte/pull/35791) | Fix memory leak (OOM)                                                                                                                |
