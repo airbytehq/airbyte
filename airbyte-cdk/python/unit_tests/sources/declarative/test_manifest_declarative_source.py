@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from copy import deepcopy
 from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
@@ -754,8 +755,8 @@ def response_log_message(response: dict) -> AirbyteMessage:
 
 def _create_request():
     url = "https://example.com/api"
-    headers = {'Content-Type': 'application/json'}
-    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
+    headers = {"Content-Type": "application/json"}
+    return requests.Request("POST", url, headers=headers, json={"key": "value"}).prepare()
 
 
 def _create_response(body):
@@ -772,486 +773,488 @@ def _create_page(response_body):
     return response
 
 
-@pytest.mark.parametrize("test_name, manifest, pages, expected_records, expected_calls",[
-    ("test_read_manifest_no_pagination_no_partitions",
-     {
-         "version": "0.34.2",
-         "type": "DeclarativeSource",
-         "check": {
-             "type": "CheckStream",
-             "stream_names": [
-                 "Rates"
-             ]
-         },
-         "streams": [
-             {
-                 "type": "DeclarativeStream",
-                 "name": "Rates",
-                 "primary_key": [],
-                 "schema_loader": {
-                     "type": "InlineSchemaLoader",
-                     "schema": {
-                         "$schema": "http://json-schema.org/schema#",
-                         "properties": {
-                             "ABC": {
-                                 "type": "number"
-                             },
-                             "AED": {
-                                 "type": "number"
-                             },
-                         },
-                         "type": "object"
-                     }
-                 },
-                 "retriever": {
-                     "type": "SimpleRetriever",
-                     "requester": {
-                         "type": "HttpRequester",
-                         "url_base": "https://api.apilayer.com",
-                         "path": "/exchangerates_data/latest",
-                         "http_method": "GET",
-                         "request_parameters": {},
-                         "request_headers": {},
-                         "request_body_json": {},
-                         "authenticator": {
-                             "type": "ApiKeyAuthenticator",
-                             "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
-                     },
-                     "record_selector": {
-                         "type": "RecordSelector",
-                         "extractor": {
-                             "type": "DpathExtractor",
-                             "field_path": [
-                                 "rates"
-                             ]
-                         }
-                     },
-                     "paginator": {
-                         "type": "NoPagination"
-                     }
-                 }
-             }
-         ],
-         "spec": {
-             "connection_specification": {
-                 "$schema": "http://json-schema.org/draft-07/schema#",
-                 "type": "object",
-                 "required": [
-                     "api_key"
-                 ],
-                 "properties": {
-                     "api_key": {
-                         "type": "string",
-                         "title": "API Key",
-                         "airbyte_secret": True
-                     }
-                 },
-                 "additionalProperties": True
-             },
-             "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
-     },
-     (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
-     [{"ABC": 0}, {"AED": 1}],
-     [call({}, {}, None)]),
-    ("test_read_manifest_with_added_fields",
-     {
-         "version": "0.34.2",
-         "type": "DeclarativeSource",
-         "check": {
-             "type": "CheckStream",
-             "stream_names": [
-                 "Rates"
-             ]
-         },
-         "streams": [
-             {
-                 "type": "DeclarativeStream",
-                 "name": "Rates",
-                 "primary_key": [],
-                 "schema_loader": {
-                     "type": "InlineSchemaLoader",
-                     "schema": {
-                         "$schema": "http://json-schema.org/schema#",
-                         "properties": {
-                             "ABC": {
-                                 "type": "number"
-                             },
-                             "AED": {
-                                 "type": "number"
-                             },
-                         },
-                         "type": "object"
-                     }
-                 },
-                 "transformations": [
-                     {
-                         "type": "AddFields",
-                         "fields": [
-                             {
-                                 "type": "AddedFieldDefinition",
-                                 "path": ["added_field_key"],
-                                 "value": "added_field_value"
-                             }
-                         ]
-                     }
-                 ],
-                 "retriever": {
-                     "type": "SimpleRetriever",
-                     "requester": {
-                         "type": "HttpRequester",
-                         "url_base": "https://api.apilayer.com",
-                         "path": "/exchangerates_data/latest",
-                         "http_method": "GET",
-                         "request_parameters": {},
-                         "request_headers": {},
-                         "request_body_json": {},
-                         "authenticator": {
-                             "type": "ApiKeyAuthenticator",
-                             "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
-                     },
-                     "record_selector": {
-                         "type": "RecordSelector",
-                         "extractor": {
-                             "type": "DpathExtractor",
-                             "field_path": [
-                                 "rates"
-                             ]
-                         }
-                     },
-                     "paginator": {
-                         "type": "NoPagination"
-                     }
-                 }
-             }
-         ],
-         "spec": {
-             "connection_specification": {
-                 "$schema": "http://json-schema.org/draft-07/schema#",
-                 "type": "object",
-                 "required": [
-                     "api_key"
-                 ],
-                 "properties": {
-                     "api_key": {
-                         "type": "string",
-                         "title": "API Key",
-                         "airbyte_secret": True
-                     }
-                 },
-                 "additionalProperties": True
-             },
-             "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
-     },
-     (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
-     [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
-     [call({}, {}, None)]),
-    ("test_read_with_pagination_no_partitions",
-     {
-         "version": "0.34.2",
-         "type": "DeclarativeSource",
-         "check": {
-             "type": "CheckStream",
-             "stream_names": [
-                 "Rates"
-             ]
-         },
-         "streams": [
-             {
-                 "type": "DeclarativeStream",
-                 "name": "Rates",
-                 "primary_key": [],
-                 "schema_loader": {
-                     "type": "InlineSchemaLoader",
-                     "schema": {
-                         "$schema": "http://json-schema.org/schema#",
-                         "properties": {
-                             "ABC": {
-                                 "type": "number"
-                             },
-                             "AED": {
-                                 "type": "number"
-                             },
-                             "USD": {
-                                 "type": "number"
-                             },
-                         },
-                         "type": "object"
-                     }
-                 },
-                 "retriever": {
-                     "type": "SimpleRetriever",
-                     "requester": {
-                         "type": "HttpRequester",
-                         "url_base": "https://api.apilayer.com",
-                         "path": "/exchangerates_data/latest",
-                         "http_method": "GET",
-                         "request_parameters": {},
-                         "request_headers": {},
-                         "request_body_json": {},
-                         "authenticator": {
-                             "type": "ApiKeyAuthenticator",
-                             "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
-                     },
-                     "record_selector": {
-                         "type": "RecordSelector",
-                         "extractor": {
-                             "type": "DpathExtractor",
-                             "field_path": [
-                                 "rates"
-                             ]
-                         }
-                     },
-                     "paginator": {
-                         "type": "DefaultPaginator",
-                         "page_size": 2,
-                         "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                         "page_token_option": {"inject_into": "path", "type": "RequestPath"},
-                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 2},
-                     },
-                 }
-             }
-         ],
-         "spec": {
-             "connection_specification": {
-                 "$schema": "http://json-schema.org/draft-07/schema#",
-                 "type": "object",
-                 "required": [
-                     "api_key"
-                 ],
-                 "properties": {
-                     "api_key": {
-                         "type": "string",
-                         "title": "API Key",
-                         "airbyte_secret": True
-                     }
-                 },
-                 "additionalProperties": True
-             },
-             "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
-     },
-     (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {}})) * 10,
-     [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
-     [call({}, {}, None), call({}, {}, {"next_page_token": "next"})]),
-    (
-        "test_no_pagination_with_partition_router",
-        {
-            "version": "0.34.2",
-            "type": "DeclarativeSource",
-            "check": {
-                "type": "CheckStream",
-                "stream_names": [
-                    "Rates"
-                ]
-            },
-            "streams": [
-                {
-                    "type": "DeclarativeStream",
-                    "name": "Rates",
-                    "primary_key": [],
-                    "schema_loader": {
-                        "type": "InlineSchemaLoader",
-                        "schema": {
-                            "$schema": "http://json-schema.org/schema#",
-                            "properties": {
-                                "ABC": {
-                                    "type": "number"
+@pytest.mark.parametrize(
+    "test_name, manifest, pages, expected_records, expected_calls",
+    [
+        (
+            "test_read_manifest_no_pagination_no_partitions",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
                                 },
-                                "AED": {
-                                    "type": "number"
-                                },
-                                "partition": {
-                                    "type": "number"
-                                }
+                                "type": "object",
                             },
-                            "type": "object"
-                        }
-                    },
-                    "retriever": {
-                        "type": "SimpleRetriever",
-                        "requester": {
-                            "type": "HttpRequester",
-                            "url_base": "https://api.apilayer.com",
-                            "path": "/exchangerates_data/latest",
-                            "http_method": "GET",
-                            "request_parameters": {},
-                            "request_headers": {},
-                            "request_body_json": {},
-                            "authenticator": {
-                                "type": "ApiKeyAuthenticator",
-                                "header": "apikey",
-                                "api_token": "{{ config['api_key'] }}"
-                            }
                         },
-                        "partition_router": {
-                            "type": "ListPartitionRouter",
-                            "values": ["0", "1"],
-                            "cursor_field": "partition"
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
                         },
-                        "record_selector": {
-                            "type": "RecordSelector",
-                            "extractor": {
-                                "type": "DpathExtractor",
-                                "field_path": [
-                                    "rates"
-                                ]
-                            }
-                        },
-                        "paginator": {
-                            "type": "NoPagination"
-                        }
                     }
-                }
-            ],
-            "spec": {
-                "connection_specification": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "required": [
-                        "api_key"
-                    ],
-                    "properties": {
-                        "api_key": {
-                            "type": "string",
-                            "title": "API Key",
-                            "airbyte_secret": True
-                        }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
                     },
-                    "additionalProperties": True
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
                 },
-                "documentation_url": "https://example.org",
-                "type": "Spec"
-            }
-        },
-        (_create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
-         _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}})),
-        [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
-        [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)]
-    ),
-    ("test_with_pagination_and_partition_router",
-     {
-         "version": "0.34.2",
-         "type": "DeclarativeSource",
-         "check": {
-             "type": "CheckStream",
-             "stream_names": [
-                 "Rates"
-             ]
-         },
-         "streams": [
-             {
-                 "type": "DeclarativeStream",
-                 "name": "Rates",
-                 "primary_key": [],
-                 "schema_loader": {
-                     "type": "InlineSchemaLoader",
-                     "schema": {
-                         "$schema": "http://json-schema.org/schema#",
-                         "properties": {
-                             "ABC": {
-                                 "type": "number"
-                             },
-                             "AED": {
-                                 "type": "number"
-                             },
-                             "partition": {
-                                 "type": "number"
-                             }
-                         },
-                         "type": "object"
-                     }
-                 },
-                 "retriever": {
-                     "type": "SimpleRetriever",
-                     "requester": {
-                         "type": "HttpRequester",
-                         "url_base": "https://api.apilayer.com",
-                         "path": "/exchangerates_data/latest",
-                         "http_method": "GET",
-                         "request_parameters": {},
-                         "request_headers": {},
-                         "request_body_json": {},
-                         "authenticator": {
-                             "type": "ApiKeyAuthenticator",
-                             "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
-                     },
-                     "partition_router": {
-                         "type": "ListPartitionRouter",
-                         "values": ["0", "1"],
-                         "cursor_field": "partition"
-                     },
-                     "record_selector": {
-                         "type": "RecordSelector",
-                         "extractor": {
-                             "type": "DpathExtractor",
-                             "field_path": [
-                                 "rates"
-                             ]
-                         }
-                     },
-                     "paginator": {
-                         "type": "DefaultPaginator",
-                         "page_size": 2,
-                         "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                         "page_token_option": {"inject_into": "path", "type": "RequestPath"},
-                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 2},
-                     },
-                 }
-             }
-         ],
-         "spec": {
-             "connection_specification": {
-                 "$schema": "http://json-schema.org/draft-07/schema#",
-                 "type": "object",
-                 "required": [
-                     "api_key"
-                 ],
-                 "properties": {
-                     "api_key": {
-                         "type": "string",
-                         "title": "API Key",
-                         "airbyte_secret": True
-                     }
-                 },
-                 "additionalProperties": True
-             },
-             "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
-     },
-     (
-             _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
-             _create_page({"rates": [{"USD": 3, "partition": 0}], "_metadata": {}}),
-             _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {}}),
-     ),
-     [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
-     [call({}, {"partition": "0"}, None), call({}, {"partition": "0"},{"next_page_token": "next"}), call({}, {"partition": "1"},None),]
-     )
-])
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {"next": "next"}}),
+            )
+            * 10,
+            [{"ABC": 0}, {"AED": 1}],
+            [call({}, {}, None)],
+        ),
+        (
+            "test_read_manifest_with_added_fields",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
+                                },
+                                "type": "object",
+                            },
+                        },
+                        "transformations": [
+                            {
+                                "type": "AddFields",
+                                "fields": [{"type": "AddedFieldDefinition", "path": ["added_field_key"], "value": "added_field_value"}],
+                            }
+                        ],
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {"next": "next"}}),
+            )
+            * 10,
+            [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
+            [call({}, {}, None)],
+        ),
+        (
+            "test_read_with_pagination_no_partitions",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
+                                    "USD": {"type": "number"},
+                                },
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {
+                                "type": "DefaultPaginator",
+                                "page_size": 2,
+                                "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                                "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                                "pagination_strategy": {
+                                    "type": "CursorPagination",
+                                    "cursor_value": "{{ response._metadata.next }}",
+                                    "page_size": 2,
+                                },
+                            },
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {}}),
+            )
+            * 10,
+            [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
+            [call({}, {}, None), call({}, {}, {"next_page_token": "next"})],
+        ),
+        (
+            "test_no_pagination_with_partition_router",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {"ABC": {"type": "number"}, "AED": {"type": "number"}, "partition": {"type": "number"}},
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "partition_router": {"type": "ListPartitionRouter", "values": ["0", "1"], "cursor_field": "partition"},
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}}),
+            ),
+            [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
+            [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)],
+        ),
+        (
+            "test_with_pagination_and_partition_router",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {"ABC": {"type": "number"}, "AED": {"type": "number"}, "partition": {"type": "number"}},
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "partition_router": {"type": "ListPartitionRouter", "values": ["0", "1"], "cursor_field": "partition"},
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {
+                                "type": "DefaultPaginator",
+                                "page_size": 2,
+                                "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                                "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                                "pagination_strategy": {
+                                    "type": "CursorPagination",
+                                    "cursor_value": "{{ response._metadata.next }}",
+                                    "page_size": 2,
+                                },
+                            },
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 3, "partition": 0}], "_metadata": {}}),
+                _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {}}),
+            ),
+            [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
+            [
+                call({}, {"partition": "0"}, None),
+                call({}, {"partition": "0"}, {"next_page_token": "next"}),
+                call({}, {"partition": "1"}, None),
+            ],
+        ),
+    ],
+)
 def test_read_manifest_declarative_source(test_name, manifest, pages, expected_records, expected_calls):
     _stream_name = "Rates"
     with patch.object(SimpleRetriever, "_fetch_next_page", side_effect=pages) as mock_retriever:
         output_data = [message.record.data for message in _run_read(manifest, _stream_name) if message.record]
-        assert expected_records == output_data
+        assert output_data == expected_records
         mock_retriever.assert_has_calls(expected_calls)
+
+
+def test_only_parent_streams_use_cache():
+    applications_stream = {
+        "type": "DeclarativeStream",
+        "$parameters": {"name": "applications", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+        "schema_loader": {
+            "name": "{{ parameters.stream_name }}",
+            "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+        },
+        "retriever": {
+            "paginator": {
+                "type": "DefaultPaginator",
+                "page_size": 10,
+                "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                "page_token_option": {"type": "RequestPath"},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "cursor_value": "{{ headers['link']['next']['url'] }}",
+                    "stop_condition": "{{ 'next' not in headers['link'] }}",
+                    "page_size": 100,
+                },
+            },
+            "requester": {
+                "path": "applications",
+                "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+            },
+            "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+        },
+    }
+
+    manifest = {
+        "version": "0.29.3",
+        "definitions": {},
+        "streams": [
+            deepcopy(applications_stream),
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "applications_interviews", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "applications_interviews",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                    "partition_router": {
+                        "parent_stream_configs": [
+                            {"parent_key": "id", "partition_field": "parent_id", "stream": deepcopy(applications_stream)}
+                        ],
+                        "type": "SubstreamPartitionRouter",
+                    },
+                },
+            },
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "jobs", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "jobs",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                },
+            },
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["applications"]},
+    }
+    source = ManifestDeclarativeSource(source_config=manifest)
+
+    streams = source.streams({})
+    assert len(streams) == 3
+
+    # Main stream with caching (parent for substream `applications_interviews`)
+    assert streams[0].name == "applications"
+    assert streams[0].retriever.requester.use_cache
+
+    # Substream
+    assert streams[1].name == "applications_interviews"
+    assert not streams[1].retriever.requester.use_cache
+
+    # Parent stream created for substream
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.name == "applications"
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.retriever.requester.use_cache
+
+    # Main stream without caching
+    assert streams[2].name == "jobs"
+    assert not streams[2].retriever.requester.use_cache
 
 
 def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMessage]:
     source = ManifestDeclarativeSource(source_config=manifest)
-    catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
-    ])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
     return list(source.read(logger, {}, catalog, {}))

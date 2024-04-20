@@ -24,6 +24,9 @@
     "external_id": {
       "type": ["null", "integer"]
     },
+    "settings": {
+      "type": ["null", "object"]
+    },
     "links": {
       "type": ["null", "object"],
       "properties": {

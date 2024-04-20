@@ -47,7 +47,16 @@
     },
     {
       "stream": {
-        "name": "single_sends",
+        "name": "singlesends",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "singlesend_stats",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -140,15 +149,6 @@
       "sync_mode": "incremental",
       "cursor_field": ["created"],
       "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "unsubscribe_groups",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
     }
   ]
 }

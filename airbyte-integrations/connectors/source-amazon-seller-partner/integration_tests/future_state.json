@@ -3,6 +3,523 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_AFN_INVENTORY_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "queryEndDate": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last-updated-date": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_INVENTORY_PLANNING_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_REIMBURSEMENTS_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_SNS_FORECAST_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_SNS_PERFORMANCE_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FBA_STORAGE_FEE_CHARGES_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last-updated-date": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last-updated-date": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last-updated-date": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "Date": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_LEDGER_DETAIL_VIEW_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_LEDGER_SUMMARY_VIEW_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_ALL_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_ORDER_REPORT_DATA_SHIPPING"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "queryEndDate": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_SALES_AND_TRAFFIC_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_SELLER_FEEDBACK_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_STRANDED_INVENTORY_UI_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_VENDOR_INVENTORY_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_VENDOR_SALES_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_VENDOR_TRAFFIC_REPORT"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "LastUpdatedDate": "2121-07-01T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_XML_BROWSE_TREE_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "FinancialEventGroupStart": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "ListFinancialEventGroups"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "PostedBefore": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "ListFinancialEvents"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "LastUpdateDate": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
@@ -18,6 +535,17 @@
       },
       "stream_descriptor": {
         "name": "Orders"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "createdBefore": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "VendorDirectFulfillmentShipping"
       }
     }
   }

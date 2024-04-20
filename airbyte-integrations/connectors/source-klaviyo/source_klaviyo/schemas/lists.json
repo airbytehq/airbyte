@@ -1,13 +1,6 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties": {
-    "object": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "created": { "type": "string", "format": "date-time" },
-    "updated": { "type": "string", "format": "date-time" },
-    "person_count": { "type": "integer" },
-    "list_type": { "type": "string" },
-    "folder": { "type": ["null", "string"] }
-  }
+  "additionalProperties": true,
+  "properties": { "$ref": "list_properties.json" }
 }

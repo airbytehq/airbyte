@@ -9,11 +9,11 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.identifyNew
 import static io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler.shouldPerformFullSync;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -106,7 +106,7 @@ public class XminCtidUtils {
   }
 
   public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams,
-                                                     AirbyteStreamNameNamespacePair streamPair) {
+                                                     final AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -134,7 +134,7 @@ public class XminCtidUtils {
   }
 
   public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams,
-                                                      List<AirbyteStreamNameNamespacePair> streamPairs) {
+                                                      final List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 

@@ -31,7 +31,6 @@ public class UploaderConfig {
    */
   private StreamConfig parsedStream;
   private String targetTableName;
-  private String tmpTableName;
   private BigQuery bigQuery;
   private Map<UploaderType, BigQueryRecordFormatter> formatterMap;
   private boolean isDefaultAirbyteTmpSchema;
@@ -41,7 +40,7 @@ public class UploaderConfig {
   }
 
   public UploaderType getUploaderType() {
-    return (isGcsUploadingMode() ? UploaderType.AVRO : UploaderType.STANDARD);
+    return (isGcsUploadingMode() ? UploaderType.CSV : UploaderType.STANDARD);
   }
 
   public BigQueryRecordFormatter getFormatter() {

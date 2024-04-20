@@ -109,7 +109,79 @@
           "items": {
             "type": ["null", "integer"]
           }
+        },
+        "contentIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "quoteIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "marketingEventIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
         }
+      }
+    },
+    "associations_contactIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_contentIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_companyIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_dealIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_marketingEventIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_ownerIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_quoteIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_workflowIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_ticketIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
       }
     },
     "attachments": {
@@ -128,6 +200,69 @@
       "properties": {
         "body": {
           "type": ["null", "string"]
+        },
+        "meetingOutcome": {
+          "type": ["null", "string"]
+        },
+        "calendarEventHash": {
+          "type": ["null", "string"]
+        },
+        "createdFromLinkId": {
+          "type": ["null", "integer"]
+        },
+        "meetingChangeId": {
+          "type": ["null", "string"]
+        },
+        "locationType": {
+          "type": ["null", "string"]
+        },
+        "location": {
+          "type": ["null", "string"]
+        },
+        "internalMeetingNotes": {
+          "type": ["null", "string"]
+        },
+        "includeDescriptionInReminder": {
+          "type": ["null", "boolean"]
+        },
+        "iCalUid": {
+          "type": ["null", "string"]
+        },
+        "preMeetingProspectReminders": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "attendeeOwnerIds": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "guestEmails": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsBcc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsCc": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsFrom": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "ownerIdsTo": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "pendingInlineImageIds": {
+          "type": ["null", "array"],
+          "items": {}
+        },
+        "validationSkipped": {
+          "type": ["null", "array"],
+          "items": {}
         },
         "from": {
           "type": ["null", "object"],
@@ -229,6 +364,9 @@
         "title": {
           "type": ["null", "string"]
         },
+        "timezone": {
+          "type": ["null", "string"]
+        },
         "toNumber": {
           "type": ["null", "string"]
         },
@@ -273,6 +411,12 @@
         },
         "attachedVideoOpened": {
           "type": ["null", "boolean"]
+        },
+        "bounceErrorDetail": {
+          "type": ["null", "object"]
+        },
+        "emailSendEventId": {
+          "type": ["null", "object"]
         },
         "attachedVideoWatched": {
           "type": ["null", "boolean"]
@@ -329,6 +473,314 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "metadata_attendeeOwnerIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_calendarEventHash": {
+      "type": ["null", "string"]
+    },
+    "metadata_createdFromLinkId": {
+      "type": ["null", "integer"]
+    },
+    "metadata_meetingChangeId": {
+      "type": ["null", "string"]
+    },
+    "ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "metadata_guestEmails": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_iCalUid": {
+      "type": ["null", "string"]
+    },
+    "metadata_includeDescriptionInReminder": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_internalMeetingNotes": {
+      "type": ["null", "string"]
+    },
+    "metadata_location": {
+      "type": ["null", "string"]
+    },
+    "metadata_locationType": {
+      "type": ["null", "string"]
+    },
+    "metadata_meetingOutcome": {
+      "type": ["null", "string"]
+    },
+    "metadata_timezone": {
+      "type": ["null", "string"]
+    },
+    "metadata_preMeetingProspectReminders": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_body": {
+      "type": ["null", "string"]
+    },
+    "metadata_from": {
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        },
+        "firstName": {
+          "type": ["null", "string"]
+        },
+        "lastName": {
+          "type": ["null", "string"]
+        },
+        "raw": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "metadata_sender": {
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "metadata_to": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "raw": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_cc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "raw": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_bounceErrorDetail": {
+      "type": ["null", "object"]
+    },
+    "metadata_emailSendEventId": {
+      "type": ["null", "object"]
+    },
+    "metadata_ownerIdsBcc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsCc": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsFrom": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_ownerIdsTo": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_pendingInlineImageIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_validationSkipped": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "metadata_bcc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_subject": {
+      "type": ["null", "string"]
+    },
+    "metadata_html": {
+      "type": ["null", "string"]
+    },
+    "metadata_text": {
+      "type": ["null", "string"]
+    },
+    "metadata_status": {
+      "type": ["null", "string"]
+    },
+    "metadata_forObjectType": {
+      "type": ["null", "string"]
+    },
+    "metadata_startTime": {
+      "type": ["null", "integer"]
+    },
+    "metadata_endTime": {
+      "type": ["null", "integer"]
+    },
+    "metadata_title": {
+      "type": ["null", "string"]
+    },
+    "metadata_toNumber": {
+      "type": ["null", "string"]
+    },
+    "metadata_fromNumber": {
+      "type": ["null", "string"]
+    },
+    "metadata_externalId": {
+      "type": ["null", "string"]
+    },
+    "metadata_durationMilliseconds": {
+      "type": ["null", "integer"]
+    },
+    "metadata_externalAccountId": {
+      "type": ["null", "string"]
+    },
+    "metadata_recordingUrl": {
+      "type": ["null", "string"]
+    },
+    "metadata_disposition": {
+      "type": ["null", "string"]
+    },
+    "metadata_completionDate": {
+      "type": ["null", "integer"]
+    },
+    "metadata_taskType": {
+      "type": ["null", "string"]
+    },
+    "metadata_reminders": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "metadata_threadId": {
+      "type": ["null", "string"]
+    },
+    "metadata_messageId": {
+      "type": ["null", "string"]
+    },
+    "metadata_loggedFrom": {
+      "type": ["null", "string"]
+    },
+    "metadata_attachedVideoOpened": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_attachedVideoWatched": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_trackerKey": {
+      "type": ["null", "string"]
+    },
+    "metadata_sendDefaultReminder": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_source": {
+      "type": ["null", "string"]
+    },
+    "metadata_unknownVisitorConversation": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_facsimileSendId": {
+      "type": ["null", "string"]
+    },
+    "metadata_sentVia": {
+      "type": ["null", "string"]
+    },
+    "metadata_sequenceStepOrder": {
+      "type": ["null", "integer"]
+    },
+    "metadata_externalUrl": {
+      "type": ["null", "string"]
+    },
+    "metadata_postSendStatus": {
+      "type": ["null", "string"]
+    },
+    "metadata_errorMessage": {
+      "type": ["null", "string"]
+    },
+    "metadata_recipientDropReasons": {
+      "type": ["null", "string"]
+    },
+    "metadata_calleeObjectId": {
+      "type": ["null", "integer"]
+    },
+    "metadata_calleeObjectType": {
+      "type": ["null", "string"]
+    },
+    "metadata_mediaProcessingStatus": {
+      "type": ["null", "string"]
+    },
+    "metadata_sourceId": {
+      "type": ["null", "string"]
+    },
+    "metadata_priority": {
+      "type": ["null", "string"]
+    },
+    "metadata_isAllDay": {
+      "type": ["null", "boolean"]
     }
   }
 }

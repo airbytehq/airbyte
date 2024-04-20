@@ -1,0 +1,16 @@
+// https://docs.aws.amazon.com/redshift/latest/dg/r_Datetime_types.html#r_Datetime_types-timetz
+// TIME, TIMETZ, TIMESTAMP, TIMESTAMPTZ values are UTC in user tables.
+// Note that redshift stores precision to microseconds. Java deserialization in tests preserves them only for non-zero values
+// except for timestamp with time zone where Z is required at end for even zero values
+{"_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T12:34:56.000000Z", "time_with_timezone": "12:34:56Z"}
+{"_airbyte_raw_id": "05028c5f-7813-4e9c-bd4b-387d1f8ba435", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T20:34:56.000000Z", "time_with_timezone": "20:34:56Z"}
+{"_airbyte_raw_id": "95dfb0c6-6a67-4ba0-9935-643bebc90437", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T20:34:56.000000Z", "time_with_timezone": "20:34:56Z"}
+{"_airbyte_raw_id": "f3d8abe2-bb0f-4caf-8ddc-0641df02f3a9", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T20:34:56.000000Z", "time_with_timezone": "20:34:56Z"}
+{"_airbyte_raw_id": "a81ed40a-2a49-488d-9714-d53e8b052968", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T04:34:56.000000Z", "time_with_timezone": "04:34:56Z"}
+{"_airbyte_raw_id": "c07763a0-89e6-4cb7-b7d0-7a34a7c9918a", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T04:34:56.000000Z", "time_with_timezone": "04:34:56Z"}
+{"_airbyte_raw_id": "358d3b52-50ab-4e06-9094-039386f9bf0d", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T04:34:56.000000Z", "time_with_timezone": "04:34:56Z"}
+{"_airbyte_raw_id": "db8200ac-b2b9-4b95-a053-8a0343042751", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_with_timezone": "2023-01-23T12:34:56.123000Z", "time_with_timezone": "12:34:56.123Z"}
+
+{"_airbyte_raw_id": "10ce5d93-6923-4217-a46f-103833837038", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_without_timezone": "2023-01-23T12:34:56", "time_without_timezone": "12:34:56", "date": "2023-01-23"}
+// Bigquery returns 6 decimal places if there are any decimal places... but not for timestamp_with_timezone
+{"_airbyte_raw_id": "a7a6e176-7464-4a0b-b55c-b4f936e8d5a1", "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z", "_airbyte_meta": {"changes": []}, "timestamp_without_timezone": "2023-01-23T12:34:56.123", "time_without_timezone": "12:34:56.123"}

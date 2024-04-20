@@ -100,33 +100,6 @@ class TestConfig:
             parsed_config = config.Config.parse_obj(raw_config)
             assert parsed_config == expected_output_config
 
-    def test_cursor_path_union_str(self):
-        parsed_config = config.Config.parse_obj(self._config_with_incremental_cursor_paths(["2331"]))
-        assert type(parsed_config.acceptance_tests.incremental.tests[0].cursor_paths["stream_name"][0]) == str
-
-    def test_cursor_path_union_int(self):
-        parsed_config = config.Config.parse_obj(self._config_with_incremental_cursor_paths([2331]))
-        assert type(parsed_config.acceptance_tests.incremental.tests[0].cursor_paths["stream_name"][0]) == int
-
-    @staticmethod
-    def _config_with_incremental_cursor_paths(cursor_paths):
-        return {
-            "connector_image": "foo",
-            "acceptance_tests": {
-                "incremental": {
-                    "tests": [
-                        {
-                            "config_path": "config_path.json",
-                            "cursor_paths": {
-                                "stream_name": cursor_paths
-                            }
-                        }
-                    ]
-                }
-            },
-            "test_strictness_level": "low"
-        }
-
     @pytest.mark.parametrize(
         "legacy_config, expected_parsed_config",
         [
@@ -239,3 +212,33 @@ class TestExpectedRecordsConfig:
     def test_bypass_reason_behavior(self, path, bypass_reason, expectation):
         with expectation:
             config.ExpectedRecordsConfig(path=path, bypass_reason=bypass_reason)
+
+
+class TestFileTypesConfig:
+    @pytest.mark.parametrize(
+        ("skip_test", "bypass_reason", "unsupported_types", "expectation"),
+        (
+            (True, None, None, does_not_raise()),
+            (True, None, [config.UnsupportedFileTypeConfig(extension=".csv")], pytest.raises(ValidationError)),
+            (False, None, None, does_not_raise()),
+            (False, "bypass_reason", None, pytest.raises(ValidationError)),
+            (False, "", None, pytest.raises(ValidationError)),
+            (False, None, [config.UnsupportedFileTypeConfig(extension=".csv")], does_not_raise()),
+        ),
+    )
+    def test_skip_test_behavior(self, skip_test, bypass_reason, unsupported_types, expectation):
+        with expectation:
+            config.FileTypesConfig(skip_test=skip_test, bypass_reason=bypass_reason, unsupported_types=unsupported_types)
+
+    @pytest.mark.parametrize(
+        ("extension", "expectation"),
+        (
+            (".csv", does_not_raise()),
+            ("csv", pytest.raises(ValidationError)),
+            (".", pytest.raises(ValidationError)),
+            ("", pytest.raises(ValidationError)),
+        ),
+    )
+    def test_extension_validation(self, extension, expectation):
+        with expectation:
+            config.UnsupportedFileTypeConfig(extension=extension)

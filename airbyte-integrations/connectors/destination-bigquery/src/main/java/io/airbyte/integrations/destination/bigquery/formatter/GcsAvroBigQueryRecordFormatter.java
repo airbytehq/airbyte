@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 
 /**

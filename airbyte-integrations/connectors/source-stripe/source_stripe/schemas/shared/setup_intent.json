@@ -17,6 +17,9 @@
     "created": {
       "type": ["integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "customer": {
       "type": ["null", "string"]
     },
@@ -86,6 +89,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "payment_method_configuration_details": {
+      "$ref": "payment_method_configuration_details.json"
     }
   }
 }

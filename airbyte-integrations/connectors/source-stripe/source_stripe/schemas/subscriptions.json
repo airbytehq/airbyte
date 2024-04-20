@@ -49,6 +49,12 @@
     "billing_cycle_anchor": {
       "type": ["null", "number"]
     },
+    "billing_cycle_anchor_config": {
+      "type": ["null", "object"]
+    },
+    "invoice_settings": {
+      "type": ["null", "object"]
+    },
     "cancel_at_period_end": {
       "type": ["null", "boolean"]
     },
@@ -233,6 +239,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "ended_at": {
       "type": ["null", "number"]
     },
@@ -320,10 +329,7 @@
       }
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "pause_collection": {
       "type": ["null", "object"],
@@ -442,6 +448,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

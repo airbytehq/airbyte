@@ -4,7 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "color": { "type": "string" },
-    "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
+    "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
     "children": { "type": "array", "items": { "type": "object" } }
   }
 }

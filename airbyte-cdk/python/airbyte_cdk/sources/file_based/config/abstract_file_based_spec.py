@@ -6,6 +6,7 @@ import copy
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
+import dpath.util
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic import AnyUrl, BaseModel, Field
@@ -46,11 +47,17 @@ class AbstractFileBasedSpec(BaseModel):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-        transformed_schema = copy.deepcopy(schema)
+        transformed_schema: Dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
+        cls.remove_discriminator(transformed_schema)
 
         return transformed_schema
+
+    @staticmethod
+    def remove_discriminator(schema: Dict[str, Any]) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
@@ -66,9 +73,7 @@ class AbstractFileBasedSpec(BaseModel):
         for format in objects_to_check["oneOf"]:
             for key in format["properties"]:
                 object_property = format["properties"][key]
-                if "allOf" in object_property and "enum" in object_property["allOf"][0]:
-                    object_property["enum"] = object_property["allOf"][0]["enum"]
-                    object_property.pop("allOf")
+                AbstractFileBasedSpec.move_enum_to_root(object_property)
 
         properties_to_change = ["validation_policy"]
         for property_to_change in properties_to_change:
@@ -76,7 +81,24 @@ class AbstractFileBasedSpec(BaseModel):
             if "anyOf" in property_object:
                 schema["properties"]["streams"]["items"]["properties"][property_to_change]["type"] = "object"
                 schema["properties"]["streams"]["items"]["properties"][property_to_change]["oneOf"] = property_object.pop("anyOf")
-            if "allOf" in property_object and "enum" in property_object["allOf"][0]:
-                property_object["enum"] = property_object["allOf"][0]["enum"]
-                property_object.pop("allOf")
+            AbstractFileBasedSpec.move_enum_to_root(property_object)
+
+        csv_format_schemas = list(
+            filter(
+                lambda format: format["properties"]["filetype"]["default"] == "csv",
+                schema["properties"]["streams"]["items"]["properties"]["format"]["oneOf"],
+            )
+        )
+        if len(csv_format_schemas) != 1:
+            raise ValueError(f"Expecting only one CSV format but got {csv_format_schemas}")
+        csv_format_schemas[0]["properties"]["header_definition"]["oneOf"] = csv_format_schemas[0]["properties"]["header_definition"].pop(
+            "anyOf", []
+        )
+        csv_format_schemas[0]["properties"]["header_definition"]["type"] = "object"
         return schema
+
+    @staticmethod
+    def move_enum_to_root(object_property: Dict[str, Any]) -> None:
+        if "allOf" in object_property and "enum" in object_property["allOf"][0]:
+            object_property["enum"] = object_property["allOf"][0]["enum"]
+            object_property.pop("allOf")

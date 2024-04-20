@@ -8,7 +8,7 @@ import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.
 import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.AIRBYTE_OSS;
 import static io.airbyte.integrations.source.snowflake.SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE;
 
-import io.airbyte.integrations.base.adaptive.AdaptiveSourceRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 
 public class SnowflakeSourceRunner {
 

@@ -5,14 +5,14 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,9 @@ import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
+public class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
+
+  public static final String RETENTION_PERIOD_DAYS_CONFIG_KEY = "retention_period_days";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
@@ -32,22 +34,12 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   private static final String NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it";
   private static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake";
 
-  private final boolean use1s1t;
-
-  public SnowflakeSqlOperations() {
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
-  }
-
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
       if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
-        if (use1s1t) {
-          // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
-          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
-        } else {
-          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
-        }
+        // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+        database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
         schemaSet.add(schemaName);
       }
     } catch (final Exception e) {
@@ -57,41 +49,48 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format(
-          """
-          CREATE TABLE IF NOT EXISTS "%s"."%s" (
-            "%s" VARCHAR PRIMARY KEY,
-            "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
-            "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-            "%s" VARIANT
-          ) data_retention_time_in_days = 0;""",
-          schemaName,
-          tableName,
-          JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-          JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-          JavaBaseConstants.COLUMN_NAME_DATA);
+    int retentionPeriodDays = getRetentionPeriodDaysFromConfigSingleton();
+    return String.format(
+        """
+        CREATE TABLE IF NOT EXISTS "%s"."%s" (
+          "%s" VARCHAR PRIMARY KEY,
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          "%s" VARIANT
+        ) data_retention_time_in_days = %d;""",
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        retentionPeriodDays);
+  }
+
+  /**
+   * Sort of hacky. The problem is that SnowflakeSqlOperations is constructed in the
+   * SnowflakeDestination constructor, but we don't have the JsonNode config until we try to call
+   * check/getSerializedConsumer on the SnowflakeDestination. So we can't actually inject the config
+   * normally. Instead, we just use the singleton object. :(
+   */
+  private static int getRetentionPeriodDaysFromConfigSingleton() {
+    return getRetentionPeriodDays(DestinationConfig.getInstance().getNodeValue(RETENTION_PERIOD_DAYS_CONFIG_KEY));
+  }
+
+  public static int getRetentionPeriodDays(final JsonNode node) {
+    int retentionPeriodDays;
+    if (node == null || node.isNull()) {
+      retentionPeriodDays = 1;
     } else {
-      return String.format(
-          """
-          CREATE TABLE IF NOT EXISTS %s.%s (
-            %s VARCHAR PRIMARY KEY,
-            %s VARIANT,
-            %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
-          ) data_retention_time_in_days = 0;""",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+      retentionPeriodDays = node.asInt();
     }
+    return retentionPeriodDays;
   }
 
   @Override
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
-      if (use1s1t) {
-        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
-      } else {
-        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
-      }
+      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
     } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
@@ -99,25 +98,17 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
-    } else {
-      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-    }
+    return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
   }
 
   @Override
   public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
-    } else {
-      return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
-    }
+    return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
   }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tableName)
       throws SQLException {
@@ -130,20 +121,22 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     // (?, ?, ?),
     // ...
     final String insertQuery;
-    if (use1s1t) {
-      // Note that the column order is weird here - that's intentional, to avoid needing to change
-      // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
-      insertQuery = String.format(
-          "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
-    } else {
-      insertQuery = String.format(
-          "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    }
+    // Note that the column order is weird here - that's intentional, to avoid needing to change
+    // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
+    insertQuery = String.format(
+        "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+  }
+
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase jdbcDatabase, final List<PartialAirbyteMessage> list, final String s, final String s1)
+      throws Exception {
+    // Snowflake doesn't have standard inserts... so we don't do this at real runtime.
+    // Intentionally do nothing. This method is called from the `check` method.
+    // It probably shouldn't be, but this is the easiest path to getting this working.
   }
 
   protected String generateFilesList(final List<String> files) {

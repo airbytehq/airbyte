@@ -34,17 +34,42 @@ def common_params_fixture(config):
 
 @pytest.fixture(name="config_invalid_client_id")
 def config_invalid_client_id_fixture():
-    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "OAuth Credentials", "client_id": "invalid_client_id", "client_secret": "invalid_client_secret", "access_token": "test_access_token", "refresh_token": "test_refresh_token"}}
+    return {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {
+            "credentials_title": "OAuth Credentials",
+            "client_id": "invalid_client_id",
+            "client_secret": "invalid_client_secret",
+            "access_token": "test_access_token",
+            "refresh_token": "test_refresh_token",
+        },
+    }
 
 
 @pytest.fixture(name="config")
 def config_fixture():
-    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
+    return {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "enable_experimental_streams": False,
+    }
+
+
+@pytest.fixture(name="config_experimental")
+def config_eperimantal_fixture():
+    return {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "enable_experimental_streams": True,
+    }
 
 
 @pytest.fixture(name="config_invalid_date")
 def config_invalid_date_fixture():
-    return {"start_date": "2000-00-00T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
+    return {
+        "start_date": "2000-00-00T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+    }
 
 
 @pytest.fixture(name="some_credentials")
@@ -60,3 +85,8 @@ def fake_properties_list():
 @pytest.fixture(name="api")
 def api(some_credentials):
     return API(some_credentials)
+
+
+@pytest.fixture
+def http_mocker():
+    return None

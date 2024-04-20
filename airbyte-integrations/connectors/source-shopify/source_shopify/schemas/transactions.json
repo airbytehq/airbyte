@@ -46,9 +46,50 @@
     "status": {
       "type": ["null", "string"]
     },
-    "payment_details": {
+    "total_unsettled_set": {
+      "type": ["null", "object"],
       "properties": {
-        "cvv_result_code": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "payment_id": {
+      "type": ["null", "string"]
+    },
+    "payment_details": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "avs_result_code": {
+          "type": ["null", "string"]
+        },
+        "buyer_action_info": {
           "type": ["null", "string"]
         },
         "credit_card_bin": {
@@ -57,14 +98,25 @@
         "credit_card_company": {
           "type": ["null", "string"]
         },
+        "credit_card_expiration_month": {
+          "type": ["null", "integer"]
+        },
+        "credit_card_expiration_year": {
+          "type": ["null", "integer"]
+        },
+        "credit_card_name": {
+          "type": ["null", "string"]
+        },
         "credit_card_number": {
           "type": ["null", "string"]
         },
-        "avs_result_code": {
+        "credit_card_wallet": {
+          "type": ["null", "string"]
+        },
+        "cvv_result_code": {
           "type": ["null", "string"]
         }
-      },
-      "type": ["null", "object"]
+      }
     },
     "processed_at": {
       "type": ["null", "string"],
@@ -77,21 +129,29 @@
       "type": ["null", "string"]
     },
     "receipt": {
-      "type": ["null", "object"],
-      "properties": {
-        "fee_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+      "oneOf": [
+        {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "fee_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "gross_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            },
+            "tax_amount": {
+              "type": ["null", "number"],
+              "multipleOf": 1e-10
+            }
+          }
         },
-        "gross_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
-        },
-        "tax_amount": {
-          "type": ["null", "number"],
-          "multipleOf": 1e-10
+        {
+          "type": ["null", "string"]
         }
-      }
+      ]
     },
     "location_id": {
       "type": ["null", "integer"]

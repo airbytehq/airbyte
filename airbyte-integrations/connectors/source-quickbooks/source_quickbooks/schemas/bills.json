@@ -121,7 +121,7 @@
                 "type": ["null", "string"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               }
             },
             "type": ["null", "object"]
@@ -133,6 +133,18 @@
             "properties": {
               "BillableStatus": {
                 "type": ["null", "string"]
+              },
+              "ClassRef": {
+                "additionalProperties": true,
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
               },
               "AccountRef": {
                 "properties": {

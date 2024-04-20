@@ -22,6 +22,12 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +76,7 @@ public class S3DestinationTest {
   public void checksS3WithoutListObjectPermission() {
     final S3Destination destinationFail = new S3Destination(factoryConfig);
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
-    final AirbyteConnectionStatus status = destinationFail.check(null);
+    final AirbyteConnectionStatus status = destinationFail.check(Jsons.emptyObject());
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
     assertTrue(status.getMessage().indexOf("Access Denied") > 0, "Connection check returned wrong failure message");
   }
@@ -81,13 +87,13 @@ public class S3DestinationTest {
    */
   public void checksS3WithListObjectPermission() {
     final S3Destination destinationSuccess = new S3Destination(factoryConfig);
-    final AirbyteConnectionStatus status = destinationSuccess.check(null);
+    final AirbyteConnectionStatus status = destinationSuccess.check(Jsons.emptyObject());
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
+    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete");
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);

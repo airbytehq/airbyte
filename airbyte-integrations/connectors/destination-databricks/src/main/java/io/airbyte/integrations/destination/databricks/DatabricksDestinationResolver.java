@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.integrations.destination.databricks.azure.DatabricksAzureBlobStorageDestination;
 import io.airbyte.integrations.destination.databricks.s3.DatabricksS3Destination;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;

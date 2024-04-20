@@ -142,6 +142,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "customer": {
       "$ref": "customer.json"
     },

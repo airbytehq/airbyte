@@ -7,7 +7,6 @@ import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
-from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
@@ -19,12 +18,12 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
 )
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
 from airbyte_protocol.models.airbyte_protocol import (
     AirbyteControlMessage,
     AirbyteLogMessage,
@@ -45,6 +44,32 @@ class MessageGrouper:
         self._max_slices = max_slices
         self._max_record_limit = max_record_limit
 
+    def _pk_to_nested_and_composite_field(self, field: Optional[Union[str, List[str], List[List[str]]]]) -> List[List[str]]:
+        if not field:
+            return [[]]
+
+        if isinstance(field, str):
+            return [[field]]
+
+        is_composite_key = isinstance(field[0], str)
+        if is_composite_key:
+            return [[i] for i in field]  # type: ignore  # the type of field is expected to be List[str] here
+
+        return field  # type: ignore  # the type of field is expected to be List[List[str]] here
+
+    def _cursor_field_to_nested_and_composite_field(self, field: Union[str, List[str]]) -> List[List[str]]:
+        if not field:
+            return [[]]
+
+        if isinstance(field, str):
+            return [[field]]
+
+        is_nested_key = isinstance(field[0], str)
+        if is_nested_key:
+            return [field]  # type: ignore  # the type of field is expected to be List[str] here
+
+        raise ValueError(f"Unknown type for cursor field `{field}")
+
     def get_message_groups(
         self,
         source: DeclarativeSource,
@@ -52,9 +77,13 @@ class MessageGrouper:
         configured_catalog: ConfiguredAirbyteCatalog,
         record_limit: Optional[int] = None,
     ) -> StreamRead:
-        if record_limit is not None and not (1 <= record_limit <= 1000):
-            raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
-        schema_inferrer = SchemaInferrer()
+        if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
+            raise ValueError(f"Record limit must be between 1 and {self._max_record_limit}. Got {record_limit}")
+        stream = source.streams(config)[0]  # The connector builder currently only supports reading from a single stream at a time
+        schema_inferrer = SchemaInferrer(
+            self._pk_to_nested_and_composite_field(stream.primary_key),
+            self._cursor_field_to_nested_and_composite_field(stream.cursor_field),
+        )
         datetime_format_inferrer = DatetimeFormatInferrer()
 
         if record_limit is None:
@@ -67,10 +96,10 @@ class MessageGrouper:
         latest_config_update: AirbyteControlMessage = None
         auxiliary_requests = []
         for message_group in self._get_message_groups(
-                self._read_stream(source, config, configured_catalog),
-                schema_inferrer,
-                datetime_format_inferrer,
-                record_limit,
+            self._read_stream(source, config, configured_catalog),
+            schema_inferrer,
+            datetime_format_inferrer,
+            record_limit,
         ):
             if isinstance(message_group, AirbyteLogMessage):
                 log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
@@ -88,20 +117,30 @@ class MessageGrouper:
             else:
                 raise ValueError(f"Unknown message group type: {type(message_group)}")
 
+        try:
+            configured_stream = configured_catalog.streams[0]  # The connector builder currently only supports reading from a single stream at a time
+            schema = schema_inferrer.get_stream_schema(configured_stream.stream.name)
+        except SchemaValidationException as exception:
+            for validation_error in exception.validation_errors:
+                log_messages.append(LogMessage(validation_error, "ERROR"))
+            schema = exception.schema
+
         return StreamRead(
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
             auxiliary_requests=auxiliary_requests,
-            inferred_schema=schema_inferrer.get_stream_schema(
-                configured_catalog.streams[0].stream.name
-            ),  # The connector builder currently only supports reading from a single stream at a time
+            inferred_schema=schema,
             latest_config_update=self._clean_config(latest_config_update.connectorConfig.config) if latest_config_update else None,
             inferred_datetime_formats=datetime_format_inferrer.get_inferred_datetime_formats(),
         )
 
     def _get_message_groups(
-            self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, datetime_format_inferrer: DatetimeFormatInferrer, limit: int
+        self,
+        messages: Iterator[AirbyteMessage],
+        schema_inferrer: SchemaInferrer,
+        datetime_format_inferrer: DatetimeFormatInferrer,
+        limit: int,
     ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, AuxiliaryRequest]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
@@ -125,6 +164,7 @@ class MessageGrouper:
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
+        latest_state_message: Optional[Dict[str, Any]] = None
 
         while records_count < limit and (message := next(messages, None)):
             json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None
@@ -136,12 +176,16 @@ class MessageGrouper:
                 current_page_request = None
                 current_page_response = None
 
-            if at_least_one_page_in_group and message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+            if (
+                at_least_one_page_in_group
+                and message.type == MessageType.LOG
+                and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
+            ):
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=latest_state_message)
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
-            elif message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
+            elif message.type == MessageType.LOG and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX):
                 # parsing the first slice
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
@@ -153,9 +197,7 @@ class MessageGrouper:
                         stream = airbyte_cdk.get("stream", {})
                         if not isinstance(stream, dict):
                             raise ValueError(f"Expected stream to be a dict, got {stream} of type {type(stream)}")
-                        title_prefix = (
-                           "Parent stream: " if stream.get("is_substream", False) else ""
-                        )
+                        title_prefix = "Parent stream: " if stream.get("is_substream", False) else ""
                         http = json_message.get("http", {})
                         if not isinstance(http, dict):
                             raise ValueError(f"Expected http to be a dict, got {http} of type {type(http)}")
@@ -181,10 +223,12 @@ class MessageGrouper:
                 datetime_format_inferrer.accumulate(message.record)
             elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
                 yield message.control
+            elif message.type == MessageType.STATE:
+                latest_state_message = message.state
         else:
             if current_page_request or current_page_response or current_page_records:
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=latest_state_message)
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
@@ -220,7 +264,12 @@ class MessageGrouper:
         return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
-    def _close_page(current_page_request: Optional[HttpRequest], current_page_response: Optional[HttpResponse], current_slice_pages: List[StreamReadPages], current_page_records: List[Mapping[str, Any]]) -> None:
+    def _close_page(
+        current_page_request: Optional[HttpRequest],
+        current_page_response: Optional[HttpResponse],
+        current_slice_pages: List[StreamReadPages],
+        current_page_records: List[Mapping[str, Any]],
+    ) -> None:
         """
         Close a page when parsing message groups
         """
@@ -229,7 +278,9 @@ class MessageGrouper:
         )
         current_page_records.clear()
 
-    def _read_stream(self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> Iterator[AirbyteMessage]:
+    def _read_stream(
+        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog
+    ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
@@ -251,15 +302,12 @@ class MessageGrouper:
 
     @staticmethod
     def _create_request_from_log_message(json_http_message: Dict[str, Any]) -> HttpRequest:
-        url = urlparse(json_http_message.get("url", {}).get("full", ""))
-        full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
+        url = json_http_message.get("url", {}).get("full", "")
         request = json_http_message.get("http", {}).get("request", {})
-        parameters = parse_qs(url.query) or None
         return HttpRequest(
-            url=full_path,
+            url=url,
             http_method=request.get("method", ""),
             headers=request.get("headers"),
-            parameters=parameters,
             body=request.get("body", {}).get("content", ""),
         )
 
@@ -285,7 +333,7 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))  # type: ignore
+        return json.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:

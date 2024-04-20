@@ -7,7 +7,7 @@ Developer updates will be announced via our #help-connector-development Slack ch
 :::
 
 :::note
-The low-code framework is in [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta), which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+The low-code framework is in **beta**, which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
 ## Why low-code?
@@ -67,7 +67,6 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 - An API key for the source you want to build a connector for
 - Python >= 3.9
 - Docker
-- NodeJS
 
 ## Overview of the process
 
@@ -138,7 +137,7 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 ## Tutorial
 
-This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)
@@ -155,3 +154,6 @@ For examples of production-ready config-based connectors, refer to:
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
 - [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
+
+## Reference
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

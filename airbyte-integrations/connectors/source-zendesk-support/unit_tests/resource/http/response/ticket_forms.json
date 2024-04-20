@@ -1,0 +1,29 @@
+{
+  "next_page": null,
+  "previous_page": null,
+  "count": 1,
+  "ticket_forms": [
+    {
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/ticket_forms/360000084116.json",
+      "name": "Default Ticket Form",
+      "display_name": "Default Ticket Form",
+      "id": 360000084116,
+      "raw_name": "Default Ticket Form",
+      "raw_display_name": "Default Ticket Form",
+      "end_user_visible": true,
+      "position": 1,
+      "ticket_field_ids": [
+        360002833076, 360002833096, 360002833116, 360002833136, 360002833156,
+        360002833176, 360002833196
+      ],
+      "active": true,
+      "default": true,
+      "created_at": "2020-12-11T18:34:37Z",
+      "updated_at": "2020-12-11T18:34:37Z",
+      "in_all_brands": true,
+      "restricted_brand_ids": [],
+      "end_user_conditions": [],
+      "agent_conditions": []
+    }
+  ]
+}

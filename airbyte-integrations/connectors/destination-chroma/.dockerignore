@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!destination_chroma
+!pyproject.toml
+!poetry.lock

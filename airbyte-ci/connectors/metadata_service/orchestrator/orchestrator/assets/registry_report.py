@@ -324,7 +324,6 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
 
     metadata = {
         "first_10_preview": MetadataValue.md(all_connectors_dataframe.head(10).to_markdown()),
-        "json": MetadataValue.json(json_string),
         "json_gcs_url": MetadataValue.url(json_file_handle.public_url),
         "html_gcs_url": MetadataValue.url(html_file_handle.public_url),
     }

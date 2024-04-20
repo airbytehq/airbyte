@@ -7,10 +7,10 @@ package io.airbyte.integrations.destination.snowflake;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.DestinationConfig;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -49,7 +49,6 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
 
   private static Executable createStageIfNotExists;
   private static Executable dropStageIfExists;
-  private static Executable cleanUpStage;
   private static Executable copyIntoTableFromStage;
 
   private static Executable createSchemaIfNotExists;
@@ -65,8 +64,7 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
     snowflakeSqlOperations = new SnowflakeSqlOperations();
 
     createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
-    dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);
-    cleanUpStage = () -> snowflakeStagingSqlOperations.cleanUpStage(dbForExecuteQuery, STAGE_NAME, FILE_PATH);
+    dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME, null);
     copyIntoTableFromStage =
         () -> snowflakeStagingSqlOperations.copyIntoTableFromStage(dbForExecuteQuery, STAGE_NAME, STAGE_PATH, FILE_PATH, TABLE_NAME, SCHEMA_NAME);
 
@@ -84,9 +82,6 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
         Arguments.of(TEST_NO_CONFIG_EXCEPTION_CATCHED, false, dropStageIfExists),
         Arguments.of(TEST_PERMISSION_EXCEPTION_CATCHED, true, dropStageIfExists),
         Arguments.of(TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED, true, dropStageIfExists),
-        Arguments.of(TEST_NO_CONFIG_EXCEPTION_CATCHED, false, cleanUpStage),
-        Arguments.of(TEST_PERMISSION_EXCEPTION_CATCHED, true, cleanUpStage),
-        Arguments.of(TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED, true, cleanUpStage),
         Arguments.of(TEST_NO_CONFIG_EXCEPTION_CATCHED, false, copyIntoTableFromStage),
         Arguments.of(TEST_PERMISSION_EXCEPTION_CATCHED, true, copyIntoTableFromStage),
         Arguments.of(TEST_IP_NOT_IN_WHITE_LIST_EXCEPTION_CATCHED, true, copyIntoTableFromStage),

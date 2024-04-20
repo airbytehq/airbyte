@@ -2,20 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from functools import partial
 from typing import Any, Iterable, Mapping
 
 import pytest
 from facebook_business import FacebookSession
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookRequest
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.base_streams import FBMarketingStream
+from source_facebook_marketing.streams.base_streams import FBMarketingIncrementalStream, FBMarketingStream
 
 
 @pytest.fixture(name="mock_batch_responses")
 def mock_batch_responses_fixture(requests_mock):
-    return partial(requests_mock.register_uri, "POST", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/")
+    return partial(
+        requests_mock.register_uri,
+        "POST",
+        f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/",
+    )
 
 
 @pytest.fixture(name="batch")
@@ -32,163 +35,228 @@ class SomeTestStream(FBMarketingStream):
         yield from []
 
 
-class TestBaseStream:
-    def test_execute_in_batch_with_few_requests(self, api, batch, mock_batch_responses):
-        """Should execute single batch if number of requests less than MAX_BATCH_SIZE."""
-        mock_batch_responses(
-            [
+class TestDateTimeValue:
+    def test_date_time_value(self):
+        record = {
+            "bla": "2023-01-19t20:38:59 0000",
+            "created_time": "2023-01-19t20:38:59 0000",
+            "creation_time": "2023-01-19t20:38:59 0000",
+            "updated_time": "2023-01-19t20:38:59 0000",
+            "event_time": "2023-01-19t20:38:59 0000",
+            "first_fired_time": "2023-01-19t20:38:59 0000",
+            "last_fired_time": "2023-01-19t20:38:59 0000",
+            "sub_list": [
                 {
-                    "json": [{"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}}] * 3,
+                    "bla": "2023-01-19t20:38:59 0000",
+                    "created_time": "2023-01-19t20:38:59 0000",
+                    "creation_time": "2023-01-19t20:38:59 0000",
+                    "updated_time": "2023-01-19t20:38:59 0000",
+                    "event_time": "2023-01-19t20:38:59 0000",
+                    "first_fired_time": "2023-01-19t20:38:59 0000",
+                    "last_fired_time": "2023-01-19t20:38:59 0000",
                 }
-            ]
-        )
-
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(5)]
-
-        result = list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests)
-        batch.execute.assert_called_once()
-        assert len(result) == 3
-
-    def test_execute_in_batch_with_many_requests(self, api, batch, mock_batch_responses):
-        """Should execute as many batches as needed if number of requests bigger than MAX_BATCH_SIZE."""
-        mock_batch_responses(
-            [
-                {
-                    "json": [{"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}}] * 5,
+            ],
+            "sub_entries1": {
+                "sub_entries2": {
+                    "bla": "2023-01-19t20:38:59 0000",
+                    "created_time": "2023-01-19t20:38:59 0000",
+                    "creation_time": "2023-01-19t20:38:59 0000",
+                    "updated_time": "2023-01-19t20:38:59 0000",
+                    "event_time": "2023-01-19t20:38:59 0000",
+                    "first_fired_time": "2023-01-19t20:38:59 0000",
+                    "last_fired_time": "2023-01-19t20:38:59 0000",
                 }
-            ]
-        )
-
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(50 + 1)]
-
-        result = list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests)
-        assert batch.execute.call_count == 2
-        assert len(result) == 5 * 2
-
-    def test_execute_in_batch_with_retries(self, api, batch, mock_batch_responses):
-        """Should retry batch execution until succeed"""
-        # batch.execute.side_effect = [batch, batch, None]
-        mock_batch_responses(
-            [
+            },
+        }
+        FBMarketingStream.fix_date_time(record)
+        assert {
+            "bla": "2023-01-19t20:38:59 0000",
+            "created_time": "2023-01-19T20:38:59+0000",
+            "creation_time": "2023-01-19T20:38:59+0000",
+            "updated_time": "2023-01-19T20:38:59+0000",
+            "event_time": "2023-01-19T20:38:59+0000",
+            "first_fired_time": "2023-01-19T20:38:59+0000",
+            "last_fired_time": "2023-01-19T20:38:59+0000",
+            "sub_list": [
                 {
-                    "json": [
-                        {},
-                        {},
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                    ],
-                },
-                {
-                    "json": [
-                        {},
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                    ],
-                },
-                {
-                    "json": [
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                    ],
-                },
-            ]
-        )
-
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(3)]
-
-        result = list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests)
-        assert batch.execute.call_count == 1
-        assert len(result) == 3
-
-    def test_execute_in_batch_with_fails(self, api, batch, mock_batch_responses):
-        """Should fail with exception when any request returns error"""
-        mock_batch_responses(
-            [
-                {
-                    "json": [
-                        {"body": "{}", "code": 500, "headers": {}},
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                    ],
+                    "bla": "2023-01-19t20:38:59 0000",
+                    "created_time": "2023-01-19T20:38:59+0000",
+                    "creation_time": "2023-01-19T20:38:59+0000",
+                    "updated_time": "2023-01-19T20:38:59+0000",
+                    "event_time": "2023-01-19T20:38:59+0000",
+                    "first_fired_time": "2023-01-19T20:38:59+0000",
+                    "last_fired_time": "2023-01-19T20:38:59+0000",
                 }
-            ]
-        )
-
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(5)]
-
-        with pytest.raises(RuntimeError, match="Batch request failed with response:"):
-            list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests)
-        assert batch.execute.call_count == 1
-
-    def test_batch_reduce_amount(self, api, batch, mock_batch_responses, caplog):
-        """Reduce batch size to 1 and finally fail with message"""
-
-        retryable_message = "Please reduce the amount of data you're asking for, then retry your request"
-        mock_batch_responses(
-            [
-                {
-                    "json": [
-                        {"body": {"error": {"message": retryable_message}}, "code": 500, "headers": {}},
-                    ],
+            ],
+            "sub_entries1": {
+                "sub_entries2": {
+                    "bla": "2023-01-19t20:38:59 0000",
+                    "created_time": "2023-01-19T20:38:59+0000",
+                    "creation_time": "2023-01-19T20:38:59+0000",
+                    "updated_time": "2023-01-19T20:38:59+0000",
+                    "event_time": "2023-01-19T20:38:59+0000",
+                    "first_fired_time": "2023-01-19T20:38:59+0000",
+                    "last_fired_time": "2023-01-19T20:38:59+0000",
                 }
-            ]
-        )
+            },
+        } == record
 
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint")]
-        with pytest.raises(RuntimeError, match="Batch request failed with only 1 request in..."):
-            list(stream.execute_in_batch(requests))
 
-        assert batch.add_request.call_count == 7
-        assert batch.execute.call_count == 7
-        assert stream.max_batch_size == 1
-        for index, expected_batch_size in enumerate(["25", "13", "7", "4", "2", "1"]):
-            assert expected_batch_size in caplog.messages[index]
+class ConcreteFBMarketingIncrementalStream(FBMarketingIncrementalStream):
+    cursor_field = "date"
+    valid_statuses = ["ACTIVE", "PAUSED", "DELETED"]
 
-    def test_execute_in_batch_retry_batch_error(self, api, batch, mock_batch_responses):
-        """Should retry without exception when any request returns 960 error code"""
-        mock_batch_responses(
-            [
+    def list_objects(self, **kwargs):
+        return []
+
+
+@pytest.fixture
+def incremental_class_instance(api):
+    return ConcreteFBMarketingIncrementalStream(api=api, account_ids=["123", "456", "789"], start_date=None, end_date=None)
+
+
+class TestFBMarketingIncrementalStreamSliceAndState:
+    def test_stream_slices_multiple_accounts_with_state(self, incremental_class_instance):
+        stream_state = {
+            "123": {"state_key": "state_value"},
+            "456": {"state_key": "another_state_value"},
+        }
+        expected_slices = [
+            {"account_id": "123", "stream_state": {"state_key": "state_value"}},
+            {"account_id": "456", "stream_state": {"state_key": "another_state_value"}},
+            {"account_id": "789", "stream_state": {}},
+        ]
+        assert list(incremental_class_instance.stream_slices(stream_state)) == expected_slices
+
+    def test_stream_slices_multiple_accounts_empty_state(self, incremental_class_instance):
+        expected_slices = [
+            {"account_id": "123", "stream_state": {}},
+            {"account_id": "456", "stream_state": {}},
+            {"account_id": "789", "stream_state": {}},
+        ]
+        assert list(incremental_class_instance.stream_slices()) == expected_slices
+
+    def test_stream_slices_single_account_with_state(self, incremental_class_instance):
+        incremental_class_instance._account_ids = ["123"]
+        stream_state = {"state_key": "state_value"}
+        expected_slices = [{"account_id": "123", "stream_state": stream_state}]
+        assert list(incremental_class_instance.stream_slices(stream_state)) == expected_slices
+
+    def test_stream_slices_single_account_empty_state(self, incremental_class_instance):
+        incremental_class_instance._account_ids = ["123"]
+        expected_slices = [{"account_id": "123", "stream_state": None}]
+        assert list(incremental_class_instance.stream_slices()) == expected_slices
+
+    @pytest.mark.parametrize(
+        "current_stream_state, latest_record, expected_state, instance_filter_statuses",
+        [
+            # Test case 1: State date is used because fewer filters are used
+            (
+                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}, "include_deleted": True},
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
                 {
-                    "json": [
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                        {
-                            "body": json.dumps(
-                                {
-                                    "error": {
-                                        "message": "Request aborted. This could happen if a dependent request failed or the entire request timed out.",
-                                        "type": "FacebookApiException",
-                                        "code": 960,
-                                        "fbtrace_id": "AWuyQlmgct0a_n64b-D1AFQ",
-                                    }
-                                }
-                            ),
-                            "code": 500,
-                            "headers": {},
-                        },
-                        {"body": json.dumps({"name": "creative 3"}), "code": 200, "headers": {}},
-                    ],
+                    "123": {
+                        "date": "2021-01-30T00:00:00+00:00",
+                        "filter_statuses": ["ACTIVE"],
+                        "include_deleted": True,
+                    },
+                    "include_deleted": True,
                 },
+                ["ACTIVE"],
+            ),
+            # Test case 2: State date is used because filter_statuses is the same as include_deleted
+            (
+                {"123": {"date": "2021-01-30T00:00:00+00:00", "include_deleted": True}, "include_deleted": True},
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
                 {
-                    "json": [
-                        {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
-                    ],
+                    "123": {
+                        "date": "2021-01-30T00:00:00+00:00",
+                        "filter_statuses": ["ACTIVE", "PAUSED", "DELETED"],
+                        "include_deleted": True,
+                    },
+                    "include_deleted": True,
                 },
-            ]
-        )
+                ["ACTIVE", "PAUSED", "DELETED"],
+            ),
+            # Test case 3: State date is used because filter_statuses is the same as include_deleted
+            (
+                {
+                    "123": {
+                        "date": "2023-02-15T00:00:00+00:00",
+                        "include_deleted": False,
+                    }
+                },
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
+                {
+                    "123": {
+                        "date": "2023-02-15T00:00:00+00:00",
+                        "filter_statuses": [],
+                        "include_deleted": False,
+                    }
+                },
+                [],
+            ),
+            # Test case 4: State date is ignored because there are more filters in the new config
+            (
+                {
+                    "123": {
+                        "date": "2023-02-15T00:00:00+00:00",
+                        "include_deleted": False,
+                    }
+                },
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
+                {
+                    "123": {
+                        "date": "2021-01-20T00:00:00+00:00",
+                        "filter_statuses": ["ACTIVE", "PAUSED"],
+                        "include_deleted": False,
+                    }
+                },
+                ["ACTIVE", "PAUSED"],
+            ),
+            # Test case 5: Mismatching filter_statuses with include_deleted false
+            (
+                {
+                    "123": {
+                        "date": "2023-02-15T00:00:00+00:00",
+                        "filter_statuses": ["PAUSED"],
+                        "include_deleted": False,
+                    }
+                },
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
+                {
+                    "123": {
+                        "date": "2021-01-20T00:00:00+00:00",
+                        "filter_statuses": ["ACTIVE"],
+                        "include_deleted": False,
+                    }
+                },
+                ["ACTIVE"],
+            ),
+            # Test case 6: No filter_statuses or include_deleted in state, instance has filter_statuses
+            (
+                {"123": {"date": "2023-02-15T00:00:00+00:00"}},
+                {"account_id": "123", "date": "2021-01-20T00:00:00+00:00"},
+                {
+                    "123": {
+                        "date": "2021-01-20T00:00:00+00:00",
+                        "filter_statuses": ["ACTIVE"],
+                    }
+                },
+                ["ACTIVE"],
+            ),
+        ],
+    )
+    def test_get_updated_state(
+        self,
+        incremental_class_instance,
+        current_stream_state,
+        latest_record,
+        expected_state,
+        instance_filter_statuses,
+    ):
+        # Set the instance's filter_statuses
+        incremental_class_instance._filter_statuses = instance_filter_statuses
 
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(3)]
-        result = list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests) + 1
-        assert batch.execute.call_count == 2
-        assert len(result) == len(requests)
+        new_state = incremental_class_instance.get_updated_state(current_stream_state, latest_record)
+        assert new_state == expected_state

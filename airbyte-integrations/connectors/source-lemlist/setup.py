@@ -6,19 +6,40 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1",
 ]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2.5", "pytest-mock~=3.6.1", "responses~=0.14.0"]
+TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest~=6.2",
+    "pytest-mock~=3.6.1",
+]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-lemlist=source_lemlist.run:run",
+        ],
+    },
     name="source_lemlist",
     description="Source implementation for Lemlist.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

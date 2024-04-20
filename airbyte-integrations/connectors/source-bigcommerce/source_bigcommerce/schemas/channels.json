@@ -36,6 +36,9 @@
     },
     "icon_url": {
       "type": ["null", "string"]
+    },
+    "is_enabled": {
+      "type": ["null", "boolean"]
     }
   }
 }
