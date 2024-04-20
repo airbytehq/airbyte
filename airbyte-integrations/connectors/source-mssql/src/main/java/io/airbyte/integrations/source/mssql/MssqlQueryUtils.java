@@ -221,15 +221,12 @@ public class MssqlQueryUtils {
             cursorBasedStatus.setCursor(result.get(cursorField).asText());
             cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
           }
-
+          cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+          cursorBasedStatus.setVersion(2L);
+          cursorBasedStatus.setStreamName(name);
+          cursorBasedStatus.setStreamNamespace(namespace);
+          cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
         });
-
-        cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
-        cursorBasedStatus.setVersion(2L);
-        cursorBasedStatus.setStreamName(name);
-        cursorBasedStatus.setStreamNamespace(namespace);
-
-        cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
     });
 
     return cursorBasedStatusMap;
