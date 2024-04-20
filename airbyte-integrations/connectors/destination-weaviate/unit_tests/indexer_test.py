@@ -72,6 +72,32 @@ class TestWeaviateIndexer(unittest.TestCase):
         )
 
     @patch("destination_weaviate.indexer.weaviate.Client")
+    def test_pre_sync_that_creates_class_with_multi_tenancy_enabled(self, MockClient):
+        mock_client = Mock()
+        self.config.tenant_id = "test_tenant"
+        mock_client.schema.get_class_tenants.return_value = []
+        mock_client.schema.get.return_value = {"classes": []}
+        MockClient.return_value = mock_client
+        self.indexer.pre_sync(self.mock_catalog)
+        mock_client.schema.create_class.assert_called_with(
+            {
+                "class": "Test",
+                "multiTenancyConfig": {"enabled": True},
+                "vectorizer": "none",
+                "properties": [
+                    {
+                        "name": "_ab_record_id",
+                        "dataType": ["text"],
+                        "description": "Record ID, used for bookkeeping.",
+                        "indexFilterable": True,
+                        "indexSearchable": False,
+                        "tokenization": "field",
+                    }
+                ],
+            }
+        )
+
+    @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_that_deletes(self, MockClient):
         mock_client = Mock()
         mock_client.schema.get.return_value = {
@@ -101,6 +127,19 @@ class TestWeaviateIndexer(unittest.TestCase):
         self.indexer.delete(["some_id", "some_other_id"], None, "test")
         mock_client.batch.delete_objects.assert_called_with(
             class_name="Test",
+            where={"path": ["_ab_record_id"], "operator": "ContainsAny", "valueStringArray": ["some_id", "some_other_id"]},
+        )
+
+    def test_index_deletes_by_record_id_with_tenant_id(self):
+        mock_client = Mock()
+        self.config.tenant_id = "test_tenant"
+        self.indexer.client = mock_client
+        self.indexer.has_record_id_metadata = defaultdict(None)
+        self.indexer.has_record_id_metadata["Test"] = True
+        self.indexer.delete(["some_id", "some_other_id"], None, "test")
+        mock_client.batch.delete_objects.assert_called_with(
+            class_name="Test",
+            tenant="test_tenant",
             where={"path": ["_ab_record_id"], "operator": "ContainsAny", "valueStringArray": ["some_id", "some_other_id"]},
         )
 
@@ -199,12 +238,40 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_chunk = Chunk(
             page_content="some_content",
             embedding=[1, 2, 3],
-            metadata={"someField": "some_value", "complex": {"a": [1, 2, 3]}, "UPPERCASE_NAME": "abc", "id": 12, "empty_list": []},
+            metadata={
+                "someField": "some_value",
+                "complex": {"a": [1, 2, 3]},
+                "UPPERCASE_NAME": "abc",
+                "id": 12,
+                "empty_list": [],
+                "referral Agency Name": "test1",
+                "123StartsWithNumber": "test2",
+                "special&*chars": "test3",
+                "with spaces": "test4",
+                "": "test5",
+                "_startsWithUnderscore": "test6",
+                "multiple  spaces": "test7",
+                "SpecialCharacters!@#": "test8",
+            },
             record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0),
         )
         self.indexer.index([mock_chunk], None, "test")
         mock_client.batch.add_data_object.assert_called_with(
-            {"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content", "raw_id": 12},
+            {
+                "someField": "some_value",
+                "complex": '{"a": [1, 2, 3]}',
+                "uPPERCASE_NAME": "abc",
+                "text": "some_content",
+                "raw_id": 12,
+                "referral_Agency_Name": "test1",
+                "_123StartsWithNumber": "test2",
+                "specialchars": "test3",
+                "with_spaces": "test4",
+                "_": "test5",
+                "_startsWithUnderscore": "test6",
+                "multiple__spaces": "test7",
+                "specialCharacters": "test8",
+            },
             "Test",
             ANY,
             vector=[1, 2, 3],

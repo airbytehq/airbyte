@@ -199,5 +199,42 @@
       "stream_descriptor": { "name": "workflows" },
       "stream_state": { "updatedAt": 7945393076000 }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "contacts_property_history" },
+      "stream_state": { "updatedAt": 7945393076000 }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "companies_property_history" },
+      "stream_state": { "updatedAt": 7945393076000 }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "deals_property_history" },
+      "stream_state": { "updatedAt": 7945393076000 }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "contacts_web_analytics" },
+      "stream_state": {
+        "151": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "251": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "401": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "601": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "651": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "2501": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "2551": { "occurredAt": "2050-01-01T00:00:00Z" },
+        "2601": { "occurredAt": "2050-01-01T00:00:00Z" }
+      }
+    }
   }
 ]

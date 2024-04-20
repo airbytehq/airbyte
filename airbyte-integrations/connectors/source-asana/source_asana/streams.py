@@ -27,7 +27,6 @@ class AsanaStream(HttpStream, ABC):
     # Asana pagination could be from 1 to 100.
     page_size = 100
     raise_on_http_errors = True
-    test_mode = False
 
     @property
     def AsanaStreamType(self) -> Type:

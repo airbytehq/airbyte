@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.CONNECTION_OPTIONS_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.Database;
@@ -13,95 +15,33 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.ContainerModifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
-
-// todo (cgardens) - likely some of this could be further de-duplicated with
-// PostgresDestinationAcceptanceTest.
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
-public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public abstract class SshPostgresDestinationAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
 
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
-  private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
-  private static final Network network = Network.newNetwork();
-  private static PostgreSQLContainer<?> db;
-  private final SshBastionContainer bastion = new SshBastionContainer();
+  private PostgresTestDatabase testdb;
+  private SshBastionContainer bastion;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
-  protected String getImageName() {
-    return "airbyte/destination-postgres:dev";
-  }
-
-  @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);
-  }
-
-  @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
-    final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password");
-    return clone;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-      throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected TestDataComparator getTestDataComparator() {
-    return new PostgresTestDataComparator();
-  }
-
-  @Override
-  protected boolean supportBasicDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportArrayDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportObjectDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName, namespace);
+    // Here we use inner address because the tunnel is created inside the connector's container.
+    return testdb.integrationTestConfigBuilder()
+        .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), true))
+        .with("schema", "public")
+        .withoutSsl()
+        .build();
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
@@ -117,8 +57,16 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
             SQLDialect.POSTGRES));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    final JsonNode config = getConfig();
+  @Override
+  protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+    // Here we DO NOT use the inner address because the tunnel is created in the integration test's java
+    // process.
+    final JsonNode config = testdb.integrationTestConfigBuilder()
+        .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), false))
+        .with("schema", "public")
+        .withoutSsl()
+        .build();
+    ((ObjectNode) config).putObject(CONNECTION_OPTIONS_KEY);
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
@@ -135,42 +83,20 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
-
-    startTestContainers();
-    // do everything in a randomly generated schema so that we can wipe it out at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
-          TEST_SCHEMAS.add(schemaName);
-        });
-  }
-
-  private void startTestContainers() {
-    bastion.initAndStartBastion(network);
-    initAndStartJdbcContainer();
-  }
-
-  private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(network);
-    db.start();
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_13, ContainerModifier.NETWORK);
+    bastion = new SshBastionContainer();
+    bastion.initAndStartBastion(testdb.getContainer().getNetwork());
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    // blow away the test schema at the end.
-    SshTunnel.sshWrap(
-        getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
-        });
+    testdb.close();
+    bastion.stopAndClose();
+  }
 
-    bastion.stopAndCloseContainers(db);
+  @Override
+  protected PostgresTestDatabase getTestDb() {
+    return testdb;
   }
 
 }

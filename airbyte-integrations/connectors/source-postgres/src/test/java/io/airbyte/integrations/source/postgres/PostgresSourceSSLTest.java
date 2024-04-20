@@ -17,9 +17,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -77,20 +78,16 @@ class PostgresSourceSSLTest {
 
   @BeforeEach
   void setup() throws Exception {
-    testdb = PostgresTestDatabase.make("marcosmarxm/postgres-ssl:dev", "withSSL");
-    testdb.database.query(ctx -> {
-      ctx.fetch(
-          "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-      ctx.fetch(
-          "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL)
+        .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);")
+        .with("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with(
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));")
+        .with(
+            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
   }
 
   @AfterEach
@@ -99,16 +96,10 @@ class PostgresSourceSSLTest {
   }
 
   private JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
-        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, testdb.dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
-        .put(JdbcUtils.USERNAME_KEY, testdb.userName)
-        .put(JdbcUtils.PASSWORD_KEY, testdb.password)
-        .put(JdbcUtils.SSL_KEY, true)
-        .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
-        .build());
+    return testdb.testConfigBuilder()
+        .withSchemas("public")
+        .withSsl(ImmutableMap.builder().put("mode", "require").build())
+        .build();
   }
 
   @Test

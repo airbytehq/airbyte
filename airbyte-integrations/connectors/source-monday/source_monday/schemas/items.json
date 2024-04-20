@@ -2,6 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "id": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
     "assets": {
       "type": ["null", "array"],
       "items": {
@@ -18,7 +20,7 @@
           "uploaded_by": {
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "integer"] }
+              "id": { "type": ["null", "string"] }
             }
           },
           "url": { "type": ["null", "string"] },
@@ -38,13 +40,11 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "additional_info": { "type": ["null", "string"] },
-          "description": { "type": ["null", "string"] },
           "id": { "type": ["null", "string"] },
           "text": { "type": ["null", "string"] },
-          "title": { "type": ["null", "string"] },
           "type": { "type": ["null", "string"] },
-          "value": { "type": ["null", "string"] }
+          "value": { "type": ["null", "string"] },
+          "display_value": { "type": ["null", "string"] }
         }
       }
     },
@@ -56,8 +56,6 @@
         "id": { "type": ["null", "string"] }
       }
     },
-    "id": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
     "parent_item": {
       "type": ["null", "object"],
       "properties": {
@@ -71,7 +69,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },

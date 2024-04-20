@@ -42,7 +42,7 @@ class Indexer(ABC):
         """
         Index a list of document chunks.
 
-        This method should be used to index the documents in the destination.
+        This method should be used to index the documents in the destination. If page_content is None, the document should be indexed without the raw text.
         All chunks belong to the stream and namespace specified in the parameters.
         """
         pass

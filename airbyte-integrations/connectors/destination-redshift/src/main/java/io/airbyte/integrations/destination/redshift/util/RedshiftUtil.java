@@ -7,10 +7,13 @@ package io.airbyte.integrations.destination.redshift.util;
 import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Helper class for Destination Redshift connector.
  */
+@Log4j2
 public class RedshiftUtil {
 
   private RedshiftUtil() {}
@@ -34,6 +37,11 @@ public class RedshiftUtil {
 
   private static boolean isNullOrEmpty(final JsonNode jsonNode) {
     return null == jsonNode || "".equals(jsonNode.asText());
+  }
+
+  public static void checkSvvTableAccess(final JdbcDatabase database) throws Exception {
+    log.info("checking SVV_TABLE_INFO permissions");
+    database.queryJsons("SELECT 1 FROM SVV_TABLE_INFO LIMIT 1;");
   }
 
 }

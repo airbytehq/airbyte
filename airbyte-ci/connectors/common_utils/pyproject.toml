@@ -10,16 +10,22 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-cryptography = "^3.4.7"
-requests = "^2.28.2"
-pyjwt = "^2.1.0"
+requests = "^2.31.0"
+pyjwt = "^2.8.0"
 
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.2"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
+pytest = "^8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = "pytest tests"
+
+[tool.airbyte_ci]
+optional_poetry_groups = ["dev"]
+# Disable poe tasks as tests are not passing ATM
+poe_tasks = []

@@ -16,19 +16,31 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.PropertyNameSimplifyingDataTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySQLDestination extends AbstractJdbcDestination implements Destination {
+public class MySQLDestination extends AbstractJdbcDestination<MinimumDestinationState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
@@ -127,11 +139,38 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    throw new UnsupportedOperationException("mysql does not yet support DV2");
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new PropertyNameSimplifyingDataTransformer();
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = MySQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestination.class);
+  }
+
+  @NotNull
+  @Override
+  protected JdbcDestinationHandler<MinimumDestinationState> getDestinationHandler(@NotNull String databaseName,
+                                                                                  @NotNull JdbcDatabase database,
+                                                                                  @NotNull String rawTableSchema) {
+    throw new UnsupportedOperationException("Mysql does not yet support DV2");
+  }
+
+  @NotNull
+  @Override
+  protected List<Migration<MinimumDestinationState>> getMigrations(@NotNull JdbcDatabase database,
+                                                                   @NotNull String databaseName,
+                                                                   @NotNull SqlGenerator sqlGenerator,
+                                                                   @NotNull DestinationHandler<MinimumDestinationState> destinationHandler) {
+    return Collections.emptyList();
   }
 
 }

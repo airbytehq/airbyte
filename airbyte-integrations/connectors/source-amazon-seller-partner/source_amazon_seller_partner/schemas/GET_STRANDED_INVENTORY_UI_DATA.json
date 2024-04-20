@@ -5,8 +5,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "primary-action": { "type": ["null", "string"] },
-    "date-stranded": { "type": ["null", "string"] },
-    "Date-to-take-auto-removal": { "type": ["null", "string"] },
+    "date-stranded": { "type": ["null", "string"], "format": "date-time" },
+    "Date-to-take-auto-removal": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "status-primary": { "type": ["null", "string"] },
     "status-secondary": { "type": ["null", "string"] },
     "error-message": { "type": ["null", "string"] },
@@ -21,6 +24,7 @@
     "your-price": { "type": ["null", "string"] },
     "unfulfillable-qty": { "type": ["null", "string"] },
     "reserved-quantity": { "type": ["null", "string"] },
-    "inbound-shipped-qty": { "type": ["null", "string"] }
+    "inbound-shipped-qty": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

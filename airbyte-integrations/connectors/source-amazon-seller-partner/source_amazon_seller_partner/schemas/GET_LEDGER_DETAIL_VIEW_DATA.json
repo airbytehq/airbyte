@@ -17,6 +17,8 @@
     "Reason": { "type": ["null", "string"] },
     "Country": { "type": ["null", "string"] },
     "Reconciled Quantity": { "type": ["null", "string"] },
-    "Unreconciled Quantity": { "type": ["null", "string"] }
+    "Unreconciled Quantity": { "type": ["null", "string"] },
+    "Date and Time": { "type": ["null", "string"], "format": "date-time" },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

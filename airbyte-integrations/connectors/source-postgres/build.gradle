@@ -1,7 +1,6 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
     id "org.jsonschema2pojo" version "1.2.1"
 }
@@ -13,48 +12,24 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.8'
-    features = ['db-sources']
+    cdkVersionRequired = '0.29.13'
+    features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-// Add a configuration for our migrations tasks defined below to encapsulate their dependencies
-configurations {
-    migrations.extendsFrom implementation
-}
-
-configurations.all {
-    resolutionStrategy {
-        force 'org.jooq:jooq:3.13.4'
-    }
-}
-
 dependencies {
-    testImplementation libs.jooq
-    testImplementation libs.hikaricp
+    implementation 'commons-codec:commons-codec:1.16.0'
+    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    implementation 'io.debezium:debezium-connector-postgres:2.4.0.Final'
 
-    migrations libs.testcontainers.postgresql
-    migrations sourceSets.main.output
-
-    // Lombok
-    implementation libs.lombok
-    annotationProcessor libs.lombok
-
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation libs.postgresql
-    implementation libs.bundles.datadog
+    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation libs.testcontainers.jdbc
-    testImplementation libs.testcontainers.postgresql
-    testImplementation libs.junit.jupiter.system.stubs
 }
 
 jsonSchema2Pojo {

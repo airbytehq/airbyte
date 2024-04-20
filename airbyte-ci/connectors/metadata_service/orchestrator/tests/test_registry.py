@@ -220,7 +220,7 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
 
     result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert "definitionId" not in result
-    assert result[expected_id_field] == "test-id"
+    assert "test-id" == result[expected_id_field]
 
 
 def test_tombstone_custom_public_set():

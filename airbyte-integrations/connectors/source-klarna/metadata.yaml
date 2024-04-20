@@ -5,6 +5,10 @@ data:
       - api.playground.klarna.com
       - api-${config.region}.klarna.com
       - api-${config.region}.playground.klarna.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-klarna
   registries:
     oss:
       enabled: true
@@ -24,7 +28,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

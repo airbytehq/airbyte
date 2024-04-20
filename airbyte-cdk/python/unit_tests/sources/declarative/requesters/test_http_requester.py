@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest as pytest
 import requests
+import requests_cache
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -19,12 +20,48 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from requests import PreparedRequest
+from requests_cache import CachedResponse
+
+
+@pytest.fixture
+def http_requester_factory():
+    def factory(
+        name: str = "name",
+        url_base: str = "https://test_base_url.com",
+        path: str = "/",
+        http_method: str = HttpMethod.GET,
+        request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None,
+        authenticator: Optional[DeclarativeAuthenticator] = None,
+        error_handler: Optional[ErrorHandler] = None,
+        config: Optional[Config] = None,
+        parameters: Mapping[str, Any] = None,
+        disable_retries: bool = False,
+        message_repository: Optional[MessageRepository] = None,
+        use_cache: bool = False,
+    ) -> HttpRequester:
+        return HttpRequester(
+            name=name,
+            url_base=url_base,
+            path=path,
+            config=config or {},
+            parameters=parameters or {},
+            authenticator=authenticator,
+            http_method=http_method,
+            request_options_provider=request_options_provider,
+            error_handler=error_handler,
+            disable_retries=disable_retries,
+            message_repository=message_repository or MagicMock(),
+            use_cache=use_cache,
+        )
+
+    return factory
 
 
 def test_http_requester():
-    http_method = "GET"
+    http_method = HttpMethod.GET
 
     request_options_provider = MagicMock()
     request_params = {"param": "value"}
@@ -69,7 +106,7 @@ def test_http_requester():
     assert requester.get_url_base() == "https://airbyte.io/"
     assert requester.get_path(stream_state={}, stream_slice=stream_slice, next_page_token={}) == "v1/1234"
     assert requester.get_authenticator() == authenticator
-    assert requester.get_method() == HttpMethod.GET
+    assert requester.get_method() == http_method
     assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
@@ -343,6 +380,13 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             id="test-request-parameter-comma-separated-strings",
         ),
         pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
+            # {'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
+            "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
+            id="test-request-parameter-from-config-object",
+        ),
+        pytest.param(
             {"k": "[1,2]"},
             {},
             "k=1&k=2",
@@ -353,13 +397,6 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             {},
             "k=a&k=b",
             id="test-request-parameter-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            # {'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
-            "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
-            id="test-request-parameter-from-config-object",
         ),
         pytest.param(
             {"k": '{{ config["k"] }}'},
@@ -376,15 +413,15 @@ def test_send_request_params(provider_params, param_params, authenticator_params
         pytest.param(
             {"k": '{{ config["k"] }}'},
             {"k": ["a,b"]},
-            "k=a%2Cb",  # k=a,b
+            "k=a%2Cb",
             id="test-request-parameter-from-config-comma-separated-strings",
         ),
         pytest.param(
             {'["a", "b"]': '{{ config["k"] }}'},
             {"k": [1, 2]},
             "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
-            id="test-key-with-list-is-not-interpolated",
-        ),
+            id="test-key-with-list-to-be-interpolated",
+        )
     ],
 )
 def test_request_param_interpolation(request_parameters, config, expected_query_params):
@@ -400,6 +437,42 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     assert sent_request.url.split("?", 1)[-1] == expected_query_params
+
+
+@pytest.mark.parametrize(
+    "request_parameters, config, invalid_value_for_key",
+    [
+        pytest.param(
+            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
+            {},
+            "k",
+            id="test-request-parameter-object-of-the-updated-info",
+        ),
+        pytest.param(
+            {"a": '{{ config["k"] }}', "b": {"end_timestamp": 1699109113}},
+            {"k": 1699108113},
+            "b",
+            id="test-key-with-multiple-keys",
+        ),
+    ],
+)
+def test_request_param_interpolation_with_incorrect_values(request_parameters, config, invalid_value_for_key):
+    options_provider = InterpolatedRequestOptionsProvider(
+        config=config,
+        request_parameters=request_parameters,
+        request_body_data={},
+        request_headers={},
+        parameters={},
+    )
+    requester = create_requester()
+    requester._request_options_provider = options_provider
+    with pytest.raises(ValueError) as error:
+        requester.send_request()
+
+    assert (
+        error.value.args[0]
+        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
+    )
 
 
 @pytest.mark.parametrize(
@@ -686,14 +759,19 @@ def test_raise_on_http_errors(mocker, error):
         ({"error": {"message": "something broke"}}, "something broke"),
         ({"error": "err-001", "message": "something broke"}, "something broke"),
         ({"failure": {"message": "something broke"}}, "something broke"),
+        ({"detail": {"message": "something broke"}}, "something broke"),
         ({"error": {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}}, "one, two, three"),
         ({"errors": ["one", "two", "three"]}, "one, two, three"),
+        ({"errors": [None, {}, "third error", 9002.09]}, "third error"),
         ({"messages": ["one", "two", "three"]}, "one, two, three"),
         ({"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
         ({"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
         ({"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]}, "one, two, three"),
         ({"failures": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"details": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"details": ["one", 10087, True]}, "one"),
         (["one", "two", "three"], "one, two, three"),
+        ({"detail": False}, None),
         ([{"error": "one"}, {"error": "two"}, {"error": "three"}], "one, two, three"),
         ({"error": True}, None),
         ({"something_else": "hi"}, None),
@@ -864,3 +942,33 @@ def test_connection_pool():
         disable_retries=True,
     )
     assert requester._session.adapters["https://"]._pool_connections == 20
+
+
+def test_caching_filename(http_requester_factory):
+    http_requester = http_requester_factory()
+    assert http_requester.cache_filename == f"{http_requester.name}.sqlite"
+
+
+def test_caching_session_with_enable_use_cache(http_requester_factory):
+    http_requester = http_requester_factory(use_cache=True)
+    assert isinstance(http_requester._session, requests_cache.CachedSession)
+
+
+def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
+    http_requester = http_requester_factory(use_cache=True)
+
+    requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
+    http_requester.clear_cache()
+
+    response = http_requester.send_request()
+
+    assert requests_mock.called
+    assert isinstance(response, requests.Response)
+
+    requests_mock.reset_mock()
+    new_response = http_requester.send_request()
+
+    assert not requests_mock.called
+    assert isinstance(new_response, CachedResponse)
+
+    assert len(response.json()) == len(new_response.json())

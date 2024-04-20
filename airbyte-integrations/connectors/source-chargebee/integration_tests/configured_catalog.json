@@ -15,44 +15,6 @@
     },
     {
       "stream": {
-        "name": "event",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["occurred_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["occurred_at"]
-    },
-    {
-      "stream": {
-        "name": "customer",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
-    },
-    {
-      "stream": {
-        "name": "contact",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "invoice",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -107,13 +69,11 @@
       "stream": {
         "name": "attached_item",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -147,7 +107,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
+        "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
@@ -160,21 +120,8 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
-    },
-    {
-      "stream": {
-        "name": "coupon",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["id"]],
+        "default_cursor_field": ["updated_at"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -212,8 +159,8 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["id"]],
+        "default_cursor_field": ["updated_at"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -236,13 +183,63 @@
       "stream": {
         "name": "quote_line_group",
         "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "comment",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["created_at"]
+    },
+    {
+      "stream": {
+        "name": "item_family",
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "differential_price",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "site_migration_detail",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["migrated_at"],
+        "source_defined_primary_key": [["entity_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["migrated_at"]
     }
   ]
 }

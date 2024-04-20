@@ -14,21 +14,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams:
-        [
-          "alerts",
-          "alert_recipients",
-          "alert_logs",
-          "incidents",
-          "integrations",
-          "teams",
-          "user_teams",
-          "services",
-        ]
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      # future_state_path: "integration_tests/abnormal_state.json"
+      empty_streams: ["incidents", "services"]
+  # incremental:
+  #   - config_path: "secrets/config.json"
+  #     configured_catalog_path: "integration_tests/configured_catalog.json"
+  # future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

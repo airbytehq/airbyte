@@ -9,7 +9,8 @@
     },
     "date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "follower_count": {
       "type": ["null", "integer"]
@@ -49,6 +50,9 @@
     },
     "online_followers": {
       "type": ["null", "object"]
+    },
+    "email_contacts": {
+      "type": ["null", "integer"]
     }
   }
 }

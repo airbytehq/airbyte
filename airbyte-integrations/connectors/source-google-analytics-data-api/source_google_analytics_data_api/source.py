@@ -22,7 +22,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.utils import DATE_FORMAT, WRONG_DIMENSIONS, WRONG_JSON_SYNTAX, WRONG_METRICS
+from source_google_analytics_data_api.utils import (
+    DATE_FORMAT,
+    WRONG_CUSTOM_REPORT_CONFIG,
+    WRONG_DIMENSIONS,
+    WRONG_JSON_SYNTAX,
+    WRONG_METRICS,
+)
 
 from .api_quota import GoogleAnalyticsApiQuota
 from .utils import (
@@ -37,8 +43,8 @@ from .utils import (
     transform_json,
 )
 
-# set the quota handler globaly since limitations are the same for all streams
-# the initial values should be saved once and tracked for each stream, inclusivelly.
+# set the quota handler globally since limitations are the same for all streams
+# the initial values should be saved once and tracked for each stream, inclusively.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 LOOKBACK_WINDOW = datetime.timedelta(days=2)
@@ -157,6 +163,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
             metric_name, metric_value = metric_data
             python_type = metrics_type_to_python(metric_types[metric_name])
+
+            # Google Analytics sometimes returns float for integer metrics.
+            # So this is a workaround for this issue: https://github.com/airbytehq/oncall/issues/4130
+            if python_type == int:
+                return metric_name, round(float(metric_value))
             return metric_name, python_type(metric_value)
 
         return dict(map(_metric_type_to_python, zip(metrics, [v["value"] for v in row["metricValues"]])))
@@ -202,6 +213,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             }
         )
 
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in schema["properties"]:
+                if schema_field.startswith("conversions:"):
+                    schema["properties"][schema_field]["type"] = ["null", "float"]
+
         return schema
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -240,6 +257,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in metrics_type_map:
+                if schema_field.startswith("conversions:"):
+                    metrics_type_map[schema_field] = "TYPE_FLOAT"
+
         for row in r.get("rows", []):
             record = {
                 "property_id": self.config["property_id"],
@@ -260,7 +283,15 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 record["endDate"] = stream_slice["endDate"]
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        if not self.cursor_field:
+            # Some implementations of the GoogleAnalyticsDataApiBaseStream might not have a cursor because it's
+            # based on the `dimensions` config setting. This results in a full_refresh only stream that implements
+            # get_updated_state(), but does not define a cursor. For this scenario, there is no state value to extract
+            return {}
+
         updated_state = (
             utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
             if self.cursor_field == "date"
@@ -292,6 +323,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
+            "keepEmptyRows": self.config.get("keep_empty_rows", False),
         }
 
         dimension_filter = self.config.get("dimensionFilter")
@@ -519,8 +551,14 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
                 report_stream = self.instantiate_report_class(report, False, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
-                stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
-                next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+                try:
+                    stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+                    next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+                except HTTPError as e:
+                    error_response = ""
+                    if e.response.status_code == HTTPStatus.BAD_REQUEST:
+                        error_response = e.response.json().get("error", {}).get("message", "")
+                    return False, WRONG_CUSTOM_REPORT_CONFIG.format(report=report["name"], error_response=error_response)
 
             return True, None
 
@@ -545,7 +583,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(
         report: dict, add_name_suffix: bool, config: Mapping[str, Any], **extra_kwargs
     ) -> GoogleAnalyticsDataApiBaseStream:
-        cohort_spec = report.get("cohortSpec")
+        cohort_spec = report.get("cohortSpec", {})
         pivots = report.get("pivots")
         stream_config = {
             **config,
@@ -558,7 +596,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if pivots:
             stream_config["pivots"] = pivots
             report_class_tuple = (PivotReport,)
-        if cohort_spec:
+        if cohort_spec.pop("enabled", "") == "true":
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
         name = report["name"]

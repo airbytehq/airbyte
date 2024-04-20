@@ -12,7 +12,8 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "CampaignName": {
       "type": ["null", "string"]
@@ -81,7 +82,7 @@
       "type": ["null", "number"]
     },
     "CostPerConversion": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "Language": {
       "type": ["null", "string"]

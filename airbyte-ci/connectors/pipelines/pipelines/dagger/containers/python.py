@@ -6,7 +6,6 @@ from dagger import CacheSharingMode, CacheVolume, Client, Container
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.consts import (
     CONNECTOR_TESTING_REQUIREMENTS,
-    LICENSE_SHORT_FILE_PATH,
     PIP_CACHE_PATH,
     PIP_CACHE_VOLUME_NAME,
     POETRY_CACHE_PATH,
@@ -61,12 +60,9 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     """
     python_environment: Container = with_python_base(context)
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
 
-    return (
-        python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
-        .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
-        .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
+    return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
+        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
     )
 
 

@@ -2,8 +2,8 @@
 
 The following technologies are required to build Airbyte locally.
 
-1. [`Java 17`](https://jdk.java.net/archive/)
-2. `Node 16`
+1. [`Java 21`](https://jdk.java.net/archive/)
+2. `Node 20.`
 3. `Python 3.9`
 4. `Docker`
 5. `Jq`
@@ -156,35 +156,7 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-To format an individual connector in python, run the following command in your local `airbyte` repository:
-
-```
- ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
-```
-
-For instance:
-
-```
-./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
-```
-
-To format connectors in java, run `./gradlew format`
-
-### Connector Infrastructure
-
-Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run the following command in your local `airbyte` repository:
-
-```bash
-SUB_BUILD=CONNECTORS_BASE ./gradlew format
-```
-
-Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
-
-```python
-"""
-[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
-"""
-```
+To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 
 ### Develop on `airbyte-webapp`
 
@@ -204,11 +176,10 @@ cd airbyte-webapp
 nvm install
 ```
 
-- Install the `pnpm` package manager in the required version:
+- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
 
 ```bash
-# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
-npm install -g pnpm@<version>
+corepack enable && corepack install
 ```
 
 - Start up the react app.

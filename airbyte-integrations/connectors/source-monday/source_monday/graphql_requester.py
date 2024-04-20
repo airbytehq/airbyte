@@ -79,18 +79,59 @@ class MondayGraphqlRequester(HttpRequester):
         arguments = f"({arguments})" if arguments else ""
         fields = ",".join(fields)
 
-        return f"{object_name}{arguments}{{{fields}}}"
+        # Essentially, we construct a query based on schema properties; however, some fields in the schema are conditional.
+        # These conditional fields can be obtained by defining them as inline fragments (The docs: https://spec.graphql.org/October2021/#sec-Inline-Fragments).
+        # This is an example of a query built for the Items stream, with a `display_value` property defined as an `MirrorValue` inline fragment:
+        # query {
+        #   boards (limit:1) {
+        #     items_page (limit:20) {
+        #       <a field>,
+        #       ...,
+        #       column_values {
+        #         id,
+        #         text,
+        #         type,
+        #         value,
+        #         ... on MirrorValue {display_value}
+        #       }
+        #     }
+        #   }
+        # }
+        # When constructing a query, we replace the `display_value` field with the `... on MirrorValue {display_value}` inline fragment.
+        if object_name == "column_values" and "display_value" in fields:
+            fields = fields.replace("display_value", "... on MirrorValue{display_value}")
+
+        if object_name in ["items_page", "next_items_page"]:
+            query = f"{object_name}{arguments}{{cursor,items{{{fields}}}}}"
+        else:
+            query = f"{object_name}{arguments}{{{fields}}}"
+        return query
 
     def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
         """
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+
+        Comparison of different APIs queries:
+        2023-07:
+            boards(limit: 1)         {      items(limit: 20)                 {              field1, field2, ...  }}
+            boards(limit: 1, page:2) {      items(limit: 20, page:2)         {              field1, field2, ...  }} boards and items paginations
+        2024_01:
+            boards(limit: 1)         { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }}
+            boards(limit: 1, page:2) { items_page(limit: 20)                 {cursor, items{field1, field2, ...} }} - boards pagination
+                                  next_items_page(limit: 20, cursor: "blaa") {cursor, items{field1, field2, ...} }  - items pagination
+
         """
         nested_limit = self.nested_limit.eval(self.config)
 
-        query = self._build_query("items", field_schema, limit=nested_limit, page=sub_page)
-        arguments = self._get_object_arguments(**object_arguments)
-        return f"boards({arguments}){{{query}}}"
+        if sub_page:
+            query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
+        else:
+            query = self._build_query("items_page", field_schema, limit=nested_limit)
+            arguments = self._get_object_arguments(**object_arguments)
+            query = f"boards({arguments}){{{query}}}"
+
+        return query
 
     def _build_items_incremental_query(self, object_name: str, field_schema: dict, stream_slice: dict, **object_arguments) -> str:
         """
@@ -132,6 +173,17 @@ class MondayGraphqlRequester(HttpRequester):
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        headers = super().get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        headers["API-Version"] = "2024-01"
+        return headers
 
     def get_request_params(
         self,

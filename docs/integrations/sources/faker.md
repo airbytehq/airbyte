@@ -2,11 +2,13 @@
 
 ## Sync overview
 
-The Sample Data (Faker) source generates sample data using the python [`mimesis`](https://mimesis.name/en/master/) package.
+The Sample Data (Faker) source generates sample data using the python
+[`mimesis`](https://mimesis.name/en/master/) package.
 
 ### Output schema
 
-This source will generate an "e-commerce-like" dataset with users, products, and purchases. Here's what is produced at a Postgres destination connected to this source:
+This source will generate an "e-commerce-like" dataset with users, products, and purchases. Here's
+what is produced at a Postgres destination connected to this source:
 
 ```sql
 CREATE TABLE "public"."users" (
@@ -84,9 +86,12 @@ CREATE TABLE "public"."purchases" (
 | Incremental Sync  | Yes                  |       |
 | Namespaces        | No                   |       |
 
-Of note, if you choose `Incremental Sync`, state will be maintained between syncs, and once you hit `count` records, no new records will be added.
+Of note, if you choose `Incremental Sync`, state will be maintained between syncs, and once you hit
+`count` records, no new records will be added.
 
-You can choose a specific `seed` (integer) as an option for this connector which will guarantee that the same fake records are generated each time. Otherwise, random data will be created on each subsequent sync.
+You can choose a specific `seed` (integer) as an option for this connector which will guarantee that
+the same fake records are generated each time. Otherwise, random data will be created on each
+subsequent sync.
 
 ### Requirements
 
@@ -95,7 +100,14 @@ None!
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.1.0   | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898)                                                              | Update car prices and years                                                                                     |
+| 6.0.3   | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167)                                                              | Make 'count' an optional config parameter.                                                                      |
+| 6.0.2   | 2024-02-12 | [35174](https://github.com/airbytehq/airbyte/pull/35174)                                                              | Manage dependencies with Poetry.                                                                                |
+| 6.0.1   | 2024-02-12 | [35172](https://github.com/airbytehq/airbyte/pull/35172)                                                              | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
+| 6.0.0   | 2024-01-30 | [34644](https://github.com/airbytehq/airbyte/pull/34644)                                                              | Declare 'id' columns as primary keys.                                                                           |
+| 5.0.2   | 2024-01-17 | [34344](https://github.com/airbytehq/airbyte/pull/34344)                                                              | Ensure unique state messages                                                                                    |
+| 5.0.1   | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033)                                                              | Add standard entrypoints for usage with AirbyteLib                                                              |
 | 5.0.0   | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213)                                                              | Change all `*id` fields and `products.year` to be integer                                                       |
 | 4.0.0   | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485)                                                              | Bump to test publication                                                                                        |
 | 3.0.2   | 2023-07-07 | [27807](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |

@@ -9,6 +9,7 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
@@ -54,6 +55,10 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+
+  protected BigQuerySource() {
+    super(null);
+  }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
@@ -124,7 +129,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
-              final StandardSQLTypeName standardType = f.getType().getStandardType();
+              final StandardSQLTypeName standardType;
+              if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
+                standardType = StandardSQLTypeName.ARRAY;
+              } else
+                standardType = f.getType().getStandardType();
+
               return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))

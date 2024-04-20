@@ -5,10 +5,12 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
-  dockerImageTag: 1.1.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-metabase
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   githubIssueLabel: source-metabase
@@ -20,9 +22,21 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "The `dashboard` stream's endpoint has been updated due to the previous endpoint being deprecated by the service. The new version no longer returns the `creator` field. After upgrading, please reset the schema for the stream. Additionally, the destination may require updating to handle the updated schema."
+        upgradeDeadline: "2024-04-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["dashboards"]
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-metabase
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

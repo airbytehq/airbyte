@@ -7,8 +7,8 @@ acceptance_tests:
     tests:
       - spec_path: "integration_tests/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.1.12"
-          previous_connector_version: "1.1.11"
+          disable_for_version: "1.2.2"
+          previous_connector_version: "1.2.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -21,77 +21,23 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.1.12"
-          previous_connector_version: "1.1.11"
+          disable_for_version: "1.2.2"
+          previous_connector_version: "1.2.1"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        ignored_fields:
-          ad_account:
-            - name: age
-              bypass_reason: is changeable
-            - name: amount_spent
-              bypass_reason: is changeable
-            - name: capabilities
-              bypass_reason: is changeable
-          ad_creatives:
-            - name: thumbnail_url
-              bypass_reason: is changeable
-          images:
-            - name: permalink_url
-              bypass_reason: is changeable
-            - name: url
-              bypass_reason: is changeable
-            - name: url_128
-              bypass_reason: is changeable
-          ads_insights_demographics_dma_region:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_dma:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_age_and_gender:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_delivery_device:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_delivery_platform_and_device_platform:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_demographics_age:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_demographics_country:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_demographics_gender:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_platform_and_device:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          ads_insights_region:
-            - name: cost_per_estimated_ad_recallers
-              bypass_reason: can be missing
-          custom_audiences:
-            - name: approximate_count_lower_bound
-              bypass_reason: is changeable
-            - name: approximate_count_upper_bound
-              bypass_reason: is changeable
         empty_streams:
           - name: "ads_insights_action_product_id"
-            bypass_reason: "Data not permanent"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: "videos"
-            bypass_reason: "Cannot populate"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
         timeout_seconds: 4800
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_records: yes
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 4800
+        timeout_seconds: 6000
         future_state:
           future_state_path: "integration_tests/future_state.json"
   full_refresh:

@@ -4,17 +4,8 @@
 
 from typing import Literal, Optional, Union
 
-import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import (
-    AzureOpenAIEmbeddingConfigModel,
-    CohereEmbeddingConfigModel,
-    FakeEmbeddingConfigModel,
-    FromFieldEmbeddingConfigModel,
-    OpenAICompatibleEmbeddingConfigModel,
-    OpenAIEmbeddingConfigModel,
-    ProcessingConfigModel,
-)
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
+from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 
@@ -23,28 +14,29 @@ class UsernamePasswordAuth(BaseModel):
     username: str = Field(..., title="Username", description="Username for the Milvus instance", order=1)
     password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True, order=2)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Username/Password"
-        schema_extra = {"description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"}
+        description = "Authenticate using username and password (suitable for self-managed Milvus clusters)"
+        discriminator = "mode"
 
 
 class NoAuth(BaseModel):
     mode: Literal["no_auth"] = Field("no_auth", const=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "No auth"
-        schema_extra = {
-            "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
-        }
+        description = "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+        discriminator = "mode"
 
 
 class TokenAuth(BaseModel):
     mode: Literal["token"] = Field("token", const=True)
     token: str = Field(..., title="API Token", description="API Token for the Milvus instance", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "API Token"
-        schema_extra = {"description": "Authenticate using an API token (suitable for Zilliz Cloud)"}
+        description = "Authenticate using an API token (suitable for Zilliz Cloud)"
+        discriminator = "mode"
 
 
 class MilvusIndexingConfigModel(BaseModel):
@@ -71,38 +63,5 @@ class MilvusIndexingConfigModel(BaseModel):
         }
 
 
-class ConfigModel(BaseModel):
-    processing: ProcessingConfigModel
-    embedding: Union[
-        OpenAIEmbeddingConfigModel,
-        CohereEmbeddingConfigModel,
-        FakeEmbeddingConfigModel,
-        FromFieldEmbeddingConfigModel,
-        AzureOpenAIEmbeddingConfigModel,
-        OpenAICompatibleEmbeddingConfigModel,
-    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
+class ConfigModel(VectorDBConfigModel):
     indexing: MilvusIndexingConfigModel
-
-    class Config:
-        title = "Milvus Destination Config"
-        schema_extra = {
-            "groups": [
-                {"id": "processing", "title": "Processing"},
-                {"id": "embedding", "title": "Embedding"},
-                {"id": "indexing", "title": "Indexing"},
-            ]
-        }
-
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-        dpath.util.delete(schema, "properties/**/discriminator")
-
-    @classmethod
-    def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema()
-        schema = resolve_refs(schema)
-        cls.remove_discriminator(schema)
-        return schema

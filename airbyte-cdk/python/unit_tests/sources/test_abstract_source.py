@@ -13,6 +13,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -27,6 +28,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     Level,
     Status,
     StreamDescriptor,
@@ -40,6 +42,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 
@@ -51,15 +54,15 @@ class MockSource(AbstractSource):
         self,
         check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
         streams: List[Stream] = None,
-        per_stream: bool = True,
         message_repository: MessageRepository = None,
         exception_on_missing_stream: bool = True,
+        stop_sync_on_stream_failure: bool = False,
     ):
         self._streams = streams
         self.check_lambda = check_lambda
-        self.per_stream = per_stream
         self.exception_on_missing_stream = exception_on_missing_stream
         self._message_repository = message_repository
+        self._stop_sync_on_stream_failure = stop_sync_on_stream_failure
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         if self.check_lambda:
@@ -82,6 +85,12 @@ class MockSource(AbstractSource):
     @property
     def message_repository(self):
         return self._message_repository
+
+
+class MockSourceWithStopSyncFalseOverride(MockSource):
+    @property
+    def stop_sync_on_stream_failure(self) -> bool:
+        return False
 
 
 class StreamNoStateMethod(Stream):
@@ -111,6 +120,17 @@ class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
 
+class StreamRaisesException(Stream):
+    name = "lamentations"
+    primary_key = None
+
+    def __init__(self, exception_to_raise):
+        self._exception_to_raise = exception_to_raise
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        raise self._exception_to_raise
+
+
 MESSAGE_FROM_REPOSITORY = Mock()
 
 
@@ -124,13 +144,13 @@ def message_repository():
 def test_successful_check():
     """Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned"""
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert expected == MockSource(check_lambda=lambda: (True, None)).check(logger, {})
+    assert MockSource(check_lambda=lambda: (True, None)).check(logger, {}) == expected
 
 
 def test_failed_check():
     """Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
-    assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
+    assert MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {}) == expected
 
 
 def test_raising_check(mocker):
@@ -166,6 +186,10 @@ class MockStream(Stream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
 
 
 class MockStreamWithState(MockStream):
@@ -229,7 +253,7 @@ def test_discover(mocker):
     expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2])
     src = MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2])
 
-    assert expected == src.discover(logger, {})
+    assert src.discover(logger, {}) == expected
 
 
 def test_read_nonexistent_stream_raises_exception(mocker):
@@ -241,8 +265,11 @@ def test_read_nonexistent_stream_raises_exception(mocker):
 
     src = MockSource(streams=[s1])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
-    with pytest.raises(KeyError):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         list(src.read(logger, {}, catalog))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "not found in the source" in exc_info.value.internal_message
 
 
 def test_read_nonexistent_stream_without_raises_exception(mocker):
@@ -264,7 +291,7 @@ def test_read_stream_emits_repository_message_before_record(mocker, message_repo
     stream = MockStream(name="my_stream")
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "read_records", side_effect=[[{"a record": "a value"}, {"another record": "another value"}]])
-    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
+    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], [], []]
 
     source = MockSource(streams=[stream], message_repository=message_repository)
 
@@ -283,7 +310,7 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
 
     source = MockSource(streams=[stream], message_repository=message_repository)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AirbyteTracedException):
         messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
         assert MESSAGE_FROM_REPOSITORY in messages
 
@@ -298,14 +325,14 @@ def test_read_stream_with_error_gets_display_message(mocker):
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])
 
     # without get_error_display_message
-    with pytest.raises(RuntimeError, match="oh no!"):
+    with pytest.raises(AirbyteTracedException):
         list(source.read(logger, {}, catalog))
 
     mocker.patch.object(MockStream, "get_error_display_message", return_value="my message")
 
-    with pytest.raises(AirbyteTracedException, match="oh no!") as exc:
+    with pytest.raises(AirbyteTracedException) as exc:
         list(source.read(logger, {}, catalog))
-    assert exc.value.message == "my message"
+    assert "oh no!" in exc.value.message
 
 
 GLOBAL_EMITTED_AT = 1
@@ -335,19 +362,34 @@ def _as_stream_status(stream: str, status: AirbyteStreamStatus) -> AirbyteMessag
     return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
 
 
-def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_state: Dict[str, Any] = None):
-    if per_stream_state:
-        return AirbyteMessage(
-            type=Type.STATE,
-            state=AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
-                ),
-                data=state_data,
+def _as_state(stream_name: str = "", per_stream_state: Dict[str, Any] = None):
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
             ),
-        )
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
+        ),
+    )
+
+
+def _as_error_trace(
+    stream: str, error_message: str, internal_message: Optional[str], failure_type: Optional[FailureType], stack_trace: Optional[str]
+) -> AirbyteMessage:
+    trace_message = AirbyteTraceMessage(
+        emitted_at=datetime.datetime.now().timestamp() * 1000.0,
+        type=TraceType.ERROR,
+        error=AirbyteErrorTraceMessage(
+            stream_descriptor=StreamDescriptor(name=stream),
+            message=error_message,
+            internal_message=internal_message,
+            failure_type=failure_type,
+            stack_trace=stack_trace,
+        ),
+    )
+
+    return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
 
 
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
@@ -370,8 +412,8 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
 def test_valid_full_refresh_read_no_slices(mocker):
     """Tests that running a full refresh sync on streams which don't specify slices produces the expected AirbyteMessages"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
-    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
-    s2 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
+    s1 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
@@ -388,16 +430,18 @@ def test_valid_full_refresh_read_no_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", stream_output),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", stream_output),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
-    assert expected == messages
+    assert messages == expected
 
 
 def test_valid_full_refresh_read_with_slices(mocker):
@@ -405,11 +449,11 @@ def test_valid_full_refresh_read_with_slices(mocker):
     slices = [{"1": "1"}, {"2": "2"}]
     # When attempting to sync a slice, just output that slice as a record
     s1 = MockStream(
-        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s1",
     )
     s2 = MockStream(
-        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s2",
     )
 
@@ -429,17 +473,86 @@ def test_valid_full_refresh_read_with_slices(mocker):
             _as_stream_status("s1", AirbyteStreamStatus.STARTED),
             _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
             *_as_records("s1", slices),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             _as_stream_status("s2", AirbyteStreamStatus.STARTED),
             _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
             *_as_records("s2", slices),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
             _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
         ]
     )
 
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
-    assert expected == messages
+    assert messages == expected
+
+
+def test_full_refresh_does_not_use_incoming_state(mocker):
+    """Tests that running a full refresh sync does not use an incoming state message from the platform"""
+    slices = [{"1": "1"}, {"2": "2"}]
+    # When attempting to sync a slice, just output that slice as a record
+    s1 = MockStream(
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s1",
+    )
+    s2 = MockStream(
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s2",
+    )
+
+    def stream_slices_side_effect(stream_state: Mapping[str, Any], **kwargs) -> List[Mapping[str, Any]]:
+        if stream_state:
+            return slices[1:]
+        else:
+            return slices
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", side_effect=stream_slices_side_effect)
+
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="s1"),
+                stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
+            ),
+        ),
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="s2"),
+                stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_state_message": True}),
+            ),
+        ),
+    ]
+
+    src = MockSource(streams=[s1, s2])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", slices),
+            _as_state("s1", {"__ab_full_refresh_state_message": True}),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
+            *_as_records("s2", slices),
+            _as_state("s2", {"__ab_full_refresh_state_message": True}),
+            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state)))
+
+    assert messages == expected
 
 
 @pytest.mark.parametrize(
@@ -451,7 +564,7 @@ def test_read_full_refresh_with_slices_sends_slice_messages(mocker, slices):
     debug_logger = logging.getLogger("airbyte.debug")
     debug_logger.setLevel(logging.DEBUG)
     stream = MockStream(
-        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s1",
     )
 
@@ -504,14 +617,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_state_attribute(self, mocker, use_legacy, per_stream_enabled):
+    def test_with_state_attribute(self, mocker, use_legacy):
         """Test correct state passing for the streams that have a state attribute"""
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
         old_state = {"cursor": "old_value"}
@@ -549,7 +655,7 @@ class TestIncrementalRead:
             return_value=new_state_from_connector,
         )
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -563,17 +669,13 @@ class TestIncrementalRead:
                 _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 _as_record("s1", stream_output[0]),
                 _as_record("s1", stream_output[1]),
-                _as_state({"s1": new_state_from_connector}, "s1", new_state_from_connector)
-                if per_stream_enabled
-                else _as_state({"s1": new_state_from_connector}),
+                _as_state("s1", new_state_from_connector),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 _as_record("s2", stream_output[0]),
                 _as_record("s2", stream_output[1]),
-                _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}, "s2", new_state_from_connector)
-                if per_stream_enabled
-                else _as_state({"s1": new_state_from_connector, "s2": new_state_from_connector}),
+                _as_state("s2", new_state_from_connector),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
@@ -593,14 +695,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_checkpoint_interval(self, mocker, use_legacy, per_stream_enabled):
+    def test_with_checkpoint_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
         after reading N records within a stream.
         """
@@ -630,7 +725,7 @@ class TestIncrementalRead:
             return_value=1,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -643,24 +738,24 @@ class TestIncrementalRead:
                 _as_stream_status("s1", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 _as_record("s1", stream_output[0]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_record("s1", stream_output[1]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 _as_record("s2", stream_output[0]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_record("s2", stream_output[1]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -669,14 +764,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_no_interval(self, mocker, use_legacy, per_stream_enabled):
+    def test_with_no_interval(self, mocker, use_legacy):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs
         a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
         """
@@ -699,7 +787,7 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -712,19 +800,19 @@ class TestIncrementalRead:
                 _as_stream_status("s1", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 *_as_records("s1", stream_output),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 *_as_records("s2", stream_output),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -733,14 +821,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices(self, mocker, use_legacy, per_stream_enabled):
+    def test_with_slices(self, mocker, use_legacy):
         """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
         if use_legacy:
             input_state = defaultdict(dict)
@@ -783,7 +864,7 @@ class TestIncrementalRead:
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", return_value=slices)
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -797,26 +878,26 @@ class TestIncrementalRead:
                 _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 # stream 1 slice 1
                 *_as_records("s1", stream_output),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 # stream 1 slice 2
                 *_as_records("s1", stream_output),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 # stream 2 slice 1
                 *_as_records("s2", stream_output),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 # stream 2 slice 2
                 *_as_records("s2", stream_output),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -825,15 +906,8 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
     @pytest.mark.parametrize("slices", [pytest.param([], id="test_slices_as_list"), pytest.param(iter([]), id="test_slices_as_iterator")])
-    def test_no_slices(self, mocker, use_legacy, per_stream_enabled, slices):
+    def test_no_slices(self, mocker, use_legacy, slices):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
             1. outputs a state message after reading the entire stream
@@ -886,7 +960,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -897,17 +971,17 @@ class TestIncrementalRead:
         expected = _fix_emitted_at(
             [
                 _as_stream_status("s1", AirbyteStreamStatus.STARTED),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -916,14 +990,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(True, id="test_source_emits_state_as_per_stream_format"),
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices_and_interval(self, mocker, use_legacy, per_stream_enabled):
+    def test_with_slices_and_interval(self, mocker, use_legacy):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
@@ -976,7 +1043,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -991,32 +1058,32 @@ class TestIncrementalRead:
                 _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
                 _as_record("s1", stream_output[0]),
                 _as_record("s1", stream_output[1]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_record("s1", stream_output[2]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 # stream 1 slice 2
                 _as_record("s1", stream_output[0]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 _as_record("s1", stream_output[1]),
                 _as_record("s1", stream_output[2]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 # stream 2 slice 1
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
                 _as_record("s2", stream_output[0]),
                 _as_record("s2", stream_output[1]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_record("s2", stream_output[2]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 # stream 2 slice 2
                 _as_record("s2", stream_output[0]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 _as_record("s2", stream_output[1]),
                 _as_record("s2", stream_output[2]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
@@ -1025,13 +1092,7 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "per_stream_enabled",
-        [
-            pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
-        ],
-    )
-    def test_emit_non_records(self, mocker, per_stream_enabled):
+    def test_emit_non_records(self, mocker):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
@@ -1089,7 +1150,7 @@ class TestIncrementalRead:
             return_value=2,
         )
 
-        src = MockSource(streams=[stream_1, stream_2], per_stream=per_stream_enabled)
+        src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 _configured_stream(stream_1, SyncMode.incremental),
@@ -1105,17 +1166,17 @@ class TestIncrementalRead:
                 stream_data_to_airbyte_message("s1", stream_output[0]),
                 stream_data_to_airbyte_message("s1", stream_output[1]),
                 stream_data_to_airbyte_message("s1", stream_output[2]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 stream_data_to_airbyte_message("s1", stream_output[3]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 # stream 1 slice 2
                 stream_data_to_airbyte_message("s1", stream_output[0]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
                 stream_data_to_airbyte_message("s1", stream_output[1]),
                 stream_data_to_airbyte_message("s1", stream_output[2]),
                 stream_data_to_airbyte_message("s1", stream_output[3]),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
-                _as_state({"s1": state}, "s1", state) if per_stream_enabled else _as_state({"s1": state}),
+                _as_state("s1", state),
+                _as_state("s1", state),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 # stream 2 slice 1
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
@@ -1123,17 +1184,17 @@ class TestIncrementalRead:
                 stream_data_to_airbyte_message("s2", stream_output[0]),
                 stream_data_to_airbyte_message("s2", stream_output[1]),
                 stream_data_to_airbyte_message("s2", stream_output[2]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 stream_data_to_airbyte_message("s2", stream_output[3]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 # stream 2 slice 2
                 stream_data_to_airbyte_message("s2", stream_output[0]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
                 stream_data_to_airbyte_message("s2", stream_output[1]),
                 stream_data_to_airbyte_message("s2", stream_output[2]),
                 stream_data_to_airbyte_message("s2", stream_output[3]),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
-                _as_state({"s1": state, "s2": state}, "s2", state) if per_stream_enabled else _as_state({"s1": state, "s2": state}),
+                _as_state("s2", state),
+                _as_state("s2", state),
                 _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
             ]
         )
@@ -1146,15 +1207,243 @@ class TestIncrementalRead:
 def test_checkpoint_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
     managers_stream = StreamNoStateMethod()
-    state_manager = ConnectorStateManager({"teams": teams_stream, "managers": managers_stream}, [])
+    state_manager = ConnectorStateManager(
+        {
+            "teams": AirbyteStream(
+                name="teams", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            ),
+            "managers": AirbyteStream(
+                name="managers", namespace="", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            ),
+        },
+        [],
+    )
 
     # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
-    actual_message = teams_stream._checkpoint_state({"ignored": "state"}, state_manager, True)
-    assert actual_message == _as_state({"teams": {"updated_at": "2022-09-11"}}, "teams", {"updated_at": "2022-09-11"})
+    actual_message = teams_stream._checkpoint_state({"ignored": "state"}, state_manager)
+    assert actual_message == _as_state("teams", {"updated_at": "2022-09-11"})
 
     # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
-    actual_message = managers_stream._checkpoint_state({"updated": "expected_here"}, state_manager, True)
-    assert actual_message == _as_state(
-        {"teams": {"updated_at": "2022-09-11"}, "managers": {"updated": "expected_here"}}, "managers", {"updated": "expected_here"}
+    actual_message = managers_stream._checkpoint_state({"updated": "expected_here"}, state_manager)
+    assert actual_message == _as_state("managers", {"updated": "expected_here"})
+
+
+@pytest.mark.parametrize(
+    "exception_to_raise,expected_error_message,expected_internal_message",
+    [
+        pytest.param(
+            AirbyteTracedException(message="I was born only to crash like Icarus"),
+            "I was born only to crash like Icarus",
+            None,
+            id="test_raises_traced_exception",
+        ),
+        pytest.param(
+            Exception("Generic connector error message"),
+            "Something went wrong in the connector. See the logs for more details.",
+            "Generic connector error message",
+            id="test_raises_generic_exception",
+        ),
+    ],
+)
+def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_error_message, expected_internal_message):
+    """
+    Tests that running a sync for a connector with multiple streams will continue syncing when one stream fails
+    with an error. This source does not override the default behavior defined in the AbstractSource class.
+    """
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(exception_to_raise=exception_to_raise)
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
     )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", expected_error_message, expected_internal_message, FailureType.system_error, None),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert messages == expected
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def test_continue_sync_source_override_false(mocker):
+    """
+    Tests that running a sync for a connector explicitly overriding the default AbstractSource.stop_sync_on_stream_failure
+    property to be False which will continue syncing stream even if one encountered an exception.
+    """
+    update_secrets(["API_KEY_VALUE"])
+
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(exception_to_raise=AirbyteTracedException(message="I was born only to crash like Icarus"))
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSourceWithStopSyncFalseOverride(streams=[s1, s2, s3])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "I was born only to crash like Icarus", None, FailureType.system_error, None),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert messages == expected
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def test_sync_error_trace_messages_obfuscate_secrets(mocker):
+    """
+    Tests that exceptions emitted as trace messages by a source have secrets properly sanitized
+    """
+    update_secrets(["API_KEY_VALUE"])
+
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(
+        exception_to_raise=AirbyteTracedException(message="My api_key value API_KEY_VALUE flew too close to the sun.")
+    )
+    s3 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "My api_key value **** flew too close to the sun.", None, FailureType.system_error, None),
+            _as_stream_status("s3", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s3", AirbyteStreamStatus.RUNNING),
+            *_as_records("s3", stream_output),
+            _as_stream_status("s3", AirbyteStreamStatus.COMPLETE),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert messages == expected
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def test_continue_sync_with_failed_streams_with_override_false(mocker):
+    """
+    Tests that running a sync for a connector with multiple streams and stop_sync_on_stream_failure enabled stops
+    the sync when one stream fails with an error.
+    """
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    s1 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
+    s2 = StreamRaisesException(AirbyteTracedException(message="I was born only to crash like Icarus"))
+    s3 = MockStream([({"stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s3")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(StreamRaisesException, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1, s2, s3])
+    mocker.patch.object(MockSource, "stop_sync_on_stream_failure", return_value=True)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(s1, SyncMode.full_refresh),
+            _configured_stream(s2, SyncMode.full_refresh),
+            _configured_stream(s3, SyncMode.full_refresh),
+        ]
+    )
+
+    expected = _fix_emitted_at(
+        [
+            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+            *_as_records("s1", stream_output),
+            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+            _as_stream_status("lamentations", AirbyteStreamStatus.STARTED),
+            _as_stream_status("lamentations", AirbyteStreamStatus.INCOMPLETE),
+            _as_error_trace("lamentations", "I was born only to crash like Icarus", None, FailureType.system_error, None),
+        ]
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc:
+        messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
+        messages = _fix_emitted_at(messages)
+
+        assert messages == expected
+
+    assert "lamentations" in exc.value.message
+    assert exc.value.failure_type == FailureType.config_error
+
+
+def _remove_stack_trace(message: AirbyteMessage) -> AirbyteMessage:
+    """
+    Helper method that removes the stack trace from Airbyte trace messages to make asserting against expected records easier
+    """
+    if message.trace and message.trace.error and message.trace.error.stack_trace:
+        message.trace.error.stack_trace = None
+    return message

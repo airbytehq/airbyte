@@ -62,7 +62,7 @@ class SourceAsana(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"authenticator": self._get_authenticator(config), "test_mode": config["test_mode"]}
+        args = {"authenticator": self._get_authenticator(config), "test_mode": config.get("test_mode", False)}
         streams = [
             AttachmentsCompact(**args),
             Attachments(**args),

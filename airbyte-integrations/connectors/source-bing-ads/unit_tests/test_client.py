@@ -12,6 +12,7 @@ import pytest
 import source_bing_ads.client
 from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens
+from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
 
@@ -176,3 +177,15 @@ def test_bulk_service_manager(patched_request_tokens):
     client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
     service = client._bulk_service_manager()
     assert (service._poll_interval_in_milliseconds, service._environment) == (5000, client.environment)
+
+
+def test_get_bulk_entity(requests_mock):
+    requests_mock.post(
+        "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
+        status_code=200,
+        json={"access_token": "test", "expires_in": "9000", "refresh_token": "test"},
+    )
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    with patch.object(BulkServiceManager, "download_file", return_value="file.csv"):
+        bulk_entity = client.get_bulk_entity(data_scope=["EntityData"], download_entities=["AppInstallAds"])
+        assert bulk_entity == "file.csv"

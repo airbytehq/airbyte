@@ -37,7 +37,7 @@ class Client:
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
     retry_on_codes: Iterator[str] = ["117", "207", "4204", "109", "0"]
-    max_retries: int = 10
+    max_retries: int = 5
     # A backoff factor to apply between attempts after the second try
     # {retry_factor} * (2 ** ({number of total retries} - 1))
     retry_factor: int = 15
@@ -49,10 +49,12 @@ class Client:
     _download_timeout = 300000
     _max_download_timeout = 600000
 
+    reports_start_date = None
+
     def __init__(
         self,
         tenant_id: str,
-        reports_start_date: str,
+        reports_start_date: str = None,
         developer_token: str = None,
         client_id: str = None,
         client_secret: str = None,
@@ -67,7 +69,8 @@ class Client:
 
         self.authentication = self._get_auth_client(client_id, tenant_id, client_secret)
         self.oauth: OAuthTokens = self._get_access_token()
-        self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
+        if reports_start_date:
+            self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
     def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: str = None) -> OAuthWebAuthCodeGrant:
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390

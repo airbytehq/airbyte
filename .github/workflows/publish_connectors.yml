@@ -14,23 +14,23 @@ on:
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
-      runs-on:
-        type: string
-        default: conn-prod-xlarge-runner
-        required: true
+      airbyte_ci_binary_url:
+        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
+        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
+    runs-on: connector-publish-large
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - name: Publish modified connectors [On merge to master]
         id: publish-modified-connectors
         if: github.event_name == 'push'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -43,13 +43,15 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
 
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -62,6 +64,8 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

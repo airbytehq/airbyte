@@ -53,4 +53,4 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 - `client_secret`: The Consumer Secret that can be found when viewing your app in Salesforce
 - `refresh_token`: Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
 - `start_date`: UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. Leave blank to skip this filter
-- `is_sandbox`: Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false.
+- `is_sandbox`: Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.

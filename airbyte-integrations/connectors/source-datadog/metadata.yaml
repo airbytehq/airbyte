@@ -6,6 +6,10 @@ data:
       - us5.datadoghq.com
       - datadoghq.eu
       - ddog-gov.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-datadog
   registries:
     oss:
       enabled: true
@@ -14,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-datadog
   githubIssueLabel: source-datadog
   icon: datadog.svg
@@ -25,7 +29,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

@@ -26,12 +26,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -135,34 +134,26 @@ class PostgresSourceTest {
   private PostgresTestDatabase testdb;
 
   @BeforeEach
-  void setup() throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye");
-    testdb.database.query(ctx -> {
-      ctx.fetch(
-          "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch(
-          "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
+  void setup() {
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16)
+        .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);")
+        .with("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with(
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));")
+        .with("INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', " +
+            "'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
   }
 
   @AfterEach
-  void tearDown() throws SQLException {
+  void tearDown() {
     testdb.close();
   }
 
   public PostgresSource source() {
-    var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresSource();
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
@@ -182,28 +173,21 @@ class PostgresSourceTest {
   }
 
   private JsonNode getConfig() {
-    return getConfig(testdb.userName, testdb.password);
+    return getConfig(testdb.getUserName(), testdb.getPassword());
   }
 
   private JsonNode getConfig(final String user, final String password) {
-    return getConfig(testdb.dbName, user, password);
+    return getConfig(testdb.getDatabaseName(), user, password);
   }
 
   private JsonNode getConfig(final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
-        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, testdb.getContainer().getHost())
+        .put(JdbcUtils.PORT_KEY, testdb.getContainer().getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
         .put(JdbcUtils.USERNAME_KEY, user)
         .put(JdbcUtils.PASSWORD_KEY, password)
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-  }
-
-  private JsonNode getConfig(PostgresTestDatabase db) {
-    return Jsons.jsonNode(db.makeConfigBuilder()
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
@@ -218,7 +202,7 @@ class PostgresSourceTest {
             Field.of("\"test_column\"", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("CREATE TABLE \"\"\"test_dq_table\"\"\"(id INTEGER PRIMARY KEY,  \"\"\"test_column\"\"\" varchar);");
       ctx.fetch("INSERT INTO \"\"\"test_dq_table\"\"\" (id, \"\"\"test_column\"\"\") VALUES (1,'test1'),  (2, 'test2');");
       return null;
@@ -230,28 +214,17 @@ class PostgresSourceTest {
             null));
     setEmittedAtToNull(actualMessages);
     assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
-    testdb.database.query(ctx -> ctx.execute("DROP TABLE \"\"\"test_dq_table\"\"\";"));
+    testdb.query(ctx -> ctx.execute("DROP TABLE \"\"\"test_dq_table\"\"\";"));
   }
 
   @Test
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
-    try (final var asciiTestDB = PostgresTestDatabase.make("postgres:16-alpine", "withASCII")) {
-      asciiTestDB.database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
-        return null;
-      });
-      final var config = Jsons.jsonNode(ImmutableMap.builder()
-          .put(JdbcUtils.HOST_KEY, asciiTestDB.container.getHost())
-          .put(JdbcUtils.PORT_KEY, asciiTestDB.container.getFirstMappedPort())
-          .put(JdbcUtils.DATABASE_KEY, asciiTestDB.dbName)
-          .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-          .put(JdbcUtils.USERNAME_KEY, asciiTestDB.userName)
-          .put(JdbcUtils.PASSWORD_KEY, asciiTestDB.password)
-          .put(JdbcUtils.SSL_KEY, false)
-          .build());
+    try (final var asciiTestDB = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.ASCII)
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');")) {
+      final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
       final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
       assertEquals(UTF8_MESSAGES, actualMessages);
@@ -260,33 +233,32 @@ class PostgresSourceTest {
 
   @Test
   void testUserDoesntHasPrivilegesToSelectTable() throws Exception {
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.execute("DROP TABLE id_and_name CASCADE;");
       ctx.execute("DROP TABLE id_and_name2 CASCADE;");
       ctx.execute("DROP TABLE names CASCADE;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
       ctx.fetch("CREATE USER test_user_3 password '132';");
-      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO test_user_3;");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.getDatabaseName() + " TO test_user_3;");
       ctx.fetch("GRANT ALL ON SCHEMA public TO test_user_3");
       ctx.fetch("REVOKE ALL PRIVILEGES ON TABLE public.id_and_name FROM test_user_3");
       return null;
     });
     final JsonNode config = getConfig();
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
-            + "SELECT id_and_name_3.id,\n"
-            + "       id_and_name_3.name\n"
-            + "FROM id_and_name_3;\n"
-            + "ALTER TABLE id_and_name_3_view\n"
-            + "    owner TO test_user_3");
-        ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
+          + "SELECT id_and_name_3.id,\n"
+          + "       id_and_name_3.name\n"
+          + "FROM id_and_name_3;\n"
+          + "ALTER TABLE id_and_name_3_view\n"
+          + "    owner TO test_user_3");
+      ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
+      return null;
+    });
     final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
@@ -308,7 +280,7 @@ class PostgresSourceTest {
 
   @Test
   void testDiscoverRecursiveRolePermissions() throws Exception {
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.execute("DROP TABLE id_and_name CASCADE;");
       ctx.execute("DROP TABLE id_and_name2 CASCADE;");
       ctx.execute("DROP TABLE names CASCADE;");
@@ -331,18 +303,17 @@ class PostgresSourceTest {
       ctx.fetch("GRANT airbyte TO test_user_4;");
 
       ctx.fetch("CREATE TABLE unseen(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO test_user_4;");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.getDatabaseName() + " TO test_user_4;");
       return null;
     });
     final var config = getConfig();
 
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      return null;
+    });
     AirbyteCatalog actual = source().discover(getConfig("test_user_4", "132"));
     Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
     assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
@@ -355,7 +326,7 @@ class PostgresSourceTest {
   @Test
   void testDiscoverDifferentGrantAvailability() throws Exception {
     final JsonNode config = getConfig();
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("create table not_granted_table_name_1(column_1 integer);");
       ctx.fetch("create table not_granted_table_name_2(column_1 integer);");
       ctx.fetch("create table not_granted_table_name_3(column_1 integer);");
@@ -410,7 +381,7 @@ class PostgresSourceTest {
 
       ctx.fetch("create user new_test_user;");
       ctx.fetch("ALTER USER new_test_user WITH PASSWORD 'new_pass';");
-      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO new_test_user;");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.getDatabaseName() + " TO new_test_user;");
       ctx.fetch("GRANT ALL ON SCHEMA public TO test_user_4");
 
       ctx.fetch("grant test_role to new_test_user;");
@@ -468,7 +439,7 @@ class PostgresSourceTest {
   @Test
   void testReadIncrementalSuccess() throws Exception {
     // We want to test ordering, so we can delete the NaN entry and add a 3.
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
       return null;
@@ -504,7 +475,7 @@ class PostgresSourceTest {
     final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
     final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
 
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
       return null;
     });
@@ -583,7 +554,7 @@ class PostgresSourceTest {
 
   @Test
   public void tableWithInvalidCursorShouldThrowException() throws Exception {
-    final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(testdb.database);
+    final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(testdb.getDatabase());
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
         new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
@@ -633,7 +604,7 @@ class PostgresSourceTest {
 
   @Test
   public void tableWithNullValueCursorShouldThrowException() throws SQLException {
-    final ConfiguredAirbyteStream table = createTableWithNullValueCursor(testdb.database);
+    final ConfiguredAirbyteStream table = createTableWithNullValueCursor(testdb.getDatabase());
     final ConfiguredAirbyteCatalog catalog =
         new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
@@ -664,7 +635,7 @@ class PostgresSourceTest {
 
   @Test
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
-    final ConfiguredAirbyteStream table = createViewWithNullValueCursor(testdb.database);
+    final ConfiguredAirbyteStream table = createViewWithNullValueCursor(testdb.getDatabase());
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
     final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), catalog, null)));
@@ -723,7 +694,7 @@ class PostgresSourceTest {
   @Test
   void testParseJdbcParameters() {
     final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
-    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    final Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
     assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
     assertEquals("bar", parameters.get("foo"));
     assertEquals("quux", parameters.get("baz"));
@@ -733,7 +704,7 @@ class PostgresSourceTest {
   public void testJdbcOptionsParameter() throws Exception {
     // Populate DB.
     final JsonNode dbConfig = getConfig();
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_bytes (id INTEGER, bytes BYTEA);");
       ctx.fetch("INSERT INTO id_and_bytes (id, bytes) VALUES (1, decode('DEADBEEF', 'hex'));");
       return null;
@@ -771,7 +742,7 @@ class PostgresSourceTest {
   @DisplayName("Make sure initial incremental load is reading records in a certain order")
   void testReadIncrementalRecordOrder() throws Exception {
     // We want to test ordering, so we can delete the NaN entry
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       for (int i = 3; i < 1000; i++) {
         ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (%d, 'gohan%d', 222.1);".formatted(i, i));

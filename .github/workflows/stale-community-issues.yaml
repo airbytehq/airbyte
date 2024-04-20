@@ -1,0 +1,27 @@
+name: Stale Issue action
+on:
+  schedule:
+    - cron: "0 9 * * *"
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/stale@v5
+        with:
+          any-of-labels: "community"
+          exempt-issue-labels: "frozen"
+          days-before-issue-stale: 180
+          days-before-issue-close: 20
+          stale-issue-label: "stale"
+          operations-per-run: 100
+          ascending: true
+          stale-issue-message: >
+            At Airbyte, we seek to be clear about the project priorities and roadmap. 
+            This issue has not had any activity for 180 days, suggesting that it's not as critical as others. 
+            It's possible it has already been fixed. It is being marked as stale and will be closed in 20 days if there is no activity.
+            To keep it open, please comment to let us know why it is important to you and if it is still reproducible on recent versions of Airbyte.
+          close-issue-message: "This issue was closed because it has been inactive for 20 days since being marked as stale."
+          repo-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

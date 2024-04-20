@@ -25,6 +25,10 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.BaseGcsDestination;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
@@ -44,10 +48,6 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestination;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
-import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -61,13 +61,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -87,7 +87,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       "storage.objects.delete",
       "storage.objects.get",
       "storage.objects.list");
-  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
   protected final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -157,7 +156,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
           .toList());
 
-      final GcsDestination gcsDestination = new GcsDestination();
+      final BaseGcsDestination gcsDestination = new BaseGcsDestination() {};
       final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
       return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {
@@ -192,16 +191,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    // Follows this order of resolution:
+    // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
+    if (serviceAccountKey == null) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
       return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+    final String credentialsString = serviceAccountKey.isObject()
+        ? Jsons.serialize(serviceAccountKey)
+        : serviceAccountKey.asText();
     return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
@@ -232,21 +234,28 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final boolean disableTypeDedupe = BigQueryUtils.getDisableTypeDedupFlag(config);
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
+    final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
+    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
     final BigQuery bigquery = getBigQuery(config);
-    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
+    final TyperDeduper typerDeduper =
+        buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (serviceAccountKey.isTextual()) {
-      // There are cases where we fail to deserialize the service account key. In these cases, we
-      // shouldn't do anything.
-      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
-      // go.
-      Jsons.tryDeserialize(serviceAccountKey.asText())
-          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
-    } else {
-      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    if (serviceAccountKey != null) {
+      // If the service account key is a non-null string, we will try to
+      // deserialize it. Otherwise, we will let the Google library find it in
+      // the environment during the client initialization.
+      if (serviceAccountKey.isTextual()) {
+        // There are cases where we fail to deserialize the service account key. In these cases, we
+        // shouldn't do anything.
+        // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+        // go.
+        Jsons.tryDeserialize(serviceAccountKey.asText())
+            .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+      } else {
+        AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+      }
     }
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -294,10 +303,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
 
-        randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
-
-        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
-        final String streamName = stream.getName();
         final String targetTableName;
 
         parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
@@ -310,7 +315,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             .parsedStream(parsedStream)
             .config(config)
             .formatterMap(getFormatterMap(stream.getJsonSchema()))
-            .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
             .targetTableName(targetTableName)
             // This refers to whether this is BQ denormalized or not
             .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
@@ -359,7 +363,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                                      final TyperDeduper typerDeduper)
       throws Exception {
-    typerDeduper.prepareTables();
     final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
         config,
@@ -371,6 +374,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
+          typerDeduper.prepareSchemasAndRunMigrations();
+
           // Set up our raw tables
           writeConfigs.get().forEach((streamId, uploader) -> {
             final StreamConfig stream = parsedCatalog.getStream(streamId);
@@ -389,11 +394,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               uploader.createRawTable();
             }
           });
+
+          typerDeduper.prepareFinalTables();
         },
-        (hasFailed) -> {
+        (hasFailed, streamSyncSummaries) -> {
           try {
             Thread.sleep(30 * 1000);
-            typerDeduper.typeAndDedupe();
+            typerDeduper.typeAndDedupe(streamSyncSummaries);
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
           } catch (final Exception e) {
@@ -423,11 +430,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ParsedCatalog parseCatalog(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
+  private ParsedCatalog parseCatalog(final JsonNode config,
+                                     final ConfiguredAirbyteCatalog catalog,
+                                     final String datasetLocation,
+                                     final Optional<String> rawNamespaceOverride) {
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
-    final CatalogParser catalogParser = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()
-        ? new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get())
-        : new CatalogParser(sqlGenerator);
+    final CatalogParser catalogParser = rawNamespaceOverride.map(s -> new CatalogParser(sqlGenerator, s))
+        .orElseGet(() -> new CatalogParser(sqlGenerator));
 
     return catalogParser.parseCatalog(catalog);
   }
@@ -439,11 +448,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                          final boolean disableTypeDedupe) {
     final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
     final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
-    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bigquery, datasetLocation);
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(
+        bigquery,
+        datasetLocation);
 
     if (disableTypeDedupe) {
       return new NoOpTyperDeduperWithV1V2Migrations<>(
-          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, 8);
+          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, List.of());
     }
 
     return new DefaultTyperDeduper<>(
@@ -452,8 +463,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
-        8);
+        List.of());
+  }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {

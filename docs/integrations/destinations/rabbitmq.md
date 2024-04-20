@@ -2,7 +2,8 @@
 
 ## Overview
 
-The RabbitMQ destination allows you to send/stream data to a RabbitMQ routing key. RabbitMQ is one of the most popular open source message brokers.
+The RabbitMQ destination allows you to send/stream data to a RabbitMQ routing key. RabbitMQ is one
+of the most popular open source message brokers.
 
 ### Sync overview
 
@@ -35,13 +36,16 @@ To use the RabbitMQ destination, you'll need:
 
 - A RabbitMQ host and credentials (username/password) to publish messages, if required.
 - A RabbitMQ routing key.
-- RabbitMQ exchange is optional. If specified, a binding between exchange and routing key is required.
+- RabbitMQ exchange is optional. If specified, a binding between exchange and routing key is
+  required.
 - RabbitMQ port is optional (it defaults to 5672).
 - RabbitMQ virtual host is also optional.
 
 ## CHANGELOG
 
-| Version | Date             | Pull Request                                             | Subject                                         |
-| :------ | :--------------- | :------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.1   | 2022-09-09       | [16528](https://github.com/airbytehq/airbyte/pull/16528) | Marked password field in spec as airbyte_secret |
-| 0.1.0   | October 29, 2021 | [\#7560](https://github.com/airbytehq/airbyte/pull/7560) | Initial release                                 |
+| Version | Date             | Pull Request                                              | Subject                                         |
+| :------ | :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.3   | 2024-04-02       | [#36749](https://github.com/airbytehq/airbyte/pull/36749) | Un-archive connector (again)                    |
+| 0.1.2   | 2024-03-05       | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                            |
+| 0.1.1   | 2022-09-09       | [16528](https://github.com/airbytehq/airbyte/pull/16528)  | Marked password field in spec as airbyte_secret |
+| 0.1.0   | October 29, 2021 | [\#7560](https://github.com/airbytehq/airbyte/pull/7560)  | Initial release                                 |

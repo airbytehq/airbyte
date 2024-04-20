@@ -10,19 +10,21 @@ import os.path
 import socket
 import sys
 import tempfile
+from collections import defaultdict
 from functools import wraps
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteMessage, Status, Type
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
+from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-from airbyte_cdk.utils import is_cloud_environment
+from airbyte_cdk.utils import is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -38,7 +40,7 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        # Deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
         if is_cloud_environment():
             _init_internal_request_filter()
 
@@ -87,6 +89,7 @@ class AirbyteEntrypoint(object):
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)
@@ -105,6 +108,9 @@ class AirbyteEntrypoint(object):
                     raw_config = self.source.read_config(parsed_args.config)
                     config = self.source.configure(raw_config, temp_dir)
 
+                    yield from [
+                        self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)
+                    ]
                     if cmd == "check":
                         yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
                     elif cmd == "discover":
@@ -155,8 +161,28 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
 
-        yield from self.source.read(self.logger, config, catalog, state)
-        yield from self._emit_queued_messages(self.source)
+        # The Airbyte protocol dictates that counts be expressed as float/double to better protect against integer overflows
+        stream_message_counter: DefaultDict[HashableStreamDescriptor, float] = defaultdict(float)
+        for message in self.source.read(self.logger, config, catalog, state):
+            yield self.handle_record_counts(message, stream_message_counter)
+        for message in self._emit_queued_messages(self.source):
+            yield self.handle_record_counts(message, stream_message_counter)
+
+    @staticmethod
+    def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, float]) -> AirbyteMessage:
+        if message.type == Type.RECORD:
+            stream_message_count[message_utils.get_stream_descriptor(message)] += 1.0
+
+        elif message.type == Type.STATE:
+            stream_descriptor = message_utils.get_stream_descriptor(message)
+
+            # Set record count from the counter onto the state message
+            message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
+            message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)
+
+            # Reset the counter
+            stream_message_count[stream_descriptor] = 0.0
+        return message
 
     @staticmethod
     def validate_connection(source_spec: ConnectorSpecification, config: TConfig) -> None:
@@ -207,7 +233,9 @@ def launch(source: Source, args: List[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
-        print(message)
+        # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
+        # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
+        print(f"{message}\n", end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:
@@ -232,9 +260,10 @@ def _init_internal_request_filter() -> None:
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
             if is_private:
-                raise ValueError(
-                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
-                    + "connectors only support requesting data from public API endpoints."
+                raise AirbyteTracedException(
+                    internal_message=f"Invalid URL endpoint: `{parsed_url.hostname!r}` belongs to a private network",
+                    failure_type=FailureType.config_error,
+                    message="Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source connectors only support requesting data from public API endpoints.",
                 )
         except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing

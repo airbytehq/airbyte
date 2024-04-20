@@ -83,7 +83,7 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
-        request_option=RequestOption(inject_into=RequestOptionType.header, field_name=header, parameters={}),
+        request_option=RequestOption(inject_into=RequestOptionType.header, field_name=header, parameters=parameters),
         token_provider=token_provider,
         config=config,
         parameters=parameters,
@@ -192,7 +192,7 @@ def test_api_key_authenticator_inject(test_name, field_name, token, expected_fie
     """
     token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
-        request_option=RequestOption(inject_into=inject_type, field_name=field_name, parameters={}),
+        request_option=RequestOption(inject_into=inject_type, field_name=field_name, parameters=parameters),
         token_provider=token_provider,
         config=config,
         parameters=parameters,
