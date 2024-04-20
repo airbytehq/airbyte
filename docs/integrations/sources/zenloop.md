@@ -71,6 +71,7 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                             |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------|
+| 0.1.14 | 2024-04-19 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | Updating to 0.80.0 CDK |
 | 0.1.13 | 2024-04-18 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | Manage dependencies with Poetry. |
 | 0.1.12 | 2024-04-15 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.11 | 2024-04-12 | [37304](https://github.com/airbytehq/airbyte/pull/37304) | schema descriptions |
