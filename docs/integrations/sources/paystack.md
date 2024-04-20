@@ -60,6 +60,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------|
+| 0.1.7 | 2024-04-19 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | Updating to 0.80.0 CDK |
 | 0.1.6 | 2024-04-18 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | Manage dependencies with Poetry. |
 | 0.1.5 | 2024-04-15 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.4 | 2024-04-12 | [37219](https://github.com/airbytehq/airbyte/pull/37219) | schema descriptions |

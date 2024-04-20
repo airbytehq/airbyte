@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0efee448-6948-49e2-b786-17db50647908
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-rss
   documentationUrl: https://docs.airbyte.com/integrations/sources/rss
   githubIssueLabel: source-rss

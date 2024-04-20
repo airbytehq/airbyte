@@ -171,6 +171,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.8.2 | 2024-04-19 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Updating to 0.80.0 CDK |
 | 0.8.1 | 2024-04-12 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | schema descriptions |
 | 0.8.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.7.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                        |

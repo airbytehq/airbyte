@@ -42,6 +42,7 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.4.4 | 2024-04-19 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | Updating to 0.80.0 CDK |
 | 0.4.3 | 2024-04-18 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | Manage dependencies with Poetry. |
 | 0.4.2 | 2024-04-15 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.4.1 | 2024-04-12 | [37132](https://github.com/airbytehq/airbyte/pull/37132) | schema descriptions |

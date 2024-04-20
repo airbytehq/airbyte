@@ -51,6 +51,7 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.2.7 | 2024-04-19 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | Updating to 0.80.0 CDK |
 | 0.2.6 | 2024-04-18 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | Manage dependencies with Poetry. |
 | 0.2.5 | 2024-04-15 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.4 | 2024-04-12 | [37149](https://github.com/airbytehq/airbyte/pull/37149) | schema descriptions |

@@ -85,6 +85,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.5 | 2024-04-19 | [36658](https://github.com/airbytehq/airbyte/pull/36658) | Updating to 0.80.0 CDK |
 | 0.4.4 | 2024-04-12 | [36658](https://github.com/airbytehq/airbyte/pull/36658) | schema descriptions |
 | 0.4.3 | 2024-02-21 | [35181](https://github.com/airbytehq/airbyte/pull/35343) | Handle uncompressed contacts downloads |
 | 0.4.2 | 2024-02-12 | [35181](https://github.com/airbytehq/airbyte/pull/35181) | Manage dependencies with Poetry |

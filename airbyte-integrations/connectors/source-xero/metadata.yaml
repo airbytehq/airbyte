@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/source-xero
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   githubIssueLabel: source-xero

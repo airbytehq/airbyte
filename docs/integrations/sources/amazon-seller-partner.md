@@ -172,6 +172,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.2 | 2024-04-19 | [36630](https://github.com/airbytehq/airbyte/pull/36630) | Updating to 0.80.0 CDK |
 | 4.2.1 | 2024-04-12 | [36630](https://github.com/airbytehq/airbyte/pull/36630) | schema descriptions |
 | `4.2.0`  | 2024-03-19 | [\#36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                                     |
 | `4.1.0`  | 2024-03-12 | [\#35954](https://github.com/airbytehq/airbyte/pull/35954) | Add `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` streams                                                                                        |

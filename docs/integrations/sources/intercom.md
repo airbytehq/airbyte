@@ -74,6 +74,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 0.6.5 | 2024-04-19 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | Updating to 0.80.0 CDK |
 | 0.6.4 | 2024-04-12 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | schema descriptions |
 | 0.6.3 | 2024-03-23 | [36414](https://github.com/airbytehq/airbyte/pull/36414) | Fixed `pagination` regression bug for `conversations` stream |
 | 0.6.2 | 2024-03-22 | [36277](https://github.com/airbytehq/airbyte/pull/36277) | Fixed the bug for `conversations` stream failed due to `404 - User Not Found`, when the `2.10` API version is used |

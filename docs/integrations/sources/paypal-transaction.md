@@ -279,6 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.5.3 | 2024-04-19 | [36654](https://github.com/airbytehq/airbyte/pull/36654) | Updating to 0.80.0 CDK |
 | 2.5.2 | 2024-04-12 | [36654](https://github.com/airbytehq/airbyte/pull/36654) | schema descriptions |
 | 2.5.1   | 2024-03-15 | [36165](https://github.com/airbytehq/airbyte/pull/36165) | Unpin CDK Version                                                                                                            |
 | 2.5.0   | 2024-03-15 | [36173](https://github.com/airbytehq/airbyte/pull/36173) | Extended `Disputes` stream schema with missing properties                                                                    |

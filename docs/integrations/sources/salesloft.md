@@ -102,6 +102,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.4 | 2024-04-19 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | Updating to 0.80.0 CDK |
 | 1.2.3 | 2024-04-18 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | Manage dependencies with Poetry. |
 | 1.2.2 | 2024-04-15 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.2.1 | 2024-04-12 | [37253](https://github.com/airbytehq/airbyte/pull/37253) | schema descriptions |

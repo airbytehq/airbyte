@@ -41,6 +41,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------|
+| 0.1.6 | 2024-04-19 | [37243](https://github.com/airbytehq/airbyte/pull/37243) | Updating to 0.80.0 CDK |
 | 0.1.5 | 2024-04-18 | [37243](https://github.com/airbytehq/airbyte/pull/37243) | Manage dependencies with Poetry. |
 | 0.1.4 | 2024-04-15 | [37243](https://github.com/airbytehq/airbyte/pull/37243) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.3 | 2024-04-12 | [37243](https://github.com/airbytehq/airbyte/pull/37243) | schema descriptions |

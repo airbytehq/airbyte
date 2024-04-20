@@ -72,6 +72,7 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.5 | 2024-04-19 | [37263](https://github.com/airbytehq/airbyte/pull/37263) | Updating to 0.80.0 CDK |
 | 0.1.4 | 2024-04-18 | [37263](https://github.com/airbytehq/airbyte/pull/37263) | Manage dependencies with Poetry. |
 | 0.1.3 | 2024-04-15 | [37263](https://github.com/airbytehq/airbyte/pull/37263) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.2 | 2024-04-12 | [37263](https://github.com/airbytehq/airbyte/pull/37263) | schema descriptions |

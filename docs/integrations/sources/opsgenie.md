@@ -51,6 +51,7 @@ The Opsgenie connector uses the most recent API version for each source of data.
 
 | Version | Date       | Pull Request                                         | Subject |
 |:--------|:-----------|:-----------------------------------------------------| :--- |
+| 0.3.5 | 2024-04-19 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Updating to 0.80.0 CDK |
 | 0.3.4 | 2024-04-18 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.2 | 2024-04-12 | [37210](https://github.com/airbytehq/airbyte/pull/37210) | schema descriptions |

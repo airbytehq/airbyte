@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.5"
+version = "0.1.6"
 name = "source-rd-station-marketing"
 description = "Source implementation for RD Station Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]

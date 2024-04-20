@@ -82,6 +82,7 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------|
+| 0.1.8 | 2024-04-19 | [37299](https://github.com/airbytehq/airbyte/pull/37299) | Updating to 0.80.0 CDK |
 | 0.1.7 | 2024-04-18 | [37299](https://github.com/airbytehq/airbyte/pull/37299) | Manage dependencies with Poetry. |
 | 0.1.6 | 2024-04-15 | [37299](https://github.com/airbytehq/airbyte/pull/37299) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.5 | 2024-04-12 | [37299](https://github.com/airbytehq/airbyte/pull/37299) | schema descriptions |

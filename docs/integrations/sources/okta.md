@@ -79,6 +79,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.20 | 2024-04-19 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | Updating to 0.80.0 CDK |
 | 0.1.19 | 2024-04-18 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | Manage dependencies with Poetry. |
 | 0.1.18 | 2024-04-15 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.17 | 2024-04-12 | [37205](https://github.com/airbytehq/airbyte/pull/37205) | schema descriptions |
