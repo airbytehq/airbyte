@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-typeform
   icon: typeform.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Typeform
   remoteRegistries:
     pypi:

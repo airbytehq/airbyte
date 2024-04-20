@@ -108,7 +108,7 @@ class CsvSerializedBuffer(
         @JvmStatic
         @Suppress("DEPRECATION")
         fun createFunction(
-            config: S3CsvFormatConfig?,
+            config: UploadCsvFormatConfig?,
             createStorageFunction: Callable<BufferStorage>
         ): BufferCreateFunction {
             return BufferCreateFunction {
@@ -148,7 +148,7 @@ class CsvSerializedBuffer(
                     )
                 val csvSettings =
                     CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)
-                        .withHeader(*csvSheetGenerator.headerRow.toTypedArray<String>())
+                        .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
                 val compression = config.compressionType != CompressionType.NO_COMPRESSION
                 CsvSerializedBuffer(
                         createStorageFunction.call(),
