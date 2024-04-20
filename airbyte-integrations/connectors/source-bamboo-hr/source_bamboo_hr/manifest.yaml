@@ -1,77 +1,92 @@
-version: 0.65.0
+version: 0.83.0
+
 type: DeclarativeSource
 
 check: #TODO implement custom check for https://github.com/airbytehq/airbyte/blob/cc388fc6d0e8d6223bd2942e9f6466b17895dbf9/airbyte-integrations/connectors/source-bamboo-hr/source_bamboo_hr/source.py#L145-L165
   type: CheckStream
   stream_names:
-    - MetaFields
+    - meta_fields_stream
 
 definitions:
-  schema_loader:
-    type: CustomSchemaLoader
-    class_name: source_bamboo_hr.components.BambooHRSchemaLoader
-  
-  requester:
+  streams:
+    custom_reports_stream:
+      type: DeclarativeStream
+      name: custom_reports_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: reports/custom
+          http_method: POST
+          request_headers:
+            Accept: application/json
+          request_body_json:
+            title: Airbyte
+            fields: list(self.schema["properties"].keys()) # TODO how to get the schema properties keys as list here
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_bamboo_hr.components.BambooHRSchemaLoader
+    employees_directory_stream:
+      type: DeclarativeStream
+      name: employees_directory_stream
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: employees/directory
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/employees_directory_stream'
+    meta_fields_stream:
+      type: DeclarativeStream
+      name: meta_fields_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: meta/fields
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/meta_fields_stream'
+  base_requester:
     type: HttpRequester
     url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
-    request_parameters: {}
-    request_headers:
-      Accept: application/json
     authenticator:
       type: BasicHttpAuthenticator
       password: 'x'
-      username: '{{ config[''api_key''] }}'
-  
-  retriever:
-    type: SimpleRetriever
-    paginator:
-      type: NoPagination
-    partition_router: []
-
-  base_stream:
-    type: DeclarativeStream
-    primary_key: []
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
-
-  meta_fields_stream:
-    $ref: "#/definitions/base_stream"
-    name: MetaFields
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: meta/fields
-        http_method: GET
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-
-  custom_reports_stream:
-    $ref: "#/definitions/base_stream"
-    name: CustomReports
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: reports/custom
-        http_method: POST
-        request_body_json:
-          title: Airbyte
-          fields: list(self.schema["properties"].keys()) # TODO how to get the schema properties keys as list here
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - employees
+      username: '{{ config["api_key"] }}'
 
 streams:
-  - "#/definitions/meta_fields_stream"
-  - "#/definitions/custom_reports_stream"
+  - $ref: '#/definitions/streams/custom_reports_stream'
+  - $ref: '#/definitions/streams/employees_directory_stream'
+  - $ref: '#/definitions/streams/meta_fields_stream'
 
 spec:
   type: Spec
@@ -85,23 +100,22 @@ spec:
       - api_key
       - subdomain
     properties:
-      subdomain:
-        type: string
-        order: 2
-        title: subdomain
-        description: Sub Domain of bamboo hr
       api_key:
         type: string
-        order: 1
+        order: 0
         title: api_key
         description: Api key of bamboo hr
         airbyte_secret: true
+      subdomain:
+        type: string
+        order: 1
+        title: subdomain
+        description: Sub Domain of bamboo hr
       custom_reports_fields:
         type: string
-        order: 3
+        order: 2
         title: custom_reports_fields
         description: Comma-separated list of fields to include in custom reports.
-        default: ""
       custom_reports_include_default_fields:
         title: custom_reports_include_default_fields
         description: >-
@@ -110,4 +124,22 @@ spec:
           https://documentation.bamboohr.com/docs/list-of-field-names.
         type: boolean
         default: true
-        order: 4
+        order: 3
+
+metadata:
+  autoImportSchema:
+    custom_reports_stream: false
+    employees_directory_stream: false
+    meta_fields_stream: false
+
+schemas:
+  employees_directory_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  meta_fields_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
