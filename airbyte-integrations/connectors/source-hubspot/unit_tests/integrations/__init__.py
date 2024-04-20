@@ -16,8 +16,8 @@ from source_hubspot import SourceHubspot
 from .config_builder import ConfigBuilder
 from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
-from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
+from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
 
 
