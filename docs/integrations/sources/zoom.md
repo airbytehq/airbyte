@@ -68,6 +68,7 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------| :-----------------------------------------------------|
+| 1.1.2 | 2024-04-19 | [37305](https://github.com/airbytehq/airbyte/pull/37305) | Updating to 0.80.0 CDK |
 | 1.1.1 | 2024-04-12 | [37305](https://github.com/airbytehq/airbyte/pull/37305) | schema descriptions |
 | 1.1.0   | 2024-02-22 | [35369](https://github.com/airbytehq/airbyte/pull/35369) | Publish S2S Oauth connector with fixed authenticator  |
 | 1.0.0   | 2023-7-28  | [25308](https://github.com/airbytehq/airbyte/pull/25308) | Replace JWT Auth methods with server-to-server Oauth  |
