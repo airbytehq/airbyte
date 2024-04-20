@@ -76,6 +76,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------|
+| 1.0.6 | 2024-04-19 | [37275](https://github.com/airbytehq/airbyte/pull/37275) | Updating to 0.80.0 CDK |
 | 1.0.5 | 2024-04-18 | [37275](https://github.com/airbytehq/airbyte/pull/37275) | Manage dependencies with Poetry. |
 | 1.0.4 | 2024-04-15 | [37275](https://github.com/airbytehq/airbyte/pull/37275) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.0.3 | 2024-04-12 | [37275](https://github.com/airbytehq/airbyte/pull/37275) | schema descriptions |
