@@ -90,6 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.2.8 | 2024-04-19 | [36667](https://github.com/airbytehq/airbyte/pull/36667) | Updating to 0.80.0 CDK |
 | 1.2.7 | 2024-04-12 | [36667](https://github.com/airbytehq/airbyte/pull/36667) | schema descriptions |
 | 1.2.6   | 2024-03-13 | [36164](https://github.com/airbytehq/airbyte/pull/36164) | Unpin CDK version                                                                               |
 | 1.2.5   | 2024-02-12 | [35152](https://github.com/airbytehq/airbyte/pull/35152) | Manage dependencies with Poetry.                                                                |
