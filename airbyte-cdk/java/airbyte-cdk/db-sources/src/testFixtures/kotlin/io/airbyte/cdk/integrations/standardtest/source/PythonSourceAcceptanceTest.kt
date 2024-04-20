@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory
  * also add the ability to execute arbitrary scripts in the next version.
  */
 class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
-    private var testRoot: Path? = null
+    private lateinit var testRoot: Path
 
     @get:Throws(IOException::class)
     override val spec: ConnectorSpecification
@@ -47,7 +47,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_STATE)
 
     @Throws(IOException::class)
-    override fun assertFullRefreshMessages(allMessages: List<AirbyteMessage?>?) {
+    override fun assertFullRefreshMessages(allMessages: List<AirbyteMessage>) {
         val regexTests =
             Streams.stream(
                     runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
@@ -57,7 +57,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         val stringMessages =
             allMessages!!
                 .stream()
-                .map { `object`: AirbyteMessage? -> Jsons.serialize(`object`) }
+                .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
                 .toList()
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
@@ -117,7 +117,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     }
 
     @Throws(IOException::class)
-    private fun runExecutableInternal(cmd: Command): Path? {
+    private fun runExecutableInternal(cmd: Command): Path {
         LOGGER.info("testRoot = $testRoot")
         val dockerCmd: List<String?> =
             Lists.newArrayList(
@@ -138,8 +138,8 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             )
 
         val process = ProcessBuilder(dockerCmd).start()
-        LineGobbler.gobble(process.errorStream) { msg: String? -> LOGGER.error(msg) }
-        LineGobbler.gobble(process.inputStream) { msg: String? -> LOGGER.info(msg) }
+        LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+        LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
 
         TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
 
@@ -155,7 +155,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         private val LOGGER: Logger = LoggerFactory.getLogger(PythonSourceAcceptanceTest::class.java)
         private const val OUTPUT_FILENAME = "output.json"
 
-        lateinit var IMAGE_NAME: String
+        var IMAGE_NAME: String = "dummy_image_name"
         var PYTHON_CONTAINER_NAME: String? = null
     }
 }

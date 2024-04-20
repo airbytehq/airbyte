@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.destination.staging
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
@@ -16,7 +16,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.List
 import java.util.stream.Stream
 import org.apache.commons.io.FileUtils
 
@@ -26,7 +25,7 @@ import org.apache.commons.io.FileUtils
 private val logger = KotlinLogging.logger {}
 
 internal class AsyncFlush(
-    streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
+    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
     private val stagingOperations: StagingOperations?,
     private val database: JdbcDatabase?,
     private val catalog: ConfiguredAirbyteCatalog?,
@@ -42,8 +41,6 @@ internal class AsyncFlush(
     override val optimalBatchSizeBytes: Long,
     private val useDestinationsV2Columns: Boolean
 ) : DestinationFlushFunction {
-    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
-        streamDescToWriteConfig
 
     @Throws(Exception::class)
     override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
@@ -78,11 +75,9 @@ internal class AsyncFlush(
         }
 
         writer.flush()
-        logger.info(
-            "Flushing CSV buffer for stream {} ({}) to staging",
-            decs.name,
-            FileUtils.byteCountToDisplaySize(writer.byteCount)
-        )
+        logger.info {
+            "Flushing CSV buffer for stream ${decs.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
+        }
         require(streamDescToWriteConfig.containsKey(decs)) {
             String.format(
                 "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
@@ -114,7 +109,7 @@ internal class AsyncFlush(
                 database,
                 stageName,
                 stagingPath,
-                List.of(stagedFile),
+                listOf(stagedFile),
                 writeConfig.outputTableName,
                 schemaName,
                 stagingOperations,
@@ -124,7 +119,9 @@ internal class AsyncFlush(
                 typerDeduper
             )
         } catch (e: Exception) {
-            logger.error("Failed to flush and commit buffer data into destination's raw table", e)
+            logger.error(e) {
+                "Failed to flush and commit buffer data into destination's raw table"
+            }
             throw RuntimeException("Failed to upload buffer to stage and commit to destination", e)
         }
 

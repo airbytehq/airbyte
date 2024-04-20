@@ -37,7 +37,7 @@ class DebeziumRecordIterator<T>(
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
     subsequentRecordWaitTime: Duration?
-) : AbstractIterator<ChangeEventWithMetadata?>(), AutoCloseableIterator<ChangeEventWithMetadata> {
+) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
     private val subsequentRecordWaitTime: Duration = firstRecordWaitTime.dividedBy(2)

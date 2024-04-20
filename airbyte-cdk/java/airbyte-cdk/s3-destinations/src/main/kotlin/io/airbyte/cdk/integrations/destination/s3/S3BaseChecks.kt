@@ -28,7 +28,7 @@ object S3BaseChecks {
     fun attemptS3WriteAndDelete(
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        bucketPath: String
+        bucketPath: String?
     ) {
         attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client())
     }
@@ -91,6 +91,7 @@ object S3BaseChecks {
      *
      * @param endpoint URL string representing an accessible S3 bucket
      */
+    @JvmStatic
     fun testCustomEndpointSecured(endpoint: String?): Boolean {
         // if user does not use a custom endpoint, do not fail
         return if (endpoint == null || endpoint.length == 0) {
@@ -104,11 +105,11 @@ object S3BaseChecks {
     fun attemptS3WriteAndDelete(
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        bucketPath: String,
+        bucketPath: String?,
         s3: AmazonS3
     ) {
         val prefix =
-            if (Strings.isNullOrEmpty(bucketPath)) {
+            if (bucketPath.isNullOrEmpty()) {
                 ""
             } else if (bucketPath.endsWith("/")) {
                 bucketPath

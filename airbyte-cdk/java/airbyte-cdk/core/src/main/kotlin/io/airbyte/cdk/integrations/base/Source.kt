@@ -21,7 +21,7 @@ interface Source : Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun discover(config: JsonNode): AirbyteCatalog?
+    @Throws(Exception::class) fun discover(config: JsonNode): AirbyteCatalog
 
     /**
      * Return a iterator of messages pulled from the source.

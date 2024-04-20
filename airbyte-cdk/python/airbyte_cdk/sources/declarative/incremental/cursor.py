@@ -3,6 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -34,7 +35,7 @@ class Cursor(ABC, StreamSlicer):
         pass
 
     @abstractmethod
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         """
         Update state based on the stream slice. Note that `stream_slice.cursor_slice` and `most_recent_record.associated_slice` are expected
         to be the same but we make it explicit here that `stream_slice` should be leveraged to update the state. We do not pass in the

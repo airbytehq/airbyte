@@ -35,7 +35,7 @@ class SshWrappedSource : Source {
     }
 
     @Throws(Exception::class)
-    override fun spec(): ConnectorSpecification? {
+    override fun spec(): ConnectorSpecification {
         return SshHelpers.injectSshIntoSpec(delegate.spec(), sshGroup)
     }
 
@@ -62,12 +62,12 @@ class SshWrappedSource : Source {
     }
 
     @Throws(Exception::class)
-    override fun discover(config: JsonNode): AirbyteCatalog? {
-        return SshTunnel.Companion.sshWrap<AirbyteCatalog?>(
+    override fun discover(config: JsonNode): AirbyteCatalog {
+        return SshTunnel.Companion.sshWrap<AirbyteCatalog>(
             config,
             hostKey,
             portKey,
-            CheckedFunction<JsonNode, AirbyteCatalog?, Exception?> { config: JsonNode ->
+            CheckedFunction<JsonNode, AirbyteCatalog, Exception?> { config: JsonNode ->
                 delegate.discover(config)
             }
         )
