@@ -3776,14 +3776,12 @@ definitions:
               - "null"
               - string
           total_emails_count_in_thread:
-            description:
-              The total count of emails in the thread including the current
-              email
+            description: Total number of emails in the thread
             type:
               - "null"
               - integer
           updated_by_name:
-            description: The name of the user who updated the task
+            description: The name of the user who updated the thread
             type:
               - "null"
               - string

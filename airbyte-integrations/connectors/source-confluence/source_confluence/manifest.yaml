@@ -145,7 +145,7 @@ definitions:
 
     schema_loader:
       type: InlineSchemaLoader
-      schema:  
+      schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: true

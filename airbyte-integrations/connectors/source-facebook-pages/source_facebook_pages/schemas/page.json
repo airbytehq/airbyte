@@ -257,15 +257,19 @@
       "$ref": "iguser.json"
     },
     "is_always_open": {
+      "description": "Indicates if the page is always open for interactions.",
       "type": ["boolean", "null"]
     },
     "is_chain": {
+      "description": "Indicates if the page is part of a chain or franchise.",
       "type": ["boolean", "null"]
     },
     "is_community_page": {
+      "description": "Specifies if the page represents a community page.",
       "type": ["boolean", "null"]
     },
     "is_eligible_for_branded_content": {
+      "description": "Shows if the page is eligible for branded content collaborations.",
       "type": ["boolean", "null"]
     },
     "is_messenger_bot_get_started_enabled": {

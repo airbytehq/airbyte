@@ -768,6 +768,9 @@ definitions:
               - "null"
               - string
           VAT_ITEMS:
+            description:
+              Includes VAT (Value Added Tax) related items associated with
+              the revenues data.
             type:
               - array
               - "null"
@@ -790,6 +793,9 @@ definitions:
                     - "null"
                     - number
           ITEMS:
+            description:
+              Contains information about the items related to the revenues
+              data.
             type:
               - array
               - "null"
@@ -1025,6 +1031,9 @@ definitions:
               - "null"
               - string
           PAYMENTS:
+            description:
+              Contains details of the payments made corresponding to the
+              revenues data.
             type:
               - "null"
               - array
