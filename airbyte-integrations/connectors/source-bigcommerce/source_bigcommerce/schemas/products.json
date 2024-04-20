@@ -71,6 +71,7 @@
       "type": ["null", "string"]
     },
     "categories": {
+      "description": "Categories that the product is classified under",
       "type": ["null", "array"],
       "items": {
         "description": "Categories the product belongs to",
@@ -111,6 +112,7 @@
       "type": ["null", "boolean"]
     },
     "related_products": {
+      "description": "List of related products associated with the product",
       "type": ["null", "array"],
       "items": {
         "description": "List of related products",
@@ -150,6 +152,7 @@
       "type": ["null", "string"]
     },
     "gift_wrapping_options_list": {
+      "description": "List of gift wrapping options available for the product",
       "type": ["null", "array"],
       "items": {
         "description": "List of available gift wrapping options",
@@ -218,6 +221,7 @@
       "type": ["null", "string"]
     },
     "custom_url": {
+      "description": "Custom URL settings for the product",
       "type": ["null", "object"],
       "title": "customUrl_Full",
       "properties": {
@@ -280,6 +284,7 @@
       "type": ["null", "integer"]
     },
     "custom_fields": {
+      "description": "Custom fields associated with the product",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -302,6 +307,7 @@
       }
     },
     "bulk_pricing_rules": {
+      "description": "Rules for bulk pricing related to the product",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -625,6 +631,7 @@
       }
     },
     "modifiers": {
+      "description": "Modifiers that allow customization of the product",
       "type": ["null", "array"],
       "items": {
         "title": "productModifier_Full",
@@ -641,6 +648,7 @@
             "type": ["null", "integer"]
           },
           "config": {
+            "description": "Configuration settings for the modifier",
             "type": ["null", "object"],
             "title": "config_Full",
             "properties": {
@@ -660,10 +668,12 @@
                 "type": ["null", "string"]
               },
               "date_earliest_value": {
+                "description": "Earliest date value allowed",
                 "type": ["null", "string"],
                 "format": "date"
               },
               "date_latest_value": {
+                "description": "Latest date value allowed",
                 "type": ["null", "string"],
                 "format": "date"
               },
@@ -822,40 +832,49 @@
       "type": ["null", "string"]
     },
     "variants": {
+      "description": "Different variations of the product available for purchase",
       "type": ["null", "array"],
       "items": {
         "title": "productVariant_Full",
         "type": ["null", "object"],
         "properties": {
           "cost_price": {
+            "description": "The cost price of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "price": {
+            "description": "The selling price of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "sale_price": {
+            "description": "The sale price of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "retail_price": {
+            "description": "The retail price of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "weight": {
+            "description": "The weight of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "width": {
+            "description": "The width dimension of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "height": {
+            "description": "The height dimension of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
           "depth": {
+            "description": "The depth dimension of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
@@ -863,6 +882,7 @@
             "type": ["null", "boolean"]
           },
           "fixed_cost_shipping_price": {
+            "description": "Fixed cost of shipping for the variant",
             "type": ["null", "number"],
             "format": "double"
           },
@@ -921,6 +941,7 @@
             }
           },
           "calculated_price": {
+            "description": "The calculated price of the variant",
             "type": ["null", "number"],
             "format": "double"
           },
