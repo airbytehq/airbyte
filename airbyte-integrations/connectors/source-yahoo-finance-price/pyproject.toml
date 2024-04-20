@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.3"
+version = "0.2.4"
 name = "source-yahoo-finance-price"
 description = "Source implementation for Yahoo Finance Price."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_yahoo_finance_price"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.3"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-yahoo-finance-price = "source_yahoo_finance_price.run:run"
