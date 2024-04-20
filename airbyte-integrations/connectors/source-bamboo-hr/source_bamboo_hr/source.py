@@ -16,4 +16,3 @@ WARNING: Do not modify this file.
 class SourceBambooHr(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
-    

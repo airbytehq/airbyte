@@ -13,7 +13,7 @@ class BambooHRSchemaLoader(JsonFileSchemaLoader):
 
     config: Mapping[str, Any]
 
-    def get_json_schema(self) -> Mapping[str, Any]: 
+    def get_json_schema(self) -> Mapping[str, Any]:
         """
         Returns the JSON schema.
 
@@ -40,7 +40,7 @@ class BambooHRSchemaLoader(JsonFileSchemaLoader):
             "type": "object",
             "properties": properties,
         }
-    
+
     def convert_custom_reports_fields_to_list(custom_reports_fields: str) -> list:
         return custom_reports_fields.split(",") if custom_reports_fields else []
 
