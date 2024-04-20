@@ -26,7 +26,7 @@ Next, check out the [step-by-step tutorial](/using-airbyte/getting-started) to s
 
 Browse the [connector catalog](/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](/connector-development/).
 
-Next, check out the [Airbyte Open Source QuickStart](/quickstart/deploy-airbyte). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
+Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/local-deployment). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
 ## For Airbyte contributors
 

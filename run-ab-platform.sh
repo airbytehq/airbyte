@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.57.2
+VERSION=0.57.3
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -46,6 +46,16 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
+
+# event states are used for telemetry data
+readonly eventStateStarted="started"
+readonly eventStateFailed="failed"
+readonly eventStateSuccess="succeeded"
+
+# event types are used for telemetry data
+readonly eventTypeDownload="download"
+readonly eventTypeInstall="install"
+readonly eventTypeRefresh="refresh"
 
 telemetrySuccess=false
 telemetrySessionULID=""
@@ -96,7 +106,7 @@ EOL
 }
 
 # TelemetryDockerUp checks if the webapp container is in a running state.  If it is it will send a successful event.
-# if after 10 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
+# if after 20 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
 # also be sent).
 #
 # Note this only checks if the webapp container is running, that doesn't actually mean the entire stack is up.
@@ -107,18 +117,18 @@ TelemetryDockerUp()
     return
   fi
 
-  # for up to 600 seconds (10 minutes), check to see if the server services is in a running state
-  end=$((SECONDS+600))
+  # for up to 1200 seconds (20 minutes), check to see if the server services is in a running state
+  end=$((SECONDS+1200))
   while [ $SECONDS -lt $end ]; do
     webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
-      TelemetrySend "success" "install"
+      TelemetrySend $eventStateSuccess $eventTypeInstall
       break
     fi
     sleep 1
   done
 
-  TelemetrySend "failed" "install" "webapp was not running within 600 seconds"
+  TelemetrySend "failed" "install" "webapp was not running within 1200 seconds"
 }
 
 readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
@@ -144,12 +154,11 @@ TelemetrySend()
   "anonymousId":"$telemetryUserULID",
   "event":"$event",
   "properties": {
-    "deployment_mode":"run_ab",
+    "deployment_method":"run_ab",
     "session_id":"$telemetrySessionULID",
     "state":"$state",
     "os":"$OSTYPE",
     "script_version":"$VERSION",
-    "testing":"true",
     "error":"$err"
   },
   "timestamp":"$now",
@@ -236,20 +245,20 @@ done
 for argument in $args; do
   case $argument in
     -d | --download)
-      TelemetrySend "start" "download"
-      trap 'TelemetrySend "failed" "download" "sigint"' SIGINT
-      trap 'TelemetrySend "failed" "download" "sigterm"' SIGTERM
+      TelemetrySend $eventStateStarted $eventTypeDownload
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigterm"' SIGTERM
       Download
-      TelemetrySend "success" "download"
+      TelemetrySend $eventStateSuccess $eventTypeDownload
       exit
       ;;
     -r | --refresh)
-      TelemetrySend "start" "refresh"
-      trap 'TelemetrySend "failed" "refresh" "sigint"' SIGINT
-      trap 'TelemetrySend "failed" "refresh" "sigterm"' SIGTERM
+      TelemetrySend $eventStateStarted $eventTypeRefresh
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigterm"' SIGTERM
       DeleteLocalAssets
       Download
-      TelemetrySend "success" "refresh"
+      TelemetrySend $eventStateSuccess $eventTypeRefresh
       exit
       ;;
     -x | --debug)
@@ -273,9 +282,9 @@ for argument in $args; do
   esac
 done
 
-TelemetrySend "start" "install"
-trap 'TelemetrySend "failed" "install" "sigint"' SIGINT
-trap 'TelemetrySend "failed" "install" "sigterm"' SIGTERM
+TelemetrySend $eventStateStarted $eventTypeInstall
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigint"' SIGINT
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigterm"' SIGTERM
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -297,7 +306,7 @@ fi
 ########## Dependency Check ##########
 if ! docker compose version >/dev/null 2>/dev/null; then
   echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
-  TelemetrySend "failed" "install" "docker compose not installed"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose not installed"
   exit 1
 fi
 
@@ -326,9 +335,9 @@ docker compose up $dockerDetachedMode
 if test $? -ne 0; then
   echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
   echo -e "$red_text""please consider removing old containers""$default_text"
-  TelemetrySend "failed" "install" "docker compose failed"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose failed"
 else
-  TelemetrySend "success" "install"
+  TelemetrySend $eventStateSuccess $eventTypeInstall
 fi
 
 ########## Ending Docker ##########
