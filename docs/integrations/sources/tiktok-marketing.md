@@ -123,6 +123,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 3.9.6 | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK |
 | 3.9.5 | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | schema descriptions |
 | 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
 | 3.9.3   | 2024-02-12 | [35161](https://github.com/airbytehq/airbyte/pull/35161) | Manage dependencies with Poetry.                                                                            |
