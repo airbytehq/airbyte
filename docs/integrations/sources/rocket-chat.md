@@ -38,7 +38,7 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-----------------------------------------    |
-| 0.1.3 | 2024-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.1.3 | 2024-04-19 | [37251](https://github.com/airbytehq/airbyte/pull/37251) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-15 | [37251](https://github.com/airbytehq/airbyte/pull/37251) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37251](https://github.com/airbytehq/airbyte/pull/37251) | schema descriptions |
 | 0.1.0   | 2022-10-29 | [#18635](https://github.com/airbytehq/airbyte/pull/18635) | 🎉 New Source: Rocket.chat API [low-code CDK] |
