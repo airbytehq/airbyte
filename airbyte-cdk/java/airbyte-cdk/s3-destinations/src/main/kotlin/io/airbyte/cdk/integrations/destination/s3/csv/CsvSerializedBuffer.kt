@@ -108,7 +108,7 @@ class CsvSerializedBuffer(
         @JvmStatic
         @Suppress("DEPRECATION")
         fun createFunction(
-            config: S3CsvFormatConfig?,
+            config: UploadCsvFormatConfig?,
             createStorageFunction: Callable<BufferStorage>
         ): BufferCreateFunction {
             return BufferCreateFunction {
