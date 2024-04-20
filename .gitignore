@@ -102,6 +102,3 @@ scan-journal.log
 
 # connectors' cache
 *.sqlite
-
-# poetry
-*poetry.lock

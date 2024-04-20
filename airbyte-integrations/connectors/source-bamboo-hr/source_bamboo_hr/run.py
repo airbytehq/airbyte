@@ -6,8 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_bamboo_hr import SourceBambooHr
-
+from .source import SourceBambooHr
 
 def run():
     source = SourceBambooHr()
