@@ -104,6 +104,7 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.2.9 | 2024-04-19 | [37293](https://github.com/airbytehq/airbyte/pull/37293) | Updating to 0.80.0 CDK |
 | 0.2.8 | 2024-04-18 | [37293](https://github.com/airbytehq/airbyte/pull/37293) | Manage dependencies with Poetry. |
 | 0.2.7 | 2024-04-15 | [37293](https://github.com/airbytehq/airbyte/pull/37293) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.6 | 2024-04-12 | [37293](https://github.com/airbytehq/airbyte/pull/37293) | schema descriptions |
