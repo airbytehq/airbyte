@@ -56,8 +56,7 @@
         "resource_type": {
           "description": "Type of the parent resource",
           "type": ["null", "string"]
-        },
-        "name": "Bug Task"
+        }
       }
     },
     "created_at": {
