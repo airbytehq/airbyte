@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.4"
+version = "0.1.5"
 name = "source-tplcentral"
 description = "Source implementation for Tplcentral."
 authors = [ "Labanoras Tech <jv@labanoras.io>",]
@@ -17,7 +17,7 @@ include = "source_tplcentral"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.1.46"
+airbyte-cdk = "0.80.0"
 arrow = "==1.2.1"
 
 [tool.poetry.scripts]
