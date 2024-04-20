@@ -75,7 +75,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------|
-| 1.1.3 | 2024-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 1.1.3 | 2024-04-19 | [37207](https://github.com/airbytehq/airbyte/pull/37207) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 1.1.2 | 2024-04-15 | [37207](https://github.com/airbytehq/airbyte/pull/37207) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.1.1 | 2024-04-12 | [37207](https://github.com/airbytehq/airbyte/pull/37207) | schema descriptions |
 | 1.1.0 | 2023-08-31 | [28941](https://github.com/airbytehq/airbyte/pull/28941) | Migrate connector to low-code |
