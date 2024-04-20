@@ -161,9 +161,10 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 |:------- |:---------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.3 | 2024-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 1.0.2 | 2024-04-15 | [37198](https://github.com/airbytehq/airbyte/pull/37198) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.0.1 | 2024-04-12 | [37198](https://github.com/airbytehq/airbyte/pull/37198) | schema descriptions |
-| 1.0.0   | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates                 |
-| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
-| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807)   | Implement OAuth support        |
-| 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469)   | Migrate to the CDK             |
+| 1.0.0 | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates |
+| 0.2.5 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.2.4 | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807) | Implement OAuth support |
+| 0.2.3 | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469) | Migrate to the CDK |
