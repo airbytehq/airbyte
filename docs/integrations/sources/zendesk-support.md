@@ -158,6 +158,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 | :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.2.10 | 2024-04-19 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Updating to 0.80.0 CDK |
 | 2.2.9 | 2024-04-12 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | schema descriptions |
 | 2.2.8    | 2024-02-09 | [35083](https://github.com/airbytehq/airbyte/pull/35083) | Manage dependencies with Poetry.                                                                                                                                                                                                   |
 | `2.2.7`  | 2024-02-05 | [34840](https://github.com/airbytehq/airbyte/pull/34840) | Fix missing fields in schema                                                                                                                                                                                                       |
