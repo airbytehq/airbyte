@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mssql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
@@ -16,7 +15,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,10 +48,18 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
     AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     final JsonNode incrementalState = getIncrementalState(pair);
-
+    // If there is no incremental state, save the latest OC state
+    // Such as in the case of full refresh
+    final JsonNode finalState;
+    if (incrementalState == null ||  incrementalState.isEmpty()) {
+      finalState = Jsons.jsonNode(getOrderedColumnLoadStatus(pair));
+    } else {
+      finalState = incrementalState;
+    }
+    LOGGER.debug("finalState: {}", finalState);
     return new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
-            .withStream(getAirbyteStreamState(pair, incrementalState));
+            .withStream(getAirbyteStreamState(pair, finalState));
   }
 
   @Override
