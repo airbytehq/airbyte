@@ -113,6 +113,7 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.5.2 | 2024-04-19 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Updating to 0.80.0 CDK |
 | 0.5.1 | 2024-04-12 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | schema descriptions |
 | 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.4.0   | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media`          |
