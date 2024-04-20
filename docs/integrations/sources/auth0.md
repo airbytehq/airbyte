@@ -57,11 +57,12 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.5.3 | 2024-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
 | 0.5.2 | 2024-04-12 | [37121](https://github.com/airbytehq/airbyte/pull/37121) | schema descriptions |
 | 0.5.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
-| 0.5.0   | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image                                                   |
-| 0.4.1   | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs                                             |
-| 0.4.0   | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK                                                 |
-| 0.3.0   | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
-| 0.2.0   | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream                                                      |
-| 0.1.0   | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream                                              |
+| 0.5.0 | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image |
+| 0.4.1 | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs |
+| 0.4.0 | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK |
+| 0.3.0 | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
+| 0.2.0 | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream |
+| 0.1.0 | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream |

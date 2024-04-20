@@ -145,92 +145,8 @@ definitions:
 
     schema_loader:
       type: InlineSchemaLoader
-      schema:
-        definitions:
-          user:
-            type: object
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              accountId:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              publicName:
-                type:
-                  - string
-                  - "null"
-          content:
-            type: object
-            properties:
-              id:
-                type: string
-              title:
-                type: string
-              type:
-                type: string
-              status:
-                type: string
-          contentRestriction:
-            type: object
-            properties:
-              operations:
-                type:
-                  - string
-                  - "null"
-              restrictions:
-                user:
-                  type: object
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: "#/definitions/user"
-          usersUserKeys:
-            type: object
-            properties:
-              users:
-                type: array
-                items:
-                  $ref: "#/definitions/user"
-              userKeys:
-                type: array
-                items:
-                  type: string
-          version:
-            type: object
-            properties:
-              by:
-                $ref: "#/definitions/user"
-              when:
-                type:
-                  - string
-                  - "null"
-                format: date-time
-              friendlyWhen:
-                type:
-                  - string
-                  - "null"
-              message:
-                type:
-                  - string
-                  - "null"
-              number:
-                type:
-                  - integer
-                  - "null"
-              minorEdit:
-                type:
-                  - boolean
-                  - "null"
-              collaborators:
-                $ref: "#/definitions/usersUserKeys"
+      schema:  
+        $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: true
         properties:
@@ -253,7 +169,24 @@ definitions:
               latest:
                 type: boolean
               createdBy:
-                $ref: "#/definitions/user"
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
               createdDate:
                 description: Date and time when the blog post was created
                 type: string
@@ -263,12 +196,176 @@ definitions:
                 type: object
                 properties:
                   publishers:
-                    $ref: "#/definitions/usersUserKeys"
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            accountId:
+                              type:
+                                - string
+                                - "null"
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            publicName:
+                              type:
+                                - string
+                                - "null"
+                      userKeys:
+                        type: array
+                        items:
+                          type: string
               previousVersion:
-                $ref: "#/definitions/version"
+                type: object
+                properties:
+                  by:
+                    type: object
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      accountId:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      publicName:
+                        type:
+                          - string
+                          - "null"
+                  when:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  friendlyWhen:
+                    type:
+                      - string
+                      - "null"
+                  message:
+                    type:
+                      - string
+                      - "null"
+                  number:
+                    type:
+                      - integer
+                      - "null"
+                  minorEdit:
+                    type:
+                      - boolean
+                      - "null"
+                  collaborators:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            accountId:
+                              type:
+                                - string
+                                - "null"
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            publicName:
+                              type:
+                                - string
+                                - "null"
+                      userKeys:
+                        type: array
+                        items:
+                          type: string
           version:
             description: Version number of the blog post.
-            $ref: "#/definitions/version"
+            type: object
+            properties:
+              by:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
+              when:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              friendlyWhen:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              number:
+                type:
+                  - integer
+                  - "null"
+              minorEdit:
+                type:
+                  - boolean
+                  - "null"
+              collaborators:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
           descendants:
             description: Details of the descendants of the blog post, such as comments
             type: object
@@ -281,13 +378,52 @@ definitions:
                     description: List of comment items
                     type: array
                     items:
-                      $ref: "#/definitions/content"
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        type:
+                          type: string
+                        status:
+                          type: string
           restrictions:
             description: Restrictions on reading the blog post
             type: object
             properties:
               read:
-                $ref: "#/definitions/contentRestriction"
+                type: object
+                properties:
+                  operations:
+                    type:
+                      - string
+                      - "null"
+                  restrictions:
+                    user:
+                      type: object
+                      properties:
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              accountId:
+                                type:
+                                  - string
+                                  - "null"
+                              email:
+                                type:
+                                  - string
+                                  - "null"
+                              publicName:
+                                type:
+                                  - string
+                                  - "null"
           _expandable:
             description:
               Expandable details related to the blog post container and
@@ -368,91 +504,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        definitions:
-          user:
-            type: object
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              accountId:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              publicName:
-                type:
-                  - string
-                  - "null"
-          content:
-            type: object
-            properties:
-              id:
-                type: string
-              title:
-                type: string
-              type:
-                type: string
-              status:
-                type: string
-          contentRestriction:
-            type: object
-            properties:
-              operations:
-                type:
-                  - string
-                  - "null"
-              restrictions:
-                user:
-                  type: object
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: "#/definitions/user"
-          usersUserKeys:
-            type: object
-            properties:
-              users:
-                type: array
-                items:
-                  $ref: "#/definitions/user"
-              userKeys:
-                type: array
-                items:
-                  type: string
-          version:
-            type: object
-            properties:
-              by:
-                $ref: "#/definitions/user"
-              when:
-                type:
-                  - string
-                  - "null"
-                format: date-time
-              friendlyWhen:
-                type:
-                  - string
-                  - "null"
-              message:
-                type:
-                  - string
-                  - "null"
-              number:
-                type:
-                  - integer
-                  - "null"
-              minorEdit:
-                type:
-                  - boolean
-                  - "null"
-              collaborators:
-                $ref: "#/definitions/usersUserKeys"
+        $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: true
         properties:
@@ -477,7 +529,24 @@ definitions:
                 type: boolean
               createdBy:
                 description: Created by user
-                $ref: "#/definitions/user"
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
               createdDate:
                 description: Date and time of creation
                 type: string
@@ -488,13 +557,177 @@ definitions:
                 properties:
                   publishers:
                     description: Publishers of the page
-                    $ref: "#/definitions/usersUserKeys"
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            accountId:
+                              type:
+                                - string
+                                - "null"
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            publicName:
+                              type:
+                                - string
+                                - "null"
+                      userKeys:
+                        type: array
+                        items:
+                          type: string
               previousVersion:
                 description: Previous version details
-                $ref: "#/definitions/version"
+                type: object
+                properties:
+                  by:
+                    type: object
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      accountId:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      publicName:
+                        type:
+                          - string
+                          - "null"
+                  when:
+                    type:
+                      - string
+                      - "null"
+                    format: date-time
+                  friendlyWhen:
+                    type:
+                      - string
+                      - "null"
+                  message:
+                    type:
+                      - string
+                      - "null"
+                  number:
+                    type:
+                      - integer
+                      - "null"
+                  minorEdit:
+                    type:
+                      - boolean
+                      - "null"
+                  collaborators:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            accountId:
+                              type:
+                                - string
+                                - "null"
+                            email:
+                              type:
+                                - string
+                                - "null"
+                            publicName:
+                              type:
+                                - string
+                                - "null"
+                      userKeys:
+                        type: array
+                        items:
+                          type: string
           version:
             description: Version of the page
-            $ref: "#/definitions/version"
+            type: object
+            properties:
+              by:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
+              when:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+              friendlyWhen:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              number:
+                type:
+                  - integer
+                  - "null"
+              minorEdit:
+                type:
+                  - boolean
+                  - "null"
+              collaborators:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
           descendants:
             description: Descendant comments of this page
             type: object
@@ -508,7 +741,16 @@ definitions:
                     type: array
                     items:
                       description: Individual comment item
-                      $ref: "#/definitions/content"
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        type:
+                          type: string
+                        status:
+                          type: string
           body:
             description: Page body content
             type: object
@@ -565,7 +807,37 @@ definitions:
             properties:
               read:
                 description: Read restrictions
-                $ref: "#/definitions/contentRestriction"
+                type: object
+                properties:
+                  operations:
+                    type:
+                      - string
+                      - "null"
+                  restrictions:
+                    user:
+                      type: object
+                      properties:
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              accountId:
+                                type:
+                                  - string
+                                  - "null"
+                              email:
+                                type:
+                                  - string
+                                  - "null"
+                              publicName:
+                                type:
+                                  - string
+                                  - "null"
           _expandable:
             description: Expandable URLs related to this page
             type: object
