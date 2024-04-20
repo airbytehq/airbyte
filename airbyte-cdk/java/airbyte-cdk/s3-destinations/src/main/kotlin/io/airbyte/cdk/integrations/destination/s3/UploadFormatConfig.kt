@@ -5,8 +5,8 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.fasterxml.jackson.databind.JsonNode
 
-interface S3FormatConfig {
-    val format: S3Format
+interface UploadFormatConfig {
+    val format: FileUploadFormat
 
     val fileExtension: String
 

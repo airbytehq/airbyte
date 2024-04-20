@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3
 
-enum class S3Format(val fileExtension: String) {
+enum class FileUploadFormat(val fileExtension: String) {
     AVRO("avro"),
     CSV("csv"),
     JSONL("jsonl"),

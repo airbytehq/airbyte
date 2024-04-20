@@ -6,10 +6,9 @@ package io.airbyte.cdk.integrations.destination.s3.parquet
 
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
-class S3ParquetConstants {
+class ParquetConstants {
 
     companion object {
-        @JvmField
         val DEFAULT_COMPRESSION_CODEC: CompressionCodecName = CompressionCodecName.UNCOMPRESSED
         const val DEFAULT_BLOCK_SIZE_MB: Int = 128
         const val DEFAULT_MAX_PADDING_SIZE_MB: Int = 8
