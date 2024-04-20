@@ -26,9 +26,9 @@ data:
       enabled: true
       packageName: airbyte-source-bamboo-hr
   registries:
-    oss:
-      enabled: true
     cloud:
+      enabled: true
+    oss:
       enabled: true
   releaseStage: alpha
   supportLevel: community
