@@ -80,6 +80,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 0.2.4 | 2024-04-19 | [36668](https://github.com/airbytehq/airbyte/pull/36668) | Updating to 0.80.0 CDK |
 | 0.2.3 | 2024-04-12 | [36668](https://github.com/airbytehq/airbyte/pull/36668) | schema descriptions |
 | 0.2.2 | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry. |
 | 0.2.1   | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0                                                        |
