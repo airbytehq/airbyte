@@ -34,7 +34,7 @@ To create a dedicated read only Salesforce user:
 3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
 4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
 5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
 9. Fill out the required fields:
