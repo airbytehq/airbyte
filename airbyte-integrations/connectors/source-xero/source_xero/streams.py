@@ -67,6 +67,9 @@ class XeroStream(HttpStream, ABC):
     page_size = 100
     current_page = 1
     pagination = False
+    offset = False
+    current_offset = 0
+    offset_id = None
 
     def __init__(self, tenant_id: str, **kwargs):
         super().__init__(**kwargs)
@@ -78,6 +81,8 @@ class XeroStream(HttpStream, ABC):
             return None
         if len(records) == self.page_size:
             self.current_page += 1
+            if self.offset:
+                self.current_offset = records[-1][self.offset_id]
             return {"has_next_page": True}
         return None
 
@@ -86,7 +91,10 @@ class XeroStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         params = {}
         if self.pagination:
-            params["page"] = self.current_page
+            if self.offset:
+                params["offset"] = self.current_offset
+            else:
+                params["page"] = self.current_page
         return params
 
     def request_headers(
@@ -248,3 +256,13 @@ class TaxRates(XeroStream):
 
 class TrackingCategories(XeroStream):
     primary_key = "TrackingCategoryID"
+
+class Journals(IncrementalXeroStream):
+    primary_key = "JournalID"
+    pagination = True
+    offset_id = "JournalNumber"
+    offset = True
+
+    @property
+    def cursor_field(self) -> str:
+        return "CreatedDateUTC"
