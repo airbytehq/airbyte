@@ -2,16 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader, _default_file_path
 
 
 @dataclass
 class BambooHRSchemaLoader(JsonFileSchemaLoader):
 
     config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]] = {"name": "custom_reports_stream"}
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        if not self.file_path:
+            self.file_path = _default_file_path()
+        self.file_path = InterpolatedString.create(self.file_path, parameters=self.parameters)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -47,7 +54,6 @@ class BambooHRSchemaLoader(JsonFileSchemaLoader):
     def _get_json_schema_from_file(self):
         return super().get_json_schema()
 
-    @staticmethod
     def _union_schemas(self, schema1, schema2):
         schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
         return schema1
