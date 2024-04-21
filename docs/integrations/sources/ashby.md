@@ -45,6 +45,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                         | Subject                    |
 | :------ | :--------- | :--------------------------------------------------- | :------------------------- |
+| 0.1.3 | 2024-04-20 | [37120](https://github.com/airbytehq/airbyte/pull/37120) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.1.2 | 2024-04-15 | [37120](https://github.com/airbytehq/airbyte/pull/37120) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.1.1 | 2024-04-12 | [37120](https://github.com/airbytehq/airbyte/pull/37120) | schema descriptions |
-| 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
+| 0.1.0 | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
