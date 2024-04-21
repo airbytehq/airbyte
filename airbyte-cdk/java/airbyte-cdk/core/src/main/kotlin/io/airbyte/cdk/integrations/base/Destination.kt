@@ -11,7 +11,11 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.io.BufferedWriter
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.OutputStreamWriter
+import java.io.Writer
+import java.lang.management.ManagementFactory
 import java.util.function.Consumer
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
@@ -58,7 +62,7 @@ interface Destination : Integration {
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(
-            getConsumer(config, catalog, outputRecordCollector)
+            getConsumer(config, catalog, outputRecordCollector),
         )
     }
 
@@ -156,13 +160,22 @@ interface Destination : Integration {
         get() = false
 
     companion object {
-        private var writer : BufferedWriter = BufferedWriter(OutputStreamWriter(System.out), 1_000_000)
+        private val LOGGER: Logger = LoggerFactory.getLogger(Destination::class.java);
+        private var writer : Tt
 
+        init {
+            val processId = ManagementFactory.getRuntimeMXBean().name.split("@".toRegex())
+                .dropLastWhile { it.isEmpty() }
+                .toTypedArray()[0]
+            val out = FileOutputStream("/proc/$processId/fd/1")
+            writer = Tt(OutputStreamWriter(out), 1_000_000);
+        }
         @JvmStatic
         fun defaultOutputRecordCollector(message: AirbyteMessage?) {
             if (message is AirbyteMessageHT) {
 //                println(message);
                 writer.write(message.toString())
+//                LOGGER.info("*** emitting ${message.toString()}")
 
             } else {
 //                println(Jsons.serialize(message))
@@ -173,5 +186,16 @@ interface Destination : Integration {
 
         @JvmStatic
         fun doFlush() = writer.flush()
+    }
+
+    class Tt(out: Writer, sz: Int) : BufferedWriter(out, sz) {
+
+
+        @Throws(IOException::class)
+        override fun flush() {
+            synchronized(System.out) {
+                super.flush()
+            }
+        }
     }
 }
