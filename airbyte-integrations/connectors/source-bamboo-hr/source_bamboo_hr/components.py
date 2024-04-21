@@ -41,13 +41,13 @@ class BambooHRSchemaLoader(JsonFileSchemaLoader):
             "properties": properties,
         }
 
-    def convert_custom_reports_fields_to_list(custom_reports_fields: str) -> list:
+    def convert_custom_reports_fields_to_list(self, custom_reports_fields: str) -> list:
         return custom_reports_fields.split(",") if custom_reports_fields else []
 
     def _get_json_schema_from_file(self):
         return super().get_json_schema()
 
     @staticmethod
-    def _union_schemas(schema1, schema2):
+    def _union_schemas(self, schema1, schema2):
         schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
         return schema1
