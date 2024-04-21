@@ -168,7 +168,7 @@ interface Destination : Integration {
                 .dropLastWhile { it.isEmpty() }
                 .toTypedArray()[0]
             val out = FileOutputStream("/proc/$processId/fd/1")
-            writer = Tt(OutputStreamWriter(out), 1_000_000);
+            writer = Tt(OutputStreamWriter(out), 2_000_000);
         }
         @JvmStatic
         fun defaultOutputRecordCollector(message: AirbyteMessage?) {
