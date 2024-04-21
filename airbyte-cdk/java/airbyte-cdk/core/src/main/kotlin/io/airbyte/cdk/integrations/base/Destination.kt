@@ -170,5 +170,8 @@ interface Destination : Integration {
             }
             writer.newLine();
         }
+
+        @JvmStatic
+        fun doFlush() = writer.flush()
     }
 }

@@ -126,12 +126,14 @@ internal constructor(
 
         try {
             when (parsed!!.command) {
-                Command.SPEC ->
-                    outputRecordCollector.accept(
-                        AirbyteMessage()
-                            .withType(AirbyteMessage.Type.SPEC)
-                            .withSpec(integration.spec())
-                    )
+                Command.SPEC -> {
+                outputRecordCollector.accept(
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.SPEC)
+                        .withSpec(integration.spec())
+                );
+                    Destination.doFlush();
+            }
                 Command.CHECK -> {
                     val config = parseConfig(parsed!!.getConfigPath())
                     if (integration is Destination) {
