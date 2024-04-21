@@ -10,6 +10,8 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 import java.util.function.Consumer
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
@@ -154,13 +156,19 @@ interface Destination : Integration {
         get() = false
 
     companion object {
+        private var writer : BufferedWriter = BufferedWriter(OutputStreamWriter(System.out), 1_000_000)
+
         @JvmStatic
         fun defaultOutputRecordCollector(message: AirbyteMessage?) {
             if (message is AirbyteMessageHT) {
-                println(message);
+//                println(message);
+                writer.write(message.toString())
+
             } else {
-                println(Jsons.serialize(message))
+//                println(Jsons.serialize(message))
+                writer.write(Jsons.serialize(message))
             }
+            writer.newLine();
         }
     }
 }

@@ -146,7 +146,7 @@ public class PostgresCtidHandler {
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tidRangeScanCapableDBServer = CtidUtils.isTidRangeScanCapableDBServer(database);
-    this.executor = Executors.newFixedThreadPool(2);
+    this.executor = Executors.newFixedThreadPool(1);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(

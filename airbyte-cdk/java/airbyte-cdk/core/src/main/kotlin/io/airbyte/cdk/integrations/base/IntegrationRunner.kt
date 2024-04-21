@@ -73,7 +73,7 @@ internal constructor(
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
-            Destination.Companion.defaultOutputRecordCollector(message)
+            Destination.defaultOutputRecordCollector(message)
         },
         null,
         source
