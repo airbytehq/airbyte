@@ -8,6 +8,7 @@ connectionSpecification:
   - role
   - warehouse
   - database
+  - change_data_capture
   properties:
     credentials:
       title: Authorization Method
@@ -112,20 +113,10 @@ connectionSpecification:
       type: string
       title: Schema
       order: 5
-    jdbc_url_params:
-      description: 'Additional properties to pass to the JDBC URL string when connecting
-        to the database formatted as ''key=value'' pairs separated by the symbol ''&''.
-        (example: key1=value1&key2=value2&key3=value3).'
-      title: JDBC URL Params
-      type: string
-      order: 6
     streams:
-          title: The list of streams to sync
-          description: Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>.
-            Use this to define which files belong in the stream, their format, and how
-            they should be parsed and validated. When sending data to warehouse destination
-            such as Snowflake or BigQuery, each stream is a separate table.
-          order: 10
+          title: Push down filter
+          description: Used to filter out data on the source and creates a dedicated stream
+          order: 6
           type: array
           items:
             title: FileBasedStreamConfig
@@ -142,6 +133,17 @@ connectionSpecification:
             required:
             - name
             - where_clause
+    change_data_capture:
+      default: Change data capture
+      description: Uses change data capture as method to update data
+      group: advanced
+      title: Change data capture
+      type: boolean
+      allowMultiple: false
+      defaultValue: false
+      optional: true
+      sensitive: false
+      order: 7
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
