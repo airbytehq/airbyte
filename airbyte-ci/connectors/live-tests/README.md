@@ -58,6 +58,7 @@ Let's run `debug` to check the output of `read` on two different versions of the
 
 ```bash
 live-tests debug read \
+--connection-id=d3bd39cd-6fec-4691-a661-d52c466d8554
 --connector-image=airbyte/source-pokeapi:dev \
 --connector-image=airbyte/source-pokeapi:latest \
 --config-path=poke_config.json \

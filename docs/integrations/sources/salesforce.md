@@ -34,7 +34,7 @@ To create a dedicated read only Salesforce user:
 3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
 4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
 5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
 9. Fill out the required fields:
@@ -193,6 +193,10 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.6   | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                      |
+| 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                      |
+| 2.5.4   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                     |
+| 2.5.3   | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                                |
 | 2.5.2   | 2024-04-15 | [37105](https://github.com/airbytehq/airbyte/pull/37105) | Raise error when schema generation fails                                                                                             |
 | 2.5.1   | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001) | Update airbyte-cdk to flush print buffer for every message                                                                           |
 | 2.5.0   | 2024-04-11 | [36942](https://github.com/airbytehq/airbyte/pull/36942) | Move Salesforce to partitioned state in order to avoid stuck syncs                                                                   |

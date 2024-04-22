@@ -648,7 +648,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
-| ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| ------- | ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.7.3   | [#37101](https://github.com/airbytehq/airbyte/pull/37101)  | Pin PyAirbyte version.                                                                                                     |
 | 4.7.2   | [#36962](https://github.com/airbytehq/airbyte/pull/36962)  | Re-enable connector dependencies upload on publish.                                                                        |
 | 4.7.1   | [#36961](https://github.com/airbytehq/airbyte/pull/36961)  | Temporarily disable python connectors dependencies upload until we find a schema the data team can work with.              |
 | 4.7.0   | [#36892](https://github.com/airbytehq/airbyte/pull/36892)  | Upload Python connectors dependencies list to GCS on publish.                                                              |
