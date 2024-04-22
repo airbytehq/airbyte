@@ -119,9 +119,6 @@ definitions:
       page_size: 100
     page_token_option:
       type: RequestPath
-
-  links_next_paginator_with_page_size:
-    $ref: "#/definitions/links_next_paginator"
     page_size_option:
       type: RequestOption
       field_name: "page[size]"
@@ -136,13 +133,6 @@ definitions:
       page_size: 100
     page_token_option:
       type: RequestPath
-
-  after_url_paginator_with_paze_size:
-    $ref: "#/definitions/after_url_paginator"
-    page_size_option:
-      type: RequestOption
-      field_name: "per_page"
-      inject_into: request_parameter
 
   # Full-refresh streams
   account_attributes_stream:
@@ -173,7 +163,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "brands"
       path: "brands"
@@ -194,28 +184,6 @@ definitions:
       primary_key: "name"
 
   # Incremental cursor-based streams
-  #  articles_stream:
-  #    $ref: "#/definitions/base_incremental_stream"
-  #    retriever:
-  #      $ref: "#/definitions/base_stream/retriever"
-  #      ignore_stream_slicer_parameters_on_paginated_requests: true
-  #      requester:
-  #        $ref: "#/definitions/retriever/requester"
-  #        request_parameters:
-  #          sort_by: "updated_at"
-  #          sort_order: "asc"
-  #      record_selector:
-  #        type: RecordSelector
-  #        extractor:
-  #          type: DpathExtractor
-  #          field_path: [ "articles" ]
-  #    $parameters:
-  #      name: "articles"
-  #      path: "help_center/incremental/articles"
-  #      cursor_field: "updated_at"
-  #      cursor_filter: "start_time"
-  #      primary_key: "id"
-
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -226,7 +194,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     incremental_sync:
       class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
       type: CustomIncrementalSync
@@ -345,34 +313,6 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
-  #  posts_stream:
-  #    $ref: "#/definitions/semi_incremental_stream"
-  #    retriever:
-  #      $ref: "#/definitions/semi_incremental_stream/retriever"
-  #      requester:
-  #        $ref: "#/definitions/retriever/requester"
-  #        request_parameters:
-  #          sort_by: "updated_at"
-  #      paginator:
-  #        type: DefaultPaginator
-  #        page_size_option:
-  #          type: RequestOption
-  #          field_name: "page[size]"
-  #          inject_into: request_parameter
-  #        pagination_strategy:
-  #          type: CursorPagination
-  #          page_size: 4
-  #          cursor_value: "{{ response['links']['next'] }}"
-  #          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-  #        page_token_option:
-  #          type: RequestPath
-  #    $parameters:
-  #      name: "posts"
-  #      path: "community/posts"
-  #      data_path: "posts"
-  #      cursor_field: "updated_at"
-  #      primary_key: "id"
-
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -382,7 +322,7 @@ definitions:
         request_parameters:
           sort: "created_at"
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "satisfaction_ratings"
       path: "satisfaction_ratings"
@@ -523,7 +463,7 @@ definitions:
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
@@ -554,7 +494,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_metric_events"
       path: "incremental/ticket_metric_events"
@@ -568,7 +508,7 @@ definitions:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator_with_page_size"
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_metrics"
       path: "ticket_metrics"
@@ -657,7 +597,6 @@ streams:
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
   # Incremental streams
-  #  - $ref: '#/definitions/articles_stream'
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"
   - $ref: "#/definitions/group_memberships_stream"
@@ -665,7 +604,6 @@ streams:
   - $ref: "#/definitions/organization_fields_stream"
   - $ref: "#/definitions/organization_memberships_stream"
   - $ref: "#/definitions/organizations_stream"
-  #  - $ref: '#/definitions/posts_stream'
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
