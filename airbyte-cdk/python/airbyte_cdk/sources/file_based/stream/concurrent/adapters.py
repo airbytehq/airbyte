@@ -94,7 +94,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         self,
         stream: DefaultStream,
         legacy_stream: AbstractFileBasedStream,
-        cursor: AbstractConcurrentFileBasedCursor,
+        cursor: "AbstractConcurrentFileBasedCursor",
         slice_logger: SliceLogger,
         logger: logging.Logger,
     ):
