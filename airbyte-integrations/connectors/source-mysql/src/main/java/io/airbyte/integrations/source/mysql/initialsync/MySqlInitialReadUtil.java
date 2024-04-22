@@ -127,13 +127,6 @@ public class MySqlInitialReadUtil {
         getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
   }
 
-  public static CdcState createCdcState(final JdbcDatabase database,
-                                        final ConfiguredAirbyteCatalog catalog,
-                                        final StateManager stateManager) {
-    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
-    return getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
-  }
-
   private static CdcState getCdcState(final JdbcDatabase database,
                                       final ConfiguredAirbyteCatalog catalog,
                                       final StateManager stateManager,
@@ -339,6 +332,8 @@ public class MySqlInitialReadUtil {
     // key load in progress.
     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToInitialLoadStatus = new HashMap<>();
 
+    LOGGER.info("raw state message: " + rawStateMessages);
+
     if (rawStateMessages != null) {
       rawStateMessages.forEach(stateMessage -> {
         final AirbyteStreamState stream = stateMessage.getStream();
@@ -360,11 +355,12 @@ public class MySqlInitialReadUtil {
             pairToInitialLoadStatus.put(pair, primaryKeyLoadStatus);
             streamsStillInPkSync.add(pair);
           }
+          alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
         }
-        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
     final List<ConfiguredAirbyteStream> streamsForPkSync = new ArrayList<>();
+    LOGGER.atInfo().log("alreadySeenStreamPairs: " + alreadySeenStreamPairs);
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
@@ -373,6 +369,7 @@ public class MySqlInitialReadUtil {
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
         Collections.unmodifiableSet(alreadySeenStreamPairs));
     streamsForPkSync.addAll(newlyAddedStreams);
+    LOGGER.atInfo().log("streamsForPksync: " + streamsForPkSync);
     return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()),
         pairToInitialLoadStatus);
   }
@@ -385,7 +382,8 @@ public class MySqlInitialReadUtil {
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
-    // Add a filter here to identify resumable full refresh streams.
+    LOGGER.atInfo().log("all streams: " + allStreams + "; newlyAdded streams: " + newlyAddedStreams +"; already synced streams: " + alreadySyncedStreams);
+    // Add a filter here to exclude non resumable full refresh streams.
     return catalog.getStreams().stream()
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
@@ -420,24 +418,6 @@ public class MySqlInitialReadUtil {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final PrimaryKeyInfo pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
-      pairToPkInfoMap.put(pair, pkInfo);
-    });
-    return pairToPkInfoMap;
-  }
-
-  public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> initPairToPrimaryKeyInfoMap(
-                                                                                                                           final JdbcDatabase database,
-                                                                                                                           final InitialLoadStreams initialLoadStreams,
-                                                                                                                           final TableInfo<CommonField<MysqlType>> table,
-                                                                                                                           final String quoteString) {
-    final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPkInfoMap = new HashMap<>();
-    // For every stream that is in primary initial key sync, we want to maintain information about the
-    // current primary key info associated with the
-    // stream
-    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
-          new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final PrimaryKeyInfo pkInfo = getPrimaryKeyInfo(database, stream, table, quoteString);
       pairToPkInfoMap.put(pair, pkInfo);
     });
     return pairToPkInfoMap;

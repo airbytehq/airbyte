@@ -179,7 +179,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public boolean supportResumableFullRefresh() {
+  public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
+    if (airbyteStream.getPrimaryKey() == null || airbyteStream.getPrimaryKey().isEmpty()) {
+      return false;
+    }
     return true;
   }
 
@@ -200,6 +203,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     } else {
       final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
+      LOGGER.atInfo().log("initial load streams: " + initialLoadStreams);
       initialLoadStateManager =
           new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
               initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
@@ -218,14 +222,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       return getMySqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, stream, Instant.now(), getQuoteString())
           .get();
     } else {
-      final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
-      final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
-
-      final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
-          getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
-
       return new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-          namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+          namespacePair -> Jsons.emptyObject(),
           getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
   }
