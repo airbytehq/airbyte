@@ -14,8 +14,12 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumEventConverter.class);
 
   private final CdcMetadataInjector cdcMetadataInjector;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
@@ -38,7 +42,13 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(DebeziumEventConverter.BEFORE_EVENT);
+    if (before != null) {
+      LOGGER.info("BEFORE: ", before.asText());
+    }
     final JsonNode after = debeziumEvent.get(DebeziumEventConverter.AFTER_EVENT);
+    if (after != null) {
+      LOGGER.info("AFTER: ", after.asText());
+    }
     final JsonNode source = debeziumEvent.get(DebeziumEventConverter.SOURCE_EVENT);
     final String operation = debeziumEvent.get(DebeziumEventConverter.OPERATION_FIELD).asText();
     final boolean isEnforceSchema = MongoDbCdcEventUtils.isEnforceSchema(config);
