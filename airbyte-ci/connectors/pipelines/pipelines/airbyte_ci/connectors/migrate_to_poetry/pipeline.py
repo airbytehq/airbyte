@@ -433,9 +433,9 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
                 step=RegressionTest(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
                 args=lambda results: {
-                    "new_connector_container": results["BUILD_CONNECTOR_IMAGE"].output[LOCAL_BUILD_PLATFORM],
-                    "original_dependencies": results["POETRY_INIT"].output[0],
-                    "original_dev_dependencies": results["POETRY_INIT"].output[1],
+                    "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
+                    "original_dependencies": results[CONNECTOR_TEST_STEP_ID.POETRY_INIT].output[0],
+                    "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.POETRY_INIT].output[1],
                 },
             )
         ],
