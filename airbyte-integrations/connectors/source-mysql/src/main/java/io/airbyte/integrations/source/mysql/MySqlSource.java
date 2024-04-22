@@ -180,10 +180,17 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
-    if (airbyteStream.getPrimaryKey() == null || airbyteStream.getPrimaryKey().isEmpty()) {
-      return false;
+    LOGGER.atInfo().log("airbyte stream to check for full refresh: " + airbyteStream);
+
+    // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
+    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+      return true;
     }
-    return true;
+    // for cursor based, primary key is stored in primary key under this stream.
+    if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   private MySqlInitialLoadStateManager initialLoadStateManager = null;
@@ -203,7 +210,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     } else {
       final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
-      LOGGER.atInfo().log("initial load streams: " + initialLoadStreams);
       initialLoadStateManager =
           new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
               initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
