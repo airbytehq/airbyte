@@ -1,51 +1,50 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "campaign_id": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "advertiser_id": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "app_id": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "pixel_id": {
       "type": ["string", "null"]
     },
     "app_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "objective_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "campaign_name": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "is_smart_performance_campaign": {
-      "type": "boolean"
+      "type":["boolean", "null"]
     },
     "operation_status": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "campaign_secondary_status": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "adgroup_secondary_status": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "campaign_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "app_promotion_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "optimization_goal": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "bid_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "deep_bid_type": {
       "type": ["string", "null"]
@@ -54,55 +53,55 @@
       "type": ["boolean", "null"]
     },
     "budget": {
-      "type": "number"
+      "type":["number", "null"]
     },
     "budget_mode": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "scheduled_budget": {
-      "type": "number"
+      "type":["number", "null"]
     },
     "promotion_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "optimization_event": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "placements": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type":["string", "null"]
       }
     },
     "placement_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "promotion_website_type": {
       "type": ["string", "null"]
     },
     "comment_disabled": {
-      "type": "boolean"
+      "type":["boolean", "null"]
     },
     "share_disabled": {
-      "type": "boolean"
+      "type":["boolean", "null"]
     },
     "video_download_disabled": {
-      "type": "boolean"
+      "type":["boolean", "null"]
     },
     "location_ids": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type":["string", "null"]
       }
     },
     "languages": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type":["string", "null"]
       }
     },
     "exclude_age_under_eighteen": {
-      "type": "boolean"
+      "type":["boolean", "null"]
     },
     "excluded_audience_ids": {
       "type": ["array", "null"]
@@ -114,25 +113,25 @@
       "type": ["array", "null"]
     },
     "schedule_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "schedule_start_time": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "schedule_end_time": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "dayparting": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "billing_event": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "app_download_url": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "app_name": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "call_to_action_id": {
       "type": ["string", "null"]
@@ -143,7 +142,7 @@
         "type": "object",
         "properties": {
           "call_to_action": {
-            "type": "string"
+            "type":["string", "null"]
           }
         }
       }
@@ -160,10 +159,10 @@
                 "type": "object",
                 "properties": {
                   "video_id": {
-                    "type": "string"
+                    "type":["string", "null"]
                   },
                   "file_name": {
-                    "type": "string"
+                    "type":["string", "null"]
                   }
                 }
               },
@@ -176,7 +175,7 @@
                   "type": "object",
                   "properties": {
                     "web_uri": {
-                      "type": "string"
+                      "type":["string", "null"]
                     }
                   }
                 }
@@ -198,7 +197,7 @@
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type":["string", "null"]
           }
         }
       }
@@ -213,28 +212,28 @@
       "type": ["array", "null"]
     },
     "deeplink": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "deeplink_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "identity_id": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "identity_type": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "impression_tracking_url": {
       "type": ["string", "null"]
     },
     "click_tracking_url": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "create_time": {
-      "type": "string"
+      "type":["string", "null"]
     },
     "modify_time": {
-      "type": "string"
+      "type":["string", "null"]
     }
   }
 }

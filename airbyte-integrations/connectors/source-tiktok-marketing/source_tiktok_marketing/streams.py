@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
+from itertools import groupby
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
 
 import pendulum
@@ -16,7 +17,7 @@ import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -388,6 +389,51 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         return params
 
 
+class FullRefreshTikTokSubStream(HttpSubStream, FullRefreshTiktokStream):
+
+    parent_id_field = None
+
+    def __init__(self, start_date: str, end_date: str, **kwargs):
+        FullRefreshTiktokStream.__init__(self, start_date, end_date, **kwargs)
+
+    @abstractmethod
+    def is_valid_parent_slice(self, parent_slice):
+        pass
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        group_ids = '","'.join(stream_slice["group_ids"])
+        return {"advertiser_id": stream_slice["advertiser_id"], self.parent_id_field + "s": '["' + group_ids + '"]'}
+
+    def stream_slices(
+            self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            aggregated_parent_records = self._aggregate_campaign_ids(parent_records)
+            yield from aggregated_parent_records
+
+    def _aggregate_campaign_ids(self, parent_stream_slices):
+        filtered_parent_stream_slices = [parent_slice for parent_slice
+                                         in parent_stream_slices if self.is_valid_parent_slice(parent_slice)]
+        for key, group in groupby(filtered_parent_stream_slices, key=lambda x: x['advertiser_id']):
+            current_c_ids = [item[self.parent_id_field] for item in group]
+            batch_size = 100
+            for i in range(0, len(current_c_ids), batch_size):
+                yield {'advertiser_id': key, 'group_ids': current_c_ids[i:i + batch_size]}
+
 class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     cursor_field = "modify_time"
 
@@ -517,6 +563,7 @@ class CreativeAssetsPortfolios(FullRefreshTiktokStream):
 
 class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
+    use_cache = False  # SmartPerformanceCampaigns needs full refresh to fetch all campaign ids
 
     primary_key = "campaign_id"
 
@@ -526,11 +573,44 @@ class Campaigns(IncrementalTiktokStream):
 
 class AdGroups(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
+    use_cache = False  # ACO needs to fetch all ad groups and not just the modified ones
 
     primary_key = "adgroup_id"
 
     def path(self, *args, **kwargs) -> str:
         return "adgroup/get/"
+
+
+class SmartPerformanceCampaigns(FullRefreshTikTokSubStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1766324010279938"""
+
+    parent_id_field = "campaign_id"
+
+    def __init__(self, start_date: str, end_date: str, **kwargs):
+        super().__init__(start_date, end_date, **kwargs)
+        self.parent = Campaigns(DEFAULT_START_DATE, end_date, **kwargs)
+
+    def is_valid_parent_slice(self, parent_slice):
+        return parent_slice["is_smart_performance_campaign"]
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "campaign/spc/get/"
+
+
+class Acos(FullRefreshTikTokSubStream):
+
+    parent_id_field = "adgroup_id"
+
+    def __init__(self, start_date: str, end_date: str, **kwargs):
+        super().__init__(start_date, end_date, **kwargs)
+        self.parent = AdGroups(DEFAULT_START_DATE, end_date, **kwargs)
+
+    def is_valid_parent_slice(self, parent_slice):
+        return parent_slice["creative_material_mode"] == 'SMART_CREATIVE'
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "ad/aco/get/"
+
 
 
 class Ads(IncrementalTiktokStream):
