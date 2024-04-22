@@ -279,6 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.5.2   | 2024-04-19 | [37435](https://github.com/airbytehq/airbyte/pull/37435) | Updated `manifest.yaml` to use the latest CDK Manifest version to fix the Incremental STATE values                                                  |
 | 2.5.1   | 2024-03-15 | [36165](https://github.com/airbytehq/airbyte/pull/36165) | Unpin CDK Version                                                                                                            |
 | 2.5.0   | 2024-03-15 | [36173](https://github.com/airbytehq/airbyte/pull/36173) | Extended `Disputes` stream schema with missing properties                                                                    |
 | 2.4.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                     |
