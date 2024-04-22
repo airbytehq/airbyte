@@ -186,6 +186,7 @@ class RegressionTest(Step):
         )
 
 
+# TODO: consider https://packaging.pypa.io/en/latest/version.html#packaging.version.Version
 def compare_semver_versions(version1: str, version2: str) -> int:
     """Compare two semver versions.
     Return:
