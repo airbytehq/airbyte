@@ -105,6 +105,7 @@ class SourceBingAds(AbstractSource):
             for _slice in accounts.stream_slices():
                 account_ids.update({str(account["Id"]) for account in accounts.read_records(SyncMode.full_refresh, _slice)})
             self.validate_custom_reposts(config, client)
+
             if account_ids:
                 return True, None
             else:
