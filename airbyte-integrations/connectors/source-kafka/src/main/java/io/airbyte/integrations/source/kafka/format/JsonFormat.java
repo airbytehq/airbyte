@@ -153,7 +153,7 @@ public class JsonFormat extends AbstractFormat {
               .withRecord(new AirbyteRecordMessage()
                   .withStream(record.topic())
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", output).build())));
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", record.value()).build())));
         }
 
         return endOfData();
