@@ -144,13 +144,13 @@ def message_repository():
 def test_successful_check():
     """Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned"""
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert expected == MockSource(check_lambda=lambda: (True, None)).check(logger, {})
+    assert MockSource(check_lambda=lambda: (True, None)).check(logger, {}) == expected
 
 
 def test_failed_check():
     """Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned"""
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
-    assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
+    assert MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {}) == expected
 
 
 def test_raising_check(mocker):
@@ -186,6 +186,10 @@ class MockStream(Stream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
 
 
 class MockStreamWithState(MockStream):
@@ -249,7 +253,7 @@ def test_discover(mocker):
     expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2])
     src = MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2])
 
-    assert expected == src.discover(logger, {})
+    assert src.discover(logger, {}) == expected
 
 
 def test_read_nonexistent_stream_raises_exception(mocker):
@@ -261,8 +265,11 @@ def test_read_nonexistent_stream_raises_exception(mocker):
 
     src = MockSource(streams=[s1])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
-    with pytest.raises(KeyError):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         list(src.read(logger, {}, catalog))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "not found in the source" in exc_info.value.internal_message
 
 
 def test_read_nonexistent_stream_without_raises_exception(mocker):
@@ -434,7 +441,7 @@ def test_valid_full_refresh_read_no_slices(mocker):
     )
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
-    assert expected == messages
+    assert messages == expected
 
 
 def test_valid_full_refresh_read_with_slices(mocker):
@@ -478,7 +485,7 @@ def test_valid_full_refresh_read_with_slices(mocker):
 
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
-    assert expected == messages
+    assert messages == expected
 
 
 def test_full_refresh_does_not_use_incoming_state(mocker):
@@ -748,7 +755,7 @@ class TestIncrementalRead:
         )
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -805,7 +812,7 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -890,7 +897,7 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -974,7 +981,7 @@ class TestIncrementalRead:
 
         messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=input_state)))
 
-        assert expected == messages
+        assert messages == expected
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -1281,7 +1288,7 @@ def test_continue_sync_with_failed_streams(mocker, exception_to_raise, expected_
         messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
         messages = _fix_emitted_at(messages)
 
-        assert expected == messages
+        assert messages == expected
 
     assert "lamentations" in exc.value.message
     assert exc.value.failure_type == FailureType.config_error
@@ -1331,7 +1338,7 @@ def test_continue_sync_source_override_false(mocker):
         messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
         messages = _fix_emitted_at(messages)
 
-        assert expected == messages
+        assert messages == expected
 
     assert "lamentations" in exc.value.message
     assert exc.value.failure_type == FailureType.config_error
@@ -1382,7 +1389,7 @@ def test_sync_error_trace_messages_obfuscate_secrets(mocker):
         messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
         messages = _fix_emitted_at(messages)
 
-        assert expected == messages
+        assert messages == expected
 
     assert "lamentations" in exc.value.message
     assert exc.value.failure_type == FailureType.config_error
@@ -1427,7 +1434,7 @@ def test_continue_sync_with_failed_streams_with_override_false(mocker):
         messages = [_remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
         messages = _fix_emitted_at(messages)
 
-        assert expected == messages
+        assert messages == expected
 
     assert "lamentations" in exc.value.message
     assert exc.value.failure_type == FailureType.config_error

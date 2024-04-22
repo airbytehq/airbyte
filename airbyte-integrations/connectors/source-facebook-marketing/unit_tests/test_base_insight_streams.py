@@ -97,7 +97,9 @@ class TestBaseInsightsStream:
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -124,8 +126,11 @@ class TestBaseInsightsStream:
         2. if read slice 2, 3 state not changed
             if read slice 2, 3, 1 state changed to 3
         """
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {}
+
         job = mocker.Mock(spec=AsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        job.get_result.return_value = [rec, rec, rec]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -146,6 +151,38 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
+
+    def test_read_records_add_account_id(self, mocker, api, some_config):
+        rec_without_account = mocker.Mock()
+        rec_without_account.export_all_data.return_value = {}
+
+        rec_with_account = mocker.Mock()
+        rec_with_account.export_all_data.return_value = {"account_id": "some_account_id"}
+
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = [rec_without_account, rec_with_account]
+        job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
+
+        assert len(records) == 2
+        for record in records:
+            assert record.get("account_id")
 
     @pytest.mark.parametrize(
         "state,result_state",
@@ -334,9 +371,9 @@ class TestBaseInsightsStream:
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
         # assert that we sync all periods including insight_lookback_period
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
-        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
+        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert generated_jobs[0].interval.start == start_date.date()
+        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
     def test_stream_slices_with_state_close_to_now(self, api, async_manager_mock, recent_start_date, some_config):
         """Stream will use start_date when close to now and start_date close to now"""
@@ -363,15 +400,15 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
-        assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
+        assert len(generated_jobs) == (end_date.date() - start_date).days + 1
+        assert generated_jobs[0].interval.start == start_date.date()
+        assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
     @pytest.mark.parametrize("state_format", ["old_format", "new_format"])
     def test_stream_slices_with_state_and_slices(self, api, async_manager_mock, start_date, some_config, state_format):
         """Stream will use cursor_value from state, but will skip saved slices"""
-        end_date = start_date + duration(days=10)
-        cursor_value = start_date + duration(days=5)
+        end_date = start_date + duration(days=40)
+        cursor_value = start_date + duration(days=32)
 
         if state_format == "old_format":
             state = {
@@ -410,7 +447,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 34 slices because we ignore slices which are within insights_lookback_period"
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 37 slices because we ignore slices which are within insights_lookback_period"
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 

@@ -260,8 +260,8 @@ ___
 * **Number of days per request:**  The maximum supported date range is 31 days.
 * **Historical Data:**  You can't retrieve more than 3yrs of data for the `transactions` stream. For `dispute_start_date` you can only retrieve 180 days of data (see specifications per stream) 
 * `records_per_request`: The maximum number of records in a single request are 10K (API Server restriction)
-* `page_size`: The maximum page size is 500. This has been configured by default.
-* `requests_per_minute` = The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
+* `page_size`: The number of records per page is differs per stream. `source-paypal-transaction` sets maximum allowed page size for each stream by default.
+* `requests_per_minute`: The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
 
 
 
@@ -279,6 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.5.2   | 2024-04-19 | [37435](https://github.com/airbytehq/airbyte/pull/37435) | Updated `manifest.yaml` to use the latest CDK Manifest version to fix the Incremental STATE values                                                  |
 | 2.5.1   | 2024-03-15 | [36165](https://github.com/airbytehq/airbyte/pull/36165) | Unpin CDK Version                                                                                                            |
 | 2.5.0   | 2024-03-15 | [36173](https://github.com/airbytehq/airbyte/pull/36173) | Extended `Disputes` stream schema with missing properties                                                                    |
 | 2.4.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                     |

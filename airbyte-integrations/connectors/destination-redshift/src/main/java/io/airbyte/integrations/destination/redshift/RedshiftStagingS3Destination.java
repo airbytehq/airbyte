@@ -12,7 +12,6 @@ import static io.airbyte.integrations.destination.redshift.constants.RedshiftDes
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -25,11 +24,11 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
@@ -56,6 +55,7 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDest
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -93,7 +93,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY))
+            : new NoEncryption();
     if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -198,6 +199,13 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   }
 
   @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2 classes with
+    // composition.
+    return new RedshiftSuperLimitationTransformer(parsedCatalog, defaultNamespace);
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -211,17 +219,10 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY))
+            : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
-    final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
-    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
-      LOGGER.warn("""
-                  Increasing the number of file buffers past {} can lead to increased performance but
-                  leads to increased memory usage. If the number of file buffers exceeds the number
-                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
-                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
-    }
 
     final String defaultNamespace = config.get("schema").asText();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -257,6 +258,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, redshiftMigrations);
     }
+
     return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
@@ -269,27 +271,10 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true).build().createAsync();
-  }
-
-  /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
-   * file buffers and sets the minimum number to the default
-   * <p>
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
-   * not been thoroughly load tested across all instance sizes
-   *
-   * @param config user configurations
-   * @return number of file buffers if configured otherwise default
-   */
-  @VisibleForTesting
-  public int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-    }
-    // Only allows for values 10 <= numOfFileBuffers <= 50
-    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+        true)
+        .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
+        .build()
+        .createAsync();
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {

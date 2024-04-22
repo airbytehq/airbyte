@@ -23,6 +23,13 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     VERSION_INC_CHECK = "version_inc_check"
     TEST_ORCHESTRATOR = "test_orchestrator"
     DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
+    UPDATE_README = "update_readme"
+    ADD_CHANGELOG_ENTRY = "add_changelog_entry"
+    BUMP_METADATA_VERSION = "bump_metadata_version"
+    REGRESSION_TEST = "regression_test"
+    CHECK_MIGRATION_CANDIDATE = "check_migration_candidate"
+    POETRY_INIT = "poetry_init"
+    DELETE_SETUP_PY = "delete_setup_py"
 
     def __str__(self) -> str:
         return self.value

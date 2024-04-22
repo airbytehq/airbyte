@@ -29,6 +29,8 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_creatives
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_product_ad_group_bid_recommendations
+            bypass_reason: "data is updated frequently"
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl

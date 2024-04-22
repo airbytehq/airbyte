@@ -105,7 +105,7 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert files == ["build.gradle"]
     build_gradle = resulting_directory.file("build.gradle")
     actual_build_gradle_content = await build_gradle.contents()
-    assert expected_build_gradle_content == actual_build_gradle_content
+    assert actual_build_gradle_content == expected_build_gradle_content
 
     # Assert that the diff was exported to the repo
     assert updated_connector_dir.diff.return_value.export.call_count == 1

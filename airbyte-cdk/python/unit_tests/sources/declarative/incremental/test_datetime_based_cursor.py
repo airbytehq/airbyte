@@ -426,8 +426,7 @@ def test_close_slice(test_name, previous_cursor, stream_slice, observed_records,
     for record_data in observed_records:
         record = Record(record_data, stream_slice)
         cursor.observe(stream_slice, record)
-    last_record = observed_records[-1] if observed_records else None
-    cursor.close_slice(stream_slice, Record(last_record, stream_slice) if last_record else None)
+    cursor.close_slice(stream_slice)
     updated_state = cursor.get_stream_state()
     assert updated_state == expected_state
 
@@ -442,7 +441,7 @@ def test_close_slice_fails_if_slice_has_a_partition():
     )
     stream_slice = StreamSlice(partition={"key": "value"}, cursor_slice={"end_time": "2022-01-01"})
     with pytest.raises(ValueError):
-        cursor.close_slice(stream_slice, Record({"id": 1}, stream_slice))
+        cursor.close_slice(stream_slice)
 
 
 def test_compares_cursor_values_by_chronological_order():
@@ -459,7 +458,7 @@ def test_compares_cursor_values_by_chronological_order():
     cursor.observe(_slice, first_record)
     second_record = Record({cursor_field: "01-03-2023"}, _slice)
     cursor.observe(_slice, second_record)
-    cursor.close_slice(_slice, second_record)
+    cursor.close_slice(_slice)
 
     assert cursor.get_stream_state()[cursor_field] == "01-03-2023"
 
@@ -478,7 +477,7 @@ def test_given_different_format_and_slice_is_highest_when_close_slice_then_state
     record_cursor_value = "2023-01-03"
     record = Record({cursor_field: record_cursor_value}, _slice)
     cursor.observe(_slice, record)
-    cursor.close_slice(_slice, record)
+    cursor.close_slice(_slice)
 
     assert cursor.get_stream_state()[cursor_field] == "2023-01-03"
 
@@ -542,10 +541,10 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert slicer.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert slicer.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert slicer.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert slicer.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 @pytest.mark.parametrize(
@@ -608,7 +607,7 @@ def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(
         parameters={},
     )
     output_date = slicer.parse_date(input_date)
-    assert expected_output_date == output_date
+    assert output_date == expected_output_date
 
 
 @pytest.mark.parametrize(
@@ -675,7 +674,7 @@ def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_gra
     )
 
     output_date = slicer._format_datetime(input_dt)
-    assert expected_output == output_date
+    assert output_date == expected_output
 
 
 def test_step_but_no_cursor_granularity():

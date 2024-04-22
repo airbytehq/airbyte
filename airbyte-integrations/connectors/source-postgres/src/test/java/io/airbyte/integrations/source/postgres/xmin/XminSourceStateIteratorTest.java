@@ -9,8 +9,8 @@ import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.REC
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.RECORD_MESSAGE_2;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.RECORD_MESSAGE_3;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.STREAM_NAME1;
-import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATE_MESSAGE_1;
 import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.XMIN_STATUS1;
+import static io.airbyte.integrations.source.postgres.xmin.XminTestConstants.createStateMessage1WithCount;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,7 +19,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
@@ -70,12 +69,9 @@ public class XminSourceStateIteratorTest {
         manager,
         new StateEmitFrequency(0L, Duration.ofSeconds(1L)));
 
-    var expectedStateMessage =
-        XMIN_STATE_MESSAGE_1.withState(XMIN_STATE_MESSAGE_1.getState().withSourceStats(new AirbyteStateStats().withRecordCount(2.0)));
-
     assertEquals(RECORD_MESSAGE_1, iterator.next());
     assertEquals(RECORD_MESSAGE_2, iterator.next());
-    assertEquals(expectedStateMessage, iterator.next());
+    assertEquals(createStateMessage1WithCount(2.0), iterator.next());
     assertFalse(iterator.hasNext());
   }
 
