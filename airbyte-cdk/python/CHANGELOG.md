@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
+## 0.82.0
+Connector builder: emit state messages
+
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
+## 0.81.4
+Adding stream_descriptor as part of AirbyteTracedException.__init__
+
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
+## 0.81.1
+Concurrent CDK: add logging on exception
+
+## 0.81.0
+Unpin airbyte-protocol-models library
+
+## 0.80.0
+Concurrent CDK: support partitioned states
+
+## 0.79.2
+Concurrent CDK: Print error messages properly so that they can be categorized
+
 ## 0.79.1
 Dummy patch to test new publishing flow fixes
 

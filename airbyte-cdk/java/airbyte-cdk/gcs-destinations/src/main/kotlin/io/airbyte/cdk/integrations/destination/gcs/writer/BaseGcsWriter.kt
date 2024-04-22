@@ -7,8 +7,8 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import com.amazonaws.services.s3.model.HeadBucketRequest
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
-import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.util.S3OutputPathHelper.getOutputPrefix
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -128,7 +128,7 @@ protected constructor(
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseGcsWriter::class.java)
 
         // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-        fun getOutputFilename(timestamp: Timestamp, format: S3Format): String {
+        fun getOutputFilename(timestamp: Timestamp, format: FileUploadFormat): String {
             val formatter: DateFormat =
                 SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING)
             formatter.timeZone = TimeZone.getTimeZone("UTC")
