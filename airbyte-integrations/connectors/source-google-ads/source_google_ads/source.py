@@ -19,6 +19,7 @@ from .streams import (
     AccountPerformanceReport,
     AdGroup,
     AdGroupAd,
+    AdGroupAdAssetView,
     AdGroupAdLabel,
     AdGroupAdLegacy,
     AdGroupBiddingStrategy,
@@ -230,8 +231,9 @@ class SourceGoogleAds(AbstractSource):
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
         streams = [
-            AdGroup(**incremental_config),
-            AdGroupAd(**incremental_config),
+            AdGroup(**default_config),
+            AdGroupAd(**default_config),
+            AdGroupAdAssetView(**incremental_config),
             AdGroupAdLabel(**default_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
@@ -243,7 +245,7 @@ class SourceGoogleAds(AbstractSource):
             CampaignCriterion(**default_config),
             CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
-            Customer(**incremental_config),
+            Customer(**default_config),
             CustomerLabel(**default_config),
             Label(**default_config),
             UserInterest(**default_config),
@@ -252,8 +254,8 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
-                    Campaign(**non_manager_incremental_config),
-                    CampaignBudget(**non_manager_incremental_config),
+                    Campaign(**default_config),
+                    CampaignBudget(**default_config),
                     UserLocationView(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     TopicView(**non_manager_incremental_config),

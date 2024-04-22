@@ -34,6 +34,18 @@
     "forced_view_eligibility": {
       "type": ["null", "string"]
     },
+    "preview_creative_id": {
+      "type": ["null", "string"]
+    },
+    "playback_type": {
+      "type" : ["null", "string"]
+    },
+    "profile_properties": {
+      "type": ["null", "string"]
+    },
+    "app_install_properties": {
+      "type": ["null", "string"]
+    },
     "headline": {
       "type": ["null", "string"]
     },

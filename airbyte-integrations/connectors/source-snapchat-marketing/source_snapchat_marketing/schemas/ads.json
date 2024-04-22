@@ -4,28 +4,28 @@
     "id": {
       "type": ["null", "string"]
     },
-    "ad_squad_id": {
-      "type": ["null", "string"]
-    },
-    "creative_id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
     "updated_at": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"]
     },
-    "deleted": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "ad_squad_id": {
+      "type": ["null", "string"]
+    },
+    "creative_id": {
       "type": ["null", "string"]
     },
     "status": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "render_type": {
       "type": ["null", "string"]
     },
     "review_status": {
@@ -43,16 +43,10 @@
         "type": ["null", "string"]
       }
     },
-    "review_status_reasons": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
     "paying_advertiser_name": {
       "type": ["null", "string"]
     },
-    "render_type": {
+    "deleted": {
       "type": ["null", "string"]
     }
   }

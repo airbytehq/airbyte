@@ -8,6 +8,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import backoff
 import pendulum
+from datetime import datetime, timedelta
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -17,6 +18,7 @@ from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v15.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
+from grpc import StatusCode
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
@@ -25,6 +27,7 @@ from .utils import ExpiredPageTokenError, chunk_date_range, detached, generator_
 
 class GoogleAdsStream(Stream, ABC):
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = True
+    ignore_manager_accounts: bool = False
 
     def __init__(self, api: GoogleAds, customers: List[CustomerModel]):
         self.google_ads_client = api
@@ -42,6 +45,8 @@ class GoogleAdsStream(Stream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
+            if customer.is_manager_account and self.ignore_manager_accounts:
+                continue
             yield {"customer_id": customer.id, "login_customer_id": customer.login_customer_id}
 
     @generator_backoff(
@@ -68,7 +73,10 @@ class GoogleAdsStream(Stream, ABC):
         try:
             yield from self.request_records_job(customer_id, login_customer_id, self.get_query(stream_slice), stream_slice)
         except (GoogleAdsException, Unauthenticated) as exception:
-            traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+            if exception.error.args[0].code == StatusCode.PERMISSION_DENIED:
+                logger.warning(f"GOOGLE ADS EXCEPTION: customer {customer_id} is not activated or is disabled")
+            else:
+                traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
         except TimeoutError as exception:
             # Prevent sync failure
             logger.warning(f"Timeout: Failed to access {self.name} stream data. {str(exception)}")
@@ -95,6 +103,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     cursor_time_format = "YYYY-MM-DD"
+    backfill_days = 0
     # Slice duration is set to 14 days, because for conversion_window_days default value is 14.
     # Range less than 14 days will break the integration tests.
     slice_duration = pendulum.duration(days=14)
@@ -127,15 +136,21 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
+            if customer.is_manager_account and self.ignore_manager_accounts:
+                continue
             stream_state = stream_state or {}
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
 
             # We should keep backward compatibility with the previous version
-            elif stream_state.get(self.cursor_field) and len(self.customers) == 1:
+            elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
-            else:
+            elif self._start_date is not None:
                 start_date = self._start_date
+            else:
+                start_date = '2023-11-20'
+
+            # logger.info("Final start date " + start_date)
 
             end_date = self._end_date
 
@@ -161,9 +176,10 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             date_in_current_stream = pendulum.parse(current_state)
             date_in_latest_record = pendulum.parse(record[self.cursor_field])
             cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
-            self.state = {customer_id: {self.cursor_field: cursor_value}}
         else:
-            self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+            cursor_value = pendulum.parse(record[self.cursor_field]).format(self.cursor_time_format)
+        backfill_cursor_value = (pendulum.parse(cursor_value) - timedelta(days=self.backfill_days)).format(self.cursor_time_format)
+        self.state = {customer_id: {self.cursor_field: backfill_cursor_value}}
 
     def _handle_expired_page_exception(self, exception: ExpiredPageTokenError, stream_slice: MutableMapping[str, Any], customer_id: str):
         """
@@ -217,12 +233,12 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class Customer(IncrementalGoogleAdsStream):
+class Customer(GoogleAdsStream):
     """
     Customer stream: https://developers.google.com/google-ads/api/fields/v15/customer
     """
 
-    primary_key = ["customer.id", "segments.date"]
+    primary_key = ["customer.id"]
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for record in super().parse_response(response):
@@ -304,28 +320,22 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class Campaign(IncrementalGoogleAdsStream):
+class Campaign(GoogleAdsStream):
     """
     Campaign stream: https://developers.google.com/google-ads/api/fields/v15/campaign
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
+    primary_key = ["campaign.id"]
 
 
-class CampaignBudget(IncrementalGoogleAdsStream):
+class CampaignBudget(GoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v15/campaign_budget
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = [
-        "customer.id",
-        "campaign_budget.id",
-        "segments.date",
-        "segments.budget_campaign_association_status.campaign",
-        "segments.budget_campaign_association_status.status",
-    ]
+    primary_key = ["campaign.id"]
 
 
 class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
@@ -346,13 +356,14 @@ class CampaignLabel(GoogleAdsStream):
     primary_key = ["campaign.id", "label.id"]
 
 
-class AdGroup(IncrementalGoogleAdsStream):
+class AdGroup(GoogleAdsStream):
     """
     AdGroup stream: https://developers.google.com/google-ads/api/fields/v15/ad_group
     """
 
-    primary_key = ["ad_group.id", "segments.date"]
+    primary_key = ["ad_group.id"]
 
+    """
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         # validation that the customer is not a manager
@@ -367,6 +378,7 @@ class AdGroup(IncrementalGoogleAdsStream):
             fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
         )
         return query
+    """
 
 
 class AdGroupLabel(GoogleAdsStream):
@@ -396,12 +408,22 @@ class AdGroupCriterionLabel(GoogleAdsStream):
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
-class AdGroupAd(IncrementalGoogleAdsStream):
+class AdGroupAd(GoogleAdsStream):
     """
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
     """
 
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
+    primary_key = ["ad_group.id", "ad_group_ad.ad.id"]
+
+
+class AdGroupAdAssetView(IncrementalGoogleAdsStream):
+    """
+    Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
+    """
+    backfill_days = 10
+    ignore_manager_accounts = True
+
+    primary_key = ["asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id", "segments.date"]
 
 
 class AdGroupAdLabel(GoogleAdsStream):
