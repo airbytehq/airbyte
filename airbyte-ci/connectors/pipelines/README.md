@@ -474,6 +474,7 @@ Bump source-openweather:
 
  ### Other things it could do
 
+* upgrade it the latest base image
 * make sure it's the newest version of pytest
 * do a `poetry update` to update everything else
 * make the pull requests on a well known branch, replacing the last one if still open
