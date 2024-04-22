@@ -502,19 +502,6 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
-  ticket_metrics_stream:
-    $ref: "#/definitions/semi_incremental_stream"
-    retriever:
-      $ref: "#/definitions/semi_incremental_stream/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/links_next_paginator"
-    $parameters:
-      name: "ticket_metrics"
-      path: "ticket_metrics"
-      cursor_field: "updated_at"
-      primary_key: "id"
-
   ticket_skips_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -530,31 +517,6 @@ definitions:
       path: "skips.json"
       data_path: "skips"
       cursor_field: "updated_at"
-      primary_key: "id"
-
-  tickets_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_datetime_formats:
-        - "%s"
-      datetime_format: "%s"
-      cursor_field: "{{ parameters.get('cursor_field') }}"
-      start_datetime:
-        datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: "start_time"
-        type: RequestOption
-    $parameters:
-      name: "tickets"
-      path: "incremental/tickets/cursor.json"
-      cursor_field: "generated_timestamp"
       primary_key: "id"
 
   topics_stream:
@@ -609,7 +571,5 @@ streams:
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
-  - $ref: "#/definitions/ticket_metrics_stream"
   - $ref: "#/definitions/ticket_skips_stream"
-  - $ref: "#/definitions/tickets_stream"
   - $ref: "#/definitions/users_stream"
