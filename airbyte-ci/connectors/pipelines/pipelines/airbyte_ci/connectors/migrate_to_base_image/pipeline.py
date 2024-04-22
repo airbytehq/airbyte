@@ -328,6 +328,7 @@ async def run_connector_migration_to_base_image_pipeline(
             )
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
+            updated_repo_directory = bump_version_in_metadata_result.output
 
             # ADD CHANGELOG ENTRY only if the PR number is provided.
             if pull_request_number is not None:
@@ -340,9 +341,10 @@ async def run_connector_migration_to_base_image_pipeline(
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 steps_results.append(add_changelog_entry_result)
+                updated_repo_directory = add_changelog_entry_result.output
 
             # UPDATE DOC
-            add_build_instructions_to_doc = AddBuildInstructionsToReadme(context, steps_results[-1].output)
+            add_build_instructions_to_doc = AddBuildInstructionsToReadme(context, updated_repo_directory)
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
 
