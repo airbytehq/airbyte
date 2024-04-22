@@ -469,6 +469,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -594,6 +595,8 @@ csv_analytics_scenario: TestScenario[InMemoryFilesSource] = (
             },
             "stream": "stream2",
         },
+{'__ab_full_refresh_state_message': True},
+
     ])
     .set_expected_analytics(
         [
@@ -703,6 +706,7 @@ multi_csv_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -806,6 +810,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1058,6 +1063,7 @@ csv_single_stream_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1179,6 +1185,7 @@ csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
                 "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1287,6 +1294,7 @@ csv_custom_format_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1435,6 +1443,7 @@ multi_stream_custom_format = (
                 "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1589,6 +1598,7 @@ schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1699,6 +1709,7 @@ schemaless_csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
                 "data": {"col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"},
                 "stream": "stream2",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1926,6 +1937,7 @@ csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSo
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -1998,6 +2010,7 @@ csv_string_are_not_null_if_strings_can_be_null_is_false_scenario: TestScenario[I
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2067,6 +2080,7 @@ csv_string_not_null_if_no_null_values_scenario: TestScenario[InMemoryFilesSource
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2134,6 +2148,7 @@ csv_strings_can_be_null_not_quoted_scenario: TestScenario[InMemoryFilesSource] =
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2203,6 +2218,7 @@ csv_newline_in_values_quoted_value_scenario: TestScenario[InMemoryFilesSource] =
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2273,6 +2289,7 @@ csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
     .set_expected_read_error(
@@ -2355,6 +2372,7 @@ csv_escape_char_is_set_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2428,6 +2446,7 @@ csv_double_quote_is_set_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2496,6 +2515,7 @@ csv_custom_delimiter_with_escape_char_scenario: TestScenario[InMemoryFilesSource
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2569,6 +2589,7 @@ csv_custom_delimiter_in_double_quotes_scenario: TestScenario[InMemoryFilesSource
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2638,6 +2659,7 @@ csv_skip_before_header_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2707,6 +2729,7 @@ csv_skip_after_header_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2780,6 +2803,7 @@ csv_skip_before_and_after_header_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2849,6 +2873,7 @@ csv_autogenerate_column_names_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2921,6 +2946,7 @@ csv_custom_bool_values_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -2992,6 +3018,7 @@ csv_custom_null_values_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -3107,5 +3134,5 @@ csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
             ]
         }
     )
-    .set_expected_records([])
+    .set_expected_records([{'__ab_full_refresh_state_message': True}])
 ).build()

@@ -200,7 +200,15 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
                     )
                 else:
-                    cursor = self.cursor_cls(stream_config)
+                    cursor = self.cursor_cls(
+                        stream_config,
+                        stream_config.name,
+                        None,
+                        stream_state,
+                        self.message_repository,
+                        state_manager,
+                        CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                    )
                     stream = self._make_default_stream(stream_config, cursor)
 
                 streams.append(stream)
