@@ -5,7 +5,7 @@ import os
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
+from source_azure_blob_storage import SourceAzureBlobStorageSpec, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials
 
 
@@ -21,7 +21,7 @@ def test_mailchimp_config_migration():
     migration_instance = MigrateCredentials
     source = SourceAzureBlobStorage(
         SourceAzureBlobStorageStreamReader(),
-        spec_class=Config,
+        spec_class=SourceAzureBlobStorageSpec,
         catalog={},
         config=load_config(config_path),
         state=None,
