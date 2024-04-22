@@ -100,7 +100,7 @@ jobs:
     - name: "Mark success in GitHub Actions"
       if: always()
       run: |
-        jobs=("Connectors CI tests" "Connector Ops CI - Connectors Acceptance Tests")
+        jobs=("Connectors CI tests" "Connectors CI")
         for job in "${jobs[@]}"; do
           curl --request POST \
           --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr-info.outputs.sha }} \
