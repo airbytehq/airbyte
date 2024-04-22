@@ -395,7 +395,7 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 <details>
 <summary>Ingress configuration setup steps</summary>
 <Tabs>
-<TabItem value="Generic" label="Generic">
+<TabItem value="NGINX" label="NGINX">
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -405,6 +405,7 @@ metadata:
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
+  ingressClassName: nginx
   rules:
   - host: # host, example: enterprise-demo.airbyte.com
     http:
@@ -412,26 +413,26 @@ spec:
       - backend:
           service:
             # format is ${RELEASE_NAME}-airbyte-webapp-svc
-            name: airbyte-pro-airbyte-webapp-svc 
+            name: airbyte-enterprise-airbyte-webapp-svc 
             port:
-              number: # service port, example: 8080
+              number: 80 # service port, example: 8080
         path: /
         pathType: Prefix
       - backend:
           service:
             # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-            name: airbyte-pro-airbyte-keycloak-svc
+            name: airbyte-enterprise-airbyte-keycloak-svc
             port:
-              number: # service port, example: 8180
+              number: 8180
         path: /auth
         pathType: Prefix
       - backend:
           service:
-            # format is ${RELEASE_NAME}-airbyte-api-server-svc
-            name: airbyte-pro-airbyte-api-server-svc
+            # format is ${RELEASE_NAME}-airbyte--server-svc
+            name: airbyte-enterprise-airbyte-server-svc
             port:
-              number: # service port, example: 8180
-        path: /v1
+              number: 8001
+        path: /api/public
         pathType: Prefix
 ```
 
@@ -444,7 +445,7 @@ If you are intending on using Amazon Application Load Balancer (ALB) for ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: <INGRESS_NAME>
+  name: # ingress name, e.g. enterprise-demo
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
@@ -461,30 +462,30 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-  - host: <WEBAPP_URL> e.g. enterprise-demo.airbyte.com
+  - host: # e.g. enterprise-demo.airbyte.com
     http:
       paths:
       - backend:
           service:
-            name: airbyte-pro-airbyte-webapp-svc 
+            name: airbyte-enterprise-airbyte-webapp-svc 
             port:
               number: 80
         path: /
         pathType: Prefix
       - backend:
           service:
-            name: airbyte-pro-airbyte-keycloak-svc
+            name: airbyte-enterprise-airbyte-keycloak-svc
             port:
               number: 8180
         path: /auth
         pathType: Prefix
       - backend:
           service:
-            # format is ${RELEASE_NAME}-airbyte-api-server-svc
-            name: airbyte-pro-airbyte-api-server-svc
+            # format is ${RELEASE_NAME}-airbyte-server-svc
+            name: airbyte-enterprise-airbyte-server-svc
             port:
-              number: # service port, example: 8180
-        path: /v1
+              number: 8001
+        path: /api/public
         pathType: Prefix
 ```
 

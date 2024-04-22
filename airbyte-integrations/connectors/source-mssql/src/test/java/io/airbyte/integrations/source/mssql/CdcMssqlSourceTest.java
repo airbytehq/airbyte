@@ -62,7 +62,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -90,13 +89,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
-  }
-
-  @Override
-  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
-    AtomicLong count = new AtomicLong(0L);
-    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
-    assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -389,13 +381,13 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -405,17 +397,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectOcState) {
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectOcState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);

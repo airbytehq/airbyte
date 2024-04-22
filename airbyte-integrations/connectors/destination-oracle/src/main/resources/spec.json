@@ -120,6 +120,12 @@
             }
           }
         ]
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "order": 7
       }
     }
   }
