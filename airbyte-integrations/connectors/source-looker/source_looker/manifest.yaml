@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: looks
           http_method: GET
         record_selector:
@@ -28,14 +28,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/looks'
+          $ref: "#/schemas/looks"
     roles:
       type: DeclarativeStream
       name: roles
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: roles
           http_method: GET
         record_selector:
@@ -48,14 +48,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/roles'
+          $ref: "#/schemas/roles"
     users:
       type: DeclarativeStream
       name: users
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
         record_selector:
@@ -68,14 +68,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     groups:
       type: DeclarativeStream
       name: groups
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: groups
           http_method: GET
         record_selector:
@@ -88,14 +88,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/groups'
+          $ref: "#/schemas/groups"
     spaces:
       type: DeclarativeStream
       name: spaces
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: spaces
           http_method: GET
         record_selector:
@@ -108,14 +108,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/spaces'
+          $ref: "#/schemas/spaces"
     folders:
       type: DeclarativeStream
       name: folders
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: folders
           http_method: GET
         record_selector:
@@ -128,14 +128,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folders'
+          $ref: "#/schemas/folders"
     projects:
       type: DeclarativeStream
       name: projects
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: projects
           http_method: GET
         record_selector:
@@ -148,14 +148,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     versions:
       type: DeclarativeStream
       name: versions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: versions
           http_method: GET
         record_selector:
@@ -168,14 +168,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/versions'
+          $ref: "#/schemas/versions"
     homepages:
       type: DeclarativeStream
       name: homepages
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: homepages
           http_method: GET
         record_selector:
@@ -188,14 +188,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/homepages'
+          $ref: "#/schemas/homepages"
     run_looks:
       type: DeclarativeStream
       name: run_looks
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: looks/{{ stream_partition['id'] }}/run/json
           http_method: GET
         record_selector:
@@ -208,20 +208,20 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/search_looks'
+                  $ref: "#/definitions/streams/search_looks"
                 parent_key: model, id
                 partition_field: id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/run_looks'
+          $ref: "#/schemas/run_looks"
     dashboards:
       type: DeclarativeStream
       name: dashboards
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboards
           http_method: GET
         record_selector:
@@ -234,14 +234,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboards'
+          $ref: "#/schemas/dashboards"
     datagroups:
       type: DeclarativeStream
       name: datagroups
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: datagroups
           http_method: GET
         record_selector:
@@ -254,14 +254,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/datagroups'
+          $ref: "#/schemas/datagroups"
     model_sets:
       type: DeclarativeStream
       name: model_sets
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: model_sets
           http_method: GET
         record_selector:
@@ -274,14 +274,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/model_sets'
+          $ref: "#/schemas/model_sets"
     workspaces:
       type: DeclarativeStream
       name: workspaces
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces
           http_method: GET
         record_selector:
@@ -294,14 +294,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspaces'
+          $ref: "#/schemas/workspaces"
     connections:
       type: DeclarativeStream
       name: connections
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: connections
           http_method: GET
         record_selector:
@@ -312,14 +312,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/connections'
+          $ref: "#/schemas/connections"
     permissions:
       type: DeclarativeStream
       name: permissions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: permissions
           http_method: GET
         record_selector:
@@ -332,14 +332,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permissions'
+          $ref: "#/schemas/permissions"
     role_groups:
       type: DeclarativeStream
       name: role_groups
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: role_groups
           http_method: GET
         record_selector:
@@ -352,14 +352,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/role_groups'
+          $ref: "#/schemas/role_groups"
     git_branches:
       type: DeclarativeStream
       name: git_branches
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: git_branches
           http_method: GET
         record_selector:
@@ -372,14 +372,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/git_branches'
+          $ref: "#/schemas/git_branches"
     integrations:
       type: DeclarativeStream
       name: integrations
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: integrations
           http_method: GET
         record_selector:
@@ -392,19 +392,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/integrations'
+          $ref: "#/schemas/integrations"
     search_looks:
       type: DeclarativeStream
       name: search_looks
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: search_looks
           http_method: GET
           request_parameters:
-            id: '{{ config[''run_look_ids''] }}'
-            limit: '10000'
+            id: "{{ config['run_look_ids'] }}"
+            limit: "10000"
             fields: id,title,model(id)
         record_selector:
           type: RecordSelector
@@ -416,14 +416,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/search_looks'
+          $ref: "#/schemas/search_looks"
     lookml_models:
       type: DeclarativeStream
       name: lookml_models
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: lookml_models
           http_method: GET
         record_selector:
@@ -436,14 +436,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lookml_models'
+          $ref: "#/schemas/lookml_models"
     project_files:
       type: DeclarativeStream
       name: project_files
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: project_files
           http_method: GET
         record_selector:
@@ -456,19 +456,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/project_files'
+          $ref: "#/schemas/project_files"
     query_history:
       type: DeclarativeStream
       name: query_history
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: queries/run/json
           http_method: POST
           request_body_json:
             view: history
-            limit: '10000'
+            limit: "10000"
             model: i__looker
             sorts: '["history.created_time", "query.id",]'
             fields: >-
@@ -494,14 +494,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/query_history'
+          $ref: "#/schemas/query_history"
     user_sessions:
       type: DeclarativeStream
       name: user_sessions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_sessions
           http_method: GET
         record_selector:
@@ -514,14 +514,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_sessions'
+          $ref: "#/schemas/user_sessions"
     homepage_items:
       type: DeclarativeStream
       name: homepage_items
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: homepage_items
           http_method: GET
         record_selector:
@@ -534,14 +534,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/homepage_items'
+          $ref: "#/schemas/homepage_items"
     legacy_features:
       type: DeclarativeStream
       name: legacy_features
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: legacy_features
           http_method: GET
         record_selector:
@@ -554,14 +554,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/legacy_features'
+          $ref: "#/schemas/legacy_features"
     permission_sets:
       type: DeclarativeStream
       name: permission_sets
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: permission_sets
           http_method: GET
         record_selector:
@@ -574,18 +574,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permission_sets'
+          $ref: "#/schemas/permission_sets"
     scheduled_plans:
       type: DeclarativeStream
       name: scheduled_plans
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: scheduled_plans
           http_method: GET
           request_parameters:
-            all_users: 'true'
+            all_users: "true"
         record_selector:
           type: RecordSelector
           extractor:
@@ -596,14 +596,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/scheduled_plans'
+          $ref: "#/schemas/scheduled_plans"
     space_ancestors:
       type: DeclarativeStream
       name: space_ancestors
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: space_ancestors
           http_method: GET
         record_selector:
@@ -616,14 +616,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/space_ancestors'
+          $ref: "#/schemas/space_ancestors"
     user_attributes:
       type: DeclarativeStream
       name: user_attributes
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_attributes
           http_method: GET
         record_selector:
@@ -636,14 +636,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attributes'
+          $ref: "#/schemas/user_attributes"
     content_metadata:
       type: DeclarativeStream
       name: content_metadata
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: content_metadata
           http_method: GET
         record_selector:
@@ -656,14 +656,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/content_metadata'
+          $ref: "#/schemas/content_metadata"
     folder_ancestors:
       type: DeclarativeStream
       name: folder_ancestors
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: folder_ancestors
           http_method: GET
         record_selector:
@@ -676,14 +676,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folder_ancestors'
+          $ref: "#/schemas/folder_ancestors"
     integration_hubs:
       type: DeclarativeStream
       name: integration_hubs
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: integration_hubs
           http_method: GET
         record_selector:
@@ -696,14 +696,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/integration_hubs'
+          $ref: "#/schemas/integration_hubs"
     color_collections:
       type: DeclarativeStream
       name: color_collections
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: color_collections
           http_method: GET
         record_selector:
@@ -716,14 +716,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/color_collections'
+          $ref: "#/schemas/color_collections"
     dashboard_filters:
       type: DeclarativeStream
       name: dashboard_filters
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboard_filters
           http_method: GET
         record_selector:
@@ -736,14 +736,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_filters'
+          $ref: "#/schemas/dashboard_filters"
     dashboard_layouts:
       type: DeclarativeStream
       name: dashboard_layouts
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboard_layouts
           http_method: GET
         record_selector:
@@ -756,14 +756,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_layouts'
+          $ref: "#/schemas/dashboard_layouts"
     homepage_sections:
       type: DeclarativeStream
       name: homepage_sections
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: homepage_sections
           http_method: GET
         record_selector:
@@ -776,14 +776,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/homepage_sections'
+          $ref: "#/schemas/homepage_sections"
     lookml_dashboards:
       type: DeclarativeStream
       name: lookml_dashboards
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: lookml_dashboards
           http_method: GET
         record_selector:
@@ -796,14 +796,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lookml_dashboards'
+          $ref: "#/schemas/lookml_dashboards"
     dashboard_elements:
       type: DeclarativeStream
       name: dashboard_elements
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboard_elements
           http_method: GET
         record_selector:
@@ -816,14 +816,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_elements'
+          $ref: "#/schemas/dashboard_elements"
     user_login_lockouts:
       type: DeclarativeStream
       name: user_login_lockouts
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_login_lockouts
           http_method: GET
         record_selector:
@@ -836,19 +836,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_login_lockouts'
+          $ref: "#/schemas/user_login_lockouts"
     user_attribute_values:
       type: DeclarativeStream
       name: user_attribute_values
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_attribute_values
           http_method: GET
           request_parameters:
-            all_users: 'true'
-            include_unset: 'true'
+            all_users: "true"
+            include_unset: "true"
         record_selector:
           type: RecordSelector
           extractor:
@@ -859,14 +859,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attribute_values'
+          $ref: "#/schemas/user_attribute_values"
     content_metadata_access:
       type: DeclarativeStream
       name: content_metadata_access
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: content_metadata_access
           http_method: GET
         record_selector:
@@ -879,14 +879,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/content_metadata_access'
+          $ref: "#/schemas/content_metadata_access"
     primary_homepage_sections:
       type: DeclarativeStream
       name: primary_homepage_sections
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: primary_homepage_sections
           http_method: GET
         record_selector:
@@ -899,14 +899,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/primary_homepage_sections'
+          $ref: "#/schemas/primary_homepage_sections"
     dashboard_layout_components:
       type: DeclarativeStream
       name: dashboard_layout_components
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboard_layout_components
           http_method: GET
         record_selector:
@@ -919,14 +919,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_layout_components'
+          $ref: "#/schemas/dashboard_layout_components"
     user_attribute_group_values:
       type: DeclarativeStream
       name: user_attribute_group_values
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_attribute_group_values
           http_method: GET
         record_selector:
@@ -939,7 +939,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attribute_group_values'
+          $ref: "#/schemas/user_attribute_group_values"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/3.1/
@@ -948,51 +948,51 @@ definitions:
       class_name: source_looker.components.LookerAuthenticator
 
 streams:
-  - $ref: '#/definitions/streams/color_collections'
-  - $ref: '#/definitions/streams/connections'
-  - $ref: '#/definitions/streams/content_metadata'
-  - $ref: '#/definitions/streams/content_metadata_access'
-  - $ref: '#/definitions/streams/dashboards'
-  - $ref: '#/definitions/streams/dashboard_elements'
-  - $ref: '#/definitions/streams/dashboard_filters'
-  - $ref: '#/definitions/streams/dashboard_layout_components'
-  - $ref: '#/definitions/streams/dashboard_layouts'
-  - $ref: '#/definitions/streams/datagroups'
-  - $ref: '#/definitions/streams/folders'
-  - $ref: '#/definitions/streams/folder_ancestors'
-  - $ref: '#/definitions/streams/git_branches'
-  - $ref: '#/definitions/streams/groups'
-  - $ref: '#/definitions/streams/homepage_items'
-  - $ref: '#/definitions/streams/homepage_sections'
-  - $ref: '#/definitions/streams/homepages'
-  - $ref: '#/definitions/streams/integration_hubs'
-  - $ref: '#/definitions/streams/integrations'
-  - $ref: '#/definitions/streams/legacy_features'
-  - $ref: '#/definitions/streams/lookml_dashboards'
-  - $ref: '#/definitions/streams/lookml_models'
-  - $ref: '#/definitions/streams/looks'
-  - $ref: '#/definitions/streams/model_sets'
-  - $ref: '#/definitions/streams/permission_sets'
-  - $ref: '#/definitions/streams/permissions'
-  - $ref: '#/definitions/streams/primary_homepage_sections'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/project_files'
-  - $ref: '#/definitions/streams/query_history'
-  - $ref: '#/definitions/streams/roles'
-  - $ref: '#/definitions/streams/role_groups'
-  - $ref: '#/definitions/streams/run_looks'
-  - $ref: '#/definitions/streams/search_looks'
-  - $ref: '#/definitions/streams/scheduled_plans'
-  - $ref: '#/definitions/streams/spaces'
-  - $ref: '#/definitions/streams/space_ancestors'
-  - $ref: '#/definitions/streams/user_attributes'
-  - $ref: '#/definitions/streams/user_attribute_group_values'
-  - $ref: '#/definitions/streams/user_attribute_values'
-  - $ref: '#/definitions/streams/user_login_lockouts'
-  - $ref: '#/definitions/streams/user_sessions'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/versions'
-  - $ref: '#/definitions/streams/workspaces'
+  - $ref: "#/definitions/streams/color_collections"
+  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/content_metadata"
+  - $ref: "#/definitions/streams/content_metadata_access"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/dashboard_elements"
+  - $ref: "#/definitions/streams/dashboard_filters"
+  - $ref: "#/definitions/streams/dashboard_layout_components"
+  - $ref: "#/definitions/streams/dashboard_layouts"
+  - $ref: "#/definitions/streams/datagroups"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/folder_ancestors"
+  - $ref: "#/definitions/streams/git_branches"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/homepage_items"
+  - $ref: "#/definitions/streams/homepage_sections"
+  - $ref: "#/definitions/streams/homepages"
+  - $ref: "#/definitions/streams/integration_hubs"
+  - $ref: "#/definitions/streams/integrations"
+  - $ref: "#/definitions/streams/legacy_features"
+  - $ref: "#/definitions/streams/lookml_dashboards"
+  - $ref: "#/definitions/streams/lookml_models"
+  - $ref: "#/definitions/streams/looks"
+  - $ref: "#/definitions/streams/model_sets"
+  - $ref: "#/definitions/streams/permission_sets"
+  - $ref: "#/definitions/streams/permissions"
+  - $ref: "#/definitions/streams/primary_homepage_sections"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/project_files"
+  - $ref: "#/definitions/streams/query_history"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/role_groups"
+  - $ref: "#/definitions/streams/run_looks"
+  - $ref: "#/definitions/streams/search_looks"
+  - $ref: "#/definitions/streams/scheduled_plans"
+  - $ref: "#/definitions/streams/spaces"
+  - $ref: "#/definitions/streams/space_ancestors"
+  - $ref: "#/definitions/streams/user_attributes"
+  - $ref: "#/definitions/streams/user_attribute_group_values"
+  - $ref: "#/definitions/streams/user_attribute_values"
+  - $ref: "#/definitions/streams/user_login_lockouts"
+  - $ref: "#/definitions/streams/user_sessions"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/versions"
+  - $ref: "#/definitions/streams/workspaces"
 
 spec:
   type: Spec

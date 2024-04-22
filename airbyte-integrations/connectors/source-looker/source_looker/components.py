@@ -5,13 +5,12 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-
 import pendulum
 import requests
-
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 
 API_VERSION = "3.1"
+
 
 @dataclass
 class LookerAuthenticator(NoAuth):
@@ -46,6 +45,7 @@ class LookerAuthenticator(NoAuth):
             if err:
                 raise LookerException(f"auth error: {err}")
         return {"Authorization": f"token {self._access_token}"}
-    
+
+
 class LookerException(Exception):
     pass
