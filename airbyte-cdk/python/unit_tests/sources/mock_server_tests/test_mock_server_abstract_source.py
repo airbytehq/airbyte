@@ -7,8 +7,7 @@ from typing import List, Optional
 from unittest import TestCase
 
 import freezegun
-import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -20,9 +19,8 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_record_builder,
     create_response_builder,
 )
-from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, FailureType
 from unit_tests.sources.mock_server_tests.mock_source_fixture import SourceFixture
+from unit_tests.sources.mock_server_tests.test_helpers import emits_successful_sync_status_messages, validate_message_order
 
 _NOW = datetime.now(timezone.utc)
 
@@ -203,18 +201,6 @@ RESOURCE_TO_TEMPLATE = {
     "planets": PLANET_TEMPLATE,
     "users": USER_TEMPLATE,
 }
-
-
-# class MockPaginationStrategy(FieldUpdatePaginationStrategy):
-#     # def __init__(self, request: HttpRequest, next_page_token: str) -> None:
-#     #     self._next_page_token = next_page_token
-#     #
-#     # def update(self, response: Dict[str, Any]) -> None:
-#     #     # set a constant value for paging.cursors.after so we know how the 'next' link is built
-#     #     # https://developers.facebook.com/docs/graph-api/results
-#     #     response["has_more"] = self._next_page_token
-#     def update(self, response: Dict[str, Any]) -> None:
-#         response["has_more"] = True
 
 
 def _create_response(pagination_has_more: bool = False) -> HttpResponseBuilder:
@@ -468,134 +454,3 @@ class MultipleStreamTest(TestCase):
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
         assert actual_messages.state_messages[3].state.stream.stream_state == {"__ab_full_refresh_state_message": True}
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 4.0
-
-
-@freezegun.freeze_time(_NOW)
-class ResumableFullRefreshStreamTest(TestCase):
-    @HttpMocker()
-    def test_resumable_full_refresh_sync(self, http_mocker):
-        config = {}
-
-        http_mocker.get(
-            _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(1).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(2).build(),
-            _create_response(pagination_has_more=False).with_pagination().with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]))
-
-        assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
-        assert len(actual_messages.records) == 5
-        assert len(actual_messages.state_messages) == 3
-        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
-        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 1}
-        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
-        assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 2}
-        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
-        assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == {}
-        assert actual_messages.state_messages[2].state.sourceStats.recordCount == 1.0
-
-    @HttpMocker()
-    def test_resumable_full_refresh_second_attempt(self, http_mocker):
-        config = {}
-
-        state = StateBuilder().with_stream_state("justice_songs", {"page": 100}).build()
-
-        # Needed to handle the availability check request to get the first record
-        http_mocker.get(
-            _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(100).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(101).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(102).build(),
-            _create_response(pagination_has_more=False).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]), state=state)
-
-        assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
-        assert len(actual_messages.records) == 8
-        assert len(actual_messages.state_messages) == 3
-        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
-        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 101}
-        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
-        assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 102}
-        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 3.0
-        assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == {}
-        assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
-
-    @HttpMocker()
-    def test_resumable_full_refresh_failure(self, http_mocker):
-        config = {}
-
-        http_mocker.get(
-            _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(
-            _create_justice_songs_request().with_page(1).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
-        http_mocker.get(_create_justice_songs_request().with_page(2).build(), _create_response().with_status_code(status_code=400).build())
-
-        source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]), expecting_exception=True)
-
-        status_messages = actual_messages.get_stream_statuses("justice_songs")
-        assert status_messages[-1] == AirbyteStreamStatus.INCOMPLETE
-        assert len(actual_messages.records) == 4
-        assert len(actual_messages.state_messages) == 2
-
-        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
-        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 1}
-        assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"page": 2}
-
-        assert actual_messages.errors[0].trace.error.failure_type == FailureType.system_error
-        assert actual_messages.errors[0].trace.error.stream_descriptor.name == "justice_songs"
-        assert "400" in actual_messages.errors[0].trace.error.internal_message
-
-
-def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
-    return (len(status_messages) == 3 and status_messages[0] == AirbyteStreamStatus.STARTED
-            and status_messages[1] == AirbyteStreamStatus.RUNNING and status_messages[2] == AirbyteStreamStatus.COMPLETE)
-
-
-def validate_message_order(expected_message_order: List[Type], messages: List[AirbyteMessage]):
-    if len(expected_message_order) != len(messages):
-        pytest.fail(f"Expected message order count {len(expected_message_order)} did not match actual messages {len(messages)}")
-
-    for i, message in enumerate(messages):
-        if message.type != expected_message_order[i]:
-            pytest.fail(f"At index {i} actual message type {message.type.name} did not match expected message type {expected_message_order[i].name}")
