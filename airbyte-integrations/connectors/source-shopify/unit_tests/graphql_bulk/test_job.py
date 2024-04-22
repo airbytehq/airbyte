@@ -119,28 +119,62 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
 
 
 @pytest.mark.parametrize(
-    "job_response, error_type, patch_healthcheck, expected",
+    "job_response, error_type, expected",
     [
-        (
-            "bulk_job_completed_response",
-            None,
-            False,
-            "bulk-123456789.jsonl",
-        ),
-        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, False, "exited with FAILED"),
-        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, False, "exited with TIMEOUT"),
-        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, False, "exited with ACCESS_DENIED"),
-        ("bulk_successful_response_with_errors", ShopifyBulkExceptions.BulkJobUnknownError, True, "Could not validate the status of the BULK Job"),
+        ("bulk_job_completed_response", None, "bulk-123456789.jsonl"),
+        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
+        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
+        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
     ],
     ids=[
         "completed",
         "failed",
         "timeout",
         "access_denied",
+    ],
+)
+def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+    stream = MetafieldOrders(auth_config)
+    # modify the sleep time for the test
+    stream.job_manager.concurrent_max_retry = 1
+    stream.job_manager.concurrent_interval_sec = 1
+    stream.job_manager.job_check_interval_sec = 1
+    # get job_id from FIXTURE
+    job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
+    # patching the method to get the right ID checks
+    if job_id:
+        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
+    # mocking the response for STATUS CHECKS
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+    test_job_status_response = requests.post(stream.job_manager.base_url)
+    job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
+    if error_type:
+        with pytest.raises(error_type) as error:
+            stream.job_manager.job_check(test_job_status_response)
+        assert expected in repr(error.value)
+    else:
+        if job_result_url:
+            # mocking the nested request call to retrieve the data from result URL
+            requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
+        result = stream.job_manager.job_check(test_job_status_response)
+        assert expected == result
+        
+
+@pytest.mark.parametrize(
+    "job_response, error_type, patch_healthcheck, expected",
+    [
+        (
+            "bulk_successful_response_with_errors", 
+            ShopifyBulkExceptions.BulkJobUnknownError, 
+            True, 
+            "Could not validate the status of the BULK Job",
+        ),
+    ],
+    ids=[
         "success with errors (edge)",
     ],
 )
-def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, patch_healthcheck, expected) -> None:
+def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, patch_healthcheck, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
     stream.job_manager.concurrent_max_retry = 1
@@ -156,17 +190,14 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
-    job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
-    if error_type:
-        with pytest.raises(error_type) as error:
-            stream.job_manager.job_check(test_job_status_response)
-        assert expected in repr(error.value)
-    else:
-        if job_result_url:
-            # mocking the nested request call to retrieve the data from result URL
-            requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
-        result = stream.job_manager.job_check(test_job_status_response)
-        assert expected == result
+    
+    with pytest.raises(error_type) as error:
+        stream.job_manager.job_check(test_job_status_response)
+        # check the flag was set to `True`, meaning `Retried`
+        assert stream.job_manager.one_time_error_retried
+    # Check for the flag reset after the request was retried.
+    # The retried request should FAIL here, because we stil want to see the Exception raised
+    assert not stream.job_manager.one_time_error_retried and expected in repr(error.value)
 
 
 @pytest.mark.parametrize(
