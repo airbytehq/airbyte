@@ -11,7 +11,6 @@ from airbyte_protocol.models import AdvancedAuth, ConnectorSpecification
 
 
 class SourceAzureBlobStorage(FileBasedSource):
-
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.

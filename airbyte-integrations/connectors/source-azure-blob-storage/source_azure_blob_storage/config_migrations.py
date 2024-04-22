@@ -15,7 +15,6 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateConfig(ABC):
-
     @classmethod
     @abstractmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
