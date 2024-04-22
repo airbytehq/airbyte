@@ -604,12 +604,12 @@ class TicketMetrics(TicketSubstream):
         except requests.exceptions.JSONDecodeError:
             data = {}
 
-        if not self.cursor_field:
-            yield data
-        else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
-            # no data in case of http errors
-            if data:
+        # no data in case of http errors
+        if data:
+            if not self.cursor_field:
+                yield data
+            else:
+                cursor_date = (stream_state or {}).get(self.cursor_field)
                 updated = data[self.cursor_field]
                 if not cursor_date or updated >= cursor_date:
                     yield data
