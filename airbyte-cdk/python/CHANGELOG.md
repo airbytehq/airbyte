@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
 ## 0.82.0
 Connector builder: emit state messages
 
