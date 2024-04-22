@@ -183,7 +183,7 @@ class ShopifyBulkManager:
     def __reset_state(self) -> None:
         # set current job state to default values
         self.job_state, self.job_id = None, None
-        # setting self-cancelation
+        # setting self-cancelation to default
         self.job_self_canceled = False
         # set the running job message counter to default
         self.log_job_state_msg_count = 0
