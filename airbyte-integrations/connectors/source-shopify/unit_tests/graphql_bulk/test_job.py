@@ -7,7 +7,7 @@ import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
-from source_shopify.streams.base_streams import IncrementalShopifyGraphQlBulkStream
+# from source_shopify.streams.base_streams import IncrementalShopifyGraphQlBulkStream
 from source_shopify.streams.streams import (
     Collections,
     CustomerAddress,
@@ -161,12 +161,11 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
         
 
 @pytest.mark.parametrize(
-    "job_response, error_type, patch_healthcheck, expected",
+    "job_response, error_type, expected",
     [
         (
             "bulk_successful_response_with_errors", 
             ShopifyBulkExceptions.BulkJobUnknownError, 
-            True, 
             "Could not validate the status of the BULK Job",
         ),
     ],
@@ -174,7 +173,7 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
         "success with errors (edge)",
     ],
 )
-def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, patch_healthcheck, expected) -> None:
+def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
     stream.job_manager.concurrent_max_retry = 1
@@ -185,19 +184,14 @@ def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, 
     # patching the method to get the right ID checks
     if job_id:
         mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
-    if patch_healthcheck:
-        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_healthcheck", value=job_response)
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
-    
     with pytest.raises(error_type) as error:
         stream.job_manager.job_check(test_job_status_response)
-        # check the flag was set to `True`, meaning `Retried`
-        assert stream.job_manager.one_time_error_retried
-    # Check for the flag reset after the request was retried.
     # The retried request should FAIL here, because we stil want to see the Exception raised
-    assert not stream.job_manager.one_time_error_retried and expected in repr(error.value)
+    # We expect the call count to be 4 due to the status checks, the non-retried request would take 2 calls.
+    assert expected in repr(error.value) and requests_mock.call_count == 4
 
 
 @pytest.mark.parametrize(

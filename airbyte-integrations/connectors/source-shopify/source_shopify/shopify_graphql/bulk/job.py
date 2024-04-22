@@ -82,7 +82,7 @@ class ShopifyBulkManager:
     # running job log counter
     log_job_state_msg_count: int = field(init=False, default=0)
     # one time retryable error counter
-    one_time_error_retried: bool = field(init=False, default=False)
+    _one_time_error_retried: bool = field(init=False, default=False)
 
     @property
     def tools(self) -> BulkTools:
@@ -188,7 +188,7 @@ class ShopifyBulkManager:
         # set the running job message counter to default
         self.log_job_state_msg_count = 0
         # set one time retry flag to default
-        self.one_time_error_retried = False
+        self._one_time_error_retried = False
 
     def job_completed(self) -> bool:
         return self.job_state == ShopifyBulkStatus.COMPLETED.value
@@ -311,10 +311,10 @@ class ShopifyBulkManager:
             )
 
     def job_one_time_retry_error(self, response: requests.Response, exception: Exception) -> Optional[requests.Response]:
-        if not self.one_time_error_retried:
+        if not self._one_time_error_retried:
             request = response.request
             self.logger.info(f"Stream: `{self.stream_name}`, retrying `Bad Request`: {request.body}. Error: {repr(exception)}.")
-            self.one_time_error_retried = True
+            self._one_time_error_retried = True
             return self.job_retry_request(request)
         else:
             self.on_job_with_errors(self.job_check_for_errors(response))
