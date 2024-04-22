@@ -1,4 +1,4 @@
-version: 0.81.3
+version: 0.81.6
 type: DeclarativeSource
 
 definitions:
@@ -19,11 +19,17 @@ definitions:
     http_method: GET
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
       response_filters:
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [401, 403]
           error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes: [429]
     request_headers:
       Accept: "application/json"
       Revision: "2023-10-15"
@@ -177,6 +183,26 @@ definitions:
     $parameters:
       path: "lists"
 
+  lists_detailed_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_list
+    name: "lists_detailed"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "additional-fields[list]": "profile_count"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/lists_stream"
+            partition_field: "id"
+    $parameters:
+      path: "lists/{{ stream_slice.id }}"
+
 streams:
   # Incremental streams
   - "#/definitions/profiles_stream"
@@ -187,6 +213,7 @@ streams:
   # Semi-Incremental streams
   - "#/definitions/metrics_stream"
   - "#/definitions/lists_stream"
+  - "#/definitions/lists_detailed_stream"
 
 check:
   type: CheckStream
