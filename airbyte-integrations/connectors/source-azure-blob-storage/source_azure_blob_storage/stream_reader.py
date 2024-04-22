@@ -12,7 +12,7 @@ from azure.core.credentials import AccessToken
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
 
-from .config import Config
+from .spec import SourceAzureBlobStorageSpec
 
 
 class AzureOauth2Authenticator(Oauth2Authenticator):
@@ -35,11 +35,11 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         self._config = None
 
     @property
-    def config(self) -> Config:
+    def config(self) -> SourceAzureBlobStorageSpec:
         return self._config
 
     @config.setter
-    def config(self, value: Config) -> None:
+    def config(self, value: SourceAzureBlobStorageSpec) -> None:
         self._config = value
 
     @property

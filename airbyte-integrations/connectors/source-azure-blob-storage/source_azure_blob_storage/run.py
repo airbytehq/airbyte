@@ -9,7 +9,7 @@ from datetime import datetime
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
+from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials
 
 
@@ -21,7 +21,7 @@ def run():
     try:
         source = SourceAzureBlobStorage(
             SourceAzureBlobStorageStreamReader(),
-            Config,
+            SourceAzureBlobStorageSpec,
             SourceAzureBlobStorage.read_catalog(catalog_path) if catalog_path else None,
             SourceAzureBlobStorage.read_config(config_path) if catalog_path else None,
             SourceAzureBlobStorage.read_state(state_path) if catalog_path else None,
