@@ -108,7 +108,7 @@ internal constructor(
     private fun emitStartStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>
     ): Boolean {
-        if (airbyteStream!!.isPresent && !seenIterators.contains(airbyteStream)) {
+        if (airbyteStream.isPresent && !seenIterators.contains(airbyteStream)) {
             seenIterators.add(airbyteStream)
             StreamStatusUtils.emitStartStreamStatus(airbyteStream, airbyteStreamStatusConsumer)
             return true
