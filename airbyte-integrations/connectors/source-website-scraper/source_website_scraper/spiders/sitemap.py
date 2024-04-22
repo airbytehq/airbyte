@@ -66,6 +66,7 @@ class SitemapSpider(ScrapySitemapSpider):
         return any(content_type.startswith(ALLOWED_FILE_TYPE_MAP[ext]) for ext in self.allowed_extensions)
 
     def parse(self, response: Response, **_):
+        content = ""
         if self.can_crawl(response):
             if self.is_pdf_document(response) and self.is_allowed_type(response):
                 content = self.get_pdf_content(response)
