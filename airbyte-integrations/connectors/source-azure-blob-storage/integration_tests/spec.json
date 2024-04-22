@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/azure-blob-storage",
   "connectionSpecification": {
-    "title": "Config",
+    "title": "SourceAzureBlobStorageSpec",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.",
     "type": "object",
     "properties": {
