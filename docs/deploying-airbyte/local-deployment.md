@@ -3,16 +3,16 @@
 :::warning
 This tool is in active development. Airbyte strives to provide high quality, reliable software, however there may be
 bugs or usability issues with this command. If you find an issue with the `abctl` command, please report it as a github 
-issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "Issue: 🤷 Others issues requests..." please 
-add the `area/quickstart` label.
+issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "🐛 [abctl] Report an issue with the abctl tool".
 
 :::
 
 :::info
 These instructions have been tested on MacOS, Windows, Ubuntu and Fedora.
 
-If you are looking for instructions for the `run_ab_platform.sh` script, please refer to the [Docker Compose](/deploying-airbyte/docker-compose) documentation.
-Note that the `abctl` command does not currently allow for customizations via .env files.
+This tool is intended to get Airbyte running as quickly as possible with no additional configuration necessary. 
+Additional configuration options may be added in the future, however, if you need additional configuration options now, use the
+docker compose solution by following the instructions for the `run_ab_platform.sh` script [here](/deploying-airbyte/docker-compose).
 
 :::
 
