@@ -44,6 +44,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsDemographicsDMARegion,
     AdsInsightsDemographicsGender,
     AdsInsightsDma,
+    AdsInsightsOld,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
@@ -130,6 +131,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
         api = API(access_token=config.access_token, page_size=config.page_size)
+        api_v17 = API(access_token=config.access_token, page_size=config.page_size, api_version="v17.0")
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -166,6 +168,7 @@ class SourceFacebookMarketing(AbstractSource):
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
+            AdsInsightsOld(page_size=config.page_size, **(insights_args | {"api": api_v17})),
             AdsInsights(page_size=config.page_size, **insights_args),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
             AdsInsightsCountry(page_size=config.page_size, **insights_args),
