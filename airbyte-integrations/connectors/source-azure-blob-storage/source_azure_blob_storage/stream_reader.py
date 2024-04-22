@@ -83,8 +83,7 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         for prefix in prefixes:
             for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
                 remote_file = RemoteFile(uri=blob.name, last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None))
-                if not globs or self.file_matches_globs(remote_file, globs):
-                    yield remote_file
+                yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:

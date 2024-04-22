@@ -5,7 +5,7 @@ import os
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from source_azure_blob_storage import SourceAzureBlobStorageSpec, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
+from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials
 
 
