@@ -30,6 +30,8 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     CHECK_MIGRATION_CANDIDATE = "check_migration_candidate"
     POETRY_INIT = "poetry_init"
     DELETE_SETUP_PY = "delete_setup_py"
+    CHECK_UPGRADE_CANDIDATE = "check_upgrade_candidate"
+    UPGRADE_CDK = "upgrade_cdk"
 
     def __str__(self) -> str:
         return self.value

@@ -142,6 +142,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
+- [`connectors up_to_date` command](#up_to_date)
 - [`connectors bump_version` command](#connectors-bump_version)
 - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
@@ -455,6 +456,29 @@ remoteRegistries:
     enabled: true
     packageName: airbyte-source-pokeapi
 ```
+
+### <a id="connectors-up_to_date"></a>`connectors up_to_date` command
+
+Meant to be run on a cron script. 
+
+Actions:
+
+* Upgrades the CDK to the newest version
+
+### Examples
+
+Bump source-openweather:
+
+* `airbyte-ci connectors --name=source-openweather up_to_date`
+* `airbyte-ci connectors --name=source-openweather up_to_date --cdk-version 0.80.0`
+
+ ### Other things it could do
+
+* make sure it's the newest version of pytest
+* do a `poetry update` to update everything else
+* make the pull requests on a well known branch, replacing the last one if still open
+* bump the toml and metadata and changelog
+* also bump the manifest version of the CDK
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
