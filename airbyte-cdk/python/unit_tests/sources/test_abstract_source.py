@@ -47,7 +47,6 @@ from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 
-
 logger = logging.getLogger("airbyte")
 
 
