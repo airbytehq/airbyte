@@ -33,8 +33,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
     command = config["__command"]
     if command == "test_read":
         catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
-        state_dict = Source.read_state(state_path)
-        state = AirbyteStateMessage.parse_obj(state_dict) if state_dict else None
+        state = Source.read_state(state_path)
     else:
         catalog = None
         state = None
