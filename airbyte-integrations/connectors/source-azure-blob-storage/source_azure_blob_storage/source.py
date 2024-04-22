@@ -9,8 +9,6 @@ from airbyte_cdk.sources.declarative.models import OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_protocol.models import AdvancedAuth, ConnectorSpecification
 
-from .legacy_config_transformer import LegacyConfigTransformer
-
 
 class SourceAzureBlobStorage(FileBasedSource):
 
