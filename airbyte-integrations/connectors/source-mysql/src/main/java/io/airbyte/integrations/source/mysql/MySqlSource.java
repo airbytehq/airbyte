@@ -183,7 +183,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     LOGGER.atInfo().log("airbyte stream to check for full refresh: " + airbyteStream);
 
     // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
-    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
     // for cursor based, primary key is stored in primary key under this stream.

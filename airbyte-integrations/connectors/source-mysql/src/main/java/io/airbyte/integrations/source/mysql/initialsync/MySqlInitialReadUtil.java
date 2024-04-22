@@ -382,7 +382,8 @@ public class MySqlInitialReadUtil {
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
-    LOGGER.atInfo().log("all streams: " + allStreams + "; newlyAdded streams: " + newlyAddedStreams +"; already synced streams: " + alreadySyncedStreams);
+    LOGGER.atInfo()
+        .log("all streams: " + allStreams + "; newlyAdded streams: " + newlyAddedStreams + "; already synced streams: " + alreadySyncedStreams);
     // Add a filter here to exclude non resumable full refresh streams.
     return catalog.getStreams().stream()
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
