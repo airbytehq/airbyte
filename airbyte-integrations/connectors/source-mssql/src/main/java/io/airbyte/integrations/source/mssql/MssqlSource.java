@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -134,38 +133,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       }
     }
     return super.check(config);
-  }
-
-  @Override
-  public AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final JdbcDatabase database,
-                                                                        final List<String> columnNames,
-                                                                        final String schemaName,
-                                                                        final String tableName,
-                                                                        final SyncMode syncMode,
-                                                                        final Optional<String> cursorField) {
-    LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
-    // as intermediate state messages are emitted.
-    if (syncMode.equals(SyncMode.INCREMENTAL)) {
-      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
-              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
-      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
-          jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
-    } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
-      // of the records.
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
-
-      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
-          jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
-    }
   }
 
   /**
