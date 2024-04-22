@@ -171,7 +171,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 self._validate_concurrency()
                 self._validate_cursor()
 
-                if sync_mode == None:  # Some hacky stuff for the check case
+                if sync_mode is None:  # Some hacky stuff for the check case
                     cursor = self.cursor_cls(
                         stream_config,
                         stream_config.name,
