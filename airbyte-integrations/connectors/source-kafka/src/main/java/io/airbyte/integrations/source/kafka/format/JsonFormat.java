@@ -6,9 +6,11 @@ package io.airbyte.integrations.source.kafka.format;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -151,7 +153,7 @@ public class JsonFormat extends AbstractFormat {
               .withRecord(new AirbyteRecordMessage()
                   .withStream(record.topic())
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(record.value()));
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", output).build())));
         }
 
         return endOfData();
