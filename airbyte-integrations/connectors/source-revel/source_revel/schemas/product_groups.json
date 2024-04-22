@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "actions": {
+      "items": {
+        "properties": {
+          "action_data": {
+            "properties": {
+              "discounts": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "display": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "id": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "is_food": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "product_group": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resource_uri": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "action_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "active": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "resource_uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discounts": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "display": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "products": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sorting": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tax_rule": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}

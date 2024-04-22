@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "admin_class_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "exclude_from_discounts": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "is_admin_class": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sorting": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}

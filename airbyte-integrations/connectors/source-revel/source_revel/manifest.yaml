@@ -180,7 +180,52 @@ definitions:
           $ref: '#/definitions/paginator'
       incremental_sync:
         $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
-
+    product_groups:
+      type: DeclarativeStream
+      name: product_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /resources/ProductGroup/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+    product_classes:
+      type: DeclarativeStream
+      name: product_classes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /products/ProductClass/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /enterprise/User/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
   base_requester:
     type: HttpRequester
     url_base: https://api.qa.revelup.io/
@@ -207,6 +252,9 @@ streams:
   - $ref: '#/definitions/streams/payments'
   - $ref: '#/definitions/streams/products'
   - $ref: '#/definitions/streams/product_categories'
+  - $ref: '#/definitions/streams/product_classes'
+  - $ref: '#/definitions/streams/product_groups'
+  - $ref: '#/definitions/streams/users'
 
 spec:
   type: Spec

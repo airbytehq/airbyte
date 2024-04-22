@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "additional_data": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "auth0_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_joined": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_ems_access": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_mc_access": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "is_active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_bill_to": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_global_superuser": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_reseller": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_sold_to": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_staff": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "last_login": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "username": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}
