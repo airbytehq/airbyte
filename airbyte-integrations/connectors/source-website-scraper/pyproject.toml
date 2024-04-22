@@ -23,7 +23,7 @@ fake-useragent = "^1.5.1"
 pytz = "^2024.1"
 pandas = "^2.2.2"
 langchain-community = "^0.0.33"
-unstructured = {extras = ["pdf"], version = "^0.13.3"}
+pymupdf = "^1.24.2"
 
 [tool.poetry.scripts]
 source-website-scraper = "source_website_scraper.run:run"
