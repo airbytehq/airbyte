@@ -113,7 +113,7 @@ simple_markdown_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -186,7 +186,7 @@ simple_txt_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -295,7 +295,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -360,7 +360,7 @@ unstructured_invalid_file_type_read_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -461,7 +461,7 @@ simple_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -520,7 +520,7 @@ corrupted_file_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -609,7 +609,7 @@ no_file_extension_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
