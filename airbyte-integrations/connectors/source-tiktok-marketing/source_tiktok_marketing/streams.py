@@ -585,6 +585,7 @@ class SmartPerformanceCampaigns(FullRefreshTikTokSubStream):
     """Docs: https://business-api.tiktok.com/portal/docs?id=1766324010279938"""
 
     parent_id_field = "campaign_id"
+    primary_key = "campaign_id"
 
     def __init__(self, start_date: str, end_date: str, **kwargs):
         super().__init__(start_date, end_date, **kwargs)
@@ -600,6 +601,7 @@ class SmartPerformanceCampaigns(FullRefreshTikTokSubStream):
 class Acos(FullRefreshTikTokSubStream):
 
     parent_id_field = "adgroup_id"
+    primary_key = "adgroup_id"
 
     def __init__(self, start_date: str, end_date: str, **kwargs):
         super().__init__(start_date, end_date, **kwargs)
