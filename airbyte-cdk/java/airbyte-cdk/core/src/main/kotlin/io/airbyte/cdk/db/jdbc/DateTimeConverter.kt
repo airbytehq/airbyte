@@ -153,7 +153,7 @@ object DateTimeConverter {
                 date,
                 date.format(DataTypeUtils.DATE_FORMATTER)
             )
-        } else if (date is Integer) {
+        } else if (date is Int) {
             // Incremental mode
             return LocalDate.ofEpochDay(date.toLong()).format(DataTypeUtils.DATE_FORMATTER)
         } else {

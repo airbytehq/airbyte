@@ -54,9 +54,9 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
     @Throws(Exception::class) protected abstract fun acceptTracked(msg: AirbyteMessage)
 
     @Throws(Exception::class)
-    override fun accept(msg: AirbyteMessage) {
+    override fun accept(message: AirbyteMessage) {
         try {
-            acceptTracked(msg)
+            acceptTracked(message)
         } catch (e: Exception) {
             LOGGER.error("Exception while accepting message", e)
             hasFailed = true
