@@ -10,7 +10,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
-from source_azure_blob_storage.config_migrations import MigrateCredentials
+from source_azure_blob_storage.config_migrations import MigrateCredentials, MigrateLegacyConfig
 
 
 def run():
@@ -27,6 +27,7 @@ def run():
             SourceAzureBlobStorage.read_state(state_path) if catalog_path else None,
             cursor_cls=DefaultFileBasedCursor,
         )
+        MigrateLegacyConfig.migrate(sys.argv[1:], source)
         MigrateCredentials.migrate(sys.argv[1:], source)
     except Exception:
         print(
