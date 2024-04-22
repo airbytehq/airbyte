@@ -46,6 +46,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
                 // convert to java types that will convert into reasonable json.
                 copyToJsonField(queryContext, i, jsonNode)
             } catch (e: java.lang.Exception) {
+                jsonNode.putNull(columnName)
                 LOGGER.info(
                     "Failed to serialize column: {}, of type {}, with error {}",
                     columnName,
