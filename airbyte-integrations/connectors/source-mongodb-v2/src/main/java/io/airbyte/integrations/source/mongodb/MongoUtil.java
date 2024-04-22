@@ -187,7 +187,7 @@ public class MongoUtil {
           @SuppressWarnings("unchecked")
           final Map<String, Object> storageStats = (Map<String, Object>) stats.get(MongoConstants.STORAGE_STATS_KEY);
           if (storageStats != null && !storageStats.isEmpty() && storageStats.containsKey(MongoConstants.COLLECTION_STATISTICS_COUNT_KEY)
-              && storageStats.containsValue(MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY)) {
+              && storageStats.containsKey(MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY)) {
             return Optional.of(new CollectionStatistics((Number) storageStats.get(MongoConstants.COLLECTION_STATISTICS_COUNT_KEY),
                 (Number) storageStats.get(MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY)));
           } else {
