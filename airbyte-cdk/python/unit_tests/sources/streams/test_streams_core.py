@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams.checkpoint import (
 
 logger = logging.getLogger("airbyte")
 
+
 class StreamStubFullRefresh(Stream):
     """
     Stub full refresh class to assist with testing.

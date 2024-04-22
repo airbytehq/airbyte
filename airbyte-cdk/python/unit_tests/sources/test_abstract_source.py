@@ -7,7 +7,7 @@ import datetime
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import (
@@ -41,10 +41,12 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.checkpoint import IncrementalCheckpointReader
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
+
 
 logger = logging.getLogger("airbyte")
 
@@ -278,6 +280,7 @@ class MockResumableFullRefreshStream(Stream):
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
 
+
 def test_discover(mocker):
     """Tests that the appropriate AirbyteCatalog is returned from the discover method"""
     airbyte_stream1 = AirbyteStream(
@@ -502,6 +505,7 @@ def test_valid_full_refresh_read_with_slices(mocker):
         name="s2",
     )
 
+    mocker.patch.object(MockStream, "cursor_field", return_value=None)
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "stream_slices", return_value=slices)
 
@@ -536,72 +540,73 @@ def test_valid_full_refresh_read_with_slices(mocker):
 # Delete this test as it's no longer relevant since we honor incoming state
 def test_full_refresh_does_not_use_incoming_state(mocker):
     """Tests that running a full refresh sync does not use an incoming state message from the platform"""
-    slices = [{"1": "1"}, {"2": "2"}]
+    pass
+    # We'll actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
+    # So in reality we can probably get rid of this test entirely
+    # slices = [{"1": "1"}, {"2": "2"}]
     # When attempting to sync a slice, just output that slice as a record
 
-    # We've actually removed this filtering logic and will rely on the platform to dicate whether to pass state to the connector
-    # So in reality we can probably get rid of this test entirely
-    s1 = MockStream(
-        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
-        name="s1",
-    )
-    s2 = MockStream(
-        [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
-        name="s2",
-    )
-
-    def stream_slices_side_effect(stream_state: Mapping[str, Any], **kwargs) -> List[Mapping[str, Any]]:
-        if stream_state:
-            return slices[1:]
-        else:
-            return slices
-
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "stream_slices", side_effect=stream_slices_side_effect)
-
-    state = [
-        AirbyteStateMessage(
-            type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="s1"),
-                stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
-            ),
-        ),
-        AirbyteStateMessage(
-            type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="s2"),
-                stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_state_message": True}),
-            ),
-        ),
-    ]
-
-    src = MockSource(streams=[s1, s2])
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            _configured_stream(s1, SyncMode.full_refresh),
-            _configured_stream(s2, SyncMode.full_refresh),
-        ]
-    )
-
-    expected = _fix_emitted_at(
-        [
-            _as_stream_status("s1", AirbyteStreamStatus.STARTED),
-            _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
-            *_as_records("s1", slices),
-            _as_state("s1", {"__ab_full_refresh_state_message": True}),
-            _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
-            _as_stream_status("s2", AirbyteStreamStatus.STARTED),
-            _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
-            *_as_records("s2", slices),
-            _as_state("s2", {"__ab_full_refresh_state_message": True}),
-            _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
-        ]
-    )
-
-    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state)))
-
-    assert messages == expected
+    # s1 = MockStream(
+    #     [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+    #     name="s1",
+    # )
+    # s2 = MockStream(
+    #     [({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+    #     name="s2",
+    # )
+    #
+    # def stream_slices_side_effect(stream_state: Mapping[str, Any], **kwargs) -> List[Mapping[str, Any]]:
+    #     if stream_state:
+    #         return slices[1:]
+    #     else:
+    #         return slices
+    #
+    # mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    # mocker.patch.object(MockStream, "stream_slices", side_effect=stream_slices_side_effect)
+    #
+    # state = [
+    #     AirbyteStateMessage(
+    #         type=AirbyteStateType.STREAM,
+    #         stream=AirbyteStreamState(
+    #             stream_descriptor=StreamDescriptor(name="s1"),
+    #             stream_state=AirbyteStateBlob.parse_obj({"created_at": "2024-01-31"}),
+    #         ),
+    #     ),
+    #     AirbyteStateMessage(
+    #         type=AirbyteStateType.STREAM,
+    #         stream=AirbyteStreamState(
+    #             stream_descriptor=StreamDescriptor(name="s2"),
+    #             stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_state_message": True}),
+    #         ),
+    #     ),
+    # ]
+    #
+    # src = MockSource(streams=[s1, s2])
+    # catalog = ConfiguredAirbyteCatalog(
+    #     streams=[
+    #         _configured_stream(s1, SyncMode.full_refresh),
+    #         _configured_stream(s2, SyncMode.full_refresh),
+    #     ]
+    # )
+    #
+    # expected = _fix_emitted_at(
+    #     [
+    #         _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+    #         _as_stream_status("s1", AirbyteStreamStatus.RUNNING),
+    #         *_as_records("s1", slices),
+    #         _as_state("s1", {"__ab_full_refresh_state_message": True}),
+    #         _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
+    #         _as_stream_status("s2", AirbyteStreamStatus.STARTED),
+    #         _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
+    #         *_as_records("s2", slices),
+    #         _as_state("s2", {"__ab_full_refresh_state_message": True}),
+    #         _as_stream_status("s2", AirbyteStreamStatus.COMPLETE),
+    #     ]
+    # )
+    #
+    # messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state)))
+    #
+    # assert messages == expected
 
 
 @pytest.mark.parametrize(
@@ -1418,7 +1423,7 @@ class TestResumableFullRefreshRead:
         assert exc.value.failure_type == FailureType.config_error
 
 
-def test_checkpoint_state_from_stream_instance():
+def test_observe_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
     managers_stream = StreamNoStateMethod()
     state_manager = ConnectorStateManager(
@@ -1433,13 +1438,20 @@ def test_checkpoint_state_from_stream_instance():
         [],
     )
 
+    teams_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[])
+    managers_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[])
+
     # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
-    actual_message = teams_stream._checkpoint_state({"ignored": "state"}, state_manager)
+    teams_stream._observe_state(teams_checkpoint_reader, {"ignored": "state"})
+    actual_message = teams_stream._checkpoint_state(stream_state=teams_checkpoint_reader.get_checkpoint(), state_manager=state_manager)
     assert actual_message == _as_state("teams", {"updated_at": "2022-09-11"})
 
     # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
-    actual_message = managers_stream._checkpoint_state({"updated": "expected_here"}, state_manager)
+    managers_stream._observe_state(managers_checkpoint_reader, {"updated": "expected_here"})
+    actual_message = managers_stream._checkpoint_state(
+        stream_state=managers_checkpoint_reader.get_checkpoint(), state_manager=state_manager
+    )
     assert actual_message == _as_state("managers", {"updated": "expected_here"})
 
 

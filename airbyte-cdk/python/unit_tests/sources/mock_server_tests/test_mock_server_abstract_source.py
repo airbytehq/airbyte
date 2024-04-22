@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -16,7 +16,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     FieldUpdatePaginationStrategy,
     HttpResponseBuilder,
-    PaginationStrategy,
     RecordBuilder,
     create_record_builder,
     create_response_builder,

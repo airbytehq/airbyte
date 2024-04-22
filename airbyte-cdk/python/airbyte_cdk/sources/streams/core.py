@@ -25,7 +25,7 @@ from airbyte_cdk.sources.streams.checkpoint import (
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
+from deprecated import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -145,9 +145,6 @@ class Stream(ABC):
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
-        # we can index on not focusing on the optimal python CDK experience for managing state, with a focus on if low-code is okay
-        # for the 80% we can live with that.
-
         checkpoint_reader = self._get_checkpoint_reader(
             logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
         )
@@ -188,8 +185,9 @@ class Stream(ABC):
                     if sync_mode == SyncMode.incremental:
                         # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
                         checkpoint_interval = self.state_checkpoint_interval
-                        if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            airbyte_state_message = self._checkpoint_state(checkpoint_reader.get_checkpoint(), state_manager=state_manager)
+                        checkpoint = checkpoint_reader.get_checkpoint()
+                        if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
+                            airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
                             yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
@@ -205,7 +203,7 @@ class Stream(ABC):
         # A stream should still emit a state if there were no slices. For an incremental, if there were no slices we should emit
         # the original incoming state. To preserve the legacy state case where a stream doesn't manage state, it uses the
         # incoming stream_state value as a backup if Stream.state is undefined
-        # Also likely handled by Ella's work, but left in so I can test RFR
+        # Also likely handled by Ella's work, but leaving it in and I'll adapt the changes once they're in
         if not has_slices:
             self._observe_state(checkpoint_reader, stream_state)
             checkpoint = checkpoint_reader.get_checkpoint()
@@ -283,7 +281,7 @@ class Stream(ABC):
             return True
         else:
             # Legacy case where the CDK manages state via the get_updated_state method. This is determined by
-            # whether the stream's get_updated_state is different than the base class and therefore overridden
+            # whether the stream's get_updated_state is different from the base class and therefore overridden
             return type(self).get_updated_state != Stream.get_updated_state
 
     def _wrapped_cursor_field(self) -> List[str]:
@@ -402,11 +400,10 @@ class Stream(ABC):
                 sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
                 stream_state=stream_state,
             )
-            # todo blai:
             # Because of poor foresight, we wrote the default Stream.stream_slices() method to return [None] which is confusing and
-            # now normalized this behavior for connector developers. Now we have connectors that also return [None]. This
-            # is objectively misleading and a more ideal interface is [{}] to indicate we still want to iterate a first slice,
-            # but w/ no specific slice values. None is bad, and now I feel bad that I have to write this hack.
+            # now normalized this behavior for connector developers. Now some connectors also return [None]. This is objectively
+            # misleading and a more ideal interface is [{}] to indicate we still want to iterate over one slice, but with no
+            # specific slice values. None is bad, and now I feel bad that I have to write this hack.
             if slices == [None]:
                 slices = [{}]
             logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
@@ -459,7 +456,7 @@ class Stream(ABC):
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
 
-    def _observe_state(self, checkpoint_reader: CheckpointReader, stream_state: Optional[Mapping[str, Any]] = None):
+    def _observe_state(self, checkpoint_reader: CheckpointReader, stream_state: Optional[Mapping[str, Any]] = None) -> None:
         """
         Convenience method that attempts to read the Stream's state using the recommended way of connector's managing their
         own state via state setter/getter. But if we get back an AttributeError, then the legacy Stream.get_updated_state()
@@ -481,7 +478,7 @@ class Stream(ABC):
         stream_state: Mapping[str, Any],
         state_manager,
     ) -> AirbyteMessage:
-        # todo blai: there should just be one method on ConnectorStateManager.update_and_create_state_message(), but to
-        #  pare down the changes which also span concurrent, ignoring this for now
+        # This should be consolidated into one ConnectorStateManager.update_and_create_state_message() method, but I want
+        # to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
