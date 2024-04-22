@@ -98,16 +98,20 @@ jobs:
 
           [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
     - name: "Mark success in GitHub Actions"
+      if: always()
       run: |
-        curl --request POST \
-        --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr-info.outputs.sha }} \
-        --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-        --header 'content-type: application/json' \
-        --data '{
-          "state": "success",
-          "context": "Connectors CI tests",
-          "target_url": "${{ steps.vars.outputs.run-url }}"
-          }' \
+        jobs=("Connectors CI tests" "Connector Ops CI - Connectors Acceptance Tests")
+        for job in "${jobs[@]}"; do
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr-info.outputs.sha }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "${{ job.status }}",
+            "context": "'"$job"'",
+            "target_url": "${{ steps.vars.outputs.run-url }}"
+            }'
+        done
 
     - name: Append failure comment
       if: failure()
