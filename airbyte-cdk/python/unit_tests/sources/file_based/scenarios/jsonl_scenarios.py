@@ -88,6 +88,7 @@ single_jsonl_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -201,6 +202,7 @@ multi_jsonl_with_different_keys_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -312,6 +314,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -423,6 +426,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -625,6 +629,7 @@ jsonl_multi_stream_scenario = (
                 "data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
                 "stream": "stream2",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -726,6 +731,7 @@ schemaless_jsonl_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -843,6 +849,7 @@ schemaless_jsonl_multi_stream_scenario = (
                 "data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
                 "stream": "stream2",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -925,6 +932,7 @@ jsonl_user_input_schema_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
