@@ -38,7 +38,6 @@ from airbyte_cdk.sources.file_based.stream.concurrent.cursor import (
     FileBasedConcurrentCursor,
     FileBasedFinalStateCursor,
 )
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -222,7 +221,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractConcurrentFileBasedCursor]
     ) -> AbstractFileBasedStream:
         return DefaultFileBasedStream(
             config=stream_config,
