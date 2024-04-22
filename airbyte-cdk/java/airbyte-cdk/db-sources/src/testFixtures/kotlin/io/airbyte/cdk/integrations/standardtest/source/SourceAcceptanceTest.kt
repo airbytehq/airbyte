@@ -210,7 +210,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records"
+            "Expected two full refresh syncs to produce the same records. first run: " + recordMessagesFirstRun +"; second run: " + recordMessagesSecondRun
         )
     }
 
