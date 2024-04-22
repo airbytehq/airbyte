@@ -392,6 +392,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 class FullRefreshTikTokSubStream(HttpSubStream, FullRefreshTiktokStream):
 
     parent_id_field = None
+    BATCH_SIZE = 100
 
     def __init__(self, start_date: str, end_date: str, **kwargs):
         FullRefreshTiktokStream.__init__(self, start_date, end_date, **kwargs)
@@ -430,9 +431,8 @@ class FullRefreshTikTokSubStream(HttpSubStream, FullRefreshTiktokStream):
                                          in parent_stream_slices if self.is_valid_parent_slice(parent_slice)]
         for key, group in groupby(filtered_parent_stream_slices, key=lambda x: x['advertiser_id']):
             current_c_ids = [item[self.parent_id_field] for item in group]
-            batch_size = 100
-            for i in range(0, len(current_c_ids), batch_size):
-                yield {'advertiser_id': key, 'group_ids': current_c_ids[i:i + batch_size]}
+            for i in range(0, len(current_c_ids), self.BATCH_SIZE):
+                yield {'advertiser_id': key, 'group_ids': current_c_ids[i:i + self.BATCH_SIZE]}
 
 class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
     cursor_field = "modify_time"
