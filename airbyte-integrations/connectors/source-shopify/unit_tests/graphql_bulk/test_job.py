@@ -7,7 +7,6 @@ import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
-# from source_shopify.streams.base_streams import IncrementalShopifyGraphQlBulkStream
 from source_shopify.streams.streams import (
     Collections,
     CustomerAddress,
