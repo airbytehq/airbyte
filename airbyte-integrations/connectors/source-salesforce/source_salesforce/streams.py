@@ -474,7 +474,9 @@ class BulkSalesforceStream(SalesforceStream):
                     if not error_message:
                         # not all failed response can have "errorMessage" and we need to show full response body
                         error_message = job_info
-                    self.logger.error(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
+                    self.logger.error(
+                        f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
                 else:
                     self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}")
                 return job_status
