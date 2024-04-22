@@ -48,8 +48,9 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-        echo "repo=$(echo $PR_JSON | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
-        echo "branch=$(echo $PR_JSON | jq -r .head.ref)" >> $GITHUB_OUTPUT
+        echo "source_repo=$(echo $PR_JSON | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+        echo "source_branch=$(echo $PR_JSON | jq -r .head.ref)" >> $GITHUB_OUTPUT
+        echo "sha=$(echo $PR_JSON | jq -r .head.sha)" >> $GITHUB_OUTPUT
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -70,6 +71,8 @@ jobs:
       id: test-on-demand
       env:
         GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       run: >
         airbyte-ci
         --disable-update-check
@@ -94,6 +97,17 @@ jobs:
           > ✅ Tests passed. [📎][1]
 
           [1]: ${{ steps.upload-artifact.outputs.artifact-url }}
+    - name: "Mark success in GitHub Actions"
+      run: |
+        curl --request POST \
+        --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr-info.outputs.sha }} \
+        --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+        --header 'content-type: application/json' \
+        --data '{
+          "state": "success",
+          "context": "Connectors CI tests",
+          "target_url": "${{ steps.vars.outputs.run-url }}"
+          }' \
 
     - name: Append failure comment
       if: failure()
