@@ -204,7 +204,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
         if upgrade_deadline_datetime <= one_week_from_now:
             return self.fail(
                 connector=connector,
-                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline",
+                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline.",
             )
 
         return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")

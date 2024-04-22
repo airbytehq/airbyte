@@ -97,4 +97,4 @@ class TestCheck:
         # Assert
         assert all(result.status == CheckStatus.FAILED for result in results)
         assert all(result.message == f"The upgrade deadline for the breaking changes in {version} "
-                                     f"is less than 2024-04-29 days from today. Please extend the deadline" for result in results)
+                                     f"is less than 2024-04-29 days from today. Please extend the deadline." for result in results)
