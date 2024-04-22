@@ -107,11 +107,16 @@ poe lint
 ```
 ## Changelog
 
+### 1.2.1
+
+Fix type error for breaking changes deadline value.
+
 ### 1.2.0
 
 Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking change rollout deadline.
 
 ### 1.1.0
+
 Introduced the `Check.run_on_released_connectors` flag.
 
 ### 1.0.4
@@ -133,4 +138,5 @@ Fix access to connector types: it should be accessed from the `Connector.connect
 - Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
 
 ### 1.0.0
+
 Initial release of `connectors-qa` package.

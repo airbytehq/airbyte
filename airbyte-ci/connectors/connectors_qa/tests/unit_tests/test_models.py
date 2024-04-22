@@ -1,5 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from freezegun import freeze_time
+import datetime
+import pytest
+
 from connector_ops.utils import ConnectorLanguage
 from connectors_qa import consts
 from connectors_qa.checks import ENABLED_CHECKS
@@ -77,3 +81,20 @@ class TestCheck:
         # Assert
         assert all(result.status == CheckStatus.SKIPPED for result in results)
         assert all(result.message == "Check does not apply to released connectors" for result in results)
+
+    @freeze_time("2024-04-22")
+    @pytest.mark.parametrize("deadline", ["2024-04-22", datetime.date(2024, 4, 22)])
+    def test_fail_when_early_breaking_changes_deadline(self, mocker, deadline):
+        # Arrange
+        version = "0.0.0"
+        connector = mocker.MagicMock(version=version, metadata={"releases": {"breakingChanges": {version: {"upgradeDeadline": deadline}}}}, is_released=True)
+
+        # Act
+        results = []
+        for check in ENABLED_CHECKS:
+            results.append(check.run(connector))
+
+        # Assert
+        assert all(result.status == CheckStatus.FAILED for result in results)
+        assert all(result.message == f"The upgrade deadline for the breaking changes in {version} "
+                                     f"is less than 2024-04-29 days from today. Please extend the deadline" for result in results)

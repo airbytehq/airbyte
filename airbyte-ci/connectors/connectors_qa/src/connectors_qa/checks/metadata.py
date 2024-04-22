@@ -160,6 +160,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
     runs_on_released_connectors = False
     minimum_days_until_deadline = 7
+    date_format = "%Y-%m-%d"
 
     def _run(self, connector: Connector) -> CheckResult:
 
@@ -197,7 +198,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
                 message=f"No upgrade deadline found for the breaking changes in {current_version}.",
             )
 
-        upgrade_deadline_datetime = datetime.strptime(upgrade_deadline, "%Y-%m-%d")
+        upgrade_deadline_datetime = upgrade_deadline.strftime(self.date_format) if isinstance(upgrade_deadline, str) else datetime.strptime(upgrade_deadline, self.date_format)
         one_week_from_now = datetime.utcnow() + timedelta(days=self.minimum_days_until_deadline)
 
         if upgrade_deadline_datetime <= one_week_from_now:

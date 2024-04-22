@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.2.0"
+version = "1.2.1"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -29,6 +29,7 @@ mypy = "^1.8.0"
 types-toml = "^0.10.8.7"
 pytest-asyncio = "^0.23.5"
 gitpython = "^3.1.42"
+freezegun = "^1.4.0"
 
 [build-system]
 requires = ["poetry-core"]
