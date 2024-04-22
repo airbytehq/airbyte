@@ -3,7 +3,93 @@
   "title": "Webinar Schema",
   "type": "object",
   "properties": {
-    "id": { "type": "string" }
+    "id": { "type": "string" },
+    "timezone": { "type": "string" },
+    "csv_data": { "type": ["null", "array"] },
+    "manual_breakout": { "type": "boolean" },
+    "vivenu_event_url": { "type": ["null", "string"] },
+    "ticker_url": { "type": ["null", "string"] },
+    "is_single_session": { "type": "boolean" },
+    "created_by_user": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "organization": { "type": "string" },
+        "role": { "type": "string" },
+        "profile_picture_url": { "type": ["null", "string"] }
+      },
+      "required": ["id", "first_name", "last_name", "email", "organization", "role"],
+      "additionalProperties": false
+    },
+    "updated_by_user": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "organization": { "type": "string" },
+        "role": { "type": "string" },
+        "profile_picture_url": { "type": ["null", "string"] }
+      },
+      "required": ["id", "first_name", "last_name", "email", "organization", "role"],
+      "additionalProperties": false
+    },
+    "registrant_count": { "type": "integer" },
+    "registration_cta_link": { "type": ["null", "string"] },
+    "deleted": { "type": ["null", "boolean"] },
+    "deleted_by_cascade": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "discussions_chat_disabled": { "type": "boolean" },
+    "discussion_room_tab_title": { "type": ["null", "string"] },
+    "show_booths": { "type": "boolean" },
+    "booth_chat_disabled": { "type": "boolean" },
+    "booth_tab_title": { "type": ["null", "string"] },
+    "booth_tab_title_2": { "type": ["null", "string"] },
+    "show_attendees": { "type": "boolean" },
+    "p2p_chat_disabled": { "type": "boolean" },
+    "people_tab_title": { "type": ["null", "string"] },
+    "speaker_tab_visible": { "type": "boolean" },
+    "speaker_tab_title": { "type": ["null", "string"] },
+    "public_chat_disabled": { "type": "boolean" },
+    "gifs_enabled": { "type": "boolean" },
+    "is_text_qna_moderated": { "type": "boolean" },
+    "have_text_qna": { "type": "boolean" },
+    "have_video_qna": { "type": "boolean" },
+    "enable_live_captions": { "type": "boolean" },
+    "enable_live_captions_translations": { "type": "boolean" },
+    "email_alias_name": { "type": ["null", "string"] },
+    "demo_request_message": { "type": ["null", "string"] },
+    "broadcast_chat_disabled": { "type": "boolean" },
+    "anonymous_qna_enabled": { "type": "boolean" },
+    "show_answerers_identity": { "type": "boolean" },
+    "textqna_answerers_alias": { "type": ["null", "string"] },
+    "is_title_visible": { "type": "boolean" },
+    "disable_enter_event_button": { "type": "boolean" },
+    "enable_tech_check": { "type": "boolean" },
+    "show_onboarding": { "type": "boolean" },
+    "logo_url": { "type": ["null", "string"] },
+    "favicon": { "type": ["null", "string"] },
+    "show_discussion_rooms": { "type": "boolean" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "schedule": {
+      "type": "object",
+      "properties": {
+        "pre_event": { "type": "string", "format": "date-time" },
+        "post_event": { "type": "string", "format": "date-time" },
+        "event_starts": { "type": "string", "format": "date-time" },
+        "event_ends": { "type": "string", "format": "date-time" },
+        "show_schedule": { "type": "boolean" }
+      },
+      "required": ["pre_event", "post_event", "event_starts", "event_ends", "show_schedule"],
+      "additionalProperties": false
+    }
   },
-  "required": ["id"]
+  "required": ["id", "timezone", "manual_breakout", "is_single_session", "created_by_user", "updated_by_user", "registrant_count", "deleted", "deleted_by_cascade", "created_at", "updated_at", "discussions_chat_disabled", "discussion_room_tab_title", "show_booths", "booth_chat_disabled", "booth_tab_title", "booth_tab_title_2", "show_attendees", "p2p_chat_disabled", "people_tab_title", "speaker_tab_visible", "speaker_tab_title", "public_chat_disabled", "gifs_enabled", "is_text_qna_moderated", "have_text_qna", "have_video_qna", "enable_live_captions", "enable_live_captions_translations", "email_alias_name", "demo_request_message", "broadcast_chat_disabled", "anonymous_qna_enabled", "show_answerers_identity", "textqna_answerers_alias", "is_title_visible", "disable_enter_event_button", "enable_tech_check", "show_onboarding", "logo_url", "favicon", "show_discussion_rooms", "title", "description", "schedule"],
+  "additionalProperties": false
 }
