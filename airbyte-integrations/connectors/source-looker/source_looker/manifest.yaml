@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 0.83.0
 
 type: DeclarativeSource
 
@@ -944,29 +944,8 @@ definitions:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/3.1/
     authenticator:
-      type: SessionTokenAuthenticator
-      login_requester:
-        type: HttpRequester
-        path: login
-        url_base: https://{{ config['domain'] }}/api/3.1
-        http_method: POST
-        authenticator:
-          type: NoAuth
-        request_headers:
-          Content-Type: application/x-www-form-urlencoded
-        request_body_json:
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-        request_parameters: {}
-      session_token_path:
-        - access_token
-      expiration_duration: PT{{ response['expires_in'] }}S
-      request_authentication:
-        type: ApiKey
-        inject_into:
-          type: RequestOption
-          field_name: Authorization
-          inject_into: header
+      type: CustomAuthenticator
+      class_name: source_looker.components.LookerAuthenticator
 
 streams:
   - $ref: '#/definitions/streams/color_collections'

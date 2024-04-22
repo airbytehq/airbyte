@@ -21,6 +21,6 @@ class SourceLooker(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams =  super().streams(config)
-        if config.run_look_ids:
+        if not config.get("run_look_ids"):
             return [stream for stream in streams if stream.name != "run_looks"]
         return streams
