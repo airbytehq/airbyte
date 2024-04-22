@@ -942,7 +942,7 @@ definitions:
           $ref: "#/schemas/user_attribute_group_values"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['domain'] }}/api/3.1/
+    url_base: https://{{ config['domain'] }}/api/4.0/
     authenticator:
       type: CustomAuthenticator
       class_name: source_looker.components.LookerAuthenticator
