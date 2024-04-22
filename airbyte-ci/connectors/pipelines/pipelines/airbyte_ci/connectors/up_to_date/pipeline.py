@@ -7,11 +7,8 @@ import re
 from typing import TYPE_CHECKING
 
 import dagger
-import git
 import requests
-import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
-from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -24,8 +21,6 @@ from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import Iterable, List, Optional
-
     from anyio import Semaphore
 
 PACKAGE_NAME_PATTERN = r"^([a-zA-Z0-9_.\-]+)(?:\[(.*?)\])?([=~><!]=?[a-zA-Z0-9\.]+)?$"
@@ -62,7 +57,7 @@ class CheckIsUpdateCdkCandidate(Step):
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a source connector.",
             )
-        if not "poetry.lock" in connector_dir_entries or not "pyproject.toml" in connector_dir_entries:
+        if "poetry.lock" not in connector_dir_entries or "pyproject.toml" not in connector_dir_entries:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
