@@ -22,32 +22,6 @@ class LabelsRecordExtractor(DpathExtractor):
         return [{"label": record} for record in records]
 
 
-class SingleRecordExtractor(DpathExtractor):
-    """
-    A custom record extractor is needed to handle cases when records are represented as dictionaries instead of list of dictionaries.
-    Example:
-        -> {"key 1": "value 1", "key 2": "value 2", "key n": "value n", ...}
-        <- [{"key 1": "value 1", "key 2": "value 2", "key n": "value n", ...}]
-    """
-
-    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        response_body = [self.decoder.decode(response)]
-        if len(self.field_path) == 0:
-            extracted = response_body
-        else:
-            path = [path.eval(self.config) for path in self.field_path]
-            if "*" in path:
-                extracted = dpath.util.values(response_body, path)
-            else:
-                extracted = dpath.util.get(response_body, path, default=[])
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
-
-
 class UnionListsRecordExtractor(DpathExtractor):
     """
     A custom record extractor is needed to handle cases when records are represented as values of multiple keys instead of list of dictionaries.
