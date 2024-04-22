@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.utils import MockStream
@@ -158,7 +158,7 @@ test_stream_facade_raises_exception = (
             ]
         }
     )
-    .set_expected_read_error(StreamThreadException, "Exception while syncing stream stream1: test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .build()
 )
 
@@ -442,7 +442,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
         )
         .set_incremental(CursorField("cursor_field"), _NO_SLICE_BOUNDARIES)
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
