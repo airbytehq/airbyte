@@ -47,6 +47,8 @@ from .streams import (
     Hourly,
     Lifetime,
     ReportGranularity,
+    SmartPerformanceCampaigns,
+    Acos
 )
 
 logger = logging.getLogger("airbyte")
@@ -142,6 +144,8 @@ class SourceTiktokMarketing(AbstractSource):
             AdGroups(**args),
             Audiences(**args),
             Campaigns(**args),
+            SmartPerformanceCampaigns(**args),
+            Acos(**args),
             CreativeAssetsImages(**args),
             CreativeAssetsMusic(**args),
             CreativeAssetsPortfolios(**args),

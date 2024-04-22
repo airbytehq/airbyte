@@ -1,0 +1,182 @@
+{
+  "type" : "object",
+  "properties" : {
+    "advertiser_id" : {
+      "type" : "string"
+    },
+    "adgroup_id" : {
+      "type" : "string"
+    },
+    "media_info_list" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "media_info" : {
+            "type" : "object",
+            "properties" : {
+              "image_info" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "file_name" : {
+                      "type" : ["string", "null"]
+                    },
+                    "web_uri" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              },
+              "video_info" : {
+                "type" : "object",
+                "properties" : {
+                  "file_name" : {
+                    "type" : "string"
+                  },
+                  "video_id" : {
+                    "type" : "string"
+                  }
+                }
+              },
+              "image_mode" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "title_list" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "call_to_action_list" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object"
+      }
+    },
+    "common_material" : {
+      "type" : "object",
+      "properties" : {
+        "ad_name" : {
+          "type" : ["string", "null"]
+        },
+        "call_to_action_id" : {
+          "type" : ["string", "null"]
+        },
+        "creative_authorized" : {
+          "type" : ["boolean", "null"]
+        },
+        "playable_url" : {
+          "type" : ["string", "null"]
+        },
+        "fallback_type" : {
+          "type" : ["string", "null"]
+        },
+        "tracking_info" : {
+          "type" : "object",
+          "properties" : {
+            "impression_tracking_urls" : {
+              "type" : "array",
+              "items" : {
+                "type" : ["string", "null"]
+              }
+            },
+            "click_tracking_urls" : {
+              "type" : "array",
+              "items" : {
+                "type" : ["string", "null"]
+              }
+            },
+            "tracking_pixel_id" : {
+              "type" : ["string", "null"]
+            },
+            "tracking_app_id" : {
+              "type" : ["string", "null"]
+            },
+            "tracking_offline_event_set_ids" : {
+              "type" : "array",
+              "items" : {
+                "type" : ["string", "null"]
+              }
+            }
+          }
+        },
+        "identity_id" : {
+          "type" : ["string", "null"]
+        },
+        "identity_type" : {
+          "type" : ["string", "null"]
+        },
+        "is_smart_creative" : {
+          "type" : ["boolean", "null"]
+        }
+      }
+    },
+    "open_url" : {
+      "type" : ["string", "null"]
+    },
+    "open_url_list" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "open_url" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "app_name" : {
+      "type" : ["string", "null"]
+    },
+    "avatar_icon_list" : {
+      "type" : ["array", "null"]
+    },
+    "click_tracking_url" : {
+      "type" : "string"
+    },
+    "landing_page_urls" : {
+      "type" : ["array", "null"]
+    },
+    "profile_image" : {
+      "type" : ["string", "null"]
+    },
+    "pixel_id" : {
+      "type" : ["string", "null"]
+    },
+    "landing_page_url" : {
+      "type" : ["string", "null"]
+    },
+    "impression_tracking_url" : {
+      "type" : "string"
+    },
+    "page_list" : {
+      "type" : ["array", "null"]
+    },
+    "external_action" : {
+      "type" : ["string", "null"]
+    },
+    "display_name" : {
+      "type" : ["string", "null"]
+    },
+    "ad_id" : {
+      "type" : "integer"
+    },
+    "page_id" : {
+      "type" : [
+        "string", "null"
+      ]
+    }
+  }
+}
