@@ -106,6 +106,15 @@ class Ads(FBMarketingIncrementalStream):
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
 
 
+class AdRuleLibraries(FBMarketingIncrementalStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-rule-libraries"""
+
+    entity_prefix = "ad_rule_libraries"
+
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
+        return self._api.get_account(account_id=account_id).get_ad_rules_library(params=params, fields=self.fields())
+
+
 class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
@@ -189,10 +198,28 @@ class Videos(FBMarketingReversedIncrementalStream):
         return self._api.get_account(account_id=account_id).get_ad_videos(params=params, fields=self.fields())
 
 
-class AdAccount(FBMarketingStream):
+class AdAccounts(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
     use_batch = False
+
+    fields_exceptions = [
+        "business",
+        "business_street",
+        "business_street2",
+        "capabilities",
+        "failed_delivery_checks",
+        "has_migrated_permissions",
+        "extended_credit_invoice_group",
+        "failed_delivery_checks",
+        "funding_source",
+        "funding_source_details",
+        "offsite_pixels_tos_accepted",
+        "owner",
+        "tos_accepted",
+        "user_tasks",
+        "user_tos_accepted",
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -232,19 +259,19 @@ class AdAccount(FBMarketingStream):
         """noop in case of AdAccount"""
         fields = self.fields(account_id=account_id)
         try:
-            return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
+            return [self._api.get_account(account_id=account_id).api_get(fields=fields)]
         except FacebookRequestError as e:
             # This is a workaround for cases when account seem to have all the required permissions
             # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
-                return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
+                return [self._api.get_account(account_id=account_id).api_get(fields=fields)]
             # FB api returns a non-obvious error when accessing the `funding_source_details` field
             # even though user is granted all the required permissions (`MANAGE`)
             # https://github.com/airbytehq/oncall/issues/3031
             if e.api_error_code() == 100 and e.api_error_message() == "Unsupported request - method type: get":
                 fields.remove("funding_source_details")
-                return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
+                return [self._api.get_account(account_id=account_id).api_get(fields=fields)]
             raise e
 
 

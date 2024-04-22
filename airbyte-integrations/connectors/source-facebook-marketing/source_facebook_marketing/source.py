@@ -15,6 +15,7 @@ from airbyte_cdk.models import (
     FailureType,
     OAuthConfigSpecification,
 )
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger, AlwaysLogSliceLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -22,7 +23,7 @@ from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -46,6 +47,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
+    AdRuleLibraries,
     Campaigns,
     CustomAudiences,
     CustomConversions,
@@ -62,6 +64,7 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 class SourceFacebookMarketing(AbstractSource):
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
+    _slice_logger: SliceLogger = AlwaysLogSliceLogger()
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         config.setdefault("action_breakdowns_allow_empty", False)
@@ -130,6 +133,8 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
         api = API(access_token=config.access_token, page_size=config.page_size)
+        # Default to all visible accounts if account list is empty
+        config.account_ids = config.account_ids or [act.get_id().lstrip("act_") for act in api.get_visible_accounts()]
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -141,9 +146,12 @@ class SourceFacebookMarketing(AbstractSource):
             end_date=config.end_date,
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
+            parallelism=config.parallelism
         )
         streams = [
-            AdAccount(api=api, account_ids=config.account_ids),
+            AdAccounts(api=api,
+                       account_ids=config.account_ids,
+                       parallelism=config.parallelism),
             AdSets(
                 api=api,
                 account_ids=config.account_ids,
@@ -151,6 +159,7 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 filter_statuses=config.adset_statuses,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             Ads(
                 api=api,
@@ -159,12 +168,14 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             AdCreatives(
                 api=api,
                 account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             AdsInsights(page_size=config.page_size, **insights_args),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
@@ -186,6 +197,15 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
+            AdRuleLibraries(
+                api=api,
+                account_ids=config.account_ids,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                filter_statuses=config.adset_statuses,
+                page_size=config.page_size,
+                parallelism=config.parallelism
+            ),
             Campaigns(
                 api=api,
                 account_ids=config.account_ids,
@@ -193,16 +213,19 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 filter_statuses=config.campaign_statuses,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             CustomConversions(
                 api=api,
                 account_ids=config.account_ids,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             CustomAudiences(
                 api=api,
                 account_ids=config.account_ids,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             Images(
                 api=api,
@@ -210,6 +233,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=config.start_date,
                 end_date=config.end_date,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             Videos(
                 api=api,
@@ -217,6 +241,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=config.start_date,
                 end_date=config.end_date,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
             Activities(
                 api=api,
@@ -224,6 +249,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=config.start_date,
                 end_date=config.end_date,
                 page_size=config.page_size,
+                parallelism=config.parallelism
             ),
         ]
 
@@ -307,6 +333,7 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
+                parallelism=config.parallelism
             )
             streams.append(stream)
         return streams

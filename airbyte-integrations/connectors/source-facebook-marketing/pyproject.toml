@@ -19,7 +19,6 @@ include = "source_facebook_marketing"
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 facebook-business = "19.0.0"
-cached-property = "==1.5.2"
 
 [tool.poetry.scripts]
 source-facebook-marketing = "source_facebook_marketing.run:run"

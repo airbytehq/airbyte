@@ -5,16 +5,16 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Set
 
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import traced_exception
+from .async_stream import AsyncStream
 
 from .common import deep_merge
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger("airbyte")
 
 
-class FBMarketingStream(Stream, ABC):
+class FBMarketingStream(AsyncStream, ABC):
     """Base stream class"""
 
     primary_key = "id"
@@ -44,23 +44,28 @@ class FBMarketingStream(Stream, ABC):
     def __init__(
         self,
         api: "API",
-        account_ids: List[str],
-        filter_statuses: list = [],
+        account_ids: Set[str],
+        filter_statuses: list = None,
         page_size: int = 100,
+        parallelism: int = 1,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__(max_workers=parallelism, **kwargs)
         self._api = api
         self._account_ids = account_ids
         self.page_size = page_size if page_size is not None else 100
-        self._filter_statuses = filter_statuses
+        self._filter_statuses = filter_statuses or []
         self._fields = None
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 500
 
     def fields(self, **kwargs) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         if self._fields:
             return self._fields
-        self._saved_fields = list(self.get_json_schema().get("properties", {}).keys())
+        self._saved_fields = list([f for f in self.get_json_schema().get("properties", {}).keys() if (f not in self.fields_exceptions)])
         return self._saved_fields
 
     @classmethod
@@ -129,22 +134,24 @@ class FBMarketingStream(Stream, ABC):
         :return: The transformed state dictionary.
         """
 
-        # If the state already contains any of the account IDs, return the state as is.
-        for account_id in self._account_ids:
-            if account_id in state:
-                return state
+        if state:
+            # If the state already contains any of the account IDs, return the state as is.
+            for account_id in self._account_ids:
+                if account_id in state:
+                    return state
 
-        # Handle the case where there is only one account ID.
-        # Transform the state by nesting it under the account ID.
-        if state and len(self._account_ids) == 1:
-            account_id = self._account_ids[0]
-            new_state = {account_id: state}
+            # Transform old state into new
+            new_state = {}
+            for account_id in self._account_ids:
+                new_account_state = {account_id: state}
 
-            # Move specified fields to the top level of the new state.
-            if move_fields:
-                for move_field in move_fields:
-                    if move_field in state:
-                        new_state[move_field] = state.pop(move_field)
+                # Move specified fields to the top level of the new state.
+                if move_fields:
+                    for move_field in move_fields:
+                        if move_field in state:
+                            new_account_state[move_field] = state[move_field]
+
+                new_state.update(new_account_state)
 
             return new_state
 
@@ -178,7 +185,7 @@ class FBMarketingStream(Stream, ABC):
         try:
             for record in self.list_objects(
                 params=self.request_params(stream_state=account_state),
-                account_id=account_id,
+                account_id=account_id
             ):
                 if isinstance(record, AbstractObject):
                     record = record.export_all_data()  # convert FB object to dict
@@ -198,9 +205,10 @@ class FBMarketingStream(Stream, ABC):
             yield {"account_id": account_id, "stream_state": account_state}
 
     @abstractmethod
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         """List FB objects, these objects will be loaded in read_records later with their details.
 
+        :param account_id: the account id
         :param params: params to make request
         :return: list of FB objects to load
         """
@@ -215,19 +223,28 @@ class FBMarketingStream(Stream, ABC):
     def _filter_all_statuses(self) -> MutableMapping[str, Any]:
         """Filter records by statuses"""
 
-        return (
-            {
-                "filtering": [
-                    {
-                        "field": f"{self.entity_prefix}.{self.status_field}",
-                        "operator": "IN",
-                        "value": self._filter_statuses,
-                    },
-                ],
-            }
-            if self._filter_statuses and self.status_field
-            else {}
-        )
+        filt_values = [
+            "active",
+            "archived",
+            "completed",
+            "limited",
+            "not_delivering",
+            "deleted",
+            "not_published",
+            "pending_review",
+            "permanently_deleted",
+            "recently_completed",
+            "recently_rejected",
+            "rejected",
+            "scheduled",
+            "inactive",
+        ]
+
+        return {
+            "filtering": [
+                {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value":  filt_values},
+            ],
+        }
 
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):

@@ -135,7 +135,7 @@ class ConnectorConfig(BaseConfig):
         ),
         pattern_descriptor="The Ad Account ID must be a number.",
         examples=["111111111111111"],
-        min_items=1,
+        min_items=0,
     )
 
     access_token: str = Field(
@@ -221,9 +221,20 @@ class ConnectorConfig(BaseConfig):
         ),
     )
 
+    parallelism: Optional[PositiveInt] = Field(
+        title="Maximum number of parallel connections",
+        order=11,
+        description=(
+            "Maximum number of parallel connections."
+            "Most users do not need to set this field unless they specifically need to tune the connector to address "
+            "specific issues or use cases."
+        ),
+        default=1,
+    )
+
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
-        order=11,
+        order=12,
         description=(
             "The attribution window. Facebook freezes insight data 28 days after it was generated, "
             "which means that all data from the past 28 days may have changed since we last emitted it, "
@@ -237,7 +248,7 @@ class ConnectorConfig(BaseConfig):
 
     insights_job_timeout: Optional[PositiveInt] = Field(
         title="Insights Job Timeout",
-        order=12,
+        order=13,
         description=(
             "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. "
             "When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. "
