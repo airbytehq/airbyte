@@ -21,7 +21,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 # TODO: flag to make PR
 # TODO: also update the manifest.yaml?
 # TODO: allow a * to be passed in or set as default. e.g. --cdk-version 0.80.*
-# TODO: add a flag to upgrade pytest decalred dependcy. This should probably have a ^ in the version
+# TODO: add a flag to upgrade pytest declared dependency. This should probably have a ^ in the version
 # TODO: add a flag to do a poetry update to update as many as possible
 @click.pass_context
 async def up_to_date(
