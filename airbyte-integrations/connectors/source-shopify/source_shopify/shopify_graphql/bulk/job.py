@@ -81,6 +81,8 @@ class ShopifyBulkManager:
     job_should_revert_slice: bool = field(init=False, default=False)
     # running job log counter
     log_job_state_msg_count: int = field(init=False, default=0)
+    # one time retryable error counter
+    _one_time_error_retried: bool = field(init=False, default=False)
 
     @property
     def tools(self) -> BulkTools:
@@ -185,6 +187,8 @@ class ShopifyBulkManager:
         self.job_self_canceled = False
         # set the running job message counter to default
         self.log_job_state_msg_count = 0
+        # set one time retry flag to default
+        self._one_time_error_retried = False
 
     def job_completed(self) -> bool:
         return self.job_state == ShopifyBulkStatus.COMPLETED.value
@@ -306,6 +310,15 @@ class ShopifyBulkManager:
                 f"Couldn't check the `response` for `errors`, status: {response.status_code}, response: `{response.text}`. Trace: {repr(e)}."
             )
 
+    def job_one_time_retry_error(self, response: requests.Response, exception: Exception) -> Optional[requests.Response]:
+        if not self._one_time_error_retried:
+            request = response.request
+            self.logger.info(f"Stream: `{self.stream_name}`, retrying `Bad Request`: {request.body}. Error: {repr(exception)}.")
+            self._one_time_error_retried = True
+            return self.job_retry_request(request)
+        else:
+            self.on_job_with_errors(self.job_check_for_errors(response))
+
     def job_track_running(self) -> Union[AirbyteTracedException, requests.Response]:
         # format Job state check args
         status_args = self.job_get_request_args(ShopifyBulkTemplates.status)
@@ -322,19 +335,19 @@ class ShopifyBulkManager:
             else:
                 # execute ERRORS scenario
                 self.on_job_with_errors(errors)
-        except ShopifyBulkExceptions.BulkJobBadResponse as e:
-            request = response.request
-            self.logger.info(f"Stream: `{self.stream_name}`, retrying Bad Request: {request.body}. Error: {repr(e)}.")
-            return self.job_retry_request(request)
+        except (
+            ShopifyBulkExceptions.BulkJobBadResponse,
+            ShopifyBulkExceptions.BulkJobUnknownError,
+        ) as error:
+            return self.job_one_time_retry_error(response, error)
 
     def job_check_state(self) -> Optional[str]:
+        response: Optional[requests.Response] = None
         while not self.job_completed():
             if self.job_canceled():
-                response = None
                 break
             else:
                 response = self.job_track_running()
-
         # return `job_result_url` when status is `COMPLETED`
         return self.job_get_result(response)
 
@@ -430,6 +443,7 @@ class ShopifyBulkManager:
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,
             ShopifyBulkExceptions.BulkJobAccessDenied,
+            # this one is one-time retriable
             ShopifyBulkExceptions.BulkJobUnknownError,
         ) as bulk_job_error:
             raise bulk_job_error
