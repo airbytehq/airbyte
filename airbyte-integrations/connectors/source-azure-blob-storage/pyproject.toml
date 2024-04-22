@@ -28,6 +28,7 @@ source-azure-blob-storage = "source_azure_blob_storage.run:run"
 
 [tool.poetry.group.dev.dependencies]
 docker = "^7.0.0"
+freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 pandas = "2.2.1"
