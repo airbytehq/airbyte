@@ -721,7 +721,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       created_at:
         type:
           - 'null'
@@ -762,7 +761,6 @@ schemas:
         type:
           - 'null'
           - string
-        format: uuid
       label:
         type:
           - 'null'
@@ -787,14 +785,12 @@ schemas:
         type:
           - 'null'
           - string
-        format: uuid
       hash_tag_ids:
         type: array
         items:
           type:
             - 'null'
             - string
-          format: uuid
       color:
         type:
           - 'null'
@@ -803,12 +799,10 @@ schemas:
         type:
           - 'null'
           - string
-        format: uuid
       project_phase_id:
         type:
           - 'null'
           - string
-        format: uuid
       total_tracked:
         type:
           - 'null'
@@ -989,7 +983,7 @@ schemas:
       financial_client_currency_exchange_rate:
         type:
           - 'null'
-          - number
+          - string
       financial_total_scheduled_income:
         $ref: "#/schemas/money_object"
       financial_total_scheduled_cost:
@@ -1036,7 +1030,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       nick:
         type:
           - 'null'
@@ -1099,7 +1092,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1108,7 +1100,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1117,7 +1108,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1126,7 +1116,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1135,7 +1124,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       connector:
         type: string
       status:
@@ -1168,7 +1156,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
       default_hour_rate:
@@ -1180,7 +1167,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1189,7 +1175,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
       level:
@@ -1200,7 +1185,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1209,7 +1193,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1218,7 +1201,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       text:
         type: string
 
@@ -1227,7 +1209,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       name:
         type: string
       mail:
@@ -1257,7 +1238,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       title:
         type:
           - 'null'
@@ -1357,7 +1337,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       project_id:
         type: string
       start_date:
@@ -1395,9 +1374,18 @@ schemas:
       rag_ratings:
         type: array
         items:
-          type:
-            - 'null'
-            - string
+          rag_scope_uuid:
+            type:
+              - 'null'
+              - string
+          text:
+            type:
+              - 'null'
+              - string
+          value:
+            type:
+              - 'null'
+              - number
 
   Skills:
     type: object
@@ -1406,7 +1394,6 @@ schemas:
         type: string
       uuid:
         type: string
-        format: uuid
       level:
         type: integer
       desc:
@@ -1431,10 +1418,8 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       employee_id:
         type: string
-        format: uuid
       start_date:
         type:
           - 'null'
@@ -1454,7 +1439,6 @@ schemas:
         properties:
           uuid:
             type: string
-            format: uuid
           name:
             type: string
       approved_at:
@@ -1470,7 +1454,6 @@ schemas:
     properties:
       uuid:
         type: string
-        format: uuid
       assignment_id:
         type:
           - 'null'
