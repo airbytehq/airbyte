@@ -32,13 +32,13 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: updated_date
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%S.%f'
-      - '%Y-%m-%dT%H:%M:%S'
-    datetime_format: '%Y-%m-%dT%H:%M:%S'
+      - "%Y-%m-%dT%H:%M:%S.%f"
+      - "%Y-%m-%dT%H:%M:%S"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%d'
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
     start_time_option:
       type: RequestOption
       inject_into: request_parameter
@@ -50,9 +50,20 @@ definitions:
     step: P1D
     cursor_granularity: PT1S
   incremental_sync_with_initial_full_refresh:
-    $ref: '#/definitions/incremental_sync'
-    type: CustomIncrementalSync
-    class_name: "source_revel.components.InitialFullRefreshDatetimeIncrementalSync"
+    type: DatetimeBasedCursor
+    cursor_field: updated_date
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f"
+      - "%Y-%m-%dT%H:%M:%S"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1970-01-01"
+      datetime_format: "%Y-%m-%d"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: updated_date__gte
   streams:
     companies:
       type: DeclarativeStream
