@@ -4,7 +4,7 @@
 package io.airbyte.cdk.integrations.destination.gcs
 
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig
-import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.avro.UploadAvroFormatConfig
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import java.io.IOException
@@ -30,9 +30,9 @@ internal class GcsDestinationConfigTest {
         Assertions.assertEquals("test_secret", hmacKeyConfig.hmacKeySecret)
 
         val formatConfig = config.formatConfig
-        Assertions.assertTrue(formatConfig is S3AvroFormatConfig)
+        Assertions.assertTrue(formatConfig is UploadAvroFormatConfig)
 
-        val avroFormatConfig = formatConfig as S3AvroFormatConfig
+        val avroFormatConfig = formatConfig as UploadAvroFormatConfig
         Assertions.assertEquals("deflate-5", avroFormatConfig.codecFactory.toString())
     }
 }
