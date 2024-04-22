@@ -19,7 +19,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFinalStateCursor
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -95,7 +94,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         self,
         stream: DefaultStream,
         legacy_stream: AbstractFileBasedStream,
-        cursor: AbstractFileBasedCursor,
+        cursor: AbstractConcurrentFileBasedCursor,
         slice_logger: SliceLogger,
         logger: logging.Logger,
     ):
