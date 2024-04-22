@@ -13,17 +13,13 @@ from typing_extensions import Literal
 
 class ReleaseStage(BaseModel):
     __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
-        ...,
-        description="enum that describes a connector's release stage",
-        title="ReleaseStage",
+        ..., description="enum that describes a connector's release stage", title="ReleaseStage"
     )
 
 
 class SupportLevel(BaseModel):
     __root__: Literal["community", "certified", "archived"] = Field(
-        ...,
-        description="enum that describes a connector's release stage",
-        title="SupportLevel",
+        ..., description="enum that describes a connector's release stage", title="SupportLevel"
     )
 
 
@@ -38,18 +34,8 @@ class ResourceRequirements(BaseModel):
 
 
 class JobType(BaseModel):
-    __root__: Literal[
-        "get_spec",
-        "check_connection",
-        "discover_schema",
-        "sync",
-        "reset_connection",
-        "connection_updater",
-        "replicate",
-    ] = Field(
-        ...,
-        description="enum that describes the different types of jobs that the platform runs.",
-        title="JobType",
+    __root__: Literal["get_spec", "check_connection", "discover_schema", "sync", "reset_connection", "connection_updater", "replicate"] = (
+        Field(..., description="enum that describes the different types of jobs that the platform runs.", title="JobType")
     )
 
 
@@ -61,13 +47,9 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
         ...,
         description="a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.",
     )
-    normalizationTag: str = Field(
-        ...,
-        description="a field indicating the tag of the docker repository to be used for normalization.",
-    )
+    normalizationTag: str = Field(..., description="a field indicating the tag of the docker repository to be used for normalization.")
     normalizationIntegrationType: str = Field(
-        ...,
-        description="a field indicating the type of integration dialect to use for normalization.",
+        ..., description="a field indicating the type of integration dialect to use for normalization."
     )
 
 
@@ -86,11 +68,7 @@ class StreamBreakingChangeScope(BaseModel):
         extra = Extra.forbid
 
     scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(
-        ...,
-        description="List of streams that are impacted by the breaking change.",
-        min_items=1,
-    )
+    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
 class AirbyteInternal(BaseModel):
@@ -120,10 +98,7 @@ class JobTypeResourceLimit(BaseModel):
 
 
 class BreakingChangeScope(BaseModel):
-    __root__: StreamBreakingChangeScope = Field(
-        ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
-    )
+    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -131,8 +106,7 @@ class ActorDefinitionResourceRequirements(BaseModel):
         extra = Extra.forbid
 
     default: Optional[ResourceRequirements] = Field(
-        None,
-        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
+        None, description="if set, these are the requirements that should be set for ALL jobs run for this actor definition."
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
@@ -141,13 +115,8 @@ class VersionBreakingChange(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    upgradeDeadline: date = Field(
-        ...,
-        description="The deadline by which to upgrade before the breaking change takes effect.",
-    )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -164,8 +133,7 @@ class ConnectorBreakingChanges(BaseModel):
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ...,
-        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
     )
 
 
@@ -194,31 +162,19 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     sourceType: Optional[Literal["api", "file", "database", "custom"]] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
-        False,
-        description="if false, the configuration is active. if true, then this configuration is permanently off.",
+        False, description="if false, the configuration is active. if true, then this configuration is permanently off."
     )
-    public: Optional[bool] = Field(
-        False,
-        description="true if this connector definition is available to all workspaces",
-    )
-    custom: Optional[bool] = Field(
-        False, description="whether this is a custom connector definition"
-    )
+    public: Optional[bool] = Field(False, description="true if this connector definition is available to all workspaces")
+    custom: Optional[bool] = Field(False, description="whether this is a custom connector definition")
     releaseStage: Optional[ReleaseStage] = None
     supportLevel: Optional[SupportLevel] = None
-    releaseDate: Optional[date] = Field(
-        None,
-        description="The date when this connector was first released, in yyyy-mm-dd format.",
-    )
+    releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
     allowedHosts: Optional[AllowedHosts] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     maxSecondsBetweenMessages: Optional[int] = Field(
-        None,
-        description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
+        None, description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach"
     )
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
@@ -237,30 +193,18 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     iconUrl: Optional[str] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
-        False,
-        description="if false, the configuration is active. if true, then this configuration is permanently off.",
+        False, description="if false, the configuration is active. if true, then this configuration is permanently off."
     )
-    public: Optional[bool] = Field(
-        False,
-        description="true if this connector definition is available to all workspaces",
-    )
-    custom: Optional[bool] = Field(
-        False, description="whether this is a custom connector definition"
-    )
+    public: Optional[bool] = Field(False, description="true if this connector definition is available to all workspaces")
+    custom: Optional[bool] = Field(False, description="whether this is a custom connector definition")
     releaseStage: Optional[ReleaseStage] = None
     supportLevel: Optional[SupportLevel] = None
-    releaseDate: Optional[date] = Field(
-        None,
-        description="The date when this connector was first released, in yyyy-mm-dd format.",
-    )
+    releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     tags: Optional[List[str]] = Field(
-        None,
-        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
+        None, description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     supportsDbt: Optional[bool] = Field(
         None,
