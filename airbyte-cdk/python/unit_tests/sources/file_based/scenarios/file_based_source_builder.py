@@ -13,7 +13,7 @@ from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.sources.source import TState
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
@@ -29,7 +29,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._parsers = default_parsers
         self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
         self._file_write_options: Mapping[str, Any] = {}
-        self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
+        self._cursor_cls: Optional[Type[AbstractConcurrentFileBasedCursor]] = None
         self._config: Optional[Mapping[str, Any]] = None
         self._state: Optional[TState] = None
 
@@ -79,7 +79,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._stream_reader = stream_reader
         return self
 
-    def set_cursor_cls(self, cursor_cls: AbstractFileBasedCursor) -> "FileBasedSourceBuilder":
+    def set_cursor_cls(self, cursor_cls: AbstractConcurrentFileBasedCursor) -> "FileBasedSourceBuilder":
         self._cursor_cls = cursor_cls
         return self
 
