@@ -189,7 +189,7 @@ single_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(
@@ -259,7 +259,7 @@ single_partitioned_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(
@@ -369,7 +369,7 @@ multi_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -506,7 +506,7 @@ parquet_various_types_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
 ).build()
@@ -541,7 +541,7 @@ parquet_file_with_decimal_no_config_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(
@@ -596,7 +596,7 @@ parquet_file_with_decimal_as_string_scenario = (
                 },
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(
@@ -647,7 +647,7 @@ parquet_file_with_decimal_as_float_scenario = (
                 "data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.parquet"},
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(
@@ -700,7 +700,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
                 "data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.parquet"},
                 "stream": "stream1",
             },
-{'__ab_full_refresh_state_message': True},
+            {"__ab_full_refresh_state_message": True},
         ]
     )
     .set_expected_catalog(

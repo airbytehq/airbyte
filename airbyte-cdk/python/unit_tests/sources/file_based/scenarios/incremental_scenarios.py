@@ -2199,12 +2199,12 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario_cursor_is_newer = 
     .set_expected_records(
         [
             {
-                    "history": {
-                        "b.csv": "2023-06-05T03:54:07.000000Z",
-                        "c.csv": "2023-06-05T03:54:07.000000Z",
-                        "d.csv": "2023-06-05T03:54:07.000000Z",
-                    },
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
+                "history": {
+                    "b.csv": "2023-06-05T03:54:07.000000Z",
+                    "c.csv": "2023-06-05T03:54:07.000000Z",
+                    "d.csv": "2023-06-05T03:54:07.000000Z",
+                },
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_d.csv",
             }
         ]
     )
