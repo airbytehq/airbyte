@@ -21,7 +21,7 @@ import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.client.indices.GetMappingsRequest;
 import org.elasticsearch.client.indices.GetMappingsResponse;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
@@ -44,6 +44,7 @@ public class ElasticsearchConnection {
    *
    * @param config Configuration parameters for connecting to the Elasticsearch host
    */
+  @SuppressWarnings("this-escape")
   public ElasticsearchConnection(ConnectorConfiguration config) {
     log.info(String.format(
         "creating ElasticsearchConnection: %s", config.getEndpoint()));

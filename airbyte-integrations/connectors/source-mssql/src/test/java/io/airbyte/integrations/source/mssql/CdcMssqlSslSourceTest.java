@@ -4,43 +4,33 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
-
-  CdcMssqlSslSourceTest() {
-    super();
-  }
-
-  protected MSSQLServerContainer<?> createContainer() {
-    MsSQLContainerFactory containerFactory = new MsSQLContainerFactory();
-    MSSQLServerContainer<?> container =
-        containerFactory.createNewContainer(DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
-    containerFactory.withSslCertificates(container);
-    return container;
-  }
 
   @Override
   final protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(privateContainer);
-    return testdb
-        .withConnectionProperty("encrypt", "true")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .withConnectionProperty("trustServerCertificate", "true")
-        .initialized()
-        .withSnapshotIsolation()
-        .withCdc()
-        .withWaitUntilAgentRunning();
+    final var testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT, ContainerModifier.WITH_SSL_CERTIFICATES);
+    return testdb.withWaitUntilAgentRunning()
+        .withCdc();
   }
 
   @Override
@@ -60,10 +50,10 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
     try {
       containerIp = InetAddress.getByName(testdb.getContainer().getHost())
           .getHostAddress();
-    } catch (UnknownHostException e) {
+    } catch (final UnknownHostException e) {
       throw new RuntimeException(e);
     }
-    String certificate = testdb.getCertificate(CertificateKey.SERVER);
+    final String certificate = testdb.getCertificate(CertificateKey.SERVER);
     return testdb.configBuilder()
         .withEncrytedVerifyServerCertificate(certificate, testdb.getContainer().getHost())
         .with(JdbcUtils.HOST_KEY, containerIp)
@@ -73,6 +63,7 @@ public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
         .with(JdbcUtils.PASSWORD_KEY, testdb.getPassword())
         .withSchemas(modelsSchema(), randomSchema())
         .withCdcReplication()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 

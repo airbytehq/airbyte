@@ -2,9 +2,17 @@
 
 This page contains the setup guide and reference information for the Vectara destination connector.
 
-[Vectara](https://vectara.com/) is the trusted GenAI platform that provides a managed service for Retrieval Augmented Generation or [RAG](https://vectara.com/grounded-generation/).
+[Vectara](https://vectara.com/) is the trusted GenAI platform that provides Retrieval Augmented Generation or [RAG](https://vectara.com/grounded-generation/) as a service.
 
 The Vectara destination connector allows you to connect any Airbyte source to Vectara and ingest data into Vectara for your RAG pipeline.
+
+:::info
+In case of issues, the following public channels are available for support:
+
+* For Airbyte related issues such as data source or processing: [Open a Github issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml)
+* For Vectara related issues such as data indexing or RAG: Create a post in the [Vectara forum](https://discuss.vectara.com/) or reach out on [Vectara's Discord server](https://discord.gg/GFb8gMz6UH)
+
+:::
 
 ## Overview
 
@@ -48,10 +56,15 @@ You'll need the following information to configure the Vectara destination:
 
 In addition, in the connector UI you define two set of fields for this connector:
 * `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
+* `title_field` define the source field which will be used as a title of the document on the Vectara side
 * `metadata_fields` define the source fields which will be added to each document as meta-data.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 0.1.0   | 2023-11-10 | [31958](https://github.com/airbytehq/airbyte/pull/31958) | 🎉 New Destination: Vectara (Vector Database)                     |
+| 0.2.3   | 2024-03-22 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK & pytest version to fix security vulnerabilities      |
+| 0.2.2   | 2024-03-22 | [#36261](https://github.com/airbytehq/airbyte/pull/36261) | Move project to Poetry                                            |
+| 0.2.1   | 2024-03-05 | [#35206](https://github.com/airbytehq/airbyte/pull/35206) | Fix: improved title parsing                                       |
+| 0.2.0   | 2024-01-29 | [#34579](https://github.com/airbytehq/airbyte/pull/34579) | Add document title file configuration                             |
+| 0.1.0   | 2023-11-10 | [#31958](https://github.com/airbytehq/airbyte/pull/31958) | 🎉 New Destination: Vectara (Vector Database)                     |

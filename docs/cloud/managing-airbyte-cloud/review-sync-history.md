@@ -5,7 +5,9 @@ products: all
 # Review the sync history
 
 The job history displays information about synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this summary can help you monitor the sync performance and identify any potential issues.  
- 
+
+![Job History](./assets/connection-job-history.png)
+
 To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [reset](/operator-guides/reset.md) status. The sync status is defined as: 
 
 | Status              | Description                                                                                                         |

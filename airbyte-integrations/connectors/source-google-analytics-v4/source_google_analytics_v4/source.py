@@ -102,6 +102,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: MutableMapping):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
+        self.end_date = config.get("end_date")
         self.window_in_days: int = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
@@ -255,7 +256,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
-        end_date = pendulum.now().date()
+        end_date = (pendulum.parse(self.end_date) if self.end_date else pendulum.now()).date()
         start_date = pendulum.parse(self.start_date).date()
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()

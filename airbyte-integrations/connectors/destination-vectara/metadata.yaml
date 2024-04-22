@@ -8,19 +8,26 @@ data:
       enabled: true
     cloud:
       enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: database
   connectorType: destination
   definitionId: 102900e7-a236-4c94-83e4-a4189b99adc2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/destination-vectara
   githubIssueLabel: destination-vectara
   icon: vectara.svg
   license: MIT
   name: Vectara
+  remoteRegistries:
+    pypi:
+      enabled: false # TODO: enable once the CLI is working
+      packageName: airbyte-destination-vectara
   releaseDate: 2023-12-16
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 
 
 def test_check_connection_invalid_config(config):
-    config.pop("start_date")
+    config.pop("credentials")
 
     with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
@@ -85,28 +85,22 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 32
+    assert len(streams) == 33
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams(requests_mock, config_experimental):
+def test_streams_incremental(requests_mock, config_experimental):
 
     streams = SourceHubspot().streams(config_experimental)
 
-    assert len(streams) == 44
+    assert len(streams) == 45
 
 
 def test_custom_streams(config_experimental):
-    custom_object_stream_instances = [
-        MagicMock()
-    ]
+    custom_object_stream_instances = [MagicMock()]
     streams = SourceHubspot().get_web_analytics_custom_objects_stream(
         custom_object_stream_instances=custom_object_stream_instances,
-        common_params={
-            "api": MagicMock(),
-            "start_date": "2021-01-01T00:00:00Z",
-            "credentials": config_experimental["credentials"]
-        }
+        common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
     )
     assert len(list(streams)) == 1
 
@@ -135,18 +129,18 @@ def test_convert_datetime_to_string():
 
 def test_cast_datetime(common_params, caplog):
     field_value = pendulum.now()
-    field_name = "curent_time"
+    field_name = "current_time"
 
     Companies(**common_params)._cast_datetime(field_name, field_value)
 
-    expected_warining_message = {
+    expected_warning_message = {
         "type": "LOG",
         "log": {
             "level": "WARN",
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument 'input': 'DateTime' object cannot be converted to 'PyString'",
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
         },
     }
-    assert expected_warining_message["log"]["message"] in caplog.text
+    assert expected_warning_message["log"]["message"] in caplog.text
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -481,7 +475,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}]
+        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
 
     records, _ = read_incremental(test_stream, {})
@@ -709,13 +703,13 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
 def test_get_granted_scopes(requests_mock, mocker):
     authenticator = mocker.Mock()
     authenticator.get_access_token.return_value = "the-token"
-    
+
     expected_scopes = ["a", "b", "c"]
     response = [
         {"json": {"scopes": expected_scopes}, "status_code": 200},
     ]
     requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
-    
+
     actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
 
     assert expected_scopes == actual_scopes

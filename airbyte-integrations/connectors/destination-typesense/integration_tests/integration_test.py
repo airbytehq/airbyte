@@ -6,6 +6,7 @@ import json
 from typing import Any, Dict, Mapping
 
 import pytest
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -59,12 +60,12 @@ def client_fixture(config) -> Client:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationTypesense().check(config)
+    outcome = DestinationTypesense().check(AirbyteLogger(), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationTypesense().check({"api_key": "not_a_real_key", "host": "https://www.fake.com"})
+    outcome = DestinationTypesense().check(AirbyteLogger(), {"api_key": "not_a_real_key", "host": "https://www.fake.com"})
     assert outcome.status == Status.FAILED
 
 

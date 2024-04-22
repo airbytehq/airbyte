@@ -16,6 +16,10 @@ data:
   icon: posthog.svg
   license: MIT
   name: PostHog
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-posthog
   registries:
     cloud:
       enabled: true
@@ -31,6 +35,6 @@ data:
           To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
         upgradeDeadline: "2024-01-15"
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

@@ -123,6 +123,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
+| 3.9.3   | 2024-02-12 | [35161](https://github.com/airbytehq/airbyte/pull/35161) | Manage dependencies with Poetry.                                                                            |
 | 3.9.2   | 2023-11-02 | [32091](https://github.com/airbytehq/airbyte/pull/32091) | Fix incremental syncs; update docs; fix field type of `preview_url_expire_time` to `date-time`.             |
 | 3.9.1   | 2023-10-25 | [31812](https://github.com/airbytehq/airbyte/pull/31812) | Update `support level` in `metadata`, removed duplicated `tracking_pixel_id` field from `Ads` stream schema |
 | 3.9.0   | 2023-10-23 | [31623](https://github.com/airbytehq/airbyte/pull/31623) | Add AdsAudienceReportsByProvince stream and expand base report metrics                                      |

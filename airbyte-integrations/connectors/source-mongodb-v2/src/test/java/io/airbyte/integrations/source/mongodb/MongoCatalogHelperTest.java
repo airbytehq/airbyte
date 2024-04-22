@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -44,12 +44,12 @@ class MongoCatalogHelperTest {
     assertTrue(airbyteStream.getJsonSchema().get("properties").has(DEFAULT_CURSOR_FIELD));
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         airbyteStream.getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
-    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_DELETED_AT));
+    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventConverter.CDC_DELETED_AT));
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
-    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_UPDATED_AT));
+        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_DELETED_AT).get("type").asText());
+    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventConverter.CDC_UPDATED_AT));
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_UPDATED_AT).get("type").asText());
 
   }
 
@@ -81,12 +81,12 @@ class MongoCatalogHelperTest {
     assertTrue(airbyteStream.getJsonSchema().get("properties").has(DEFAULT_CURSOR_FIELD));
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         airbyteStream.getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
-    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_DELETED_AT));
+    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventConverter.CDC_DELETED_AT));
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
-    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_UPDATED_AT));
+        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_DELETED_AT).get("type").asText());
+    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventConverter.CDC_UPDATED_AT));
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
-        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventConverter.CDC_UPDATED_AT).get("type").asText());
 
   }
 

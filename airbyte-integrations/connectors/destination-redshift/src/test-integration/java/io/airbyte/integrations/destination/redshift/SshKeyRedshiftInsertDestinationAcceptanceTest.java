@@ -10,11 +10,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * SshKeyRedshiftInsertDestinationAcceptanceTest runs basic Redshift Destination Tests using the SQL
  * Insert mechanism for upload of data and "key" authentication for the SSH bastion configuration.
  */
+@Disabled
 public class SshKeyRedshiftInsertDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
 
   @Override

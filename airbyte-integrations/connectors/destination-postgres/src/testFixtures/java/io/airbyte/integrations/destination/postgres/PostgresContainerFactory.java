@@ -16,23 +16,17 @@ import org.testcontainers.utility.MountableFile;
  * TODO: This class is a copy from source-postgres:testFixtures. Eventually merge into a common
  * fixtures module.
  */
-public class PostgresContainerFactory implements ContainerFactory<PostgreSQLContainer<?>> {
+public class PostgresContainerFactory extends ContainerFactory<PostgreSQLContainer<?>> {
 
   @Override
-  public PostgreSQLContainer<?> createNewContainer(DockerImageName imageName) {
+  protected PostgreSQLContainer<?> createNewContainer(DockerImageName imageName) {
     return new PostgreSQLContainer<>(imageName.asCompatibleSubstituteFor("postgres"));
-
-  }
-
-  @Override
-  public Class<?> getContainerClass() {
-    return PostgreSQLContainer.class;
   }
 
   /**
    * Apply the postgresql.conf file that we've packaged as a resource.
    */
-  public void withConf(PostgreSQLContainer<?> container) {
+  public static void withConf(PostgreSQLContainer<?> container) {
     container
         .withCopyFileToContainer(
             MountableFile.forClasspathResource("postgresql.conf"),
@@ -43,21 +37,14 @@ public class PostgresContainerFactory implements ContainerFactory<PostgreSQLCont
   /**
    * Create a new network and bind it to the container.
    */
-  public void withNetwork(PostgreSQLContainer<?> container) {
+  public static void withNetwork(PostgreSQLContainer<?> container) {
     container.withNetwork(Network.newNetwork());
-  }
-
-  /**
-   * Configure postgres with wal_level=logical.
-   */
-  public void withWalLevelLogical(PostgreSQLContainer<?> container) {
-    container.withCommand("postgres -c wal_level=logical");
   }
 
   /**
    * Generate SSL certificates and tell postgres to enable SSL and use them.
    */
-  public void withCert(PostgreSQLContainer<?> container) {
+  public static void withCert(PostgreSQLContainer<?> container) {
     container.start();
     String[] commands = {
       "psql -U test -c \"CREATE USER postgres WITH PASSWORD 'postgres';\"",
@@ -103,7 +90,7 @@ public class PostgresContainerFactory implements ContainerFactory<PostgreSQLCont
   /**
    * Tell postgres to enable SSL.
    */
-  public void withSSL(PostgreSQLContainer<?> container) {
+  public static void withSSL(PostgreSQLContainer<?> container) {
     container.withCommand("postgres " +
         "-c ssl=on " +
         "-c ssl_cert_file=/var/lib/postgresql/server.crt " +
@@ -113,7 +100,7 @@ public class PostgresContainerFactory implements ContainerFactory<PostgreSQLCont
   /**
    * Configure postgres with client_encoding=sql_ascii.
    */
-  public void withASCII(PostgreSQLContainer<?> container) {
+  public static void withASCII(PostgreSQLContainer<?> container) {
     container.withCommand("postgres -c client_encoding=sql_ascii");
   }
 

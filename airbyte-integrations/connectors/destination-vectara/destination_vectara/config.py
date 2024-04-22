@@ -42,6 +42,13 @@ class VectaraConfig(BaseModel):
         always_show=True,
         examples=["text", "user.name", "users.*.name"],
     )
+    title_field: Optional[str] = Field(
+        default="",
+        title="Text field to use as document title with Vectara",
+        description="A field that will be used to populate the `title` of each document. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+        always_show=True,
+        examples=["document_key"],
+    )
     metadata_fields: Optional[List[str]] = Field(
         default=[],
         title="Fields to store as metadata",

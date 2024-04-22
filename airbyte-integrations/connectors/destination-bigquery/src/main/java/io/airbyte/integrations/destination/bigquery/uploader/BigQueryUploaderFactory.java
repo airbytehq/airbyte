@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
-import static software.amazon.awssdk.http.HttpStatusCode.NOT_FOUND;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
@@ -32,6 +29,9 @@ import org.slf4j.LoggerFactory;
 public class BigQueryUploaderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
+
+  private static final int HTTP_STATUS_CODE_FORBIDDEN = 403;
+  private static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -104,7 +104,7 @@ public class BigQueryUploaderFactory {
     try {
       writer = bigQuery.writer(job, writeChannelConfiguration);
     } catch (final BigQueryException e) {
-      if (e.getCode() == FORBIDDEN || e.getCode() == NOT_FOUND) {
+      if (e.getCode() == HTTP_STATUS_CODE_FORBIDDEN || e.getCode() == HTTP_STATUS_CODE_NOT_FOUND) {
         throw new ConfigErrorException(CONFIG_ERROR_MSG + e);
       } else {
         throw new BigQueryException(e.getCode(), e.getMessage());

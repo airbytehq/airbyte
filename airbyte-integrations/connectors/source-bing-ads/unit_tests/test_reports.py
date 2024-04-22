@@ -397,16 +397,29 @@ def test_custom_report_get_report_record_timestamp(mocked_client, config_with_cu
 
 
 @patch.object(source_bing_ads.source, "Client")
-def test_account_performance_report_monthly_stream_slices(mocked_client, config):
-    account_performance_report_monthly = AccountPerformanceReportMonthly(mocked_client, config)
+def test_account_performance_report_monthly_stream_slices(mocked_client, config_without_start_date):
+    mocked_client.reports_start_date = None
+    account_performance_report_monthly = AccountPerformanceReportMonthly(mocked_client, config_without_start_date)
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
-        stream_slice = list(account_performance_report_monthly.stream_slices())
+        stream_slice = list(account_performance_report_monthly.stream_slices(sync_mode=SyncMode.full_refresh))
         assert stream_slice == [
             {'account_id': 180519267, 'customer_id': 100, 'time_period': 'LastYear'},
             {'account_id': 180519267, 'customer_id': 100, 'time_period': 'ThisYear'},
             {'account_id': 180278106, 'customer_id': 200, 'time_period': 'LastYear'},
             {'account_id': 180278106, 'customer_id': 200, 'time_period': 'ThisYear'}
+        ]
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_account_performance_report_monthly_stream_slices_no_time_period(mocked_client, config):
+    account_performance_report_monthly = AccountPerformanceReportMonthly(mocked_client, config)
+    accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
+    with patch.object(Accounts, "read_records", return_value=accounts_read_records):
+        stream_slice = list(account_performance_report_monthly.stream_slices(sync_mode=SyncMode.full_refresh))
+        assert stream_slice == [
+            {'account_id': 180519267, 'customer_id': 100},
+            {'account_id': 180278106, 'customer_id': 200}
         ]
 
 
@@ -419,11 +432,12 @@ def test_account_performance_report_monthly_stream_slices(mocked_client, config)
 )
 @patch.object(source_bing_ads.source, "Client")
 def test_custom_performance_report_no_last_year_stream_slices(mocked_client, config_with_custom_reports, aggregation):
+    mocked_client.reports_start_date = None  # in case of start date time period won't be used in request params
     custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
     custom_report.report_aggregation = aggregation
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
-        stream_slice = list(custom_report.stream_slices())
+        stream_slice = list(custom_report.stream_slices(sync_mode=SyncMode.full_refresh))
         assert stream_slice == [
             {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
             {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},

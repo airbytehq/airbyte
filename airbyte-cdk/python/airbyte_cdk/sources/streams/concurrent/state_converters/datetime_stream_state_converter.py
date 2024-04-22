@@ -3,8 +3,8 @@
 #
 
 from abc import abstractmethod
-from datetime import datetime, timedelta
-from typing import Any, List, MutableMapping, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Any, Callable, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -16,8 +16,11 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-    START_KEY = "start"
-    END_KEY = "end"
+    def _from_state_message(self, value: Any) -> Any:
+        return self.parse_timestamp(value)
+
+    def _to_state_message(self, value: Any) -> Any:
+        return self.output_format(value)
 
     @property
     @abstractmethod
@@ -27,6 +30,10 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     @property
     def zero_value(self) -> datetime:
         return self.parse_timestamp(self._zero_value)
+
+    @classmethod
+    def get_end_provider(cls) -> Callable[[], datetime]:
+        return lambda: datetime.now(timezone.utc)
 
     @abstractmethod
     def increment(self, timestamp: datetime) -> datetime:
@@ -40,40 +47,18 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     def output_format(self, timestamp: datetime) -> Any:
         ...
 
-    def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        for stream_slice in state.get("slices", []):
-            stream_slice[self.START_KEY] = self.parse_timestamp(stream_slice[self.START_KEY])
-            stream_slice[self.END_KEY] = self.parse_timestamp(stream_slice[self.END_KEY])
-        return state
-
     def parse_value(self, value: Any) -> Any:
         """
         Parse the value of the cursor field into a comparable value.
         """
         return self.parse_timestamp(value)
 
-    def merge_intervals(self, intervals: List[MutableMapping[str, datetime]]) -> List[MutableMapping[str, datetime]]:
-        if not intervals:
-            return []
-
-        sorted_intervals = sorted(intervals, key=lambda x: (x[self.START_KEY], x[self.END_KEY]))
-        merged_intervals = [sorted_intervals[0]]
-
-        for interval in sorted_intervals[1:]:
-            last_end_time = merged_intervals[-1][self.END_KEY]
-            current_start_time = interval[self.START_KEY]
-            if self.compare_intervals(last_end_time, current_start_time):
-                merged_end_time = max(last_end_time, interval[self.END_KEY])
-                merged_intervals[-1][self.END_KEY] = merged_end_time
-            else:
-                merged_intervals.append(interval)
-
-        return merged_intervals
-
-    def compare_intervals(self, end_time: Any, start_time: Any) -> bool:
+    def _compare_intervals(self, end_time: Any, start_time: Any) -> bool:
         return bool(self.increment(end_time) >= start_time)
 
-    def convert_from_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_from_sequential_state(
+        self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[datetime]
+    ) -> Tuple[datetime, MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
 
@@ -82,54 +67,34 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "metadata": { … },
             "slices": [
-                {starts: 0, end: "2021-01-18T21:18:20.000+00:00", finished_processing: true}]
+                {"start": "2021-01-18T21:18:20.000+00:00", "end": "2021-01-18T21:18:20.000+00:00"},
+            ]
         }
         """
+        sync_start = self._get_sync_start(cursor_field, stream_state, start)
         if self.is_state_message_compatible(stream_state):
-            return stream_state
-        if cursor_field.cursor_field_key in stream_state:
-            slices = [
-                {
-                    # TODO: if we migrate stored state to the concurrent state format, we may want this to be the config start date
-                    # instead of `zero_value`
-                    self.START_KEY: self.zero_value,
-                    self.END_KEY: self.parse_timestamp(stream_state[cursor_field.cursor_field_key]),
-                },
-            ]
-        else:
-            slices = []
-        return {
+            return sync_start, stream_state
+
+        # Create a slice to represent the records synced during prior syncs.
+        # The start and end are the same to avoid confusion as to whether the records for this slice
+        # were actually synced
+        slices = [{self.START_KEY: start if start is not None else sync_start, self.END_KEY: sync_start}]
+
+        return sync_start, {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
             "slices": slices,
             "legacy": stream_state,
         }
 
-    def convert_to_sequential_state(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Convert the state message from the concurrency-compatible format to the stream's original format.
-
-        e.g.
-        { "created": "2021-01-18T21:18:20.000Z" }
-        """
-        if self.is_state_message_compatible(stream_state):
-            legacy_state = stream_state.get("legacy", {})
-            if slices := stream_state.pop("slices", None):
-                latest_complete_time = self._get_latest_complete_time(slices)
-                if latest_complete_time:
-                    legacy_state.update({cursor_field.cursor_field_key: self.output_format(latest_complete_time)})
-            return legacy_state or {}
+    def _get_sync_start(self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[datetime]) -> datetime:
+        sync_start = start if start is not None else self.zero_value
+        prev_sync_low_water_mark = (
+            self.parse_timestamp(stream_state[cursor_field.cursor_field_key]) if cursor_field.cursor_field_key in stream_state else None
+        )
+        if prev_sync_low_water_mark and prev_sync_low_water_mark >= sync_start:
+            return prev_sync_low_water_mark
         else:
-            return stream_state
-
-    def _get_latest_complete_time(self, slices: List[MutableMapping[str, Any]]) -> Optional[datetime]:
-        """
-        Get the latest time before which all records have been processed.
-        """
-        if slices:
-            first_interval = self.merge_intervals(slices)[0][self.END_KEY]
-            return first_interval
-        else:
-            return None
+            return sync_start
 
 
 class EpochValueConcurrentStreamStateConverter(DateTimeStreamStateConverter):

@@ -39,28 +39,6 @@
         "dataEndTime": "2121-07-01"
       },
       "stream_descriptor": {
-        "name": "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "dataEndTime": "2121-07-01"
-      },
-      "stream_descriptor": {
-        "name": "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "dataEndTime": "2121-07-01"
-      },
-      "stream_descriptor": {
         "name": "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
       }
     }

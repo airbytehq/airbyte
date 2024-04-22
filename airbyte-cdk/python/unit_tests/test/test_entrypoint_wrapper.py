@@ -3,19 +3,22 @@
 import json
 import logging
 import os
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Mapping
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import (
     AirbyteAnalyticsTraceMessage,
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
@@ -27,11 +30,8 @@ from airbyte_protocol.models import (
 )
 
 
-def _a_state_message(state: Any) -> AirbyteMessage:
-    return AirbyteMessage(
-        type=Type.STATE,
-        state=AirbyteStateMessage(data=state)
-    )
+def _a_state_message(stream_name: str, stream_state: Mapping[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(**stream_state))))
 
 
 def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteMessage:
@@ -49,14 +49,10 @@ def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteM
 
 
 _A_RECORD = AirbyteMessage(
-    type=Type.RECORD,
-    record=AirbyteRecordMessage(stream="stream", data={"record key": "record value"}, emitted_at=0)
+    type=Type.RECORD, record=AirbyteRecordMessage(stream="stream", data={"record key": "record value"}, emitted_at=0)
 )
-_A_STATE_MESSAGE = _a_state_message({"state key": "state value for _A_STATE_MESSAGE"})
-_A_LOG = AirbyteMessage(
-    type=Type.LOG,
-    log=AirbyteLogMessage(level=Level.INFO, message="This is an Airbyte log message")
-)
+_A_STATE_MESSAGE = _a_state_message("stream_name", {"state key": "state value for _A_STATE_MESSAGE"})
+_A_LOG = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is an Airbyte log message"))
 _AN_ERROR_MESSAGE = AirbyteMessage(
     type=Type.TRACE,
     trace=AirbyteTraceMessage(
@@ -91,7 +87,7 @@ _A_CATALOG = ConfiguredAirbyteCatalog.parse_obj(
         ]
     }
 )
-_A_STATE = {"state_key": "state_value"}
+_A_STATE = StateBuilder().with_stream_state(_A_STREAM_NAME, {"state_key": "state_value"}).build()
 _A_LOG_MESSAGE = "a log message"
 
 
@@ -120,6 +116,7 @@ def _create_tmp_file_validation(entrypoint, expected_config, expected_catalog, e
         _validate_tmp_catalog(expected_catalog, entrypoint.return_value.parse_args.call_args.args[0][4])
         _validate_tmp_json_file(expected_state, entrypoint.return_value.parse_args.call_args.args[0][6])
         return entrypoint.return_value.run.return_value
+
     return _validate_tmp_files
 
 
@@ -153,6 +150,7 @@ class EntrypointWrapperTest(TestCase):
         def _do_some_logging(self):
             logging.getLogger("any logger").info(_A_LOG_MESSAGE)
             return entrypoint.return_value.run.return_value
+
         entrypoint.return_value.run.side_effect = _do_some_logging
 
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
@@ -180,8 +178,9 @@ class EntrypointWrapperTest(TestCase):
 
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_many_state_messages_and_records_when_read_then_output_has_records_and_state_message(self, entrypoint):
-        last_emitted_state = {"last state key": "last state value"}
-        entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message(last_emitted_state)])
+        state_value = {"state_key": "last state value"}
+        last_emitted_state = AirbyteStreamState(stream_descriptor=StreamDescriptor(name="stream_name"), stream_state=AirbyteStateBlob(**state_value))
+        entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message("stream_name", state_value)])
 
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
 
@@ -203,7 +202,7 @@ class EntrypointWrapperTest(TestCase):
     def test_given_stream_statuses_when_read_then_return_statuses(self, entrypoint):
         status_messages = [
             _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.STARTED),
-            _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.COMPLETE)
+            _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.COMPLETE),
         ]
         entrypoint.return_value.run.return_value = _to_entrypoint_output(status_messages)
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
@@ -214,20 +213,20 @@ class EntrypointWrapperTest(TestCase):
         status_messages = [
             _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.STARTED),
             _a_status_message("another stream name", AirbyteStreamStatus.INCOMPLETE),
-            _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.COMPLETE)
+            _a_status_message(_A_STREAM_NAME, AirbyteStreamStatus.COMPLETE),
         ]
         entrypoint.return_value.run.return_value = _to_entrypoint_output(status_messages)
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
         assert len(output.get_stream_statuses(_A_STREAM_NAME)) == 2
 
-    @patch('airbyte_cdk.test.entrypoint_wrapper.print', create=True)
+    @patch("airbyte_cdk.test.entrypoint_wrapper.print", create=True)
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_unexpected_exception_when_read_then_print(self, entrypoint, print_mock):
         entrypoint.return_value.run.side_effect = ValueError("This error should be printed")
         read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
         assert print_mock.call_count > 0
 
-    @patch('airbyte_cdk.test.entrypoint_wrapper.print', create=True)
+    @patch("airbyte_cdk.test.entrypoint_wrapper.print", create=True)
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_expected_exception_when_read_then_do_not_print(self, entrypoint, print_mock):
         entrypoint.return_value.run.side_effect = ValueError("This error should be printed")

@@ -381,7 +381,7 @@ def test_board_issues_stream(config, mock_board_response, board_issues_response)
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = BoardIssues(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(read_full_refresh(stream))
     assert len(records) == 1
     assert len(responses.calls) == 4
 
@@ -391,10 +391,10 @@ def test_stream_updated_state(config):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = BoardIssues(**args)
 
-    current_stream_state = {"updated": "09.11.2023"}
-    latest_record = {"updated": "10.11.2023"}
+    current_stream_state = {"22": {"updated": "2023-10-01T00:00:00Z"}}
+    latest_record = {"boardId": 22, "updated": "2023-09-01T00:00:00Z"}
 
-    assert {"updated": "10.11.2023"} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+    assert {"22": {"updated": "2023-10-01T00:00:00Z"}} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
 
 @responses.activate

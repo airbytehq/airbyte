@@ -13,7 +13,9 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     BUILD_TAR = "build_tar"
     BUILD = "build"
     CHECK_BASE_IMAGE = "check_base_image"
+    CHECK_PYTHON_REGISTRY_PUBLISH_CONFIGURATION = "check_python_registry_publish_configuration"
     INTEGRATION = "integration"
+    AIRBYTE_LIB_VALIDATION = "airbyte_lib_validation"
     METADATA_VALIDATION = "metadata_validation"
     QA_CHECKS = "qa_checks"
     UNIT = "unit"
@@ -21,6 +23,13 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     VERSION_INC_CHECK = "version_inc_check"
     TEST_ORCHESTRATOR = "test_orchestrator"
     DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
+    UPDATE_README = "update_readme"
+    ADD_CHANGELOG_ENTRY = "add_changelog_entry"
+    BUMP_METADATA_VERSION = "bump_metadata_version"
+    REGRESSION_TEST = "regression_test"
+    CHECK_MIGRATION_CANDIDATE = "check_migration_candidate"
+    POETRY_INIT = "poetry_init"
+    DELETE_SETUP_PY = "delete_setup_py"
 
     def __str__(self) -> str:
         return self.value

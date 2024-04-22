@@ -44,6 +44,7 @@ class DestinationVectara(Destination):
         writer = VectaraWriter(
             client=VectaraClient(config_model),
             text_fields=config_model.text_fields,
+            title_field=config_model.title_field,
             metadata_fields=config_model.metadata_fields,
             catalog=configured_catalog,
         )

@@ -84,10 +84,10 @@ def test_parse_GAQL_ok():
 @pytest.mark.parametrize(
     "config",
     [
-        {"custom_queries": [{"query": "SELECT field1, field2 FROM x_Table2", "table_name": "test_table"}]},
-        {"custom_queries": [{"query": "SELECT field1, field2 FROM x_Table WHERE ", "table_name": "test_table"}]},
-        {"custom_queries": [{"query": "SELECT field1, , field2 FROM table", "table_name": "test_table"}]},
-        {"custom_queries": [{"query": "SELECT fie ld1, field2 FROM table", "table_name": "test_table"}]},
+        {"custom_queries_array": [{"query": "SELECT field1, field2 FROM x_Table2", "table_name": "test_table"}]},
+        {"custom_queries_array": [{"query": "SELECT field1, field2 FROM x_Table WHERE ", "table_name": "test_table"}]},
+        {"custom_queries_array": [{"query": "SELECT field1, , field2 FROM table", "table_name": "test_table"}]},
+        {"custom_queries_array": [{"query": "SELECT fie ld1, field2 FROM table", "table_name": "test_table"}]},
     ],
 )
 def test_parse_GAQL_fail(config):

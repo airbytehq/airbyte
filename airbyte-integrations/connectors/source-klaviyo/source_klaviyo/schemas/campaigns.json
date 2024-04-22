@@ -1,50 +1,6 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
-  "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated_at": { "type": ["null", "string"], "format": "date-time" },
-    "attributes": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {
-        "name": { "type": "string" },
-        "status": { "type": "string" },
-        "archived": { "type": "boolean" },
-        "channel": { "type": "string" },
-        "audiences": {
-          "type": ["null", "object"],
-          "additionalProperties": true
-        },
-        "send_options": {
-          "type": ["null", "object"],
-          "properties": {
-            "use_smart_sending": { "type": "boolean" }
-          }
-        },
-        "message": { "type": "string" },
-        "tracking_options": {
-          "type": ["null", "object"],
-          "additionalProperties": true
-        },
-        "send_strategy": {
-          "type": ["null", "object"],
-          "additionalProperties": true
-        },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "scheduled_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-        "send_time": { "type": ["null", "string"], "format": "date-time" }
-      }
-    },
-    "links": {
-      "type": ["null", "object"],
-      "additionalProperties": true
-    },
-    "relationships": {
-      "type": ["null", "object"],
-      "additionalProperties": true
-    }
-  }
+  "properties": { "$ref": "campaign_properties.json" }
 }

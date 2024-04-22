@@ -19,4 +19,4 @@ class NoOpStep(Step):
         self.step_status = step_status
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
-        return StepResult(self, self.step_status)
+        return StepResult(step=self, status=self.step_status)

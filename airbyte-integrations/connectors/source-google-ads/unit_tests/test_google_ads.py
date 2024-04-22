@@ -169,7 +169,7 @@ def test_get_fields_metadata(mocker):
     response = google_ads_client.get_fields_metadata(fields)
 
     # Get the mock service to check the request query
-    mock_service = google_ads_client.client.get_service("GoogleAdsFieldService")
+    mock_service = google_ads_client.get_client().get_service("GoogleAdsFieldService")
 
     # Assert the constructed request query
     expected_query = """

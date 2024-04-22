@@ -179,6 +179,9 @@
                     },
                     "rate": {
                       "type": ["null", "number"]
+                    },
+                    "channel_liable": {
+                      "type": ["null", "boolean"]
                     }
                   },
                   "type": ["null", "object"]
@@ -196,15 +199,7 @@
               "properties": {
                 "type": ["null", "array"],
                 "items": {
-                  "properties": {
-                    "name": {
-                      "type": ["null", "string"]
-                    },
-                    "value": {
-                      "type": ["null", "string"]
-                    }
-                  },
-                  "type": ["null", "object"]
+                  "type": ["null", "string"]
                 }
               },
               "quantity": {
@@ -379,6 +374,45 @@
               },
               "title": {
                 "type": ["null", "string"]
+              },
+              "duties": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "duty_id": {
+                      "type": ["null", "integer"]
+                    },
+                    "amount_set": {
+                      "properties": {
+                        "shop_money": {
+                          "properties": {
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            },
+                            "amount": {
+                              "type": ["null", "number"]
+                            }
+                          },
+                          "type": ["null", "object"]
+                        },
+                        "presentment_money": {
+                          "properties": {
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            },
+                            "amount": {
+                              "type": ["null", "number"]
+                            }
+                          },
+                          "type": ["null", "object"]
+                        }
+                      },
+                      "type": ["null", "object"]
+                    }
+                  }
+                }
               }
             },
             "type": ["null", "object"]
@@ -473,6 +507,45 @@
           },
           "user_id": {
             "type": ["null", "integer"]
+          },
+          "payment_details": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "avs_result_code": {
+                "type": ["null", "string"]
+              },
+              "buyer_action_info": {
+                "type": ["null", "string"]
+              },
+              "credit_card_bin": {
+                "type": ["null", "string"]
+              },
+              "credit_card_company": {
+                "type": ["null", "string"]
+              },
+              "credit_card_expiration_month": {
+                "type": ["null", "integer"]
+              },
+              "credit_card_expiration_year": {
+                "type": ["null", "integer"]
+              },
+              "credit_card_name": {
+                "type": ["null", "string"]
+              },
+              "credit_card_number": {
+                "type": ["null", "string"]
+              },
+              "credit_card_wallet": {
+                "type": ["null", "string"]
+              },
+              "cvv_result_code": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "payment_id": {
+            "type": ["null", "string"]
           }
         }
       }

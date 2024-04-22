@@ -7,12 +7,16 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 9f8dda77-1048-4368-815b-269bf54ee9b8
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-google-drive
   githubIssueLabel: source-google-drive
   icon: google-drive.svg
   license: ELv2
   name: Google Drive
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-drive
   registries:
     cloud:
       enabled: true
@@ -22,5 +26,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-drive
   tags:
     - language:python
+    - cdk:python-file-based
   supportLevel: community
 metadataSpecVersion: "1.0"
