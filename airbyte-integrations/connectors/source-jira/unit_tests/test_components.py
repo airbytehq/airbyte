@@ -1,10 +1,13 @@
-import pytest
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest.mock import MagicMock, patch
+
+import pytest
 import requests
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from source_jira.components.extractors import LabelsRecordExtractor, UnionListsRecordExtractor
 from source_jira.components.paginators import UrlPaginationStrategy
-from source_jira.components.partition_routers import SubstreamPartitionRouterWithContext, SprintIssuesSubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter, SubstreamPartitionRouterWithContext
 
 
 @pytest.mark.parametrize("json_response, expected_output", [

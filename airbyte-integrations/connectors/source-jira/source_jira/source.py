@@ -8,7 +8,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
-from .streams import IssueFields, Issues, PullRequests
+from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
 
 
 class SourceJira(YamlDeclarativeSource):
@@ -17,7 +17,7 @@ class SourceJira(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams = super().streams(config)
-        return streams + self.get_experimental_streams(config=config)
+        return streams + self.get_non_portable_streams(config=config)
 
     def _validate_and_transform_config(self, config: Mapping[str, Any]):
         start_date = config.get("start_date")
@@ -31,7 +31,7 @@ class SourceJira(YamlDeclarativeSource):
     def get_authenticator(config: Mapping[str, Any]):
         return BasicHttpAuthenticator(config["email"], config["api_token"])
 
-    def get_experimental_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def get_non_portable_streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform_config(config.copy())
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
@@ -43,9 +43,11 @@ class SourceJira(YamlDeclarativeSource):
         issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
 
+        streams = [IssueComments(**incremental_args), IssueWorklogs(**incremental_args)]
+
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
-        return experimental_streams
+        return streams + experimental_streams
