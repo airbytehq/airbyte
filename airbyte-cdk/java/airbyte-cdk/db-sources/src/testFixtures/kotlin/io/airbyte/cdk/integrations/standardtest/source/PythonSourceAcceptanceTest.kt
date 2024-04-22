@@ -103,7 +103,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
 
     @Throws(IOException::class)
     private fun <T> runExecutable(cmd: Command, klass: Class<T>): T {
-        return Jsons.`object`(runExecutable(cmd), klass)
+        return Jsons.`object`(runExecutable(cmd), klass)!!
     }
 
     @Throws(IOException::class)
