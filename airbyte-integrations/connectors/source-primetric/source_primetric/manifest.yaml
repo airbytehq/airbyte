@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: assignments
           http_method: GET
         record_selector:
@@ -37,7 +37,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Assignments'
+          $ref: "#/schemas/Assignments"
     Employees:
       type: DeclarativeStream
       name: employees
@@ -46,7 +46,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: employees
           http_method: GET
         record_selector:
@@ -66,7 +66,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Employees'
+          $ref: "#/schemas/Employees"
     Hashtags:
       type: DeclarativeStream
       name: hashtags
@@ -75,7 +75,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: hash_tags
           http_method: GET
         record_selector:
@@ -95,7 +95,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Hashtags'
+          $ref: "#/schemas/Hashtags"
     OrganizationClients:
       type: DeclarativeStream
       name: organization_clients
@@ -104,7 +104,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/clients
           http_method: GET
         record_selector:
@@ -124,7 +124,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationClients'
+          $ref: "#/schemas/OrganizationClients"
     OrganizationCompanyGroups:
       type: DeclarativeStream
       name: organization_company_groups
@@ -133,7 +133,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/company_groups
           http_method: GET
         record_selector:
@@ -153,7 +153,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationCompanyGroups'
+          $ref: "#/schemas/OrganizationCompanyGroups"
     OrganizationDepartments:
       type: DeclarativeStream
       name: organization_departments
@@ -162,7 +162,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/departments
           http_method: GET
         record_selector:
@@ -182,7 +182,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationDepartments'
+          $ref: "#/schemas/OrganizationDepartments"
     OrganizationIdentityProviders:
       type: DeclarativeStream
       name: organization_identity_providers
@@ -191,7 +191,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/identity_providers
           http_method: GET
         record_selector:
@@ -202,7 +202,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationIdentityProviders'
+          $ref: "#/schemas/OrganizationIdentityProviders"
     OrganizationPosition:
       type: DeclarativeStream
       name: organization_positions
@@ -211,7 +211,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/positions
           http_method: GET
         record_selector:
@@ -231,7 +231,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationPosition'
+          $ref: "#/schemas/OrganizationPosition"
     OrganizationRagScopes:
       type: DeclarativeStream
       name: organization_rag_scopes
@@ -240,7 +240,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/rag_scopes
           http_method: GET
         record_selector:
@@ -260,7 +260,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationRagScopes'
+          $ref: "#/schemas/OrganizationRagScopes"
     OrganizationRoles:
       type: DeclarativeStream
       name: organization_roles
@@ -269,7 +269,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/roles
           http_method: GET
         record_selector:
@@ -289,7 +289,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationRoles'
+          $ref: "#/schemas/OrganizationRoles"
     OrganizationSeniorities:
       type: DeclarativeStream
       name: organization_seniorities
@@ -298,7 +298,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/seniorities
           http_method: GET
         record_selector:
@@ -318,7 +318,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationSeniorities'
+          $ref: "#/schemas/OrganizationSeniorities"
     OrganizationTags:
       type: DeclarativeStream
       name: organization_tags
@@ -327,7 +327,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/tags
           http_method: GET
         record_selector:
@@ -347,7 +347,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationTags'
+          $ref: "#/schemas/OrganizationTags"
     OrganizationTeams:
       type: DeclarativeStream
       name: organization_teams
@@ -356,7 +356,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/teams
           http_method: GET
         record_selector:
@@ -376,7 +376,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationTeams'
+          $ref: "#/schemas/OrganizationTeams"
     OrganizationTimeoffTypes:
       type: DeclarativeStream
       name: organization_timeoff_types
@@ -385,7 +385,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: organization/timeoff_types
           http_method: GET
         record_selector:
@@ -405,7 +405,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/OrganizationTimeoffTypes'
+          $ref: "#/schemas/OrganizationTimeoffTypes"
     People:
       type: DeclarativeStream
       name: people
@@ -414,7 +414,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: people
           http_method: GET
         record_selector:
@@ -434,7 +434,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/People'
+          $ref: "#/schemas/People"
     Projects:
       type: DeclarativeStream
       name: projects
@@ -443,7 +443,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: projects
           http_method: GET
         record_selector:
@@ -463,7 +463,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Projects'
+          $ref: "#/schemas/Projects"
     ProjectsVacancies:
       type: DeclarativeStream
       name: projects_vacancies
@@ -472,7 +472,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: projects_vacancies
           http_method: GET
         record_selector:
@@ -492,7 +492,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ProjectsVacancies'
+          $ref: "#/schemas/ProjectsVacancies"
     RagRatings:
       type: DeclarativeStream
       name: rag_ratings
@@ -501,7 +501,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: rag_ratings
           http_method: GET
         record_selector:
@@ -512,7 +512,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/RagRatings'
+          $ref: "#/schemas/RagRatings"
     Skills:
       type: DeclarativeStream
       name: skills
@@ -521,7 +521,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: skills
           http_method: GET
         record_selector:
@@ -541,7 +541,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Skills'
+          $ref: "#/schemas/Skills"
     Timeoffs:
       type: DeclarativeStream
       name: timeoffs
@@ -550,7 +550,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: timeoffs
           http_method: GET
         record_selector:
@@ -570,7 +570,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Timeoffs'
+          $ref: "#/schemas/Timeoffs"
     Worklogs:
       type: DeclarativeStream
       name: worklogs
@@ -579,7 +579,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: worklogs
           http_method: GET
         record_selector:
@@ -599,40 +599,40 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Worklogs'
+          $ref: "#/schemas/Worklogs"
   base_requester:
     type: HttpRequester
     url_base: https://api.primetric.com/beta/
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config[''client_id''] }}'
-      client_secret: '{{ config[''client_secret''] }}'
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://api.primetric.com/auth/token/
       grant_type: client_credentials
 
 streams:
-  - $ref: '#/definitions/streams/Assignments'
-  - $ref: '#/definitions/streams/Employees'
-  - $ref: '#/definitions/streams/Hashtags'
-  - $ref: '#/definitions/streams/OrganizationClients'
-  - $ref: '#/definitions/streams/OrganizationCompanyGroups'
-  - $ref: '#/definitions/streams/OrganizationDepartments'
-  - $ref: '#/definitions/streams/OrganizationIdentityProviders'
-  - $ref: '#/definitions/streams/OrganizationPosition'
-  - $ref: '#/definitions/streams/OrganizationRagScopes'
-  - $ref: '#/definitions/streams/OrganizationRoles'
-  - $ref: '#/definitions/streams/OrganizationSeniorities'
-  - $ref: '#/definitions/streams/OrganizationTags'
-  - $ref: '#/definitions/streams/OrganizationTeams'
-  - $ref: '#/definitions/streams/OrganizationTimeoffTypes'
-  - $ref: '#/definitions/streams/People'
-  - $ref: '#/definitions/streams/Projects'
-  - $ref: '#/definitions/streams/ProjectsVacancies'
-  - $ref: '#/definitions/streams/RagRatings'
-  - $ref: '#/definitions/streams/Skills'
-  - $ref: '#/definitions/streams/Timeoffs'
-  - $ref: '#/definitions/streams/Worklogs'
+  - $ref: "#/definitions/streams/Assignments"
+  - $ref: "#/definitions/streams/Employees"
+  - $ref: "#/definitions/streams/Hashtags"
+  - $ref: "#/definitions/streams/OrganizationClients"
+  - $ref: "#/definitions/streams/OrganizationCompanyGroups"
+  - $ref: "#/definitions/streams/OrganizationDepartments"
+  - $ref: "#/definitions/streams/OrganizationIdentityProviders"
+  - $ref: "#/definitions/streams/OrganizationPosition"
+  - $ref: "#/definitions/streams/OrganizationRagScopes"
+  - $ref: "#/definitions/streams/OrganizationRoles"
+  - $ref: "#/definitions/streams/OrganizationSeniorities"
+  - $ref: "#/definitions/streams/OrganizationTags"
+  - $ref: "#/definitions/streams/OrganizationTeams"
+  - $ref: "#/definitions/streams/OrganizationTimeoffTypes"
+  - $ref: "#/definitions/streams/People"
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/ProjectsVacancies"
+  - $ref: "#/definitions/streams/RagRatings"
+  - $ref: "#/definitions/streams/Skills"
+  - $ref: "#/definitions/streams/Timeoffs"
+  - $ref: "#/definitions/streams/Worklogs"
 
 spec:
   documentation_url: https://docsurl.com
@@ -688,7 +688,7 @@ schemas:
     type: array
     items:
       type:
-        - 'null'
+        - "null"
         - object
       properties:
         slug:
@@ -700,20 +700,20 @@ schemas:
 
   money_object:
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       amount:
         type:
-          - 'null'
+          - "null"
           - number
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       exchange_rate:
         type:
-          - 'null'
+          - "null"
           - number
 
   Assignments:
@@ -723,32 +723,32 @@ schemas:
         type: string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       starts_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       ends_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       end_local_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       start_local_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       status:
@@ -759,230 +759,230 @@ schemas:
           - 2
       employee_id:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       scheduling_mode:
         type:
-          - 'null'
+          - "null"
           - integer
       affects_capacity:
         type:
-          - 'null'
+          - "null"
           - boolean
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       project_role_id:
         type:
-          - 'null'
+          - "null"
           - string
       hash_tag_ids:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       color:
         type:
-          - 'null'
+          - "null"
           - string
       project_id:
         type:
-          - 'null'
+          - "null"
           - string
       project_phase_id:
         type:
-          - 'null'
+          - "null"
           - string
       total_tracked:
         type:
-          - 'null'
+          - "null"
           - number
       total_scheduled:
         type:
-          - 'null'
+          - "null"
           - number
       is_settled:
         type:
-          - 'null'
+          - "null"
           - boolean
       daily_data:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           start:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           end:
             type:
-              - 'null'
+              - "null"
               - string
             format: date
           tracked:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - number
           scheduled:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - number
       custom_attributes:
         $ref: "#/schemas/custom_attributes"
       background:
         type:
-          - 'null'
+          - "null"
           - boolean
       volatile_work_settings:
         type:
-          - 'null'
+          - "null"
           - boolean
       only_billable_work:
         type:
-          - 'null'
+          - "null"
           - boolean
       scheduling_time_frame:
         type:
-          - 'null'
+          - "null"
           - integer
       scheduled_work_per_time_frame:
         type:
-          - 'null'
+          - "null"
           - integer
       adjust_scheduling_to_time_off:
         type:
-          - 'null'
+          - "null"
           - boolean
       reduce_utilization_by_time_off:
         type:
-          - 'null'
+          - "null"
           - boolean
       adjust_scheduling_to_public_holidays:
         type:
-          - 'null'
+          - "null"
           - boolean
       reduce_utilization_by_public_holidays:
         type:
-          - 'null'
+          - "null"
           - boolean
       capacity_based_load:
         type:
-          - 'null'
+          - "null"
           - integer
       use_billable_capacity:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_by_capacity_per_monday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_tuesday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_wednesday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_thursday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_friday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_saturday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_by_capacity_per_sunday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_monday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_tuesday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_wednesday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_thursday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_friday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_saturday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_per_sunday:
         type:
-          - 'null'
+          - "null"
           - integer
       work_on_monday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_tuesday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_wednesday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_thursday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_friday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_saturday:
         type:
-          - 'null'
+          - "null"
           - boolean
       work_on_sunday:
         type:
-          - 'null'
+          - "null"
           - boolean
       financial_budget_mode:
         type:
-          - 'null'
+          - "null"
           - integer
       financial_client_currency:
         type:
-          - 'null'
+          - "null"
           - string
       financial_client_currency_exchange_rate:
         type:
-          - 'null'
+          - "null"
           - string
       financial_total_scheduled_income:
         $ref: "#/schemas/money_object"
@@ -994,19 +994,19 @@ schemas:
         $ref: "#/schemas/money_object"
       financial_settled_income:
         type:
-          - 'null'
+          - "null"
           - object
       financial_settled_cost:
         type:
-          - 'null'
+          - "null"
           - object
       financial_total_work_for_cost:
         type:
-          - 'null'
+          - "null"
           - integer
       financial_contractor_hour_cost:
         type:
-          - 'null'
+          - "null"
           - object
       financial_hour_rate:
         $ref: "#/schemas/money_object"
@@ -1014,15 +1014,15 @@ schemas:
         $ref: "#/schemas/money_object"
       financial_use_default_hour_cost:
         type:
-          - 'null'
+          - "null"
           - boolean
       financial_default_hour_rate_source:
         type:
-          - 'null'
+          - "null"
           - integer
       financial_total_work_for_income:
         type:
-          - 'null'
+          - "null"
           - integer
 
   Employees:
@@ -1032,45 +1032,45 @@ schemas:
         type: string
       nick:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       assigned_manager_id:
         type:
-          - 'null'
+          - "null"
           - string
       assigned_finance_manager_ids:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       seniority_id:
         type:
-          - 'null'
+          - "null"
           - string
       team_id:
         type:
-          - 'null'
+          - "null"
           - string
       department_id:
         type:
-          - 'null'
+          - "null"
           - string
       position_id:
         type:
-          - 'null'
+          - "null"
           - string
       hash_tag_ids:
         type: array
@@ -1078,11 +1078,11 @@ schemas:
           type: string
       nationality:
         type:
-          - 'null'
+          - "null"
           - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       custom_attributes:
         $ref: "#/schemas/custom_attributes"
@@ -1217,20 +1217,20 @@ schemas:
         type: boolean
       roles:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           manager_id:
             type:
-              - 'null'
+              - "null"
               - string
           employee_id:
             type:
-              - 'null'
+              - "null"
               - string
           administrator_id:
             type:
-              - 'null'
+              - "null"
               - string
 
   Projects:
@@ -1240,92 +1240,92 @@ schemas:
         type: string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       hash_tag_ids:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       end_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       last_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       tentative:
         type:
-          - 'null'
+          - "null"
           - boolean
       likelihood:
         type:
-          - 'null'
+          - "null"
           - integer
       billing_model:
         type:
-          - 'null'
+          - "null"
           - integer
       hour_rate_source:
         type:
-          - 'null'
+          - "null"
           - integer
       customer_id:
         type:
-          - 'null'
+          - "null"
           - string
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       currency_rate:
         type:
-          - 'null'
+          - "null"
           - string
       project_group_id:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - integer
       color:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       assigned_manager_ids:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       assigned_manager_readonly_ids:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       is_public:
         type:
-          - 'null'
+          - "null"
           - boolean
       integrations:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
@@ -1341,25 +1341,25 @@ schemas:
         type: string
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       end_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       seniority_id:
         type:
-          - 'null'
+          - "null"
           - string
       position_id:
         type:
-          - 'null'
+          - "null"
           - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       custom_attributes:
         $ref: "#/schemas/custom_attributes"
@@ -1376,15 +1376,15 @@ schemas:
         items:
           rag_scope_uuid:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           value:
             type:
-              - 'null'
+              - "null"
               - number
 
   Skills:
@@ -1406,13 +1406,13 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       has_children:
         type:
-          - 'null'
+          - "null"
           - boolean
-      
+
   Timeoffs:
     type: object
     properties:
@@ -1422,19 +1422,19 @@ schemas:
         type: string
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       end_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       approved:
         type: boolean
       approved_by:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           uuid:
@@ -1443,7 +1443,7 @@ schemas:
             type: string
       approved_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       custom_attributes:
@@ -1456,42 +1456,41 @@ schemas:
         type: string
       assignment_id:
         type:
-          - 'null'
+          - "null"
           - string
       project_id:
         type:
-          - 'null'
+          - "null"
           - string
       starts_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       work:
         type:
-          - 'null'
+          - "null"
           - integer
       desc:
         type:
-          - 'null'
+          - "null"
           - string
       in_progress:
         type:
-          - 'null'
+          - "null"
           - boolean
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       developer_id:
         type:
-          - 'null'
+          - "null"
           - string
       custom_attributes:
         $ref: "#/schemas/custom_attributes"
-
