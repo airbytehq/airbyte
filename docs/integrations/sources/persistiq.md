@@ -40,5 +40,6 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                           | Subject                  |
 | :------ | :--------- | :----------------------------------------------------- | :----------------------- |
-| 0.2.0   | 2023-10-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to low code |
+| 0.2.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
+| 0.2.0   | 2023-10-10 | [31055](https://github.com/airbytehq/airbyte/pull/31055) | Migrate to low code |
 | 0.1.0   | 2022-01-21 | [9515](https://github.com/airbytehq/airbyte/pull/9515) | 🎉 New Source: PersistIq |

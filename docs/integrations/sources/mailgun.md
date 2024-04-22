@@ -65,6 +65,7 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------  | :--------------------------------------------------- |
+| 0.2.2   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
 | 0.2.1   | 2023-10-16 | [31405](https://github.com/airbytehq/airbyte/pull/31405) | Fixed test connection failure if date field is empty |
 | 0.2.0   | 2023-08-05 | [29122](https://github.com/airbytehq/airbyte/pull/29122) | Migrate to Low Code                                  |
 | 0.1.1   | 2023-02-13 | [22939](https://github.com/airbytehq/airbyte/pull/22939) | Specified date formatting in specification           |

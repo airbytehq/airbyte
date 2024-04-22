@@ -51,6 +51,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                             |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------|
+| 0.3.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
 | 0.3.0   | 2023-08-05 | [29121](https://github.com/airbytehq/airbyte/pull/29121) | Migrate Python CDK to Low Code CDK                                  |
 | 0.2.7   | 2023-06-09 | [27202](https://github.com/airbytehq/airbyte/pull/27202) | Remove authSpecification in favour of advancedAuth in specification |
 | 0.2.6   | 2023-03-07 | [23810](https://github.com/airbytehq/airbyte/pull/23810) | Prepare for cloud                                                   |

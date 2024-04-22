@@ -41,6 +41,7 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.2.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
 |  0.2.0  | 2023-08-02 | [28950](https://github.com/airbytehq/airbyte/pull/28950) | Migrate to Low-Code CDK                                            |
 |  0.1.3  | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString`                                   |
 |  0.1.2  | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications                  |
