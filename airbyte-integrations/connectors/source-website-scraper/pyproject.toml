@@ -1,0 +1,34 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-website-scraper"
+description = "Source implementation for website-scraper."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/website-scraper"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [{ include = "source_website_scraper" }, { include = "main.py" }]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+scrapy = "^2.11.1"
+beautifulsoup4 = "^4.12.3"
+fake-useragent = "^1.5.1"
+pytz = "^2024.1"
+pandas = "^2.2.2"
+langchain-community = "^0.0.33"
+unstructured = {extras = ["pdf"], version = "^0.13.3"}
+
+[tool.poetry.scripts]
+source-website-scraper = "source_website_scraper.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

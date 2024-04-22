@@ -1,0 +1,36 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Website Scraper Spec
+  type: object
+  required:
+    - url
+  properties:
+    url:
+      type: string
+      description: Url to scrape, if the url has .xml extension, it will be treated as sitemap
+      pattern: ^https?://
+      examples:
+        - https://www.example.com
+      order: 0
+    closespider_pagecount:
+      type: integer
+      description: Maximum number of pages to scrape
+      examples:
+        - 1000
+      default: 100
+      order: 1
+    allowed_types:
+      description: List of allowed file types to scrape
+      items:
+        enum:
+          - pdf
+          - html
+        type: string
+      default:
+        - html
+      minItems: 1
+      order: 2
+      title: Allowed Extensions
+      type: array
+      uniqueItems: true
