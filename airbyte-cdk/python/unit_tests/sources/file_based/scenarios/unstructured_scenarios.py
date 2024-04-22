@@ -113,6 +113,7 @@ simple_markdown_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -185,6 +186,7 @@ simple_txt_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -292,7 +294,8 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                     "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.csv message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT",
                 },
                 "stream": "stream1",
-            }
+            },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -357,6 +360,7 @@ unstructured_invalid_file_type_read_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -457,6 +461,7 @@ simple_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -515,6 +520,7 @@ corrupted_file_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()
@@ -603,6 +609,7 @@ no_file_extension_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 ).build()

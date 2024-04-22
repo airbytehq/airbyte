@@ -77,6 +77,7 @@ _base_user_input_schema_scenario = (
                 },
                 "stream": "stream1",
             },
+{'__ab_full_refresh_state_message': True},
         ]
     )
 )
@@ -207,7 +208,8 @@ single_stream_user_input_schema_scenario_skip_nonconforming_records = (
             ]
         }
     )
-    .set_expected_records([])
+    .set_expected_records([{'__ab_full_refresh_state_message': True},
+])
     .set_expected_logs(
         {
             "read": [
@@ -375,6 +377,8 @@ _base_multi_stream_user_input_schema_scenario = (
                 "data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"},
                 "stream": "stream3",
             },
+{'__ab_full_refresh_state_message': True},
+
         ]
     )
 )
@@ -588,6 +592,8 @@ multi_stream_user_input_schema_scenario_emit_nonconforming_records = (
                 "data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"},
                 "stream": "stream3",
             },
+{'__ab_full_refresh_state_message': True},
+
         ]
     )
     .set_expected_logs(
@@ -723,6 +729,8 @@ multi_stream_user_input_schema_scenario_skip_nonconforming_records = (
                 "data": {"col1": "val21c", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"},
                 "stream": "stream3",
             },
+{'__ab_full_refresh_state_message': True},
+
         ]
     )
     .set_expected_logs(
