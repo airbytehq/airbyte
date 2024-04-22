@@ -20,7 +20,7 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: OffsetIncrement
-      page_size: 100
+      page_size: 500
       inject_on_first_request: true
   record_selector:
     type: RecordSelector
@@ -42,13 +42,17 @@ definitions:
     start_time_option:
       type: RequestOption
       inject_into: request_parameter
-      field_name: updated_date__gt
+      field_name: updated_date__gte
     end_time_option:
       type: RequestOption
       inject_into: request_parameter
-      field_name: updated_date__lt
+      field_name: updated_date__lte
     step: P1D
     cursor_granularity: PT1S
+  incremental_sync_with_initial_full_refresh:
+    $ref: '#/definitions/incremental_sync'
+    type: CustomIncrementalSync
+    class_name: "source_revel.components.InitialFullRefreshDatetimeIncrementalSync"
   streams:
     companies:
       type: DeclarativeStream
@@ -88,14 +92,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: '#/definitions/base_requester'
           path: /resources/Employee/
         record_selector:
           $ref: '#/definitions/record_selector'
         paginator:
           $ref: '#/definitions/paginator'
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
     orders:
       type: DeclarativeStream
       name: orders
@@ -152,14 +156,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: '#/definitions/base_requester'
           path: /resources/Product/
         record_selector:
           $ref: '#/definitions/record_selector'
         paginator:
           $ref: '#/definitions/paginator'
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
     product_categories:
       type: DeclarativeStream
       name: product_categories
@@ -175,7 +179,7 @@ definitions:
         paginator:
           $ref: '#/definitions/paginator'
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
 
   base_requester:
     type: HttpRequester
