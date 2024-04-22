@@ -342,10 +342,7 @@ async def run_connector_migration_to_base_image_pipeline(
                 steps_results.append(add_changelog_entry_result)
 
             # UPDATE DOC
-            add_build_instructions_to_doc = AddBuildInstructionsToReadme(
-                context,
-                add_changelog_entry_result.output,
-            )
+            add_build_instructions_to_doc = AddBuildInstructionsToReadme(context, steps_results[-1].output)
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
 
