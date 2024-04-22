@@ -66,7 +66,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
-        cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
+        cursor_cls: Type[AbstractConcurrentFileBasedCursor] = FileBasedConcurrentCursor,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -168,8 +168,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
 
                 self._validate_input_schema(stream_config)
-                self._validate_concurrency()
-                self._validate_cursor()
+
+                assert (
+                    hasattr(self, "_concurrency_level") and self._concurrency_level is not None
+                ), "Concurrency level is not set for the source. Please set the _concurrency_level attribute."
+                assert issubclass(
+                    self.cursor_cls, AbstractConcurrentFileBasedCursor
+                ), "Cursor class must be a subclass of AbstractConcurrentFileBasedCursor."
 
                 if sync_mode is None:  # Some hacky stuff for the check case
                     cursor = self.cursor_cls(
@@ -285,13 +290,3 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
     def _validate_input_schema(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.schemaless and stream_config.input_schema:
             raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
-
-    def _validate_cursor(self) -> None:
-        if not issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor):
-            raise ValidationError(
-                f"Cursor {self.cursor_cls} is not a subclass of AbstractConcurrentFileBasedCursor", model=FileBasedStreamConfig
-            )
-
-    def _validate_concurrency(self) -> None:
-        if not hasattr(self, "_concurrency_level") or self._concurrency_level is None:
-            raise ValidationError(f"Concurrency level is not set for {self.name}. Please set the _concurrency_level attribute.")
