@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.stream.Collectors.toList;
+
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -31,11 +33,16 @@ import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
@@ -236,6 +243,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
+    for (StreamConfig streamConfig : parsedCatalog.streams()) {
+      List<String> jsonPks = streamConfig.primaryKey().stream()
+          .filter(pkColumn -> {
+            AirbyteType type = streamConfig.columns().get(pkColumn);
+            return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
+          }).map(ColumnId::originalName)
+          .toList();
+      if (!jsonPks.isEmpty()) {
+        String streamId = streamConfig.id().originalNamespace() + streamConfig.id().originalName();
+        throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys. See stream " + streamId + ". Problematic column(s): " + jsonPks);
+      }
+    }
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper =
         buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
