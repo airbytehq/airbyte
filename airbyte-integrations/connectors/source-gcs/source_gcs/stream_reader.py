@@ -5,7 +5,6 @@
 import itertools
 import json
 import logging
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
@@ -80,7 +79,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     if FILE_FORMAT in blob.name.lower() and (not start_date or last_modified >= start_date):
                         uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
 
-                        yield RemoteFile(uri=uri, last_modified=last_modified)
+                        file_extension = ".".join(blob.name.split(".")[1:])
+
+                        yield RemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
 
         except Exception as exc:
             self._handle_file_listing_error(exc, prefix, logger)
@@ -94,18 +95,22 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefix=prefix,
         ) from exc
 
-    @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Open and yield a remote file from GCS for reading.
         """
         logger.debug(f"Trying to open {file.uri}")
+
+        # choose correct compression mode
+        file_extension = file.mime_type.split(".")[-1]
+        if file_extension in ["gz", "bz2"]:
+            compression = "." + file_extension
+        else:
+            compression = "disable"
+
         try:
-            result = smart_open.open(file.uri, mode=mode.value, encoding=encoding)
+            result = smart_open.open(file.uri, mode=mode.value, compression=compression, encoding=encoding)
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)
-        try:
-            yield result
-        finally:
-            result.close()
+        return result

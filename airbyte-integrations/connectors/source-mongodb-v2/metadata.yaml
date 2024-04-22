@@ -1,16 +1,20 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 200
+  allowedHosts:
+    hosts:
+      - ${connection_string}
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.3.4
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
   icon: mongodb.svg
   license: ELv2
+  maxSecondsBetweenMessages: 7200
   name: MongoDb
   registries:
     cloud:

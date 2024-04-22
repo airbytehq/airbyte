@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Comment",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "entity_type": {
+      "type": ["string", "null"]
+    },
+    "added_by": {
+      "type": ["string", "null"]
+    },
+    "notes": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "entity_id": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "$ref": "_definitions.json#/definitions/custom_fields"
+    }
+  }
+}

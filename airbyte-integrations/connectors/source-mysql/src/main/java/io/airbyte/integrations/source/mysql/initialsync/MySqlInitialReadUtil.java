@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.FAIL_SYNC_OPTION;
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
@@ -16,26 +19,28 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
+import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
-import io.airbyte.integrations.source.mysql.MySqlCdcProperties;
-import io.airbyte.integrations.source.mysql.MySqlCdcSavedInfoFetcher;
-import io.airbyte.integrations.source.mysql.MySqlCdcStateHandler;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
+import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcSavedInfoFetcher;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcStateHandler;
+import io.airbyte.integrations.source.mysql.cdc.MySqlCdcTargetPosition;
+import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
+import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
@@ -57,7 +62,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -84,7 +88,8 @@ public class MySqlInitialReadUtil {
                                                                                 final Instant emittedAt,
                                                                                 final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
@@ -108,6 +113,12 @@ public class MySqlInitialReadUtil {
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
 
     if (!savedOffsetStillPresentOnServer) {
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
+          INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
+        throw new ConfigErrorException(
+            "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency. See https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting#under-cdc-incremental-mode-there-are-still-full-refresh-syncs for more details.");
+      }
       LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
 
@@ -130,8 +141,8 @@ public class MySqlInitialReadUtil {
               stateToBeUsed, catalog);
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
 
-      final MySqlInitialLoadSourceOperations sourceOperations =
-          new MySqlInitialLoadSourceOperations(
+      final MySqlSourceOperations sourceOperations =
+          new MySqlSourceOperations(
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
@@ -149,17 +160,20 @@ public class MySqlInitialReadUtil {
     }
 
     // Build the incremental CDC iterators.
-    final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-        new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
-
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-        new MySqlCdcSavedInfoFetcher(stateToBeUsed),
-        new MySqlCdcStateHandler(stateManager),
-        metadataInjector,
-        MySqlCdcProperties.getDebeziumProperties(database),
-        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
-        emittedAt,
+    final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<>(
+        sourceConfig,
+        MySqlCdcTargetPosition.targetPosition(database),
+        true,
+        firstRecordWaitTime,
+        subsequentRecordWaitTime,
+        AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
+    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+        MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog);
+    final var eventConverter = new RelationalDbDebeziumEventConverter(metadataInjector, emittedAt);
+
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+        propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
 
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.

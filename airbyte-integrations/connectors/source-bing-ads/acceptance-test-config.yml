@@ -15,6 +15,8 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         status: succeed
+      - config_path: secrets/config_no_date.json
+        status: succeed
       - config_path: integration_tests/invalid_config.json
         status: failed
   basic_read:
@@ -22,22 +24,53 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_records: yes
         empty_streams:
+          - name: product_dimension_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: audience_performance_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
           - name: account_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_group_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_impression_performance_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: keyword_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: geographic_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: age_gender_audience_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: search_query_performance_report_hourly
@@ -52,37 +85,281 @@ acceptance_tests:
             bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet"
           - name: app_install_ad_labels
             bypass_reason: "Can not populate; depends on stream app_install_ads"
-          ####          TODO: remove *_report_monthly after all become populated on December, 1
+            ### For stream below start date in config is not relevant, empty data
+          - name: keyword_labels
+            bypass_reason: "This stream is tested without start date"
+          - name: keywords
+            bypass_reason: "This stream is tested without start date"
+          - name: ad_group_labels
+            bypass_reason: "This stream is tested without start date"
+          - name: labels
+            bypass_reason: "This stream is tested without start date"
+          - name: campaign_labels
+            bypass_reason: "This stream is tested without start date"
+        timeout_seconds: 9000
+      - config_path: secrets/config_no_date.json
+        expect_records:
+          path: "integration_tests/expected_records_no_start_date.jsonl"
+        empty_streams:
+          - name: product_dimension_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: audience_performance_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: app_install_ads
+            bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet. Testing in integration tests."
+          - name: app_install_ad_labels
+            bypass_reason: "Can not populate; depends on stream app_install_ads. Testing in integration tests."
+          - name: age_gender_audience_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: user_location_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: account_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: account_impression_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: campaign_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: ad_group_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: ad_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: ad_group_impression_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: keyword_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: geographic_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: campaign_impression_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          - name: search_query_performance_report_hourly
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          #### Streams below sync takes a lot of time if start date is not provided
           - name: account_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_group_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_group_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: campaign_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: campaign_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: keyword_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: geographic_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: age_gender_audience_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: search_query_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: user_location_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: account_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-        timeout_seconds: 7200
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_groups
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ads
+            bypass_reason: "This stream is tested with config with start date"
+          - name: campaigns
+            bypass_reason: "This stream is tested with config with start date"
+          - name: accounts
+            bypass_reason: "This stream is tested with config with start date"
+          - name: account_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: account_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_group_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_group_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_group_impression_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_group_impression_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: ad_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: budget_summary_report
+            bypass_reason: "This stream is tested with config with start date"
+          - name: campaign_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: campaign_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: campaign_impression_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: campaign_impression_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: keyword_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: keyword_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: geographic_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: geographic_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: age_gender_audience_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: age_gender_audience_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: search_query_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: search_query_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: user_location_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: user_location_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+          - name: account_impression_performance_report_daily
+            bypass_reason: "This stream is tested with config with start date"
+          - name: account_impression_performance_report_weekly
+            bypass_reason: "This stream is tested with config with start date"
+        timeout_seconds: 9000
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
-        timeout_seconds: 7200
+        timeout_seconds: 9000
+        ignored_fields:
+          account_performance_report_hourly:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          account_performance_report_weekly:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          account_performance_report_daily:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          budget_summary_report:
+            - name: Date
+              bypass_reason: "dynamic field"
+            - name: MonthlyBudget
+              bypass_reason: "dynamic field"
+            - name: DailySpend
+              bypass_reason: "dynamic field"
+            - name: MonthToDateSpend
+              bypass_reason: "dynamic field"
+
   incremental:
     tests:
     bypass_reason: "SAT doesn't support complex nested states used in incremental report streams"

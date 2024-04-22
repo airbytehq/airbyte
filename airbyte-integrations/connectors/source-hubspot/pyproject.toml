@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "4.1.1"
+name = "source-hubspot"
+description = "Source implementation for HubSpot."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/hubspot"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_hubspot"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-hubspot = "source_hubspot.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+mock = "^5.1.0"
+pytest-mock = "^3.6"
+pytest = "^6.2"
+pytz = "2024.1"
+freezegun = "0.3.4"

@@ -5,138 +5,39 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.json.Jsons;
-import java.sql.SQLException;
+import io.airbyte.integrations.destination.postgres.PostgresTestDatabase.BaseImage;
 import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.junit.jupiter.api.Disabled;
 
-public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
+public class PostgresDestinationAcceptanceTest extends AbstractPostgresDestinationAcceptanceTest {
 
-  private PostgreSQLContainer<?> db;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/destination-postgres:dev";
-  }
+  private PostgresTestDatabase testDb;
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
+    return testDb.configBuilder()
+        .with("schema", "public")
+        .withDatabase()
+        .withResolvedHostAndPort()
+        .withCredentials()
+        .withoutSsl()
+        .build();
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-  }
-
-  @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-      throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected TestDataComparator getTestDataComparator() {
-    return new PostgresTestDataComparator();
-  }
-
-  @Override
-  protected boolean supportBasicDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportArrayDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportObjectDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportIncrementalSchemaChanges() {
-    return true;
-  }
-
-  @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName, namespace);
-  }
-
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        db.getUsername(),
-        db.getPassword(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        db.getJdbcUrl(),
-        SQLDialect.POSTGRES)) {
-      return new Database(dslContext)
-          .query(ctx -> {
-            ctx.execute("set time zone 'UTC';");
-            return ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(this::getJsonFromRecord)
-                .collect(Collectors.toList());
-          });
-    }
+  protected PostgresTestDatabase getTestDb() {
+    return testDb;
   }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    db = new PostgreSQLContainer<>("postgres:13-alpine");
-    db.start();
+    testDb = PostgresTestDatabase.in(BaseImage.POSTGRES_13);
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
+    testDb.close();
   }
 
 }

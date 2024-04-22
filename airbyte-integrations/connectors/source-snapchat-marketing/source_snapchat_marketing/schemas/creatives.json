@@ -4,22 +4,37 @@
     "id": {
       "type": ["null", "string"]
     },
-    "ad_account_id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
     "updated_at": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"]
     },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "ad_account_id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "packaging_status": {
+      "type": ["null", "string"]
+    },
     "review_status": {
+      "type": ["null", "string"]
+    },
+    "review_status_details": {
+      "type": ["null", "string"]
+    },
+    "shareable": {
+      "type": ["null", "boolean"]
+    },
+    "forced_view_eligibility": {
+      "type": ["null", "string"]
+    },
+    "headline": {
       "type": ["null", "string"]
     },
     "brand_name": {
@@ -28,43 +43,13 @@
     "call_to_action": {
       "type": ["null", "string"]
     },
-    "headline": {
+    "render_type": {
       "type": ["null", "string"]
-    },
-    "shareable": {
-      "type": ["null", "boolean"]
     },
     "top_snap_media_id": {
       "type": ["null", "string"]
     },
     "top_snap_crop_position": {
-      "type": ["null", "string"]
-    },
-    "preview_creative_id": {
-      "type": ["null", "string"]
-    },
-    "playback_type": {
-      "type" : ["null", "string"]
-    },
-    "ad_product": {
-      "type": ["null", "string"]
-    },
-    "profile_properties": {
-      "type": ["null", "string"]
-    },
-    "app_install_properties": {
-      "type": ["null", "string"]
-    },
-    "packaging_status": {
-      "type": ["null", "string"]
-    },
-    "review_status_details": {
-      "type": ["null", "string"]
-    },
-    "forced_view_eligibility": {
-      "type": ["null", "string"]
-    },
-    "render_type": {
       "type": ["null", "string"]
     },
     "web_view_properties": {
@@ -84,6 +69,17 @@
         },
         "block_preload": {
           "type": ["null", "boolean"]
+        }
+      }
+    },
+    "ad_product": {
+      "type": ["null", "string"]
+    },
+    "ad_to_place_properties": {
+      "type": ["null", "object"],
+      "properties": {
+        "place_id": {
+          "type": ["null", "string"]
         }
       }
     }

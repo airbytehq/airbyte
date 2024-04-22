@@ -1,14 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import json
+import pathlib
+from typing import Any, List, Mapping
 from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import AirbyteStateMessage
+from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
+
+_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CONFIG = ConfigBuilder().build()
+_ANY_STATE = StateBuilder().build()
 
 
 @pytest.fixture(autouse=True)
@@ -19,53 +27,47 @@ def time_sleep_mock(mocker):
 
 @pytest.fixture(scope="module")
 def bulk_catalog():
-    with open("unit_tests/bulk_catalog.json") as f:
+    with (pathlib.Path(__file__).parent / "bulk_catalog.json").open() as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
 
 @pytest.fixture(scope="module")
 def rest_catalog():
-    with open("unit_tests/rest_catalog.json") as f:
+    with (pathlib.Path(__file__).parent / "rest_catalog.json").open() as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
 
 @pytest.fixture(scope="module")
-def state():
-    state = {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
-    return state
+def state() -> List[AirbyteStateMessage]:
+    return (
+        StateBuilder()
+        .with_stream_state("Account", {"LastModifiedDate": "2021-10-01T21:18:20.000Z"})
+        .with_stream_state("Asset", {"SystemModstamp": "2021-10-02T05:08:29.000Z"})
+        .build()
+    )
 
 
 @pytest.fixture(scope="module")
 def stream_config():
     """Generates streams settings for BULK logic"""
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "start_date": "2010-01-18T21:18:20Z",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
+    return ConfigBuilder().build()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def stream_config_date_format():
     """Generates streams settings with `start_date` in format YYYY-MM-DD"""
-    return {
-        "client_id": "fake_client_id",
-        "client_secret": "fake_client_secret",
-        "refresh_token": "fake_refresh_token",
-        "start_date": "2010-01-18",
-        "is_sandbox": False,
-        "wait_timeout": 15,
-    }
+    config = ConfigBuilder().build()
+    config["start_date"] = "2010-01-18"
+    return config
 
 
 @pytest.fixture(scope="module")
 def stream_config_without_start_date():
     """Generates streams settings for REST logic without start_date"""
+    config = ConfigBuilder().build()
+    config.pop("start_date")
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
@@ -75,7 +77,7 @@ def stream_config_without_start_date():
     }
 
 
-def _stream_api(stream_config, describe_response_data=None):
+def mock_stream_api(stream_config: Mapping[str, Any], describe_response_data=None):
     sf_object = Salesforce(**stream_config)
     sf_object.login = Mock()
     sf_object.access_token = Mock()
@@ -90,37 +92,45 @@ def _stream_api(stream_config, describe_response_data=None):
 
 @pytest.fixture(scope="module")
 def stream_api(stream_config):
-    return _stream_api(stream_config)
+    return mock_stream_api(stream_config)
 
 
 @pytest.fixture(scope="module")
 def stream_api_v2(stream_config):
     describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "BillingAddress", "type": "address"}]}
-    return _stream_api(stream_config, describe_response_data=describe_response_data)
+    return mock_stream_api(stream_config, describe_response_data=describe_response_data)
 
 
 @pytest.fixture(scope="module")
 def stream_api_pk(stream_config):
     describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
-    return _stream_api(stream_config, describe_response_data=describe_response_data)
+    return mock_stream_api(stream_config, describe_response_data=describe_response_data)
 
 
 @pytest.fixture(scope="module")
 def stream_api_v2_too_many_properties(stream_config):
     describe_response_data = {"fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]}
     describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
-    return _stream_api(stream_config, describe_response_data=describe_response_data)
+    return mock_stream_api(stream_config, describe_response_data=describe_response_data)
 
 
 @pytest.fixture(scope="module")
 def stream_api_v2_pk_too_many_properties(stream_config):
     describe_response_data = {"fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]}
     describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}])
-    return _stream_api(stream_config, describe_response_data=describe_response_data)
+    return mock_stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+def generate_stream(stream_name, stream_config, stream_api, state=None, legacy=True):
+    if state is None:
+        state = _ANY_STATE
+
+    stream = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, state).generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+    if legacy and hasattr(stream, "_legacy_stream"):
+        # Many tests are going through `generate_streams` to test things that are part of the legacy interface. To smooth the transition,
+        # we will access the legacy stream through the StreamFacade private field
+        return stream._legacy_stream
+    return stream
 
 
 def encoding_symbols_parameters():

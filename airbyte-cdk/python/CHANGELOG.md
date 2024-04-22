@@ -1,5 +1,293 @@
 # Changelog
 
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
+## 0.81.4
+Adding stream_descriptor as part of AirbyteTracedException.__init__
+
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
+## 0.81.1
+Concurrent CDK: add logging on exception
+
+## 0.81.0
+Unpin airbyte-protocol-models library
+
+## 0.80.0
+Concurrent CDK: support partitioned states
+
+## 0.79.2
+Concurrent CDK: Print error messages properly so that they can be categorized
+
+## 0.79.1
+Dummy patch to test new publishing flow fixes
+
+## 0.79.0
+Update release process of airbyte-cdk and source-declarative manifest
+
+## 0.78.9
+Fix CDK version mismatch introduced in 0.78.8
+
+## 0.78.8
+Update error messaging/type for missing streams. Note: version mismatch, please use 0.78.9 instead
+
+## 0.78.6
+low-code: add backward compatibility for old close slice behavior 
+
+## 0.78.5
+low-code: fix stop_condition instantiation in the cursor pagination
+
+## 0.78.4
+low-code: Add last_record and last_page_size interpolation variables to pagination
+
+## 0.78.3
+Fix dependencies for file-based extras
+
+## 0.78.2
+low-code: fix retrieving partition key for legacy state migration 
+
+## 0.78.1
+connector-builder: return full url-encoded URL instead of separating parameters
+
+## 0.78.0
+low-code: Allow state migration with CustomPartitionRouter
+
+## 0.77.2
+Emit state recordCount as float instead of integer
+
+## 0.77.1
+Fix empty , ,  extras packages
+
+## 0.77.0
+low-code: Add string interpolation filter
+
+## 0.76.0
+Migrate Python CDK to Poetry
+
+## 0.75.0
+low-code: Add StateMigration component
+
+## 0.74.0
+Request option params are allowed to be an array
+
+## 0.73.0
+set minimum python version to 3.9
+
+## 0.72.2
+Connector Builder: have schema fields be nullable by default except from PK and cursor field
+
+## 0.72.1
+low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
+
+## 0.72.0
+low-code: Allow defining custom schema loaders
+
+## 0.71.0
+Declarative datetime-based cursors now only derive state values from records that were read
+
+## 0.70.2
+low-code: remove superfluous sleep
+
+## 0.70.1
+File-based CDK: Fix tab delimiter configuration in CSV file type
+
+## 0.70.0
+testing
+
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
+## 0.67.3
+CDK: upgrade pyarrow
+
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
+## 0.67.1
+Fix handling of tab-separated CSVs
+
+## 0.67.0
+Low-code: Add CustomRecordFilter
+
+## 0.66.0
+Low-code: Add interpolation for request options
+
+## 0.65.0
+low-code: Allow connectors to ignore stream slicer request options on paginated requests
+
+## 0.64.1
+
+
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
+## 0.62.1
+[ISSUE #34910] add headers to HttpResponse for test framework
+
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
+## 0.61.2
+[ISSUE #34755] do not propagate parameters on JSON schemas
+
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
+## 0.60.2
+Improve error messages for concurrent CDK
+
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
+## 0.58.3
+fix declarative oauth initialization
+
+## 0.58.2
+Integration tests: adding debug mode to improve logging
+
+## 0.58.1
+Add schema normalization to declarative stream
+
+## 0.58.0
+Concurrent CDK: add state converter for ISO timestamps with millisecond granularity
+
+## 0.57.8
+add SelectiveAuthenticator
+
+## 0.57.7
+File CDK: Support raw txt file
+
+## 0.57.6
+Adding more tooling to cover source-stripe events stream
+
+## 0.57.5
+Raise error on passing unsupported value formats as query parameters
+
+## 0.57.4
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.3
+Vector DB CDK: Refactor embedders, File based CDK: Handle 422 errors properly in document file type parser
+
+## 0.57.2
+Update airbyte-protocol
+
+## 0.57.1
+Improve integration tests tooling
+
+## 0.57.0
+low-code: cache requests sent for parent streams
+File-based CDK: Add support for automatic primary key for document file type format
+File-based CDK: Add support for remote parsing of document file type format via API
+Vector DB CDK: Fix bug with embedding tokens with special meaning like `<|endoftext|>`
+
+## 0.56.1
+no-op to verify pypi publish flow
+
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
+## 0.55.5
+File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
+
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
+## 0.55.3
+First iteration of integration tests tooling (http mocker and response builder)
+
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
 ## 0.53.7
 low-code: fix debug logging when using --debug flag
 

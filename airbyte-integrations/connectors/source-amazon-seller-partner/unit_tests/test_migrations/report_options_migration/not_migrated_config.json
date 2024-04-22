@@ -1,0 +1,10 @@
+{
+  "refresh_token": "refresh_token",
+  "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+  "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+  "replication_start_date": "2022-09-01T00:00:00Z",
+  "aws_environment": "PRODUCTION",
+  "region": "US",
+  "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
+  "advanced_stream_options": "{\"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}"
+}

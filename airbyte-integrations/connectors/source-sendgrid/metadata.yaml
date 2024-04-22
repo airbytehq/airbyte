@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
@@ -10,13 +10,29 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 0.4.1
+  dockerImageTag: 1.0.0
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          This release makes several changes that upgrade the Sendgrid connector.
+          The configuration options have been renamed to `api_key` and `start_date`. `start_date` is now required.
+          The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data.
+          The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API.
+          The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result.
+          To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+        upgradeDeadline: "2024-04-29"
   dockerRepository: airbyte/source-sendgrid
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Sendgrid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sendgrid
   registries:
     cloud:
       enabled: true
@@ -25,6 +41,6 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

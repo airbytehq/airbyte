@@ -30,7 +30,7 @@ You'll need the following information to configure the destination:
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                   |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                   | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827))  |
+| Incremental - Append + Deduped | Yes                   |  |
 | Namespaces                     | No                   |       |
 | Provide vector                 | Yes                  | Either from field are calculated during the load process |
 
@@ -48,7 +48,7 @@ All other fields are serialized into their JSON representation.
 
 ### Processing
 
-Each record will be split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that metadata fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.
+Each record will be split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -77,13 +77,23 @@ If a class doesn't exist in the schema of the cluster, it will be created using 
 
 You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
 
-As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
+As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters.  Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
+
+When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case you want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled. In case the class doesn't exist, it will be created with multi-tenancy properly configured. If the class already exists but the tenant id is not associated with the class, the connector will automatically add the tenant id to the class. This allows you to configure multiple connections for different tenants on the same schema.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.2.17 | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333)  | Update CDK & pytest version to fix security vulnerabilities.
+| 0.2.16 | 2024-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Fix tests and move to Poetry |
+| 0.2.15 | 2023-01-25 | [#34529](https://github.com/airbytehq/airbyte/pull/34529) | Fix tests |
+| 0.2.14 | 2023-01-15 | [#34229](https://github.com/airbytehq/airbyte/pull/34229) | Allow configuring tenant id |
+| 0.2.13 | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
+| 0.2.12 | 2023-12-07 | [#33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |
+| 0.2.11 | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
+| 0.2.10 | 2023-11-16 | [#32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
+| 0.2.9 | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
 | 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
 | 0.2.6   | 2023-11-01 | [#32038](https://github.com/airbytehq/airbyte/pull/32038) | Retry failed object loads |

@@ -17,21 +17,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
-import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.Field;
@@ -45,44 +36,28 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
-class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<PostgresSource, PostgresTestDatabase> {
 
   private static final String DATABASE = "new_db";
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
-  private static PostgreSQLContainer<?> PSQL_DB;
   public static String COL_WAKEUP_AT = "wakeup_at";
   public static String COL_LAST_VISITED_AT = "last_visited_at";
   public static String COL_LAST_COMMENT_AT = "last_comment_at";
 
-  @BeforeAll
-  static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
-    PSQL_DB.start();
-  }
-
-  @Override
-  @BeforeEach
-  public void setup() throws Exception {
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+  static {
     COLUMN_CLAUSE_WITH_PK =
         "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
     COLUMN_CLAUSE_WITHOUT_PK =
@@ -90,97 +65,70 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COLUMN_CLAUSE_WITH_COMPOSITE_PK =
         "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
-        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
-    source = getSource();
-    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
-
-    streamName = TABLE_NAME;
-
-    dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
-
-    database = new StreamingJdbcDatabase(dataSource,
-        JdbcUtils.getDefaultSourceOperations(),
-        AdaptiveStreamingQueryConfig::new);
-
-    createSchemas();
-
-    database.execute(connection -> {
-
-      connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME), COLUMN_CLAUSE_WITH_PK,
-              primaryKeyClause(Collections.singletonList("id"))));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME)));
-
-      connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
-              COLUMN_CLAUSE_WITHOUT_PK, ""));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
-
-      connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
-              COLUMN_CLAUSE_WITH_COMPOSITE_PK,
-              primaryKeyClause(ImmutableList.of("first_name", "last_name"))));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('first' ,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('second', 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES  ('third', 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
-
-    });
-
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);";
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');";
   }
 
   @Override
-  protected void maybeSetShorterConnectionTimeout() {
+  protected JsonNode config() {
+    return testdb.testConfigBuilder()
+        .withSchemas(SCHEMA_NAME, SCHEMA_NAME2)
+        .withoutSsl()
+        .build();
+  }
+
+  @Override
+  protected PostgresSource source() {
+    return new PostgresSource();
+  }
+
+  @Override
+  protected PostgresTestDatabase createTestDatabase() {
+    return PostgresTestDatabase.in(BaseImage.POSTGRES_16);
+  }
+
+  @Override
+  @BeforeEach
+  public void setup() throws Exception {
+    testdb = createTestDatabase();
+    if (supportsSchemas()) {
+      createSchemas();
+    }
+    testdb.with(createTableQuery(getFullyQualifiedTableName(TABLE_NAME), COLUMN_CLAUSE_WITH_PK, primaryKeyClause(Collections.singletonList("id"))))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME))
+        .with(createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK), COLUMN_CLAUSE_WITHOUT_PK, ""))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK))
+        .with(createTableQuery(getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK), COLUMN_CLAUSE_WITH_COMPOSITE_PK,
+            primaryKeyClause(ImmutableList.of("first_name", "last_name"))))
+        .with(
+            "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('first' ,'picard', '2004-10-19','12:12:12.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK))
+        .with(
+            "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES ('second', 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK))
+        .with(
+            "INSERT INTO %s(first_name, last_name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES  ('third', 'vash', '2006-10-19','10:10:10.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK));
+  }
+
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
     ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1");
   }
 
@@ -285,38 +233,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource<PostgresType> getJdbcSource() {
-    var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return config;
-  }
-
-  @Override
-  public String getDriverClass() {
-    return PostgresSource.DRIVER_CLASS;
-  }
-
-  @AfterAll
-  static void cleanUp() {
-    PSQL_DB.close();
-  }
-
-  @Test
-  void testSpec() throws Exception {
-    final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-
-    assertEquals(expected, actual);
-  }
-
-  @Override
   protected List<AirbyteMessage> getTestMessages() {
-    return getTestMessages(streamName);
+    return getTestMessages(streamName());
   }
 
   protected List<AirbyteMessage> getTestMessages(final String streamName) {
@@ -351,17 +269,13 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected void executeStatementReadIncrementallyTwice() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (4,'riker', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (5, 'data', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(TABLE_NAME)));
-    });
+  protected void executeStatementReadIncrementallyTwice() {
+    testdb.with(
+        "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (4,'riker', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+        getFullyQualifiedTableName(TABLE_NAME))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (5, 'data', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(TABLE_NAME));
   }
 
   @Override
@@ -439,11 +353,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
-
   /**
    * Postgres Source Error Codes:
    * <p>
@@ -454,111 +363,104 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
    */
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
-    maybeSetShorterConnectionTimeout();
-    database.execute(connection -> connection.createStatement()
-        .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
-    database.execute(connection -> connection.createStatement()
-        .execute(String.format("create database %s;", DATABASE)));
-    // deny access for database for all users from group public
-    database.execute(connection -> connection.createStatement()
-        .execute(String.format("revoke all on database %s from public;", DATABASE)));
+    final var config = config();
+    maybeSetShorterConnectionTimeout(config);
+    testdb.with("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)
+        .with("create database %s;", DATABASE)
+        // deny access for database for all users from group public
+        .with("revoke all on database %s from public;", DATABASE);
     ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put("database", DATABASE);
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 42501;"));
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  @Override
+  protected void testReadMultipleTablesIncrementally() throws Exception {
+    final var config = config();
     ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String namespace = getDefaultNamespace();
     final String streamOneName = TABLE_NAME + "one";
     // Create a fresh first table
-    database.execute(connection -> {
-      connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(streamOneName), COLUMN_CLAUSE_WITH_PK,
-              primaryKeyClause(Collections.singletonList("id"))));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(streamOneName)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(streamOneName)));
-      connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(streamOneName)));
-    });
+    testdb.with(createTableQuery(getFullyQualifiedTableName(streamOneName), COLUMN_CLAUSE_WITH_PK,
+        primaryKeyClause(Collections.singletonList("id"))))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (1,'picard', '2004-10-19','10:10:10.123456-05:00','2004-10-19T17:23:54.123456Z','2004-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(streamOneName))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (2, 'crusher', '2005-10-19','11:11:11.123456-05:00','2005-10-19T17:23:54.123456Z','2005-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(streamOneName))
+        .with(
+            "INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at) VALUES (3, 'vash', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            getFullyQualifiedTableName(streamOneName));
 
     // Create a fresh second table
     final String streamTwoName = TABLE_NAME + "two";
     final String streamTwoFullyQualifiedName = getFullyQualifiedTableName(streamTwoName);
     // Insert records into second table
-    database.execute(ctx -> {
-      ctx.createStatement().execute(
-          createTableQuery(streamTwoFullyQualifiedName, COLUMN_CLAUSE_WITH_PK, ""));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
-              + "VALUES (40,'Jean Luc','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              streamTwoFullyQualifiedName));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
-              + "VALUES (41, 'Groot', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              streamTwoFullyQualifiedName));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
-              + "VALUES (42, 'Thanos','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              streamTwoFullyQualifiedName));
-    });
+    testdb.with(createTableQuery(streamTwoFullyQualifiedName, COLUMN_CLAUSE_WITH_PK, ""))
+        .with("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+            + "VALUES (40,'Jean Luc','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            streamTwoFullyQualifiedName)
+        .with("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+            + "VALUES (41, 'Groot', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            streamTwoFullyQualifiedName)
+        .with(String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+            + "VALUES (42, 'Thanos','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            streamTwoFullyQualifiedName));
     // Create records list that we expect to see in the state message
     final List<AirbyteMessage> streamTwoExpectedRecords = Arrays.asList(
         createRecord(streamTwoName, namespace, map(
@@ -598,7 +500,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     // Perform initial sync
     final List<AirbyteMessage> messagesFromFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, null));
+        .toList(source().read(config, configuredCatalog, null));
 
     final List<AirbyteMessage> recordsFromFirstSync = filterRecords(messagesFromFirstSync);
 
@@ -664,7 +566,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // - stream one state still being the first record read via CTID.
     // - stream two state being the CTID state before the final emitted state before the cursor switch
     final List<AirbyteMessage> messagesFromSecondSyncWithMixedStates = MoreIterators
-        .toList(source.read(config, configuredCatalog,
+        .toList(source().read(config, configuredCatalog,
             Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
                 streamTwoStateMessagesFromFirstSync.get(1)))));
 
@@ -691,20 +593,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     // Add some data to each table and perform a third read.
     // Expect to see all records be synced via cursorBased method and not ctid
-
-    database.execute(ctx -> {
-      ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
-              + "VALUES (4,'Hooper','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              getFullyQualifiedTableName(streamOneName)));
-      ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
-              + "VALUES (43, 'Iron Man', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
-              streamTwoFullyQualifiedName));
-    });
+    testdb.with("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+        + "VALUES (4,'Hooper','2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+        getFullyQualifiedTableName(streamOneName))
+        .with("INSERT INTO %s(id, name, updated_at, wakeup_at, last_visited_at, last_comment_at)"
+            + "VALUES (43, 'Iron Man', '2006-10-19','12:12:12.123456-05:00','2006-10-19T17:23:54.123456Z','2006-01-01T17:23:54.123456')",
+            streamTwoFullyQualifiedName);
 
     final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
-        .toList(source.read(config, configuredCatalog,
+        .toList(source().read(config, configuredCatalog,
             Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
                 streamTwoStateMessagesFromSecondSync.get(0)))));
 
@@ -751,7 +648,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName()).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
@@ -760,7 +657,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
                     COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName()).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
@@ -771,13 +668,13 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final DbStreamState state = new CursorBasedStatus()
         .withStateType(StateType.CURSOR_BASED)
         .withVersion(2L)
-        .withStreamName(streamName)
+        .withStreamName(streamName())
         .withStreamNamespace(namespace)
         .withCursorField(ImmutableList.of(COL_ID))
         .withCursor("5")
         .withCursorRecordCount(1L);
 
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2));
     return expectedMessages;
   }
 

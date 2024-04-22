@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_newsdata import SourceNewsdata
+from source_newsdata.run import run
 
 if __name__ == "__main__":
-    source = SourceNewsdata()
-    launch(source, sys.argv[1:])
+    run()

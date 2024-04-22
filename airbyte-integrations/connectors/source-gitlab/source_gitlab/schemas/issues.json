@@ -118,6 +118,9 @@
         },
         "id": {
           "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -141,6 +144,12 @@
         },
         "username": {
           "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -164,6 +173,18 @@
         },
         "username": {
           "type": ["null", "string"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -235,20 +256,32 @@
       }
     },
     "epic": {
-      "id": {
-        "type": ["null", "integer"]
-      },
-      "iid": {
-        "type": ["null", "integer"]
-      },
-      "title": {
-        "type": ["null", "string"]
-      },
-      "url": {
-        "type": ["null", "string"]
-      },
-      "group_id": {
-        "type": ["null", "integer"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        },
+        "locked": {
+          "type": ["null", "boolean"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
+        }
       }
     },
     "epic_iid": {

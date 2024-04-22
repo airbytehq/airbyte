@@ -15,6 +15,8 @@ async def test_get_dagger_client_singleton(dagger_connection):
         pass
 
     ctx = click.Context(cli)
+    ctx.obj = {"foo": "bar"}
+    ctx.params = {"baz": "qux"}
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()

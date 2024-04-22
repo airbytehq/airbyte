@@ -12,17 +12,19 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from langchain.document_loaders.base import Document
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
+from langchain_core.documents.base import Document
 
 METADATA_STREAM_FIELD = "_ab_stream"
 METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
+CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
+
 
 @dataclass
 class Chunk:
-    page_content: str
+    page_content: Optional[str]
     metadata: Dict[str, Any]
     record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
@@ -72,6 +74,7 @@ class DocumentProcessor:
                 chunk_overlap=chunk_overlap,
                 separators=[json.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
+                disallowed_special=(),
             )
         if splitter_config.mode == "markdown":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -80,12 +83,14 @@ class DocumentProcessor:
                 separators=headers_to_split_on[: splitter_config.split_level],
                 is_separator_regex=True,
                 keep_separator=True,
+                disallowed_special=(),
             )
         if splitter_config.mode == "code":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
                 separators=RecursiveCharacterTextSplitter.get_separators_for_language(Language(splitter_config.language)),
+                disallowed_special=(),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
@@ -103,6 +108,8 @@ class DocumentProcessor:
         :param records: List of AirbyteRecordMessages
         :return: Tuple of (List of document chunks, record id to delete if a stream is in dedup mode to avoid stale documents in the vector store)
         """
+        if CDC_DELETED_FIELD in record.data and record.data[CDC_DELETED_FIELD]:
+            return [], self._extract_primary_key(record)
         doc = self._generate_document(record)
         if doc is None:
             text_fields = ", ".join(self.text_fields) if self.text_fields else "all fields"
@@ -139,22 +146,27 @@ class DocumentProcessor:
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
         metadata = self._extract_relevant_fields(record, self.metadata_fields)
-        stream_identifier = create_stream_identifier(record)
-        current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
-        metadata[METADATA_STREAM_FIELD] = stream_identifier
-        # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
-        if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-            metadata[METADATA_RECORD_ID_FIELD] = f"{stream_identifier}_{self._extract_primary_key(record, current_stream)}"
+        metadata[METADATA_STREAM_FIELD] = create_stream_identifier(record)
+        primary_key = self._extract_primary_key(record)
+        if primary_key:
+            metadata[METADATA_RECORD_ID_FIELD] = primary_key
         return metadata
 
-    def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> str:
+    def _extract_primary_key(self, record: AirbyteRecordMessage) -> Optional[str]:
+        stream_identifier = create_stream_identifier(record)
+        current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
+        # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
+        if not current_stream.primary_key or current_stream.destination_sync_mode != DestinationSyncMode.append_dedup:
+            return None
+
         primary_key = []
-        for key in stream.primary_key:
+        for key in current_stream.primary_key:
             try:
                 primary_key.append(str(dpath.util.get(record.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
-        return "_".join(primary_key)
+        stringified_primary_key = "_".join(primary_key)
+        return f"{stream_identifier}_{stringified_primary_key}"
 
     def _split_document(self, doc: Document) -> List[Document]:
         chunks: List[Document] = self.splitter.split_documents([doc])

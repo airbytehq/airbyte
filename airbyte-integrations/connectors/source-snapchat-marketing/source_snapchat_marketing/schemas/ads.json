@@ -31,6 +31,12 @@
     "review_status": {
       "type": ["null", "string"]
     },
+    "review_status_reasons": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "delivery_status": {
       "type": ["null", "array"],
       "items": {

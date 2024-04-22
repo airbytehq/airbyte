@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 2.0.0
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Gitlab
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gitlab
   registries:
     cloud:
       enabled: true
@@ -25,6 +30,33 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        message:
+          In this release, several changes have been made to the Gitlab connector.
+          The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
+          Users will need to refresh schemas and reset the affected streams after upgrading.
+        upgradeDeadline: "2024-04-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "commits"
+              - "issues"
+              - "merge_requests"
+              - "pipelines"
+              - "group_members"
+              - "group_labels"
+              - "project_members"
+              - "project_labels"
+              - "branches"
+              - "tags"
+      3.0.0:
+        message:
+          In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.
+          Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
+        upgradeDeadline: "2024-02-13"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["merge_request_commits"]
       2.0.0:
         message:
           In this release, several streams were updated to date-time field format, as declared in the Gitlab API.
@@ -41,4 +73,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

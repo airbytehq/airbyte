@@ -55,6 +55,8 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         description="URL for the folder you want to sync. Using individual streams and glob patterns, it's possible to only sync a subset of all files located in the folder.",
         examples=["https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"],
         order=0,
+        pattern="^https://drive.google.com/.+",
+        pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
@@ -65,11 +67,6 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     def documentation_url(cls) -> str:
         return "https://docs.airbyte.com/integrations/sources/google-drive"
 
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
@@ -77,10 +74,12 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         """
         schema = super().schema(*args, **kwargs)
 
-        cls.remove_discriminator(schema)
-
         # Remove legacy settings
         dpath.util.delete(schema, "properties/streams/items/properties/legacy_prefix")
         dpath.util.delete(schema, "properties/streams/items/properties/format/oneOf/*/properties/inference_type")
+
+        # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
+        processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
+        dpath.util.set(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf", processing_options[:1])
 
         return schema

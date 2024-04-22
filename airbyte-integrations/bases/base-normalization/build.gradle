@@ -1,29 +1,26 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
     id 'airbyte-docker-legacy'
     id 'airbyte-python'
 }
 
 dependencies {
-    project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
+    testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 def copySshScript = tasks.register('copySshScript', Copy) {
-    from "${project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').buildDir}/resources/main"
+    from "${project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').buildDir}/resources/testFixtures"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
 copySshScript.configure {
-    dependsOn project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').tasks.named('processResources')
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').tasks.named('processTestFixturesResources')
 }
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
 def checkSshScriptCopy = tasks.register('checkSshScriptCopy') {
     doFirst {
-        assert file("${buildDir}/sshtunneling.sh").exists() :
-                "Copy of sshtunneling.sh failed, check that it is present in airbyte-workers."
+        assert file("${buildDir}/sshtunneling.sh").exists() : "Copy of sshtunneling.sh failed."
     }
 }
 checkSshScriptCopy.configure {
@@ -39,6 +36,10 @@ tasks.named('check').configure {
     dependsOn generate
 }
 
+tasks.named("jar").configure {
+    dependsOn copySshScript
+}
+
 [
         'bigquery',
         'mysql',
@@ -49,7 +50,6 @@ tasks.named('check').configure {
         'mssql',
         'clickhouse',
         'tidb',
-        'duckdb',
 ].each {destinationName ->
     tasks.matching { it.name == 'integrationTestPython' }.configureEach {
         dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')

@@ -74,7 +74,27 @@ def test_parse_response(patch_base_class, monkeypatch):
     input_request = requests.Response()
     inputs = {"response": input_request, "stream_state": {}}
 
-    mock_input_request_response_json = {"finalized_bundles": [{"storage_id": 10}], "pagination": {"next_key": None, "total": "0"}}
+    mock_input_request_response_json = {
+        "finalized_bundles": [
+            {
+                "pool_id": "1",
+                "id": "0",
+                "storage_id": "c-24-Ik7KGaB2WJyrW_2fsAjoJkaAD6xfk30qlqEpCI",
+                "uploader": "kyve199403h5jgfr64r9ewv83zx7q4xphhc4wyv8mhp",
+                "from_index": "0",
+                "to_index": "150",
+                "from_key": "1",
+                "to_key": "150",
+                "bundle_summary": "150",
+                "data_hash": "18446d6b0988bab5cf946482df579ebd6bd32cb289b26cb5515cfb6883269ef9",
+                "finalized_at": {"height": "2355416", "timestamp": "2023-08-21T13:10:45Z"},
+                "storage_provider_id": "2",
+                "compression_id": "1",
+                "stake_security": {"valid_vote_power": "957401304506", "total_vote_power": "1140107500247"},
+            }
+        ],
+        "pagination": {"next_key": "AAAAAAAAAAE=", "total": "36767"},
+    }
 
     mock_finalized_bundles_request = MagicMock(return_value=mock_input_request_response_json)
     monkeypatch.setattr("requests.Response.json", mock_finalized_bundles_request)
@@ -82,30 +102,76 @@ def test_parse_response(patch_base_class, monkeypatch):
     class _MockContentResponse:
         def __init__(self):
             self.content = MOCK_RESPONSE_BINARY
+            self.ok = True
 
     mock_get_content = MagicMock(return_value=_MockContentResponse())
     monkeypatch.setattr("requests.get", mock_get_content)
-    mock_response_ok = MagicMock(return_value=True)
-    monkeypatch.setattr("requests.Response.ok", mock_response_ok)
 
     expected_parsed_object = {
-        "key": "10647520",
+        "key": "1",
         "value": {
-            "hash": "0x3a0e7319f2b5238f3ebc0a5cd419c92bf2c10045e1a8feae4222fce89b8b6287",
-            "parentHash": "0x0eb7f809b8cbbd7cf73a56654f2614e3136a0d3496cacaf709dab2da515e568f",
-            "number": 10647520,
-            "timestamp": 1675576398,
-            "nonce": "0x0000000000000000",
-            "difficulty": 0,
-            "gasLimit": {"type": "BigNumber", "hex": "0x02625a00"},
-            "gasUsed": {"type": "BigNumber", "hex": "0x00"},
-            "miner": "0xd98b305a9d433f062d44c1D542cdc25ECC0F0a40",
-            "extraData": "0x",
-            "transactions": [],
-            "baseFeePerGas": {"type": "BigNumber", "hex": "0x04a817c800"},
-            "_difficulty": {"type": "BigNumber", "hex": "0x00"},
+            "block": {
+                "block_id": {
+                    "hash": "C8DC787FAAE0941EF05C75C3AECCF04B85DFB1D4A8D054A463F323B0D9459719",
+                    "parts": {"total": 1, "hash": "B60226F3A84CA6215464AF2983D36C8C7F0CBB12D87F8A933E22DB288EA48E31"},
+                },
+                "block": {
+                    "header": {
+                        "version": {"block": "11"},
+                        "chain_id": "osmosis-1",
+                        "height": "1",
+                        "time": "2021-06-18T17:00:00Z",
+                        "last_block_id": {"hash": "", "parts": {"total": 0, "hash": ""}},
+                        "last_commit_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "data_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "validators_hash": "7730A5F777BDB9143E53FAEFE19399C64C75A6689F9A0F7289D66CFD9D1D5EAF",
+                        "next_validators_hash": "7730A5F777BDB9143E53FAEFE19399C64C75A6689F9A0F7289D66CFD9D1D5EAF",
+                        "consensus_hash": "62917BBB85377844C3D12DA9C04E65188A959D13AD2647AB1663219822006E2F",
+                        "app_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "last_results_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "evidence_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "proposer_address": "D8A6C54C54A236D4843BA566520BA03F60F09E35",
+                    },
+                    "data": {"txs": []},
+                    "evidence": {"evidence": []},
+                    "last_commit": {
+                        "height": "0",
+                        "round": 0,
+                        "block_id": {"hash": "", "parts": {"total": 0, "hash": ""}},
+                        "signatures": [],
+                    },
+                },
+            },
+            "block_results": {
+                "height": "1",
+                "txs_results": None,
+                "begin_block_events": [
+                    {
+                        "type": "epoch_start",
+                        "attributes": [
+                            {"key": "c3RhcnRfdGltZQ==", "value": "MTYyNDAzNTYwMA=="},
+                            {"key": "ZXBvY2hfbnVtYmVy", "value": "MA=="},
+                        ],
+                    },
+                    {
+                        "type": "epoch_start",
+                        "attributes": [
+                            {"key": "c3RhcnRfdGltZQ==", "value": "MTYyNDAzNTYwMA=="},
+                            {"key": "ZXBvY2hfbnVtYmVy", "value": "MA=="},
+                        ],
+                    },
+                ],
+                "end_block_events": None,
+                "validator_updates": None,
+                "consensus_param_updates": {
+                    "block": {"max_bytes": "5242880", "max_gas": "6000000"},
+                    "evidence": {"max_age_num_blocks": "403200", "max_age_duration": "1209600000000000", "max_bytes": "1048576"},
+                    "validator": {"pub_key_types": ["ed25519"]},
+                },
+            },
         },
     }
+
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 

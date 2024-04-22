@@ -13,12 +13,12 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
 )
-from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.embedder import (
     COHERE_VECTOR_SIZE,
     OPEN_AI_VECTOR_SIZE,
     AzureOpenAIEmbedder,
     CohereEmbedder,
+    Document,
     FakeEmbedder,
     FromFieldEmbedder,
     OpenAICompatibleEmbedder,
@@ -82,10 +82,10 @@ def test_embedder(embedder_class, args, dimensions):
     mock_embedding_instance.embed_documents.return_value = [[0] * dimensions] * 2
 
     chunks = [
-        Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),
-        Chunk(page_content="b", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),
+        Document(page_content="a", record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),
+        Document(page_content="b", record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),
     ]
-    assert embedder.embed_chunks(chunks) == mock_embedding_instance.embed_documents.return_value
+    assert embedder.embed_documents(chunks) == mock_embedding_instance.embed_documents.return_value
     mock_embedding_instance.embed_documents.assert_called_with(["a", "b"])
 
 
@@ -102,12 +102,12 @@ def test_embedder(embedder_class, args, dimensions):
 )
 def test_from_field_embedder(field_name, dimensions, metadata, expected_embedding, expected_error):
     embedder = FromFieldEmbedder(FromFieldEmbeddingConfigModel(mode="from_field", dimensions=dimensions, field_name=field_name))
-    chunks = [Chunk(page_content="a", metadata=metadata, record=AirbyteRecordMessage(stream="mystream", data=metadata, emitted_at=0))]
+    chunks = [Document(page_content="a", record=AirbyteRecordMessage(stream="mystream", data=metadata, emitted_at=0))]
     if expected_error:
         with pytest.raises(AirbyteTracedException):
-            embedder.embed_chunks(chunks)
+            embedder.embed_documents(chunks)
     else:
-        assert embedder.embed_chunks(chunks) == [expected_embedding]
+        assert embedder.embed_documents(chunks) == [expected_embedding]
 
 
 def test_openai_chunking():
@@ -118,8 +118,6 @@ def test_openai_chunking():
 
     mock_embedding_instance.embed_documents.side_effect = lambda texts: [[0] * OPEN_AI_VECTOR_SIZE] * len(texts)
 
-    chunks = [
-        Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)) for _ in range(1005)
-    ]
-    assert embedder.embed_chunks(chunks) == [[0] * OPEN_AI_VECTOR_SIZE] * 1005
+    chunks = [Document(page_content="a", record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)) for _ in range(1005)]
+    assert embedder.embed_documents(chunks) == [[0] * OPEN_AI_VECTOR_SIZE] * 1005
     mock_embedding_instance.embed_documents.assert_has_calls([call(["a"] * 1000), call(["a"] * 5)])

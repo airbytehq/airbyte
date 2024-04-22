@@ -1,28 +1,28 @@
-# A list of URLs that should be redirected to new pathes
-- from: /airbyte-pro
-  to: /airbyte-enterprise
+# A list of URLs that should be redirected to new paths
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
   to: /understanding-airbyte/airbyte-protocol
 - from: /integrations/sources/appstore-singer
   to: /integrations/sources/appstore
-- from:
-    - /project-overview/security
-    - /operator-guides/securing-airbyte
-  to: /operator-guides/security
 - from: /connector-development/config-based/
   to: /connector-development/config-based/low-code-cdk-overview
+- from:
+    - /connector-development/tutorials/cdk-tutorial-python-http/
+    - /connector-development/tutorials/cdk-tutorial-python-http/connection-checking/
+    - /connector-development/tutorials/cdk-tutorial-python-http/creating-the-source/
+    - /connector-development/tutorials/cdk-tutorial-python-http/declare-schema/
+    - /connector-development/tutorials/cdk-tutorial-python-http/define-inputs/
+    - /connector-development/tutorials/cdk-tutorial-python-http/getting-started/
+    - /connector-development/tutorials/cdk-tutorial-python-http/install-dependencies/
+    - /connector-development/tutorials/cdk-tutorial-python-http/read-data/
+    - /connector-development/tutorials/cdk-tutorial-python-http/test-your-connector/
+    - /connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte/
+  to: /connector-development/tutorials/custom-python-connector/getting-started
 - from: /project-overview/changelog
   to: /category/release-notes
 - from: /connector-development/config-based/understanding-the-yaml-file/stream-slicers/
   to: /connector-development/config-based/understanding-the-yaml-file/partition-router
-- from: /cloud/managing-airbyte-cloud
-  to: /category/using-airbyte-cloud
-- from: /category/managing-airbyte-cloud
-  to: /category/using-airbyte-cloud
-- from: /category/airbyte-open-source-quick-start
-  to: /category/getting-started
 - from: /cloud/dbt-cloud-integration
   to: /cloud/managing-airbyte-cloud/dbt-cloud-integration
 - from: /cloud/managing-airbyte-cloud/review-sync-summary
@@ -31,5 +31,83 @@
   to: /cloud/managing-airbyte-cloud/manage-connection-state
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
-- from: /project-overview/product-release-stages
-  to: /project-overview/product-support-levels
+# November 2023 documentation restructure:
+- from:
+    - /project-overview/product-support-levels
+    - /project-overview/product-release-stages
+  to: /integrations/connector-support-levels
+- from:
+    - /project-overview/code-of-conduct
+    - /project-overview/slack-code-of-conduct
+  to: /community/code-of-conduct
+- from: /project-overview/licenses/
+  to: /developer-guides/licenses/
+- from: /project-overview/licenses/license-faq
+  to: /developer-guides/licenses/license-faq
+- from: /project-overview/licenses/elv2-license
+  to: /developer-guides/licenses/elv2-license
+- from: /project-overview/licenses/mit-license
+  to: /developer-guides/licenses/mit-license
+- from: /project-overview/licenses/examples
+  to: /developer-guides/licenses/examples
+- from:
+    - /enterprise-setup/self-managed/
+    - /airbyte-pro
+    - /airbyte-enterprise
+  to: /enterprise-setup/
+- from: /enterprise-setup/self-managed/implementation-guide
+  to: /enterprise-setup/implementation-guide
+- from:
+    - /project-overview/security
+    - /operator-guides/securing-airbyte
+    - /operator-guides/security
+  to: /operating-airbyte/security
+- from:
+    - /cloud/getting-started-with-airbyte-cloud
+    - /quickstart/deploy-airbyte
+    - /category/getting-started
+    - /category/airbyte-open-source-quick-start
+  to: /using-airbyte/getting-started/
+- from: /quickstart/add-a-source
+  to: /using-airbyte/getting-started/add-a-source
+- from: /quickstart/add-a-destination
+  to: /using-airbyte/getting-started/add-a-destination
+- from: /quickstart/set-up-a-connection
+  to: /using-airbyte/getting-started/set-up-a-connection
+- from: /cloud/core-concepts
+  to: /using-airbyte/core-concepts/
+- from: /understanding-airbyte/namespaces
+  to: /using-airbyte/core-concepts/namespaces
+- from: /understanding-airbyte/connections/
+  to: /using-airbyte/core-concepts/sync-modes/
+- from: /understanding-airbyte/connections/full-refresh-overwrite
+  to: /using-airbyte/core-concepts/sync-modes/full-refresh-overwrite
+- from: /understanding-airbyte/connections/full-refresh-append
+  to: /using-airbyte/core-concepts/sync-modes/full-refresh-append
+- from: /understanding-airbyte/connections/incremental-append
+  to: /using-airbyte/core-concepts/sync-modes/incremental-append
+- from: /understanding-airbyte/connections/incremental-append-deduped
+  to: /using-airbyte/core-concepts/sync-modes/incremental-append-deduped
+- from: /understanding-airbyte/basic-normalization
+  to: /using-airbyte/core-concepts/basic-normalization
+- from: /understanding-airbyte/typing-deduping
+  to: /using-airbyte/core-concepts/typing-deduping
+- from:
+    - /troubleshooting
+    - /operator-guides/contact-support
+  to: /community/getting-support
+- from: /cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace
+  to: /using-airbyte/workspaces
+- from: /operator-guides/locating-files-local-destination
+  to: /integrations/locating-files-local-destination
+# End November 2023 restructure
+- from:
+    - /enterprise-setup/self-managed/sso
+    - /enterprise-setup/sso
+  to: /access-management/sso
+- from:
+    - /pyairbyte
+  to: /using-airbyte/pyairbyte/getting-started
+- from:
+    - /telemetry
+  to: /operator-guides/telemetry

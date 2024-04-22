@@ -16,13 +16,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.5.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Bing Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bing-ads
   registries:
     cloud:
       enabled: true
@@ -43,7 +48,7 @@ data:
         message: >
           Version 2.0.0 updates schemas for all hourly reports (end in report_hourly), and the following streams: Accounts, Campaigns, Search Query Performance Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword Labels, Ad Group Labels, Keywords, and Budget Summary Report.
           Users will need to refresh the source schema and reset affected streams after upgrading.
-        upgradeDeadline: "2023-11-29"
+        upgradeDeadline: "2023-12-11"
   suggestedStreams:
     streams:
       - campaigns
@@ -56,4 +61,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

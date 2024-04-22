@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.50.34
+VERSION=0.57.3
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -11,7 +11,7 @@ red_text='\033[31m'
 default_text='\033[39m'
 
 # set -x/xtrace uses a Sony PS4 for more info
-PS4="$blue_text""${BASH_SOURCE}:${LINENO}: ""$default_text"
+PS4="$blue_text""${0}:${LINENO}: ""$default_text"
 
 ############################################################
 # Help                                                     #
@@ -31,6 +31,7 @@ Help()
    echo -e "   -h --help        Print this Help."
    echo -e "   -x --debug       Verbose mode."
    echo -e "   -b --background  Run docker compose up in detached mode."
+   echo -e "      --dnt         Disable telemetry collection"
    echo -e ""
 }
 
@@ -39,12 +40,141 @@ Help()
 docker_compose_debug_yaml="docker-compose.debug.yaml"
                   dot_env=".env"
               dot_env_dev=".env.dev"
-                     flags="flags.yml"
-             temporal_yaml="temporal/dynamicconfig/development.yaml"
-# any string is an array to POSIX shell. Space seperates values
+                    flags="flags.yml"
+            temporal_yaml="temporal/dynamicconfig/development.yaml"
+# any string is an array to POSIX shell. Space separates values
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
+
+# event states are used for telemetry data
+readonly eventStateStarted="started"
+readonly eventStateFailed="failed"
+readonly eventStateSuccess="succeeded"
+
+# event types are used for telemetry data
+readonly eventTypeDownload="download"
+readonly eventTypeInstall="install"
+readonly eventTypeRefresh="refresh"
+
+telemetrySuccess=false
+telemetrySessionULID=""
+telemetryUserULID=""
+telemetryEnabled=true
+# telemetry requires curl to be installed
+if ! command -v curl > /dev/null; then
+  telemetryEnabled=false
+fi
+
+# TelemetryConfig configures the telemetry variables and will disable telemetry if it cannot be configured.
+TelemetryConfig()
+{
+  # only attempt to do anything if telemetry is not disabled
+  if $telemetryEnabled; then
+    telemetrySessionULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
+
+    if [[ $telemetrySessionULID = "" || ${#telemetrySessionULID} -ne 26 ]]; then
+      # if we still don't have a ulid, give up on telemetry data
+      telemetryEnabled=false
+      return
+    fi
+
+    # if we have an analytics file, use it
+    if test -f ~/.airbyte/analytics.yml; then
+      telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
+    fi
+    # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
+    if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
+      telemetryUserULID=$(curl -s http://ulid.abapp.cloud/ulid | xargs)
+      if [[ $telemetryUserULID = "" || ${#telemetryUserULID} -ne 26 ]]; then
+        # if we still don't have a ulid, give up on telemetry data
+        telemetryEnabled=false
+      else
+        # we created a new ulid, write it out
+        echo "Thanks you for using Airbyte!"
+        echo "Anonymous usage reporting is currently enabled. For more information, please see https://docs.airbyte.com/telemetry"
+        mkdir -p ~/.airbyte
+        cat > ~/.airbyte/analytics.yml <<EOL
+# This file is used by Airbyte to track anonymous usage statistics.
+# For more information or to opt out, please see
+# - https://docs.airbyte.com/operator-guides/telemetry
+anonymous_user_id: $telemetryUserULID
+EOL
+      fi
+    fi
+  fi
+}
+
+# TelemetryDockerUp checks if the webapp container is in a running state.  If it is it will send a successful event.
+# if after 10 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
+# also be sent).
+#
+# Note this only checks if the webapp container is running, that doesn't actually mean the entire stack is up.
+# Some further refinement on this metric may be necessary.
+TelemetryDockerUp()
+{
+  if ! $telemetryEnabled; then
+    return
+  fi
+
+  # for up to 600 seconds (10 minutes), check to see if the server services is in a running state
+  end=$((SECONDS+600))
+  while [ $SECONDS -lt $end ]; do
+    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
+    if [ "$webappState" = "running" ]; then
+      TelemetrySend $eventStateSuccess $eventTypeInstall
+      break
+    fi
+    sleep 1
+  done
+
+  TelemetrySend "failed" "install" "webapp was not running within 600 seconds"
+}
+
+readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
+readonly telemetryURL="https://api.segment.io/v1/track"
+TelemetrySend()
+{
+  if $telemetrySuccess; then
+    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success
+    return
+  fi
+
+  if $telemetryEnabled; then
+    # start, failed, success
+    local state=$1
+    # install, uninstall
+    local event=$2
+    # optional error
+    local err=${3:-""}
+
+    local now=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+    local body=$(cat << EOL
+{
+  "anonymousId":"$telemetryUserULID",
+  "event":"$event",
+  "properties": {
+    "deployment_method":"run_ab",
+    "session_id":"$telemetrySessionULID",
+    "state":"$state",
+    "os":"$OSTYPE",
+    "script_version":"$VERSION",
+    "error":"$err"
+  },
+  "timestamp":"$now",
+  "writeKey":"$telemetryKey"
+}
+EOL
+)
+    curl -s -o /dev/null -H "Content-Type: application/json" -X POST -d "$body" $telemetryURL
+    if [[ $state = "success" ]]; then {
+      telemetrySuccess=true
+    }
+    fi
+  fi
+}
+
+TelemetryConfig
 
 ############################################################
 # Download                                                 #
@@ -95,26 +225,53 @@ this_file_directory=$(dirname $0)
 # Run this from the / directory because we assume relative paths
 cd ${this_file_directory}
 
+args=$@
+# Parse the arguments for specific flags before parsing for actions.
+for argument in $args; do
+  case $argument in
+    -h | --help)
+      Help
+      exit
+      ;;
+    -b | --background)
+      dockerDetachedMode="-d"
+      ;;
+    --dnt)
+      telemetryEnabled=false
+      ;;
+  esac
+done
 
-for argument in $@; do
+for argument in $args; do
   case $argument in
     -d | --download)
+      TelemetrySend $eventStateStarted $eventTypeDownload
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeDownload "sigterm"' SIGTERM
       Download
+      TelemetrySend $eventStateSuccess $eventTypeDownload
       exit
       ;;
     -r | --refresh)
+      TelemetrySend $eventStateStarted $eventTypeRefresh
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigint"' SIGINT
+      trap 'TelemetrySend $eventStateFailed $eventTypeRefresh "sigterm"' SIGTERM
       DeleteLocalAssets
-      exit
-      ;;
-    -h | --help)
-      Help
+      Download
+      TelemetrySend $eventStateSuccess $eventTypeRefresh
       exit
       ;;
     -x | --debug)
       set -o xtrace  # -x display every line before execution; enables PS4
       ;;
+    -h | --help)
+     # noop, this was checked in the previous for loop
+      ;;
     -b | --background)
-      dockerDetachedMode="-d"
+      # noop, this was checked in the previous for loop
+      ;;
+    --dnt)
+      # noop, this was checked in the previous for loop
       ;;
     *)
       echo "$argument is not a known command."
@@ -123,9 +280,11 @@ for argument in $@; do
       exit
       ;;
   esac
-  shift
 done
 
+TelemetrySend $eventStateStarted $eventTypeInstall
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigint"' SIGINT
+trap 'TelemetrySend $eventStateFailed $eventTypeInstall "sigterm"' SIGTERM
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -147,12 +306,13 @@ fi
 ########## Dependency Check ##########
 if ! docker compose version >/dev/null 2>/dev/null; then
   echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose not installed"
   exit 1
 fi
 
 Download
 
-########## Source Envionmental Variables ##########
+########## Source Environmental Variables ##########
 
 for file in $dot_env $dot_env_dev; do
   echo -e "$blue_text""Loading Shell Variables from $file...""$default_text"
@@ -161,9 +321,13 @@ done
 
 
 ########## Start Docker ##########
-
 echo
 echo -e "$blue_text""Starting Docker Compose""$default_text"
+if [ -z "$dockerDetachedMode" ]; then
+  # if running in docker-detach mode, kick off a background task as `docker compose up` will be a blocking
+  # call and we'll have no way to determine when we've successfully started.
+  TelemetryDockerUp &
+fi
 
 docker compose up $dockerDetachedMode
 
@@ -171,6 +335,9 @@ docker compose up $dockerDetachedMode
 if test $? -ne 0; then
   echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
   echo -e "$red_text""please consider removing old containers""$default_text"
+  TelemetrySend $eventStateFailed $eventTypeInstall "docker compose failed"
+else
+  TelemetrySend $eventStateSuccess $eventTypeInstall
 fi
 
 ########## Ending Docker ##########

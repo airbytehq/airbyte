@@ -65,12 +65,19 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 - [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/) \(Incremental\)
 - [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/) \(Incremental\)
 - [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/) \(Incremental\)
+- [Users](https://help.getharvest.com/api-v2/users-api/users/users/) \(Incremental\)
 - [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/)
 - [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/)
 - [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/) \(Incremental\)
-- [Expense Reports](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/)
-- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
-- [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)
+- [Expense Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report) \(Incremental\)
+- [Expense Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report) \(Incremental\)
+- [Expense Categories Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report) \(Incremental\)
+- [Expense Team Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report) \(Incremental\)
+- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/) \(Incremental\)
+- [Time Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report) \(Incremental\)
+- [Time Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report) \(Incremental\)
+- [Time Tasks Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report) \(Incremental\)
+- [Time Team Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#team-report) \(Incremental\)
 - [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
 
 ## Performance considerations
@@ -80,8 +87,14 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| 0.1.20 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 1.0.0   | 2024-04-15 | [35863](https://github.com/airbytehq/airbyte/pull/35863) | Migrates connector to Low Code CDK, Updates incremental substream state to per-partition state                                      |
+| 0.2.0   | 2024-04-08 | [36889](https://github.com/airbytehq/airbyte/pull/36889) | Unpin CDK version                                                                  |
+| 0.1.24  | 2024-02-26 | [35541](https://github.com/airbytehq/airbyte/pull/35541) | Improve check command to avoid missing alerts                                      |
+| 0.1.23  | 2024-02-19 | [35305](https://github.com/airbytehq/airbyte/pull/35305) | Fix pendulum parsing error                                                         |
+| 0.1.22  | 2024-02-12 | [35154](https://github.com/airbytehq/airbyte/pull/35154) | Manage dependencies with Poetry.                                                   |
+| 0.1.21  | 2023-11-30 | [33003](https://github.com/airbytehq/airbyte/pull/33003) | Update expected records                                                            |
+| 0.1.20  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image    |
 | 0.1.19  | 2023-07-26 | [28755](https://github.com/airbytehq/airbyte/pull/28755) | Changed parameters for Time Reports to use 365 days as opposed to 1 year           |
 | 0.1.18  | 2023-05-29 | [26714](https://github.com/airbytehq/airbyte/pull/26714) | Remove `authSpecification` from spec in favour of `advancedAuth`                   |
 | 0.1.17  | 2023-03-03 | [22983](https://github.com/airbytehq/airbyte/pull/22983) | Specified date formatting in specification                                         |

@@ -15,16 +15,16 @@ This page contains the setup guide and reference information for the [Sendgrid](
 
 * Sendgrid Account
 * [Create Sendgrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the following permissions:
-  * Read-only access to all resources
-  * Full access to marketing resources
+* Read-only access to all resources
+* Full access to marketing resources
 
 ### Step 2: Set up the Sendgrid connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Sendgrid connector and select **Sendgrid** from the Source type dropdown.
-4. Enter your `apikey`.
-5. Enter your `start_time`.
+4. Enter your `api_key`.
+5. Enter your `start_date`.
 6. Click **Set up source**.
 
 <HideInUI>
@@ -48,11 +48,12 @@ The Sendgrid source connector supports the following [sync modes](https://docs.a
 * [Templates](https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-paged-transactional-templates)
 * [Global suppression](https://docs.sendgrid.com/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) \(Incremental\)
 * [Suppression groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
-* [Suppression group members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions)
+* [Suppression group members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions) \(Incremental\)
 * [Blocks](https://docs.sendgrid.com/api-reference/blocks-api/retrieve-all-blocks) \(Incremental\)
 * [Bounces](https://docs.sendgrid.com/api-reference/bounces-api/retrieve-all-bounces) \(Incremental\)
 * [Invalid emails](https://docs.sendgrid.com/api-reference/invalid-e-mails-api/retrieve-all-invalid-emails) \(Incremental\)
 * [Spam reports](https://docs.sendgrid.com/api-reference/spam-reports-api/retrieve-all-spam-reports)
+* [Unsubscribe Groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
 
 
 ## Create a read-only API key (Optional)
@@ -84,8 +85,12 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.4.0   | 2023-05-19 | [23959](https://github.com/airbytehq/airbyte/pull/23959) | Add `unsubscribe_groups`stream
+| 1.0.0   | 2024-04-15 | [35776](https://github.com/airbytehq/airbyte/pull/35776) | Migration to low-code CDK. Breaking change that updates configuration keys, removes unsubscribe_groups stream, renames a stream to singlesend_stats, and adds the singlesends stream.                                                             |
+| 0.5.0   | 2024-03-26 | [36455](https://github.com/airbytehq/airbyte/pull/36455) | Unpin CDK version, add record counts to state messages                                                                                                                                                                                            |
+| 0.4.3   | 2024-02-21 | [35181](https://github.com/airbytehq/airbyte/pull/35343) | Handle uncompressed contacts downloads.                                                                                                                                                                                                           |
+| 0.4.2   | 2024-02-12 | [35181](https://github.com/airbytehq/airbyte/pull/35181) | Manage dependencies with Poetry.                                                                                                                                                                                                                  |
+| 0.4.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                                                                                   |
+| 0.4.0   | 2023-05-19 | [23959](https://github.com/airbytehq/airbyte/pull/23959) | Add `unsubscribe_groups`stream                                                                                                                                                                                                                    |
 | 0.3.1   | 2023-01-27 | [21939](https://github.com/airbytehq/airbyte/pull/21939) | Fix contacts missing records; Remove Messages stream                                                                                                                                                                                              |
 | 0.3.0   | 2023-01-25 | [21587](https://github.com/airbytehq/airbyte/pull/21587) | Make sure spec works as expected in UI - make start_time parameter an ISO string instead of an integer interpreted as timestamp (breaking, update your existing connections and set the start_time parameter to ISO 8601 date time string in UTC) |
 | 0.2.16  | 2022-11-02 | [18847](https://github.com/airbytehq/airbyte/pull/18847) | Skip the stream on `400, 401 - authorization required` with log message                                                                                                                                                                           |

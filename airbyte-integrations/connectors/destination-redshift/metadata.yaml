@@ -1,35 +1,38 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: database
   connectorType: destination
   definitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
-  dockerImageTag: 0.6.10
+  dockerImageTag: 2.4.3
   dockerRepository: airbyte/destination-redshift
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   githubIssueLabel: destination-redshift
   icon: redshift.svg
   license: MIT
   name: Redshift
-  normalizationConfig:
-    normalizationIntegrationType: redshift
-    normalizationRepository: airbyte/normalization-redshift
-    normalizationTag: 0.4.3
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >
+          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.
+        upgradeDeadline: "2024-03-15"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
+  releaseStage: generally_available
+  supportLevel: certified
   supportsDbt: true
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 200
-  supportLevel: community
 metadataSpecVersion: "1.0"

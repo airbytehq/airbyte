@@ -15,19 +15,16 @@ jobs:
           echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
-      - name: Slash Command Dispatch
+      - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
           commands: |
             test
-            legacy-test
             test-performance
-            publish
             publish-java-cdk
-            legacy-publish
             connector-performance
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
