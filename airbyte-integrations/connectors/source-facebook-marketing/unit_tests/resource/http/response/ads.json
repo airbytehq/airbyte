@@ -1,0 +1,104 @@
+{
+  "data": [
+    {
+      "id": "000000000000000000",
+      "bid_type": "ABSOLUTE_OCPM",
+      "account_id": "111111111111111",
+      "campaign_id": "23853619670350398",
+      "adset_id": "23853619670380398",
+      "status": "ACTIVE",
+      "creative": {
+        "id": "23853666124230398"
+      },
+      "updated_time": "2023-03-21T22:41:46-0700",
+      "created_time": "2023-03-17T08:04:31-0700",
+      "name": "Test",
+      "targeting": {
+        "age_max": 60,
+        "age_min": 18,
+        "custom_audiences": [
+          {
+            "id": "483674853746853",
+            "name": "test_01"
+          },
+          {
+            "id": "00001111111",
+            "name": "Test"
+          }
+        ],
+        "geo_locations": {
+          "countries": ["US"],
+          "location_types": ["home", "recent"]
+        },
+        "brand_safety_content_filter_levels": [
+          "FACEBOOK_STANDARD",
+          "AN_STANDARD"
+        ],
+        "targeting_relaxation_types": {
+          "lookalike": 1,
+          "custom_audience": 1
+        },
+        "publisher_platforms": [
+          "facebook",
+          "instagram",
+          "audience_network",
+          "messenger"
+        ],
+        "facebook_positions": [
+          "feed",
+          "biz_disco_feed",
+          "facebook_reels",
+          "facebook_reels_overlay",
+          "right_hand_column",
+          "video_feeds",
+          "instant_article",
+          "instream_video",
+          "marketplace",
+          "story",
+          "search"
+        ],
+        "instagram_positions": [
+          "stream",
+          "story",
+          "explore",
+          "reels",
+          "shop",
+          "explore_home",
+          "profile_feed"
+        ],
+        "device_platforms": ["mobile", "desktop"],
+        "messenger_positions": ["story"],
+        "audience_network_positions": [
+          "classic",
+          "instream_video",
+          "rewarded_video"
+        ]
+      },
+      "effective_status": "ARCHIVED",
+      "last_updated_by_app_id": "119211728144504",
+      "source_ad_id": "0",
+      "tracking_specs": [
+        {
+          "action.type": ["offsite_conversion"],
+          "fb_pixel": ["917042523049733"]
+        },
+        {
+          "action.type": ["link_click"],
+          "post": ["662226902575095"],
+          "post.wall": ["112704783733939"]
+        },
+        {
+          "action.type": ["post_engagement"],
+          "page": ["112704783733939"],
+          "post": ["662226902575095"]
+        }
+      ],
+      "conversion_specs": [
+        {
+          "action.type": ["offsite_conversion"],
+          "conversion_id": ["6015304265216283"]
+        }
+      ]
+    }
+  ]
+}
