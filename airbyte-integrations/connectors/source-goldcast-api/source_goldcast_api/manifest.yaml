@@ -70,39 +70,22 @@ definitions:
     $parameters:
       path: "/event/tracks/"
 
-#  webinars_stream:
-#    $ref: "#/definitions/base_stream"
-#    name: "webinars"
-#    description: "Webinars stream. Webinares are one of the objects that compose an event."
-#    primary_key: "id"
-#    parent_stream_configs:
-#      - type: ParentStreamConfig
-#        stream: "#/definitions/events_stream"
-#        parent_key: "id"
-#        partition_field: "webinar_id"
-#    $parameters:
-#      name: "webinars"
-#      primary_key: "id"
-#      path: "/event/webinars/{{ stream_slice.webinar_id }}"
-#    transformations:
-#      - type: AddFields
-#        fields:
-#          - path: ["event_id"]
-#            value: "'{{ stream_slice.id }}'"
-#    retriever:
-#      $ref: "#/definitions/retriever"
-#      record_selector:
-#        $ref: "#/definitions/retriever/record_selector"
-#        extractor:
-#          field_path: ["id", "id"]
-#      requester:
-#        $ref: "#/definitions/requester"
-#        error_handler:
-#          type: DefaultErrorHandler
-#          description: "405 - cMethod \"GET\" not allowed."
-#          response_filters:
-#            - http_codes: [405]
-#              action: IGNORE
+  webinars_stream:
+    $ref: "#/definitions/base_stream"
+    name: webinars
+    description: "Webinars stream. Information on the webinars of events."
+    primary_key: "id"
+    $parameters:
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event
+              stream:
+                $ref: '#/definitions/events_stream'
+      path: "/event/webinars/{{ stream_partition.event }}"
+      
 
 streams:
   - "#/definitions/organizations_stream"
@@ -110,7 +93,7 @@ streams:
   - "#/definitions/agenda_items_stream"
   - "#/definitions/discussion_groups_stream"
   - "#/definitions/tracks_stream"
-#  - "#/definitions/webinars_stream"
+  - "#/definitions/webinars_stream"
 
 check:
   type: CheckStream
@@ -120,9 +103,10 @@ check:
     - "organizations"
     - "discussion_groups"
     - "tracks"
+    - "webinars"
 
 spec: 
-  documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
+  documentation_url: https://customapi.goldcast.io/swagger-ui/#/
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: goldcast.io Source Spec
