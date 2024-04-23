@@ -38,6 +38,9 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         metrics: list[str],
         additional_metrics: Optional[list[str]] = None,
         adjust_account_id: Optional[int] = None,
+        attribution_type: Optional[str] = None,
+        attribution_source: Optional[str] = None,
+        utc_offset: Optional[str] = None,
         field_name_map: Optional[dict[str, str]] = None,
         **kwargs,
     ):
@@ -53,6 +56,9 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         self._dimensions: list[str] = dimensions
         self._metrics: list[str] = metrics
         self._additional_metrics: list[str] = additional_metrics if additional_metrics is not None else []
+        self._attribution_type: Optional[str] = attribution_type
+        self._attribution_source: Optional[str] = attribution_source
+        self._utc_offset: Optional[str] = utc_offset
 
     @property
     def supports_incremental(self) -> bool:
@@ -133,9 +139,17 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
             "metrics": ",".join(metrics),
             "dimensions": ",".join(dimensions),
         }
-
         if self._adjust_account_id is not None:
             params["adjust_account_id"] = self._adjust_account_id
+
+        if self._utc_offset is not None:
+            params["utc_offset"] = self._utc_offset
+
+        if self._attribution_source is not None:
+            params["attribution_source"] = self._attribution_source
+
+        if self._attribution_type is not None:
+            params["attribution_type"] = self._attribution_type
 
         return params
 
@@ -381,6 +395,9 @@ class SourceAdjust(AbstractSource):
                     field_name_map=config.get("field_name_map"),
                     adjust_account_id=config.get("account_id"),
                     authenticator=auth,
+                    attribution_type=config.get("attribution_type"),
+                    attribution_source=config.get("attribution_source"),
+                    utc_offset=config.get("utc_offset"),
                 ),
             )
         return streams

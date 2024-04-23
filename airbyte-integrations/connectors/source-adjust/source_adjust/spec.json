@@ -260,140 +260,162 @@
             }
           }
         }
+      },
+      "date_range" : {
+        "title" : "Date Range",
+        "description" : "Choose date period that must be loaded",
+        "type" : "object",
+        "order" : 4,
+        "oneOf" : [
+          {
+            "type" : "object",
+            "title" : "Custom Date Range",
+            "required" : [
+              "date_from",
+              "date_to",
+              "date_range_type"
+            ],
+            "properties" : {
+              "date_from" : {
+                "title" : "Start Date",
+                "type" : "string",
+                "description" : "Start date in format YYYY-MM-DD.",
+                "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor" : "YYYY-MM-DD",
+                "examples" : [
+                  "2023-01-01"
+                ],
+                "format" : "date",
+                "order" : 0
+              },
+              "date_to" : {
+                "title" : "End Date",
+                "type" : "string",
+                "description" : "End date in format YYYY-MM-DD.",
+                "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples" : [
+                  "2023-01-30"
+                ],
+                "pattern_descriptor" : "YYYY-MM-DD",
+                "format" : "date",
+                "order" : 1
+              },
+              "date_range_type" : {
+                "type" : "string",
+                "title" : "Date Range Type",
+                "description" : "Custom Date",
+                "const" : "custom_date",
+                "order" : 2
+              }
+            }
+          },
+          {
+            "type" : "object",
+            "title" : "Last N Days",
+            "required" : [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties" : {
+              "last_days_count" : {
+                "title" : "Last Days Count",
+                "type" : "integer",
+                "description" : "Count of last days exclude today.",
+                "minimum" : 0,
+                "maximum" : 3650,
+                "examples" : [
+                  30
+                ],
+                "order" : 0
+              },
+              "should_load_today" : {
+                "title" : "Load Today?",
+                "type" : "boolean",
+                "description" : "Should connector load today time as End Time? If not, End Time will be yesterday.",
+                "order" : 1,
+                "default" : false
+              },
+              "date_range_type" : {
+                "type" : "string",
+                "title" : "Date Range Type",
+                "description" : "Last N Days",
+                "const" : "last_n_days",
+                "order" : 1
+              }
+            }
+          },
+          {
+            "type" : "object",
+            "title" : "From Start Date To Today",
+            "description" : "Load data from Start Date to Today. Only with this option you can use incremental sync.",
+            "required" : [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties" : {
+              "date_from" : {
+                "title" : "Start Date",
+                "type" : "string",
+                "description" : "Start date in format YYYY-MM-DD.",
+                "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor" : "YYYY-MM-DD",
+                "examples" : [
+                  "2023-01-01"
+                ],
+                "format" : "date",
+                "order" : 0
+              },
+              "should_load_today" : {
+                "title" : "Load Today?",
+                "type" : "boolean",
+                "description" : "Should connector load today date as End Date? If not, End Date will be yesterday.",
+                "order" : 1,
+                "default" : false
+              },
+              "date_range_type" : {
+                "type" : "string",
+                "title" : "Date Range Type",
+                "description" : "Last N Days",
+                "const" : "from_start_date_to_today",
+                "order" : 1
+              }
+            }
+          }
+        ]
+      },
+      "utc_offset" : {
+        "title" : "UTC Offset",
+        "description" : "The timezone used in the report in format of +/-HH:MM",
+        "type" : "string",
+        "default": "+03:00",
+        "examples": ["+03:00", "+00:00"],
+        "order" : 5
+      },
+      "attribution_source" : {
+        "title" : "Report Attribution Source",
+        "description" : "Attribution source. See <a href=\"https://help.adjust.com/ru/article/event-metrics-endpoints\">https://help.adjust.com/ru/article/event-metrics-endpoints</a> for more information.",
+        "type" : "string",
+        "enum" : [
+          "first",
+          "dynamic"
+        ],
+        "default" : "dynamic",
+        "order" : 6
+      },
+      "attribution_type" : {
+        "title" : "Report Attribution type",
+        "description" : "The type of engagement the attribution awards. See <a href=\"https://help.adjust.com/ru/article/event-metrics-endpoints\">https://help.adjust.com/ru/article/event-metrics-endpoints</a> for more information.",
+        "type" : "string",
+        "enum" : [
+          "click",
+          "impression",
+          "all"
+        ],
+        "default" : "click",
+        "order" : 7
       }
-    },
-    "date_range" : {
-      "title" : "Date Range",
-      "description" : "Choose date period that must be loaded",
-      "type" : "object",
-      "order" : 4,
-      "oneOf" : [
-        {
-          "type" : "object",
-          "title" : "Custom Date Range",
-          "required" : [
-            "date_from",
-            "date_to",
-            "date_range_type"
-          ],
-          "properties" : {
-            "date_from" : {
-              "title" : "Start Date",
-              "type" : "string",
-              "description" : "Start date in format YYYY-MM-DD.",
-              "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-              "pattern_descriptor" : "YYYY-MM-DD",
-              "examples" : [
-                "2023-01-01"
-              ],
-              "format" : "date",
-              "order" : 0
-            },
-            "date_to" : {
-              "title" : "End Date",
-              "type" : "string",
-              "description" : "End date in format YYYY-MM-DD.",
-              "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-              "examples" : [
-                "2023-01-30"
-              ],
-              "pattern_descriptor" : "YYYY-MM-DD",
-              "format" : "date",
-              "order" : 1
-            },
-            "date_range_type" : {
-              "type" : "string",
-              "title" : "Date Range Type",
-              "description" : "Custom Date",
-              "const" : "custom_date",
-              "order" : 2
-            }
-          }
-        },
-        {
-          "type" : "object",
-          "title" : "Last N Days",
-          "required" : [
-            "last_days_count",
-            "should_load_today",
-            "date_range_type"
-          ],
-          "properties" : {
-            "last_days_count" : {
-              "title" : "Last Days Count",
-              "type" : "integer",
-              "description" : "Count of last days exclude today.",
-              "minimum" : 0,
-              "maximum" : 3650,
-              "examples" : [
-                30
-              ],
-              "order" : 0
-            },
-            "should_load_today" : {
-              "title" : "Load Today?",
-              "type" : "boolean",
-              "description" : "Should connector load today time as End Time? If not, End Time will be yesterday.",
-              "order" : 1,
-              "default" : false
-            },
-            "date_range_type" : {
-              "type" : "string",
-              "title" : "Date Range Type",
-              "description" : "Last N Days",
-              "const" : "last_n_days",
-              "order" : 1
-            }
-          }
-        },
-        {
-          "type" : "object",
-          "title" : "From Start Date To Today",
-          "description" : "Load data from Start Date to Today. Only with this option you can use incremental sync.",
-          "required" : [
-            "last_days_count",
-            "should_load_today",
-            "date_range_type"
-          ],
-          "properties" : {
-            "date_from" : {
-              "title" : "Start Date",
-              "type" : "string",
-              "description" : "Start date in format YYYY-MM-DD.",
-              "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-              "pattern_descriptor" : "YYYY-MM-DD",
-              "examples" : [
-                "2023-01-01"
-              ],
-              "format" : "date",
-              "order" : 0
-            },
-            "should_load_today" : {
-              "title" : "Load Today?",
-              "type" : "boolean",
-              "description" : "Should connector load today date as End Date? If not, End Date will be yesterday.",
-              "order" : 1,
-              "default" : false
-            },
-            "date_range_type" : {
-              "type" : "string",
-              "title" : "Date Range Type",
-              "description" : "Last N Days",
-              "const" : "from_start_date_to_today",
-              "order" : 1
-            }
-          }
-        }
-      ]
-    },
-    "utc_offset" : {
-      "title" : "UTC Offset",
-      "description" : "UTC offset in hours. Used to convert dates to UTC. For example, if your timezone is UTC+3, you should set this parameter to 3.",
-      "type" : "integer",
-      "default" : 0,
-      "minimum" : -12,
-      "maximum" : 12,
-      "order" : 5
     }
   }
 }
