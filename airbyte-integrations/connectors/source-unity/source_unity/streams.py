@@ -12,7 +12,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-
 class UnityStream(HttpStream, ABC):
     url_base = "https://services.api.unity.com/advertise/v1/organizations/%organisation_id%/apps/"
     use_cache = True  # it is used in all streams
@@ -37,7 +36,7 @@ class Campaigns(UnityStream):
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "5b1fa6e070c5a3003ee2a187/campaigns"
+        return f"{self.config['campaign_set_id']}/campaigns"
 
 
 class Apps(UnityStream):
@@ -47,3 +46,21 @@ class Apps(UnityStream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return ""
+
+
+class Creatives(UnityStream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"{self.config['campaign_set_id']}/creatives"
+
+
+class CreativePacks(UnityStream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"{self.config['campaign_set_id']}/creative-packs"

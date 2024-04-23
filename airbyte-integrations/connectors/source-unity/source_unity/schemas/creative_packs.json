@@ -1,0 +1,27 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : ["string", "null"]
+    },
+    "name" : {
+      "type" : ["string", "null"]
+    },
+    "creativeIds" : {
+      "type" : "array",
+      "items" : {
+        "type" : ["string", "null"]
+      }
+    },
+    "type" : {
+      "type" : ["string", "null"]
+    },
+    "campaignIds" : {
+      "type" : "array",
+      "items" : {
+        "type" : ["string", "null"]
+      }
+    }
+  }
+}

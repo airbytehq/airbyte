@@ -14,3 +14,6 @@ connectionSpecification:
     organisation_id:
       type: string
       description: organisation id
+    campaign_set_id:
+      type: string
+      description: campaign set id
