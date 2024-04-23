@@ -18,17 +18,17 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     ) {
         LOGGER.info(
             "Assessing whether migration is necessary for stream {}",
-            streamConfig.id!!.finalName
+            streamConfig.id.finalName
         )
         if (shouldMigrate(streamConfig)) {
-            LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id!!.finalName)
+            LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id.finalName)
             migrate(sqlGenerator, destinationHandler, streamConfig)
             LOGGER.info(
                 "V2 Migration completed successfully for stream {}",
-                streamConfig.id!!.finalName
+                streamConfig.id.finalName
             )
         } else {
-            LOGGER.info("No Migration Required for stream: {}", streamConfig.id!!.finalName)
+            LOGGER.info("No Migration Required for stream: {}", streamConfig.id.finalName)
         }
     }
 
@@ -84,8 +84,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 )
             )
         } catch (e: Exception) {
-            val message =
-                "Attempted and failed to migrate stream %s".formatted(streamConfig.id!!.finalName)
+            val message = "Attempted and failed to migrate stream ${streamConfig.id.finalName}"
             throw TableNotMigratedException(message, e)
         }
     }
@@ -153,7 +152,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     private fun doesValidV2RawTableAlreadyExist(streamConfig: StreamConfig): Boolean {
         if (doesAirbyteInternalNamespaceExist(streamConfig)) {
             val existingV2Table =
-                getTableIfExists(streamConfig.id!!.rawNamespace, streamConfig.id!!.rawName)
+                getTableIfExists(streamConfig.id.rawNamespace, streamConfig.id.rawName)
             existingV2Table.ifPresent { existingV2AirbyteRawTable: DialectTableDefinition ->
                 this.validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(
                     existingV2AirbyteRawTable

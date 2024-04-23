@@ -138,7 +138,7 @@ object DbSourceDiscoverUtil {
                             tableInfo.fields
                         )
                         .withSupportedSyncModes(
-                            if (tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty())
+                            if (tableInfo.cursorFields.isEmpty())
                                 Lists.newArrayList(SyncMode.FULL_REFRESH)
                             else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )

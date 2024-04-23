@@ -47,7 +47,7 @@ private constructor(
     override val fileLocation: String
 
     init {
-        var csvSettings = csvSettings
+        var localCsvSettings = csvSettings
         this.csvSheetGenerator = csvSheetGenerator
 
         val fileSuffix = "_" + UUID.randomUUID()
@@ -80,11 +80,14 @@ private constructor(
         // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
         if (writeHeader) {
-            csvSettings =
-                csvSettings.withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String?>())
+            localCsvSettings =
+                @Suppress("deprecation")
+                localCsvSettings.withHeader(
+                    *csvSheetGenerator.getHeaderRow().toTypedArray<String?>()
+                )
         }
         this.csvPrinter =
-            CSVPrinter(PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvSettings)
+            CSVPrinter(PrintWriter(outputStream, true, StandardCharsets.UTF_8), localCsvSettings)
     }
 
     class Builder(
@@ -96,7 +99,8 @@ private constructor(
         private var uploadThreads = StreamTransferManagerFactory.DEFAULT_UPLOAD_THREADS
         private var queueCapacity = StreamTransferManagerFactory.DEFAULT_QUEUE_CAPACITY
         private var withHeader = true
-        private var csvSettings: CSVFormat = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+        private var csvSettings: CSVFormat =
+            @Suppress("deprecation") CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
         private lateinit var _csvSheetGenerator: CsvSheetGenerator
 
         fun uploadThreads(uploadThreads: Int): Builder {
@@ -150,7 +154,7 @@ private constructor(
 
     @Throws(IOException::class)
     override fun write(id: UUID, recordMessage: AirbyteRecordMessage) {
-        csvPrinter.printRecord(csvSheetGenerator!!.getDataRow(id, recordMessage))
+        csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage))
     }
 
     @Throws(IOException::class)
@@ -167,12 +171,12 @@ private constructor(
         uploadManager.abort()
     }
 
-    override val fileFormat: FileUploadFormat?
+    override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.CSV
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {
-        csvPrinter.printRecord(csvSheetGenerator!!.getDataRow(formattedData))
+        csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData))
     }
 
     companion object {

@@ -81,7 +81,7 @@ object S3BaseChecks {
             } else {
                 manager.abort()
             }
-            s3Client!!.deleteObject(bucketName, testFile)
+            s3Client.deleteObject(bucketName, testFile)
         }
         LOGGER.info("Finished verification for multipart upload mode")
     }
