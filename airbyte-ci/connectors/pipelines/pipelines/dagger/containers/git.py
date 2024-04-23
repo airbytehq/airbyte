@@ -11,6 +11,7 @@ async def checked_out_git_container(
     current_git_branch: str,
     current_git_revision: str,
     diffed_branch: Optional[str] = None,
+    repo_url: str = AIRBYTE_REPO_URL,
 ) -> Container:
     """Builds git-based container with the current branch checked out."""
     current_git_branch = current_git_branch.removeprefix("origin/")
@@ -31,7 +32,7 @@ async def checked_out_git_container(
                 "--track",
                 diffed_branch if diffed_branch is not None else current_git_branch,
                 "origin",
-                AIRBYTE_REPO_URL,
+                repo_url,
             ]
         )
         .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
