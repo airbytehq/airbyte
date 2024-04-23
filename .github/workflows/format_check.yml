@@ -98,7 +98,6 @@ jobs:
     # caching.
     name: "Check for formatting errors"
     if: >
-      true ||
       github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-latest
     steps:
