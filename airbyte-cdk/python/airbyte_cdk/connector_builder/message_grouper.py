@@ -28,6 +28,7 @@ from airbyte_protocol.models.airbyte_protocol import (
     AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteStateMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     OrchestratorType,
@@ -75,7 +76,7 @@ class MessageGrouper:
         source: DeclarativeSource,
         config: Mapping[str, Any],
         configured_catalog: ConfiguredAirbyteCatalog,
-         state,
+        state: List[AirbyteStateMessage],
         record_limit: Optional[int] = None,
     ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
@@ -281,7 +282,7 @@ class MessageGrouper:
 
     def _read_stream(
         self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog,
-            state
+            state: List[AirbyteStateMessage]
     ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage

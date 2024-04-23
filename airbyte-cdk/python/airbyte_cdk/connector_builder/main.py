@@ -36,7 +36,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
         state = Source.read_state(state_path)
     else:
         catalog = None
-        state = None
+        state = []
 
     if "__injected_declarative_manifest" not in config:
         raise ValueError(
@@ -51,7 +51,7 @@ def handle_connector_builder_request(
     command: str,
     config: Mapping[str, Any],
     catalog: Optional[ConfiguredAirbyteCatalog],
-    state,
+    state: List[AirbyteStateMessage],
     limits: TestReadLimits,
 ) -> AirbyteMessage:
     if command == "resolve_manifest":

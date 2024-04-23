@@ -4,10 +4,10 @@
 
 import dataclasses
 from datetime import datetime
-from typing import Any, Mapping
+from typing import Any, List, Mapping
 
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -54,7 +54,7 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, state, limits: TestReadLimits
+    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage], limits: TestReadLimits
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices, limits.max_records)
