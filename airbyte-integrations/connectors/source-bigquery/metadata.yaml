@@ -1,24 +1,34 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
-  connectorSubtype: database
-  connectorType: source
-  definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 0.4.2
-  dockerRepository: airbyte/source-bigquery
-  documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
-  githubIssueLabel: source-bigquery
-  icon: bigquery.svg
-  license: ELv2
-  name: BigQuery
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
   registries:
-    cloud:
-      enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bigquery
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5783e810-e817-4004-ba43-b19315ae97c7
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-bigquery
+  githubIssueLabel: source-bigquery
+  icon: bigquery.svg
+  license: MIT
+  name: Bigquery
+  releaseDate: TODO
   supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   tags:
-    - language:java
+    - language:python
 metadataSpecVersion: "1.0"
