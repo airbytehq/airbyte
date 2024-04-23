@@ -227,11 +227,14 @@ public class BigQuerySqlGenerator implements SqlGenerator {
     final List<String> clusterColumns = new ArrayList<>();
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing de-duping, therefore we have a primary key.
-      // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering columns,
-      // and we're always clustering on _airbyte_extracted_at
-      stream.primaryKey().stream().limit(3).forEach(columnId -> {
-        clusterColumns.add(columnId.name());
-      });
+      stream.primaryKey().stream()
+          // Bigquery doesn't support clustering on JSON columns.
+          // Filter out PK entries that resolve to a JSON type.
+          .filter(columnId -> toDialectType(stream.columns().get(columnId)) != StandardSQLTypeName.JSON)
+          // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering columns,
+          // and we're always clustering on _airbyte_extracted_at
+          .limit(3)
+          .forEach(columnId -> clusterColumns.add(columnId.name()));
     }
     clusterColumns.add("_airbyte_extracted_at");
     return clusterColumns;
