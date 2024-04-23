@@ -121,8 +121,6 @@ jobs:
           curl -sSL "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" --output airbyte-ci-bin 
           sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci 
           sudo chmod +x /usr/local/bin/airbyte-ci
-          git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/pipelines
-
       - name: Run format checks
         run: |
           /usr/local/bin/airbyte-ci format check all
