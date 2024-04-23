@@ -31,7 +31,7 @@ interface CsvSheetGenerator {
 
     object Factory {
         @JvmStatic
-        fun create(jsonSchema: JsonNode?, formatConfig: S3CsvFormatConfig): CsvSheetGenerator {
+        fun create(jsonSchema: JsonNode?, formatConfig: UploadCsvFormatConfig): CsvSheetGenerator {
             return if (formatConfig.flattening == Flattening.NO) {
                 NoFlatteningSheetGenerator()
             } else if (formatConfig.flattening == Flattening.ROOT_LEVEL) {

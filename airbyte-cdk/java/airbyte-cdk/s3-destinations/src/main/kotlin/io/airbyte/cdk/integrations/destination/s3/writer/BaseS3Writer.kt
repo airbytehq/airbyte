@@ -36,7 +36,7 @@ protected constructor(
 ) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
     protected val syncMode: DestinationSyncMode = configuredStream.destinationSyncMode
-    val outputPrefix: String? = S3OutputPathHelper.getOutputPrefix(config.bucketPath, stream)
+    val outputPrefix: String = S3OutputPathHelper.getOutputPrefix(config.bucketPath, stream)
 
     /**
      *
@@ -140,7 +140,7 @@ protected constructor(
                 formatter.format(parameterObject.timestamp),
                 parameterObject.timestamp!!.time,
                 parameterObject.customSuffix ?: DEFAULT_SUFFIX,
-                parameterObject.s3Format!!.fileExtension
+                parameterObject.fileUploadFormat!!.fileExtension
             )
         }
 
