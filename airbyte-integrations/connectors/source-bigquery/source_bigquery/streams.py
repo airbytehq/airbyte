@@ -91,6 +91,34 @@ class BigqueryTables(BigqueryDatasets):
         Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tables
         """
         return f"{super().path()}/{self.dataset_id}/tables"
+
+
+class BigqueryTable(BigqueryTables):
+    name = "table"
+
+    def __init__(self, dataset_id: list, project_id: list, table_id: list, **kwargs):
+        super().__init__(dataset_id=dataset_id, project_id=project_id, **kwargs)
+        self.table_id = table_id
+
+    def path(self, **kwargs) -> str:
+        """
+        Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tables
+                       https://cloud.google.com/bigquery/docs/reference/rest/v2/tables/get
+        """
+        return f"{super().path()}/{self.table_id}"
+
+
+class BigqueryTableData(BigqueryTable):
+    name = "table_data"
+
+    def __init__(self, dataset_id: list, project_id: list, table_id: list, **kwargs):
+        super().__init__(dataset_id=dataset_id, project_id=project_id, table_id=table_id, **kwargs)
+
+    def path(self, **kwargs) -> str:
+        """
+        Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tabledata
+        """
+        return f"{super().path()}/data"
     
 
 class BigqueryStream(HttpStream, ABC):
