@@ -122,7 +122,7 @@ def format_license_container(dagger_client: dagger.Client, license_code: dagger.
 
 
 def format_python_container(
-    dagger_client: dagger.Client, python_code: dagger.Directory, black_version: str = "~22.3.0"
+    dagger_client: dagger.Client, python_code: dagger.Directory
 ) -> dagger.Container:
     """Create a Python container with pipx and the global pyproject.toml installed with mounted code to format and a cache volume.
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
@@ -132,7 +132,7 @@ def format_python_container(
     return build_container(
         dagger_client,
         base_image=PYTHON_3_10_IMAGE,
-        env_vars={"PIPX_BIN_DIR": "/usr/local/bin", "BLACK_CACHE_DIR": f"{CACHE_MOUNT_PATH}/black"},
+        env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},
         install_commands=[
             "pip install pipx",
             "pipx ensurepath",
@@ -140,9 +140,5 @@ def format_python_container(
             "poetry install --no-root",
         ],
         dir_to_format=python_code,
-        warmup_dir=warmup_dir,
-        # Namespacing the cache volume by black version is likely overkill:
-        # Black already manages cache directories by version internally.
-        # https://github.com/psf/black/blob/e4ae213f06050e7f76ebcf01578c002e412dafdc/src/black/cache.py#L42
-        cache_volume=dagger_client.cache_volume(cache_keys.get_black_cache_key(black_version)),
+        warmup_dir=warmup_dir
     )
