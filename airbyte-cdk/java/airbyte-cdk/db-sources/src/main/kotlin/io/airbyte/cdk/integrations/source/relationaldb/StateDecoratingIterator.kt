@@ -236,6 +236,7 @@ class StateDecoratingIterator(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StateDecoratingIterator::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(@Suppress("deprecation") StateDecoratingIterator::class.java)
     }
 }

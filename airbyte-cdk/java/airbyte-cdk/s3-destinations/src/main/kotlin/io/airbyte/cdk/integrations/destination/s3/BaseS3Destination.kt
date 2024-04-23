@@ -65,7 +65,6 @@ protected constructor(
             .create(
                 outputRecordCollector,
                 S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
-                nameTransformer,
                 getCreateFunction(
                     s3Config,
                     Function<String, BufferStorage> { fileExtension: String ->

@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.destination.gcs
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
@@ -20,7 +20,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumReader
 
 abstract class GcsBaseAvroDestinationAcceptanceTest :
-    GcsAvroParquetDestinationAcceptanceTest(S3Format.AVRO) {
+    GcsAvroParquetDestinationAcceptanceTest(FileUploadFormat.AVRO) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.deserialize(

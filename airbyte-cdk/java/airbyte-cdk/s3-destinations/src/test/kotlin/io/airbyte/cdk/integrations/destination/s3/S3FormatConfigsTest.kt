@@ -3,8 +3,8 @@
  */
 package io.airbyte.cdk.integrations.destination.s3
 
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfigs.getS3FormatConfig
-import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfigFactory.getUploadFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.csv.UploadCsvFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.commons.json.Jsons.jsonNode
@@ -23,7 +23,7 @@ class S3FormatConfigsTest {
                     jsonNode(
                         Map.of(
                             "format_type",
-                            S3Format.CSV.toString(),
+                            FileUploadFormat.CSV.toString(),
                             "flattening",
                             Flattening.ROOT_LEVEL.value,
                             "compression",
@@ -33,10 +33,10 @@ class S3FormatConfigsTest {
                 )
             )
 
-        val formatConfig = getS3FormatConfig(configJson)
-        Assertions.assertEquals(formatConfig.format, S3Format.CSV)
-        Assertions.assertTrue(formatConfig is S3CsvFormatConfig)
-        val csvFormatConfig = formatConfig as S3CsvFormatConfig
+        val formatConfig = getUploadFormatConfig(configJson)
+        Assertions.assertEquals(formatConfig.format, FileUploadFormat.CSV)
+        Assertions.assertTrue(formatConfig is UploadCsvFormatConfig)
+        val csvFormatConfig = formatConfig as UploadCsvFormatConfig
         Assertions.assertEquals(Flattening.ROOT_LEVEL, csvFormatConfig.flattening)
         Assertions.assertEquals(CompressionType.NO_COMPRESSION, csvFormatConfig.compressionType)
     }

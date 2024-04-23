@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.s3
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
-import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
@@ -30,12 +29,11 @@ class S3ConsumerFactory {
     fun create(
         outputRecordCollector: Consumer<AirbyteMessage>,
         storageOperations: BlobStorageOperations,
-        namingResolver: NamingConventionTransformer,
         onCreateBuffer: BufferCreateFunction,
         s3Config: S3DestinationConfig,
         catalog: ConfiguredAirbyteCatalog
     ): AirbyteMessageConsumer {
-        val writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog)
+        val writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog)
         return BufferedStreamConsumer(
             outputRecordCollector,
             onStartFunction(storageOperations, writeConfigs),
@@ -45,8 +43,10 @@ class S3ConsumerFactory {
                 flushBufferFunction(storageOperations, writeConfigs, catalog)
             ),
             onCloseFunction(storageOperations, writeConfigs),
-            catalog
-        ) { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) }
+            catalog,
+            { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) },
+            null,
+        )
     }
 
     private fun onStartFunction(
@@ -161,20 +161,18 @@ class S3ConsumerFactory {
 
         private fun createWriteConfigs(
             storageOperations: BlobStorageOperations,
-            namingResolver: NamingConventionTransformer,
             config: S3DestinationConfig,
             catalog: ConfiguredAirbyteCatalog?
         ): List<WriteConfig> {
             return catalog!!
                 .streams
                 .stream()
-                .map(toWriteConfig(storageOperations, namingResolver, config))
+                .map(toWriteConfig(storageOperations, config))
                 .collect(Collectors.toList())
         }
 
         private fun toWriteConfig(
             storageOperations: BlobStorageOperations,
-            namingResolver: NamingConventionTransformer,
             s3Config: S3DestinationConfig
         ): Function<ConfiguredAirbyteStream, WriteConfig> {
             return Function { stream: ConfiguredAirbyteStream ->
