@@ -97,7 +97,9 @@ jobs:
     # This may be slower than the version that runs with creds, due to the affect of
     # caching.
     name: "Check for formatting errors"
+    # TODO: Revert the 'true' part
     if: >
+      true ||
       github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-latest
     steps:
