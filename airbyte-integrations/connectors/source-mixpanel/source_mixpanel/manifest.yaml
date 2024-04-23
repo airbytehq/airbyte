@@ -314,9 +314,3 @@ check:
   type: CheckStream
   stream_names:
     - cohorts
-    - cohort_members
-    - funnels
-    - revenue
-    - annotations
-    - engage
-    - export
