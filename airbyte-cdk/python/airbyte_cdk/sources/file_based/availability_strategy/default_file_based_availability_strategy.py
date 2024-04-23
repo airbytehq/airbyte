@@ -21,7 +21,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
-    def check_availability(self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
+    def check_availability(
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
+    ) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
         """
         Perform a connection check for the stream (verify that we can list files from the stream).
 

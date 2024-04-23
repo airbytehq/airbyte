@@ -38,4 +38,6 @@ async def test_spec_passes_on_both_versions(
     if not has_spec(spec_control_execution_result):
         pytest.skip("The control spec did not succeed, we cannot compare the results.")
     if not has_spec(spec_target_execution_result):
-        pytest.fail("The target spec did not succeed. Check the test artifacts for more information.")
+        pytest.fail(
+            "The target spec did not succeed. Check the test artifacts for more information."
+        )

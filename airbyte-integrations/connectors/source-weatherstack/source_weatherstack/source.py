@@ -304,7 +304,6 @@ class LocationLookup(HttpStream):
 # Source
 class SourceWeatherstack(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
         try:
             query = config["query"]
             access_key = config["access_key"]

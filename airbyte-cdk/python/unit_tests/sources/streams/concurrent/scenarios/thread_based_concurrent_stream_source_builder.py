@@ -49,7 +49,16 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=self.message_repository), NeverLogSliceLogger(), s._logger) for s in self._streams]
+        return [
+            StreamFacade(
+                s,
+                LegacyStream(),
+                FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=self.message_repository),
+                NeverLogSliceLogger(),
+                s._logger,
+            )
+            for s in self._streams
+        ]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(connectionSpecification={})
@@ -58,7 +67,13 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()), NeverLogSliceLogger(), s._logger).as_airbyte_stream(),
+                    stream=StreamFacade(
+                        s,
+                        LegacyStream(),
+                        FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()),
+                        NeverLogSliceLogger(),
+                        s._logger,
+                    ).as_airbyte_stream(),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )

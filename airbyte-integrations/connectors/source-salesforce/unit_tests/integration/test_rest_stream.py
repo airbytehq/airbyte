@@ -48,7 +48,6 @@ def _calculate_start_time(start_time: datetime) -> datetime:
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
-
     def setUp(self) -> None:
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
 
@@ -61,7 +60,7 @@ class FullRefreshTest(TestCase):
             [
                 HttpResponse("", status_code=406),
                 HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
-            ]
+            ],
         )
 
         output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
@@ -78,7 +77,12 @@ class IncrementalTest(TestCase):
         self._http_mocker.__enter__()
 
         given_authentication(self._http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
-        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime"))
+        given_stream(
+            self._http_mocker,
+            _BASE_URL,
+            _STREAM_NAME,
+            SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime"),
+        )
 
     def tearDown(self) -> None:
         self._http_mocker.__exit__(None, None, None)
@@ -86,11 +90,13 @@ class IncrementalTest(TestCase):
     def test_given_no_state_when_read_then_start_sync_from_start(self) -> None:
         start = _calculate_start_time(_NOW - timedelta(days=5))
         # as the start comes from the config, we can't use the same format as `_to_url`
-        start_format_url = urllib.parse.quote_plus(start.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        start_format_url = urllib.parse.quote_plus(start.strftime("%Y-%m-%dT%H:%M:%SZ"))
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(
+                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
+            ),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 
@@ -103,13 +109,23 @@ class IncrementalTest(TestCase):
         start = _calculate_start_time(_NOW - timedelta(days=10))
         self._config.stream_slice_step("P30D").start_date(start)
         self._http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(
+                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
+            ),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 
-        output = read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}))
+        output = read(
+            _STREAM_NAME,
+            SyncMode.incremental,
+            self._config,
+            StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}),
+        )
 
-        assert output.most_recent_state.stream_state.dict() == {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
+        assert output.most_recent_state.stream_state.dict() == {
+            "state_type": "date-range",
+            "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}],
+        }
 
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
@@ -122,21 +138,28 @@ class IncrementalTest(TestCase):
                 "slices": [
                     {"start": start.strftime("%Y-%m-%dT%H:%M:%S.000") + "Z", "end": _to_partitioned_datetime(missing_chunk[0])},
                     {"start": _to_partitioned_datetime(missing_chunk[1]), "end": _to_partitioned_datetime(most_recent_state_value)},
-                ]
-            }
+                ],
+            },
         )
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
+            HttpRequest(
+                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"
+            ),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
         self._http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
+            HttpRequest(
+                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
+            ),
             HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
 
         # the start is granular to the second hence why we have `000` in terms of milliseconds
-        assert output.most_recent_state.stream_state.dict() == {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
+        assert output.most_recent_state.stream_state.dict() == {
+            "state_type": "date-range",
+            "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}],
+        }

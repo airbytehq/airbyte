@@ -113,7 +113,7 @@ def get_stream_instance(stream_class, args):
     if stream_class in TICKET_SUBSTREAMS:
         parent = Tickets(**args)
         return stream_class(parent=parent, **args)
-    return stream_class( **args)
+    return stream_class(**args)
 
 
 def test_date_time_format():
@@ -1126,10 +1126,7 @@ class TestTicketSubstream:
     )
     def test_stream_slices(self, requests_mock, stream_state, response, expected_slices):
         stream = get_stream_instance(TicketSubstream, STREAM_ARGS)
-        requests_mock.get(
-            f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json",
-            json=response
-        )
+        requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
         assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
     @pytest.mark.parametrize(
@@ -1137,8 +1134,11 @@ class TestTicketSubstream:
         [
             ({}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]),
             ({}, {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}, []),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "2024-04-18T19:34:06Z", "id": "test id"},
-             [{"updated_at": "2024-04-18T19:34:06Z", "id": "test id"}]),
+            (
+                {"updated_at": "2024-04-17T19:34:06Z"},
+                {"updated_at": "2024-04-18T19:34:06Z", "id": "test id"},
+                [{"updated_at": "2024-04-18T19:34:06Z", "id": "test id"}],
+            ),
             ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "1979-04-18T19:34:06Z", "id": "test id"}, []),
         ],
         ids=[
@@ -1159,9 +1159,7 @@ class TestTicketSubstream:
 def test_read_ticket_audits_504_error(requests_mock, caplog):
     requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
     stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    expected_message = (
-        "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
-    )
+    expected_message = "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
@@ -1173,7 +1171,7 @@ def test_read_ticket_audits_504_error(requests_mock, caplog):
         ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
         ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
         ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
-    ]
+    ],
 )
 def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
     stream = TicketAudits(subdomain="subdomain", start_date=start_date)
@@ -1187,7 +1185,7 @@ def test_validate_response_ticket_audits(start_date, stream_state, audits_respon
     [
         ({"no_audits": []}, False),
         ({}, False),
-    ]
+    ],
 )
 def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
     stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")

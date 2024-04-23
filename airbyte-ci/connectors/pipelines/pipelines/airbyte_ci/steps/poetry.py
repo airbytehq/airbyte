@@ -10,7 +10,14 @@ from pipelines.models.steps import Step, StepResult
 
 
 class PoetryRunStep(Step):
-    def __init__(self, context: PipelineContext, title: str, parent_dir_path: str, module_path: str, poetry_run_args: List[str]) -> None:
+    def __init__(
+        self,
+        context: PipelineContext,
+        title: str,
+        parent_dir_path: str,
+        module_path: str,
+        poetry_run_args: List[str],
+    ) -> None:
         """A simple step that runs a given command inside a poetry project.
 
         Args:
@@ -26,7 +33,9 @@ class PoetryRunStep(Step):
         parent_dir = self.context.get_repo_dir(parent_dir_path)
         module_path = module_path
         self.poetry_run_args = poetry_run_args
-        self.poetry_run_container = with_poetry_module(self.context, parent_dir, module_path).with_entrypoint(["poetry", "run"])
+        self.poetry_run_container = with_poetry_module(
+            self.context, parent_dir, module_path
+        ).with_entrypoint(["poetry", "run"])
 
     @property
     def title(self) -> str:

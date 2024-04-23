@@ -61,7 +61,8 @@ class PythonRegistryPublishContext(PipelineContext):
 
     @classmethod
     async def from_publish_connector_context(
-        cls: Type["PythonRegistryPublishContext"], connector_context: PublishConnectorContext
+        cls: Type["PythonRegistryPublishContext"],
+        connector_context: PublishConnectorContext,
     ) -> Optional["PythonRegistryPublishContext"]:
         """
         Create a PythonRegistryPublishContext from a ConnectorContext.

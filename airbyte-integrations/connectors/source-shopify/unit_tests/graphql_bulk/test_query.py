@@ -29,12 +29,12 @@ def test_query_status() -> None:
                         }
                     }
                 }"""
-    
+
     input_job_id = "gid://shopify/BulkOperation/4047052112061"
     template = ShopifyBulkTemplates.status(input_job_id)
     assert repr(template) == repr(expected)
-    
-    
+
+
 def test_bulk_query_prepare() -> None:
     expected = '''mutation {
                 bulkOperationRunQuery(
@@ -53,14 +53,14 @@ def test_bulk_query_prepare() -> None:
                     }
                 }
             }'''
-    
+
     input_query_from_slice = "{some_query}"
     template = ShopifyBulkTemplates.prepare(input_query_from_slice)
     assert repr(template) == repr(expected)
-    
-    
+
+
 def test_bulk_query_cancel() -> None:
-    expected = '''mutation {
+    expected = """mutation {
                 bulkOperationCancel(id: "gid://shopify/BulkOperation/4047052112061") {
                     bulkOperation {
                         id
@@ -72,32 +72,32 @@ def test_bulk_query_cancel() -> None:
                         message
                     }
                 }
-            }'''
-    
+            }"""
+
     input_job_id = "gid://shopify/BulkOperation/4047052112061"
     template = ShopifyBulkTemplates.cancel(input_job_id)
     assert repr(template) == repr(expected)
-    
+
 
 @pytest.mark.parametrize(
     "query_name, fields, filter_field, start, end, expected",
     [
         (
-            "test_root", 
-            ["test_field1", "test_field2"], 
+            "test_root",
+            ["test_field1", "test_field2"],
             "updated_at",
             "2023-01-01",
-            "2023-01-02", 
+            "2023-01-02",
             Query(
-                name='test_root', 
+                name="test_root",
                 arguments=[
-                    Argument(name="query", value=f"\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""), 
-                ], 
-                fields=[Field(name='edges', fields=[Field(name='node', fields=["test_field1", "test_field2"])])]
-            )
+                    Argument(name="query", value=f"\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""),
+                ],
+                fields=[Field(name="edges", fields=[Field(name="node", fields=["test_field1", "test_field2"])])],
+            ),
         )
     ],
-    ids=["simple query with filter and sort"]
+    ids=["simple query with filter and sort"],
 )
 def test_base_build_query(query_name, fields, filter_field, start, end, expected) -> None:
     """
@@ -115,8 +115,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
     }
     '''
     """
-    
-    
+
     builder = ShopifyBulkQuery(shop_id=0)
     filter_query = f"{filter_field}:>'{start}' AND {filter_field}:<='{end}'"
     built_query = builder.build(query_name, fields, filter_query)
@@ -135,14 +134,51 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 type="",
                 queries=[
                     Query(
-                        name='customers', 
+                        name="customers",
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename', 'id', Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
+                            Argument(name="sortKey", value="UPDATED_AT"),
+                        ],
+                        fields=[
+                            Field(
+                                name="edges",
+                                fields=[
+                                    Field(
+                                        name="node",
+                                        fields=[
+                                            "__typename",
+                                            "id",
+                                            Field(
+                                                name="metafields",
+                                                fields=[
+                                                    Field(
+                                                        name="edges",
+                                                        fields=[
+                                                            Field(
+                                                                name="node",
+                                                                fields=[
+                                                                    "__typename",
+                                                                    "id",
+                                                                    "namespace",
+                                                                    "value",
+                                                                    "key",
+                                                                    "description",
+                                                                    "createdAt",
+                                                                    "updatedAt",
+                                                                    "type",
+                                                                ],
+                                                            )
+                                                        ],
+                                                    )
+                                                ],
+                                            ),
+                                        ],
+                                    )
+                                ],
+                            )
+                        ],
                     )
-                ]
+                ],
             ),
         ),
         (
@@ -154,14 +190,68 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 type="",
                 queries=[
                     Query(
-                        name='products', 
+                        name="products",
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename','id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
+                            Argument(name="sortKey", value="UPDATED_AT"),
+                        ],
+                        fields=[
+                            Field(
+                                name="edges",
+                                fields=[
+                                    Field(
+                                        name="node",
+                                        fields=[
+                                            "__typename",
+                                            "id",
+                                            Field(
+                                                name="images",
+                                                fields=[
+                                                    Field(
+                                                        name="edges",
+                                                        fields=[
+                                                            Field(
+                                                                name="node",
+                                                                fields=[
+                                                                    "__typename",
+                                                                    "id",
+                                                                    Field(
+                                                                        name="metafields",
+                                                                        fields=[
+                                                                            Field(
+                                                                                name="edges",
+                                                                                fields=[
+                                                                                    Field(
+                                                                                        name="node",
+                                                                                        fields=[
+                                                                                            "__typename",
+                                                                                            "id",
+                                                                                            "namespace",
+                                                                                            "value",
+                                                                                            "key",
+                                                                                            "description",
+                                                                                            "createdAt",
+                                                                                            "updatedAt",
+                                                                                            "type",
+                                                                                        ],
+                                                                                    )
+                                                                                ],
+                                                                            )
+                                                                        ],
+                                                                    ),
+                                                                ],
+                                                            )
+                                                        ],
+                                                    )
+                                                ],
+                                            ),
+                                        ],
+                                    )
+                                ],
+                            )
+                        ],
                     )
-                ]
+                ],
             ),
         ),
         (
@@ -173,50 +263,54 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 type="",
                 queries=[
                     Query(
-                        name='locations',
+                        name="locations",
                         arguments=[
                             Argument(name="includeLegacy", value="true"),
                             Argument(name="includeInactive", value="true"),
-                        ], 
+                        ],
                         fields=[
                             Field(
-                                name='edges', 
+                                name="edges",
                                 fields=[
                                     Field(
-                                        name='node', 
+                                        name="node",
                                         fields=[
-                                            '__typename',
-                                            'id',
+                                            "__typename",
+                                            "id",
                                             Query(
-                                                name="inventoryLevels", 
+                                                name="inventoryLevels",
                                                 arguments=[
-                                                    Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                                                ], 
+                                                    Argument(
+                                                        name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""
+                                                    ),
+                                                ],
                                                 fields=[
                                                     Field(
-                                                        name="edges", 
+                                                        name="edges",
                                                         fields=[
                                                             Field(
-                                                                name="node", 
+                                                                name="node",
                                                                 fields=[
-                                                                  "__typename",
-                                                                  "id",
-                                                                  Field(name="available"),
-                                                                  Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-                                                                  Field(name="updatedAt")
-                                                                ]
+                                                                    "__typename",
+                                                                    "id",
+                                                                    Field(name="available"),
+                                                                    Field(
+                                                                        name="item", fields=[Field(name="id", alias="inventory_item_id")]
+                                                                    ),
+                                                                    Field(name="updatedAt"),
+                                                                ],
                                                             )
-                                                        ]
+                                                        ],
                                                     )
-                                                ]
-                                            )
-                                        ]
+                                                ],
+                                            ),
+                                        ],
                                     )
-                                ]
+                                ],
                             )
-                        ]
+                        ],
                     )
-                ]
+                ],
             ),
         ),
     ],
@@ -224,7 +318,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
         "MetafieldCustomers query with 1 query_path(str)",
         "MetafieldProductImages query with composite quey_path(List[2])",
         "InventoryLevel query",
-    ]
+    ],
 )
 def test_bulk_query(query_class, filter_field, start, end, expected) -> None:
     stream = query_class(shop_id=0)

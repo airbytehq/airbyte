@@ -14,7 +14,11 @@ async def checked_out_git_container(
 ) -> Container:
     """Builds git-based container with the current branch checked out."""
     current_git_branch = current_git_branch.removeprefix("origin/")
-    diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
+    diffed_branch = (
+        current_git_branch
+        if diffed_branch is None
+        else diffed_branch.removeprefix("origin/")
+    )
     return await (
         dagger_client.container()
         .from_("alpine/git:latest")

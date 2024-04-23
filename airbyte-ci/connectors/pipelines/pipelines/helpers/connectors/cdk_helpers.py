@@ -19,8 +19,12 @@ def get_latest_python_cdk_version() -> str:
 
 
 async def get_latest_java_cdk_version(repo_dir: Directory) -> str:
-    version_file_content = await repo_dir.file("airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties").contents()
-    match = re.search(r"version *= *(?P<version>[0-9]*\.[0-9]*\.[0-9]*)", version_file_content)
+    version_file_content = await repo_dir.file(
+        "airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+    ).contents()
+    match = re.search(
+        r"version *= *(?P<version>[0-9]*\.[0-9]*\.[0-9]*)", version_file_content
+    )
     if match:
         return match.group("version")
     raise ValueError("Could not find version in version.properties")

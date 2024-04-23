@@ -109,7 +109,6 @@ class TestNoopMessageRepository:
 
 
 class TestLogAppenderMessageRepositoryDecorator:
-
     _DICT_TO_APPEND = {"airbyte_cdk": {"stream": {"is_substream": False}}}
 
     @pytest.fixture()

@@ -394,7 +394,9 @@ def test_stream_updated_state(config):
     current_stream_state = {"22": {"updated": "2023-10-01T00:00:00Z"}}
     latest_record = {"boardId": 22, "updated": "2023-09-01T00:00:00Z"}
 
-    assert {"22": {"updated": "2023-10-01T00:00:00Z"}} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+    assert {"22": {"updated": "2023-10-01T00:00:00Z"}} == stream.get_updated_state(
+        current_stream_state=current_stream_state, latest_record=latest_record
+    )
 
 
 @responses.activate
@@ -696,21 +698,25 @@ def test_issues_stream(config, mock_projects_responses_additional_project, mock_
     error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
 
+
 @pytest.mark.parametrize(
     "start_date, lookback_window, stream_state, expected_query",
     [
         (pendulum.parse("2023-09-09T00:00:00Z"), 0, None, None),
         (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:37'"),
-        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:47'")
-    ]
+        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:47'"),
+    ],
 )
 def test_issues_stream_jql_compare_date(config, start_date, lookback_window, stream_state, expected_query, caplog):
     authenticator = SourceJira().get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", []) + ["Project3"],
-            "lookback_window_minutes": pendulum.duration(minutes=lookback_window)}
+    args = {
+        "authenticator": authenticator,
+        "domain": config["domain"],
+        "projects": config.get("projects", []) + ["Project3"],
+        "lookback_window_minutes": pendulum.duration(minutes=lookback_window),
+    }
     stream = Issues(**args)
     assert stream.jql_compare_date(stream_state) == expected_query
-
 
 
 @responses.activate

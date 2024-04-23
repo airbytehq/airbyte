@@ -548,10 +548,11 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
 
 
 @pytest.mark.parametrize(
-    "stream_slice", [
+    "stream_slice",
+    [
         pytest.param(None, id="test_none_stream_slice"),
         pytest.param({}, id="test_none_stream_slice"),
-    ]
+    ],
 )
 def test_request_option_with_empty_stream_slice(stream_slice):
     start_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="starttime")

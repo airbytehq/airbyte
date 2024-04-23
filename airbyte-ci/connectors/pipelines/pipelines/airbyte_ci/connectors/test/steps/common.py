@@ -66,7 +66,9 @@ class VersionCheck(Step, ABC):
 
     @property
     def failure_result(self) -> StepResult:
-        return StepResult(step=self, status=StepStatus.FAILURE, stderr=self.failure_message)
+        return StepResult(
+            step=self, status=StepStatus.FAILURE, stderr=self.failure_message
+        )
 
     @abstractmethod
     def validate(self) -> StepResult:
@@ -74,9 +76,17 @@ class VersionCheck(Step, ABC):
 
     async def _run(self) -> StepResult:
         if not self.should_run:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout="No modified files required a version bump.",
+            )
         if self.context.ci_context == CIContext.MASTER:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout="Version check are not running in master context.",
+            )
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
@@ -108,8 +118,15 @@ class VersionIncrementCheck(VersionCheck):
     @property
     def should_run(self) -> bool:
         for filename in self.context.modified_files:
-            relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
-            if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
+            relative_path = str(filename).replace(
+                str(self.context.connector.code_directory) + "/", ""
+            )
+            if not any(
+                [
+                    relative_path.startswith(to_bypass)
+                    for to_bypass in self.BYPASS_CHECK_FOR
+                ]
+            ):
                 return True
         return False
 
@@ -136,9 +153,13 @@ class QaChecks(SimpleDockerStep):
             technical_name = technical_name.replace("-strict-encrypt", "")
             code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
             if documentation_file_path:
-                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
+                documentation_file_path = Path(
+                    str(documentation_file_path).replace("-strict-encrypt", "")
+                )
             if migration_guide_file_path:
-                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
+                migration_guide_file_path = Path(
+                    str(migration_guide_file_path).replace("-strict-encrypt", "")
+                )
             if icon_path:
                 icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
 
@@ -185,11 +206,14 @@ class AcceptanceTests(Step):
         Returns:
             dict: The default pytest options.
         """
-        return super().default_params | {
-            "-ra": [],  # Show extra test summary info in the report for all but the passed tests
-            "--disable-warnings": [],  # Disable warnings in the pytest report
-            "--durations": ["3"],  # Show the 3 slowest tests in the report
-        }
+        return (
+            super().default_params
+            | {
+                "-ra": [],  # Show extra test summary info in the report for all but the passed tests
+                "--disable-warnings": [],  # Disable warnings in the pytest report
+                "--durations": ["3"],  # Show the 3 slowest tests in the report
+            }
+        )
 
     @property
     def base_cat_command(self) -> List[str]:
@@ -204,10 +228,14 @@ class AcceptanceTests(Step):
         ]
 
         if self.concurrent_test_run:
-            command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
+            command += [
+                "--numprocesses=auto"
+            ]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
 
-    def __init__(self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False) -> None:
+    def __init__(
+        self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False
+    ) -> None:
         """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
 
         Args:
@@ -225,7 +253,10 @@ class AcceptanceTests(Step):
         """
         cat_command = self.base_cat_command
         if "integration_tests" in await connector_dir.entries():
-            if "acceptance.py" in await connector_dir.directory("integration_tests").entries():
+            if (
+                "acceptance.py"
+                in await connector_dir.directory("integration_tests").entries()
+            ):
                 cat_command += ["-p", "integration_tests.acceptance"]
         return cat_command + self.params_as_cli_options
 
@@ -242,7 +273,9 @@ class AcceptanceTests(Step):
         if not self.context.connector.acceptance_test_config:
             return StepResult(step=self, status=StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
-        cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
+        cat_container = await self._build_connector_acceptance_test(
+            connector_under_test_container, connector_dir
+        )
         cat_command = await self.get_cat_command(connector_dir)
         cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
         step_result = await self.get_step_result(cat_container)
@@ -264,9 +297,14 @@ class AcceptanceTests(Step):
         Returns:
             str: A string representing the cachebuster value.
         """
-        return datetime.datetime.utcnow().strftime("%Y%m%d") + self.context.connector.version
+        return (
+            datetime.datetime.utcnow().strftime("%Y%m%d")
+            + self.context.connector.version
+        )
 
-    async def _build_connector_acceptance_test(self, connector_under_test_container: Container, test_input: Directory) -> Container:
+    async def _build_connector_acceptance_test(
+        self, connector_under_test_container: Container, test_input: Directory
+    ) -> Container:
         """Create a container to run connector acceptance tests.
 
         Args:
@@ -277,9 +315,13 @@ class AcceptanceTests(Step):
         """
 
         if self.context.connector_acceptance_test_image.endswith(":dev"):
-            cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
+            cat_container = (
+                self.context.connector_acceptance_test_source_dir.docker_build()
+            )
         else:
-            cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
+            cat_container = self.dagger_client.container().from_(
+                self.context.connector_acceptance_test_image
+            )
 
         connector_container_id = await connector_under_test_container.id()
 
@@ -287,17 +329,32 @@ class AcceptanceTests(Step):
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
             .with_env_variable("CACHEBUSTER", self.get_cache_buster())
-            .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
+            .with_new_file(
+                "/tmp/container_id.txt", contents=str(connector_container_id)
+            )
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
+            .with_(
+                await secrets.mounted_connector_secrets(
+                    self.context, self.CONTAINER_SECRETS_DIRECTORY
+                )
+            )
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
-            self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
+            self.context.logger.info(
+                "Using experimental dagger runner host to run CAT with dagger-in-dagger"
+            )
             cat_container = cat_container.with_env_variable(
-                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock"
+                "_EXPERIMENTAL_DAGGER_RUNNER_HOST",
+                "unix:///var/run/buildkit/buildkitd.sock",
             ).with_unix_socket(
-                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
+                "/var/run/buildkit/buildkitd.sock",
+                self.context.dagger_client.host().unix_socket(
+                    "/var/run/buildkit/buildkitd.sock"
+                ),
             )
 
-        return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
+        return cat_container.with_unix_socket(
+            "/var/run/docker.sock",
+            self.context.dagger_client.host().unix_socket("/var/run/docker.sock"),
+        )

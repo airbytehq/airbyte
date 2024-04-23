@@ -37,13 +37,21 @@ class ConnectorRunner:
         self.state = execution_inputs.state
         self.duckdb_path = execution_inputs.duckdb_path
         self.actor_id = execution_inputs.actor_id
-        self.environment_variables = execution_inputs.environment_variables if execution_inputs.environment_variables else {}
+        self.environment_variables = (
+            execution_inputs.environment_variables
+            if execution_inputs.environment_variables
+            else {}
+        )
 
         self.full_command: List[str] = self._get_full_command(execution_inputs.command)
         self.completion_event = anyio.Event()
         self.http_proxy = http_proxy
-        self.logger = logging.getLogger(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
-        self.dagger_client = dagger_client.pipeline(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
+        self.logger = logging.getLogger(
+            f"{self.connector_under_test.name}-{self.connector_under_test.version}"
+        )
+        self.dagger_client = dagger_client.pipeline(
+            f"{self.connector_under_test.name}-{self.connector_under_test.version}"
+        )
 
     @property
     def _connector_under_test_container(self) -> dagger.Container:
@@ -83,7 +91,9 @@ class ConnectorRunner:
                 self.IN_CONTAINER_STATE_PATH,
             ]
         else:
-            raise NotImplementedError(f"The connector runner does not support the {command} command")
+            raise NotImplementedError(
+                f"The connector runner does not support the {command} command"
+            )
 
     async def get_container_env_variable_value(self, name: str) -> Optional[str]:
         return await self._connector_under_test_container.env_variable(name)
@@ -111,9 +121,13 @@ class ConnectorRunner:
         for env_var_name, env_var_value in self.environment_variables.items():
             container = container.with_env_variable(env_var_name, env_var_value)
         if self.config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(self.config)))
+            container = container.with_new_file(
+                self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(self.config))
+            )
         if self.state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(self.state))
+            container = container.with_new_file(
+                self.IN_CONTAINER_STATE_PATH, contents=json.dumps(self.state)
+            )
         if self.configured_catalog:
             container = container.with_new_file(
                 self.IN_CONTAINER_CONFIGURED_CATALOG_PATH,
@@ -133,15 +147,20 @@ class ConnectorRunner:
                 [
                     "sh",
                     "-c",
-                    " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
+                    " ".join(airbyte_command)
+                    + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
                 ],
                 skip_entrypoint=True,
             )
             executed_container = await container.sync()
             # We exporting to disk as we can't read .stdout() or await file.contents() as it might blow up the memory
-            stdout_exported = await executed_container.file(self.IN_CONTAINER_OUTPUT_PATH).export(str(self.stdout_file_path))
+            stdout_exported = await executed_container.file(
+                self.IN_CONTAINER_OUTPUT_PATH
+            ).export(str(self.stdout_file_path))
             if not stdout_exported:
-                raise errors.ExportError(f"Failed to export {self.IN_CONTAINER_OUTPUT_PATH}")
+                raise errors.ExportError(
+                    f"Failed to export {self.IN_CONTAINER_OUTPUT_PATH}"
+                )
 
             stderr = await executed_container.stderr()
             self.stderr_file_path.write_text(stderr)
@@ -164,7 +183,9 @@ class ConnectorRunner:
             stdout_file_path=self.stdout_file_path,
             stderr_file_path=self.stderr_file_path,
             success=success,
-            http_dump=await self.http_proxy.retrieve_http_dump() if self.http_proxy else None,
+            http_dump=await self.http_proxy.retrieve_http_dump()
+            if self.http_proxy
+            else None,
             executed_container=executed_container,
         )
         await execution_result.save_artifacts(self.output_dir, self.duckdb_path)
@@ -177,7 +198,9 @@ class ConnectorRunner:
             duration = datetime.datetime.utcnow() - start_time
             elapsed_seconds = duration.total_seconds()
             if elapsed_seconds > 10 and round(elapsed_seconds) % 10 == 0:
-                self.logger.info(f"{message} (duration: {self.format_duration(duration)})")
+                self.logger.info(
+                    f"{message} (duration: {self.format_duration(duration)})"
+                )
             await anyio.sleep(1)
 
     @staticmethod

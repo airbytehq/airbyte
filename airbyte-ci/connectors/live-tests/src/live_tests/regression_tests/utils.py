@@ -30,7 +30,9 @@ def filter_records(messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessag
             yield message
 
 
-def write_string_to_test_artifact(request: SubRequest, content: str, filename: str, subdir: Optional[Path] = None) -> Path:
+def write_string_to_test_artifact(
+    request: SubRequest, content: str, filename: str, subdir: Optional[Path] = None
+) -> Path:
     test_artifact_directory = request.config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY]
     if subdir:
         test_artifact_directory = test_artifact_directory / subdir
@@ -61,7 +63,9 @@ def get_and_write_diff(
         parsed_diff = json.loads(diff_json)
         formatted_diff_json = json.dumps(parsed_diff, indent=2)
 
-        diff_path_tree = write_string_to_test_artifact(request, str(diff.tree), f"{filepath}_tree.txt", subdir=request.node.name)
+        diff_path_tree = write_string_to_test_artifact(
+            request, str(diff.tree), f"{filepath}_tree.txt", subdir=request.node.name
+        )
         diff_path_text = write_string_to_test_artifact(
             request,
             formatted_diff_json,
@@ -75,7 +79,9 @@ def get_and_write_diff(
             subdir=request.node.name,
         )
 
-        logger.info(f"Diff file are stored in {diff_path_tree}, {diff_path_text}, and {diff_path_pretty}.")
+        logger.info(
+            f"Diff file are stored in {diff_path_tree}, {diff_path_text}, and {diff_path_pretty}."
+        )
         if len(diff_json.encode("utf-8")) < MAX_DIFF_SIZE_FOR_LOGGING:
             logger.error(formatted_diff_json)
 
@@ -83,7 +89,9 @@ def get_and_write_diff(
     return ""
 
 
-def fail_test_on_failing_execution_results(record_property: Callable, execution_results: List[ExecutionResult]) -> None:
+def fail_test_on_failing_execution_results(
+    record_property: Callable, execution_results: List[ExecutionResult]
+) -> None:
     error_messages = []
     for execution_result in execution_results:
         if not execution_result.success:

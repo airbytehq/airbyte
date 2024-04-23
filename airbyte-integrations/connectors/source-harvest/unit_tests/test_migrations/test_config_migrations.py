@@ -21,6 +21,7 @@ TEST_OAUTH_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_config_oauth.json"
 NEW_TEST_OAUTH_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_new_config_oauth.json"
 SOURCE: Source = SourceHarvest()
 
+
 # HELPERS
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
@@ -44,7 +45,6 @@ def revert_migration(config_path: str) -> None:
     ],
 )
 def test_migrate_config(config_path, expected_auth_type):
-
     source_input_args = [CMD, "--config", config_path]
 
     migration_instance = MigrateAuthType
@@ -76,5 +76,3 @@ def test_should_not_migrate_new(config_path):
     new_config = load_config(config_path)
     instance = MigrateAuthType
     assert not instance.should_migrate(new_config)
-
-

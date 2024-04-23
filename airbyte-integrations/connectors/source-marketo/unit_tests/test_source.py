@@ -43,12 +43,7 @@ def test_should_retry_quota_exceeded(config, requests_mock):
     response_json = {
         "requestId": "d2ca#18c0b9833bf",
         "success": False,
-        "errors": [
-            {
-                "code": "1029",
-                "message": "Export daily quota 500MB exceeded."
-            }
-        ]
+        "errors": [{"code": "1029", "message": "Export daily quota 500MB exceeded."}],
     }
     requests_mock.register_uri("GET", create_job_url, status_code=200, json=response_json)
 
@@ -57,7 +52,6 @@ def test_should_retry_quota_exceeded(config, requests_mock):
         MarketoExportCreate(config).should_retry(response)
 
     assert e.value.message == "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
-
 
 
 @pytest.mark.parametrize(
@@ -322,20 +316,26 @@ def test_programs_normalize_datetime(config, input, format, expected_result):
     stream = Programs(config)
     assert stream.normalize_datetime(input, format) == expected_result
 
+
 def test_programs_next_page_token(config):
     mock_json = MagicMock()
-    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mock_json.return_value = {"result": [{"test": "testValue"}]}
     mocked_response = MagicMock()
     mocked_response.json = mock_json
     stream = Programs(config)
     result = stream.next_page_token(mocked_response)
     assert result == {"offset": 201}
 
-@pytest.mark.parametrize("input, stream_state, expected_result",[(
-      {"result": [{"id": "1", "createdAt": "2020-07-01T00:00:00Z+0000", "updatedAt": "2020-07-01T00:00:00Z+0000"}]},
-      {"updatedAt": "2020-06-01T00:00:00Z"},
-      [{"id": "1", "createdAt": "2020-07-01T00:00:00Z", "updatedAt": "2020-07-01T00:00:00Z"}],
-    )],
+
+@pytest.mark.parametrize(
+    "input, stream_state, expected_result",
+    [
+        (
+            {"result": [{"id": "1", "createdAt": "2020-07-01T00:00:00Z+0000", "updatedAt": "2020-07-01T00:00:00Z+0000"}]},
+            {"updatedAt": "2020-06-01T00:00:00Z"},
+            [{"id": "1", "createdAt": "2020-07-01T00:00:00Z", "updatedAt": "2020-07-01T00:00:00Z"}],
+        )
+    ],
 )
 def test_programs_parse_response(mocker, config, input, stream_state, expected_result):
     response = requests.Response()
@@ -344,14 +344,16 @@ def test_programs_parse_response(mocker, config, input, stream_state, expected_r
     result = stream.parse_response(response, stream_state)
     assert list(result) == expected_result
 
+
 def test_segmentations_next_page_token(config):
     mock_json = MagicMock()
-    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mock_json.return_value = {"result": [{"test": "testValue"}]}
     mocked_response = MagicMock()
     mocked_response.json = mock_json
     stream = Segmentations(config)
     result = stream.next_page_token(mocked_response)
     assert result == {"offset": 201}
+
 
 today = pendulum.now()
 yesterday = pendulum.now().subtract(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -383,16 +385,8 @@ def test_get_updated_state(config, latest_record, current_state, expected_state)
 def test_filter_null_bytes(config):
     stream = Leads(config)
 
-    test_lines = [
-        "Hello\x00World\n",
-        "Name,Email\n",
-        "John\x00Doe,john.doe@example.com\n"
-    ]
-    expected_lines = [
-        "HelloWorld\n",
-        "Name,Email\n",
-        "JohnDoe,john.doe@example.com\n"
-    ]
+    test_lines = ["Hello\x00World\n", "Name,Email\n", "John\x00Doe,john.doe@example.com\n"]
+    expected_lines = ["HelloWorld\n", "Name,Email\n", "JohnDoe,john.doe@example.com\n"]
     filtered_lines = stream.filter_null_bytes(test_lines)
     for expected_line, filtered_line in zip(expected_lines, filtered_lines):
         assert expected_line == filtered_line
@@ -401,30 +395,27 @@ def test_filter_null_bytes(config):
 def test_csv_rows(config):
     stream = Leads(config)
 
-    test_lines = [
-        "Name,Email\n",
-        "John Doe,john.doe@example.com\n",
-        "Jane Doe,jane.doe@example.com\n"
-    ]
-    expected_records = [
-        {"Name": "John Doe", "Email": "john.doe@example.com"},
-        {"Name": "Jane Doe", "Email": "jane.doe@example.com"}
-    ]
+    test_lines = ["Name,Email\n", "John Doe,john.doe@example.com\n", "Jane Doe,jane.doe@example.com\n"]
+    expected_records = [{"Name": "John Doe", "Email": "john.doe@example.com"}, {"Name": "Jane Doe", "Email": "jane.doe@example.com"}]
     records = stream.csv_rows(test_lines)
     for expected_record, record in zip(expected_records, records):
         assert expected_record == record
+
 
 def test_availablity_strategy(config):
     stream = Leads(config)
     assert stream.availability_strategy == None
 
+
 def test_path(config):
     stream = MarketoStream(config)
     assert stream.path() == "rest/v1/marketo_stream.json"
 
+
 def test_get_state(config):
     stream = IncrementalMarketoStream(config)
     assert stream.state == {}
+
 
 def test_set_tate(config):
     stream = IncrementalMarketoStream(config)

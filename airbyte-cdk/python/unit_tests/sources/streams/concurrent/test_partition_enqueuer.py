@@ -68,7 +68,10 @@ class PartitionEnqueuerTest(unittest.TestCase):
         self._partition_generator.generate_partitions(stream)
 
         queue_content = self._consume_queue()
-        assert queue_content == _SOME_PARTITIONS + [StreamThreadException(exception, _A_STREAM_NAME), PartitionGenerationCompletedSentinel(stream)]
+        assert queue_content == _SOME_PARTITIONS + [
+            StreamThreadException(exception, _A_STREAM_NAME),
+            PartitionGenerationCompletedSentinel(stream),
+        ]
 
     def _partitions_before_raising(self, partitions: List[Partition], exception: Exception) -> Callable[[], Iterable[Partition]]:
         def inner_function() -> Iterable[Partition]:

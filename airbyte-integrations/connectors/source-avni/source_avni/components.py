@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 class CustomAuthenticator(BasicHttpAuthenticator):
     @property
     def token(self) -> str:
-
         username = self._username.eval(self.config)
         password = self._password.eval(self.config)
 
@@ -29,7 +28,6 @@ class CustomAuthenticator(BasicHttpAuthenticator):
         return "auth-token"
 
     def get_client_id(self):
-
         url_client = "https://app.avniproject.org/idp-details"
         response = requests.get(url_client)
         response.raise_for_status()

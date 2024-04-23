@@ -18,7 +18,6 @@ def get_stream_request(stream_name: str) -> RequestBuilder:
 
 
 class RequestBuilder:
-
     @classmethod
     def get_endpoint(cls, endpoint: str) -> RequestBuilder:
         return cls(endpoint=endpoint)

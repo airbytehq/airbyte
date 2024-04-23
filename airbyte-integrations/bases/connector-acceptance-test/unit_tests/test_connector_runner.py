@@ -121,7 +121,6 @@ class TestContainerRunner:
 
 
 async def test_get_connector_container(mocker):
-
     dagger_client = mocker.AsyncMock()
     os.environ["CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"] = "test_tarball_path"
 

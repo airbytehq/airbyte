@@ -10,18 +10,18 @@ from source_zendesk_chat.components.time_offset_pagination import ZendeskChatTim
 
 def _get_paginator(config, time_field_name) -> ZendeskChatTimeOffsetIncrementPaginationStrategy:
     return ZendeskChatTimeOffsetIncrementPaginationStrategy(
-        config = config,
-        page_size = 1,
-        time_field_name = time_field_name,
-        parameters = {},
+        config=config,
+        page_size=1,
+        time_field_name=time_field_name,
+        parameters={},
     )
 
 
 @pytest.mark.parametrize(
     "time_field_name, response, last_records, expected",
     [
-        ("end_time", {"chats":[{"update_timestamp": 1}], "end_time": 2}, [{"update_timestamp": 1}], 2),
-        ("end_time", {"chats":[], "end_time": 3}, [], None),
+        ("end_time", {"chats": [{"update_timestamp": 1}], "end_time": 2}, [{"update_timestamp": 1}], 2),
+        ("end_time", {"chats": [], "end_time": 3}, [], None),
     ],
 )
 def test_time_offset_increment_pagination_next_page_token(requests_mock, config, time_field_name, response, last_records, expected) -> None:

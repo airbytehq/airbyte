@@ -71,16 +71,13 @@ def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template("accounts", __file__),
         records_path=FieldPath("data"),
-        pagination_strategy=StripePaginationStrategy()
+        pagination_strategy=StripePaginationStrategy(),
     )
 
 
 def _create_record(resource: str) -> RecordBuilder:
     return create_record_builder(
-        find_template(resource, __file__),
-        FieldPath("data"),
-        record_id_path=FieldPath("id"),
-        record_cursor_path=FieldPath("created")
+        find_template(resource, __file__), FieldPath("data"), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("created")
     )
 
 
@@ -93,18 +90,19 @@ def _create_persons_event_record(event_type: str) -> RecordBuilder:
     )
 
     person_record = create_record_builder(
-        find_template("persons", __file__),
-        FieldPath("data"),
-        record_id_path=FieldPath("id"),
-        record_cursor_path=FieldPath("created")
+        find_template("persons", __file__), FieldPath("data"), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("created")
     )
 
     return event_record.with_field(NestedPath(["data", "object"]), person_record.build()).with_field(NestedPath(["type"]), event_type)
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:
-    return (len(status_messages) == 3 and status_messages[0] == AirbyteStreamStatus.STARTED
-            and status_messages[1] == AirbyteStreamStatus.RUNNING and status_messages[2] == AirbyteStreamStatus.COMPLETE)
+    return (
+        len(status_messages) == 3
+        and status_messages[0] == AirbyteStreamStatus.STARTED
+        and status_messages[1] == AirbyteStreamStatus.RUNNING
+        and status_messages[2] == AirbyteStreamStatus.COMPLETE
+    )
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -122,7 +120,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -154,8 +157,12 @@ class PersonsTest(TestCase):
 
         # The persons stream makes a final call to events endpoint
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -176,20 +183,27 @@ class PersonsTest(TestCase):
         # Persons stream first page request
         http_mocker.get(
             _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons").with_id("last_page_record_id")).with_pagination().build(),
+            _create_response()
+            .with_record(record=_create_record("persons"))
+            .with_record(record=_create_record("persons").with_id("last_page_record_id"))
+            .with_pagination()
+            .build(),
         )
 
         # Persons stream second page request
         http_mocker.get(
             _create_persons_request().with_limit(100).with_starting_after("last_page_record_id").build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(
-                record=_create_record("persons")).build(),
+            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
         # The persons stream makes a final call to events endpoint
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -305,13 +319,25 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.created")).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
+            _create_response()
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .build(),
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
@@ -346,13 +372,25 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
+            _create_response()
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .with_record(record=_create_persons_event_record(event_type="person.deleted"))
+            .build(),
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
@@ -389,8 +427,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(start_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
@@ -425,8 +467,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -448,12 +494,16 @@ class PersonsTest(TestCase):
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-            ]
+            ],
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -480,19 +530,29 @@ class PersonsTest(TestCase):
 
         # Mock when check_availability is run on the persons incremental stream
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
-                record=_create_persons_event_record(event_type="person.created")).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
+            _create_response()
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .build(),
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             [
                 a_response_with_status(429),
                 _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
-            ]
+            ],
         )
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
@@ -523,12 +583,16 @@ class PersonsTest(TestCase):
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
                 a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
-            ]
+            ],
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -536,7 +600,10 @@ class PersonsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # first error is the actual error, second is to break the Python app with code != 0
-        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
+            FailureType.system_error,
+            FailureType.config_error,
+        ]
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
@@ -555,15 +622,25 @@ class PersonsTest(TestCase):
 
         # Mock when check_availability is run on the persons incremental stream
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
-                record=_create_persons_event_record(event_type="person.created")).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
+            _create_response()
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .with_record(record=_create_persons_event_record(event_type="person.created"))
+            .build(),
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(cursor_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
 
@@ -594,8 +671,12 @@ class PersonsTest(TestCase):
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -617,12 +698,16 @@ class PersonsTest(TestCase):
             [
                 a_response_with_status(500),
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-            ]
+            ],
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -645,12 +730,16 @@ class PersonsTest(TestCase):
                 # Used to pass the initial check_availability before starting the sync
                 _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
                 a_response_with_status(500),  # Returns 429 on all subsequent requests to test the maximum number of retries
-            ]
+            ],
         )
 
         http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
+            _create_events_request()
+            .with_created_gte(_NOW - timedelta(days=30))
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
@@ -658,4 +747,7 @@ class PersonsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # first error is the actual error, second is to break the Python app with code != 0
-        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [
+            FailureType.system_error,
+            FailureType.config_error,
+        ]

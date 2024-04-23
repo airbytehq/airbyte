@@ -59,7 +59,9 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
     )
 
     # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    base_container = base_container.with_mounted_cache(
+        "/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME)
+    )
     return base_container
 
 
@@ -101,10 +103,18 @@ def docker_login(
             dockerd_container
             # We use a cache buster here to guarantee the docker login is always executed.
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username_secret)
-            .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password_secret)
+            .with_secret_variable(
+                "DOCKER_REGISTRY_USERNAME", docker_registry_username_secret
+            )
+            .with_secret_variable(
+                "DOCKER_REGISTRY_PASSWORD", docker_registry_password_secret
+            )
             .with_exec(
-                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]),
+                sh_dash_c(
+                    [
+                        f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"
+                    ]
+                ),
                 skip_entrypoint=True,
             )
         )
@@ -132,19 +142,32 @@ def with_global_dockerd_service(
     if DOCKER_REGISTRY_MIRROR_URL is not None:
         # Ping the registry mirror host to make sure it's reachable through VPN
         # We set a cache buster here to guarantee the curl command is always executed.
-        dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
-            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+        dockerd_container = dockerd_container.with_env_variable(
+            "CACHEBUSTER", str(uuid.uuid4())
+        ).with_exec(
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"],
+            skip_entrypoint=True,
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
 
-    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", contents=daemon_config_json)
+    dockerd_container = dockerd_container.with_new_file(
+        "/etc/docker/daemon.json", contents=daemon_config_json
+    )
     if docker_hub_username_secret and docker_hub_password_secret:
         # Docker login happens late because there's a cache buster in the docker login command.
-        dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
+        dockerd_container = docker_login(
+            dockerd_container, docker_hub_username_secret, docker_hub_password_secret
+        )
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        [
+            "dockerd",
+            "--log-level=error",
+            f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}",
+            "--tls=false",
+        ],
+        insecure_root_capabilities=True,
     ).as_service()
 
 
@@ -162,9 +185,13 @@ def with_bound_docker_host(
     """
     assert context.dockerd_service is not None
     return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+        container.with_env_variable(
+            "DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}"
+        )
         .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        .with_mounted_cache(
+            "/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME)
+        )
     )
 
 
@@ -188,7 +215,9 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     return with_bound_docker_host(context, docker_cli)
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str) -> str:
+async def load_image_to_docker_host(
+    context: ConnectorContext, tar_file: File, image_tag: str
+) -> str:
     """Load a docker image tar archive to the docker host.
 
     Args:
@@ -200,12 +229,18 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
-    image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    image_load_output = await docker_cli.with_exec(
+        ["docker", "load", "--input", tar_name]
+    ).stdout()
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
-        image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
+        image_id = image_load_output.replace("\n", "").replace(
+            "Loaded image ID: sha256:", ""
+        )
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
-    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+    image_sha = json.loads(
+        await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout()
+    )[0].get("Id")
     return image_sha
 
 
@@ -219,18 +254,28 @@ def with_crane(
 
     # We use the debug image as it contains a shell which we need to properly use environment variables
     # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
-    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+    base_container = context.dagger_client.container().from_(
+        "gcr.io/go-containerregistry/crane/debug:v0.15.1"
+    )
 
     if context.docker_hub_username_secret and context.docker_hub_password_secret:
         base_container = (
-            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
+            base_container.with_secret_variable(
+                "DOCKER_HUB_USERNAME", context.docker_hub_username_secret
+            )
+            .with_secret_variable(
                 "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
             )
             # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
             .with_exec(
-                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True
+                sh_dash_c(
+                    [
+                        "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"
+                    ]
+                ),
+                skip_entrypoint=True,
             )
         )
 

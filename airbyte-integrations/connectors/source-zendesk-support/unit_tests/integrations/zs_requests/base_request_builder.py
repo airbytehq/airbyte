@@ -30,12 +30,7 @@ class ZendeskSuppportRequestBuilder(abc.ABC):
         """A request body"""
 
     def build(self) -> HttpRequest:
-        return HttpRequest(
-            url=self.url,
-            query_params=self.query_params,
-            headers=self.headers,
-            body=self.request_body
-        )
+        return HttpRequest(url=self.url, query_params=self.query_params, headers=self.headers, body=self.request_body)
 
 
 class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):

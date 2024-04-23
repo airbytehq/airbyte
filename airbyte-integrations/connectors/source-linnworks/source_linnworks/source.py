@@ -48,7 +48,6 @@ class LinnworksAuthenticator(Oauth2Authenticator):
         return {"Authorization": self.get_access_token()}
 
     def get_access_token(self):
-
         if self.token_has_expired():
             t0 = pendulum.now()
             token, expires_in, server = self.refresh_access_token()

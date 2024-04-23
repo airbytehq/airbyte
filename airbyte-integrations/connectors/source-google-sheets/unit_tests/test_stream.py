@@ -362,7 +362,7 @@ def test_when_read_then_status_messages_emitted(mocker, invalid_config):
             sheets=[
                 Sheet(
                     data=[GridData(rowData=[RowData(values=[CellData(formattedValue="ID")])])],
-                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2})
+                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2}),
                 ),
             ],
         ),

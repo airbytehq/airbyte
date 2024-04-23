@@ -204,10 +204,10 @@ class TableNameRegistry:
                 file_count += 1
                 if self.simple_file_registry.has_collisions(key):
                     # handle collisions with unique hashed names including schema
-                    self.registry[
-                        self.get_registry_key(value.intermediate_schema, value.json_path, value.stream_name)
-                    ] = ResolvedNameMetadata(
-                        value.intermediate_schema, value.table_name, self.resolve_file_name(value.intermediate_schema, value.table_name)
+                    self.registry[self.get_registry_key(value.intermediate_schema, value.json_path, value.stream_name)] = (
+                        ResolvedNameMetadata(
+                            value.intermediate_schema, value.table_name, self.resolve_file_name(value.intermediate_schema, value.table_name)
+                        )
                     )
                     self.registry[self.get_registry_key(value.schema, value.json_path, value.stream_name)] = ResolvedNameMetadata(
                         value.schema, value.table_name, self.resolve_file_name(value.schema, value.table_name)

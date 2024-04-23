@@ -8,7 +8,6 @@ from source_freshdesk.components import FreshdeskTicketsPaginationStrategy
 
 
 class TestFreshdeskTicketsPaginationStrategy:
-
     #  returns None when there are fewer records than the page size
     @pytest.mark.parametrize(
         "response, current_page, last_records, expected",

@@ -9,7 +9,9 @@ from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 
 
-async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
+async def with_ci_credentials(
+    context: PipelineContext, gsm_secret: Secret
+) -> Container:
     """Install the ci_credentials package in a python environment.
 
     Args:
@@ -20,9 +22,13 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
         Container: A python environment with the ci_credentials package installed.
     """
     python_base_environment: Container = with_python_base(context)
-    ci_credentials = await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CI_CREDENTIALS.value)
+    ci_credentials = await with_installed_pipx_package(
+        context, python_base_environment, INTERNAL_TOOL_PATHS.CI_CREDENTIALS.value
+    )
     ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
-    return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
+    return ci_credentials.with_secret_variable(
+        "GCP_GSM_CREDENTIALS", gsm_secret
+    ).with_workdir("/")
 
 
 async def with_connector_ops(context: PipelineContext) -> Container:
@@ -36,4 +42,6 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context)
 
-    return await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CONNECTOR_OPS.value)
+    return await with_installed_pipx_package(
+        context, python_base_environment, INTERNAL_TOOL_PATHS.CONNECTOR_OPS.value
+    )

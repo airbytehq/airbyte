@@ -20,7 +20,7 @@ class TestOAuthClient(unittest.TestCase):
             "account_id": "rc-asdfghjkl",
             "client_id": "rc-123456789",
             "client_secret": "rc-test-secret",
-            "authorization_endpoint": "https://example.zoom.com/oauth/token"
+            "authorization_endpoint": "https://example.zoom.com/oauth/token",
         }
         parameters = config
         client = ServerToServerOauthAuthenticator(

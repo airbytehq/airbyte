@@ -118,7 +118,9 @@ class MessageGrouper:
                 raise ValueError(f"Unknown message group type: {type(message_group)}")
 
         try:
-            configured_stream = configured_catalog.streams[0]  # The connector builder currently only supports reading from a single stream at a time
+            configured_stream = configured_catalog.streams[
+                0
+            ]  # The connector builder currently only supports reading from a single stream at a time
             schema = schema_inferrer.get_stream_schema(configured_stream.stream.name)
         except SchemaValidationException as exception:
             for validation_error in exception.validation_errors:

@@ -46,7 +46,9 @@ def get_airbyte_repo_path_with_fallback() -> Path:
             return Path(str(get_airbyte_repo().working_tree_dir))
     except git.exc.InvalidGitRepositoryError:
         pass
-    logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
+    logging.warning(
+        "Could not find the airbyte repo, falling back to the current working directory."
+    )
     path = Path.cwd()
     logging.warning(f"Using {path} as the airbyte repo path.")
     return path

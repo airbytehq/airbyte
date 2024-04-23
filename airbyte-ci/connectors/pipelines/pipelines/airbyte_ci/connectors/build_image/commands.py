@@ -7,14 +7,18 @@ from typing import List
 import asyncclick as click
 import dagger
 from pipelines import main_logger
-from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
+from pipelines.airbyte_ci.connectors.build_image.steps import (
+    run_connector_build_pipeline,
+)
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM
 
 
-@click.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
+@click.command(
+    cls=DaggerPipelineCommand, help="Build all images for the selected connectors."
+)
 @click.option(
     "--use-host-gradle-dist-tar",
     is_flag=True,
@@ -39,10 +43,19 @@ from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM
     type=str,
 )
 @click.pass_context
-async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_architectures: List[str], tag: str) -> bool:
+async def build(
+    ctx: click.Context,
+    use_host_gradle_dist_tar: bool,
+    build_architectures: List[str],
+    tag: str,
+) -> bool:
     """Runs a build pipeline for the selected connectors."""
-    build_platforms = [dagger.Platform(architecture) for architecture in build_architectures]
-    main_logger.info(f"Building connectors for {build_platforms}, use --architecture to change this.")
+    build_platforms = [
+        dagger.Platform(architecture) for architecture in build_architectures
+    ]
+    main_logger.info(
+        f"Building connectors for {build_platforms}, use --architecture to change this."
+    )
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Build connector {connector.technical_name}",

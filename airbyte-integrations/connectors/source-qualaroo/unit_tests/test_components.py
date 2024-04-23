@@ -9,7 +9,6 @@ from source_qualaroo.components import CustomAuthenticator, CustomExtractor
 
 
 def test_token_generation():
-
     config = {"key": "4524324", "token": "token"}
     authenticator = CustomAuthenticator(config=config, username="example@gmail.com", password="api_key", parameters=None)
     token = authenticator.token
@@ -18,7 +17,6 @@ def test_token_generation():
 
 
 def test_extract_records_with_answered_questions():
-
     response_data = [
         {"id": 1, "answered_questions": {"q1": "A1", "q2": "A2"}},
         {"id": 2, "answered_questions": {"q3": "A3"}},

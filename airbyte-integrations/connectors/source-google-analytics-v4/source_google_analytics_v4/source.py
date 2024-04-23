@@ -179,7 +179,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs: Any
     ) -> Optional[Mapping]:
-
         metrics = [{"expression": metric} for metric in self.metrics]
         dimensions = [{"name": dimension} for dimension in self.dimensions]
         segments = [{"segmentId": segment} for segment in self.segments]

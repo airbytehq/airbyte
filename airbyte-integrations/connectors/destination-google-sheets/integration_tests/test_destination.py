@@ -63,7 +63,6 @@ def test_check():
     ],
 )
 def test_write(expected, raised):
-
     # clean worksheet after previous test
     TEST_SPREADSHEET.clean_worksheet(TEST_STREAM)
 

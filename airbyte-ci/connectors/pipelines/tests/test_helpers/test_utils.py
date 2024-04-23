@@ -11,7 +11,10 @@ from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils
-from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
+from pipelines.helpers.connectors.modifed import (
+    get_connector_modified_files,
+    get_modified_connectors,
+)
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from tests.utils import pick_a_random_connector
 
@@ -130,17 +133,26 @@ def test_render_report_output_prefix(ctx, expected):
 
 
 @pytest.mark.parametrize("enable_dependency_scanning", [True, False])
-def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable_dependency_scanning):
-    base_java_changed_file = Path("airbyte-cdk/java/airbyte-cdk/core/src/main/java/io/airbyte/cdk/integrations/BaseConnector.java")
+def test_get_modified_connectors_with_dependency_scanning(
+    all_connectors, enable_dependency_scanning
+):
+    base_java_changed_file = Path(
+        "airbyte-cdk/java/airbyte-cdk/core/src/main/java/io/airbyte/cdk/integrations/BaseConnector.java"
+    )
     modified_files = [base_java_changed_file]
 
-    not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)
+    not_modified_java_connector = pick_a_random_connector(
+        language=ConnectorLanguage.JAVA
+    )
     modified_java_connector = pick_a_random_connector(
-        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector]
+        language=ConnectorLanguage.JAVA,
+        other_picked_connectors=[not_modified_java_connector],
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
-    modified_connectors = get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    modified_connectors = get_modified_connectors(
+        modified_files, all_connectors, enable_dependency_scanning
+    )
     if enable_dependency_scanning:
         assert not_modified_java_connector in modified_connectors
     else:
@@ -179,7 +191,10 @@ async def test_check_path_in_workdir(dagger_client):
     container = (
         dagger_client.container()
         .from_("bash")
-        .with_mounted_directory(str(connector.code_directory), dagger_client.host().directory(str(connector.code_directory)))
+        .with_mounted_directory(
+            str(connector.code_directory),
+            dagger_client.host().directory(str(connector.code_directory)),
+        )
         .with_workdir(str(connector.code_directory))
     )
     assert await utils.check_path_in_workdir(container, "metadata.yaml")
@@ -189,7 +204,11 @@ async def test_check_path_in_workdir(dagger_client):
 
 
 def test_sh_dash_c():
-    assert utils.sh_dash_c(["foo", "bar"]) == ["sh", "-c", "set -o xtrace && foo && bar"]
+    assert utils.sh_dash_c(["foo", "bar"]) == [
+        "sh",
+        "-c",
+        "set -o xtrace && foo && bar",
+    ]
     assert utils.sh_dash_c(["foo"]) == ["sh", "-c", "set -o xtrace && foo"]
     assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]
 
@@ -197,12 +216,17 @@ def test_sh_dash_c():
 def test_java_log_scrub_pattern():
     assert utils.java_log_scrub_pattern([]) == ""
     assert utils.java_log_scrub_pattern(["foo", "bar"]) == "foo|bar"
-    assert utils.java_log_scrub_pattern(["|", "'\"{}\t[]<>&"]) == "\\||&apos;&quot;\\&#123;\\&#125;\\&#9;\\[\\]&lt;&gt;\\&amp;"
+    assert (
+        utils.java_log_scrub_pattern(["|", "'\"{}\t[]<>&"])
+        == "\\||&apos;&quot;\\&#123;\\&#125;\\&#9;\\[\\]&lt;&gt;\\&amp;"
+    )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
-async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
+async def test_export_container_to_tarball(
+    mocker, dagger_client, tmp_path, tar_file_name
+):
     context = mocker.Mock(
         dagger_client=dagger_client,
         connector=mocker.Mock(technical_name="my_connector"),
@@ -213,7 +237,9 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
     platform = consts.LOCAL_BUILD_PLATFORM
 
     expected_tar_file_path = (
-        tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar" if tar_file_name is None else tmp_path / tar_file_name
+        tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"
+        if tar_file_name is None
+        else tmp_path / tar_file_name
     )
     exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(
         context, container, platform, tar_file_name=tar_file_name
@@ -224,7 +250,6 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
 
 @pytest.mark.anyio
 async def test_export_container_to_tarball_failure(mocker, tmp_path):
-
     context = mocker.Mock(
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,
@@ -234,27 +259,49 @@ async def test_export_container_to_tarball_failure(mocker, tmp_path):
     mock_export = mocker.AsyncMock(return_value=False)
     container = mocker.AsyncMock(export=mock_export)
     platform = consts.LOCAL_BUILD_PLATFORM
-    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(context, container, platform)
+    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(
+        context, container, platform
+    )
     assert exported_tar_file is None
     assert exported_tar_file_path is None
 
     mock_export.assert_called_once_with(
-        str(tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"),
+        str(
+            tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"
+        ),
         forced_compression=dagger.ImageLayerCompression.Gzip,
     )
 
 
 # @pytest.mark.anyio
 async def test_get_repo_dir(dagger_client):
-    test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+    test_context = PipelineContext(
+        pipeline_name="test",
+        is_local=True,
+        git_branch="test",
+        git_revision="test",
+        report_output_prefix="test",
+    )
     test_context.dagger_client = dagger_client
     # we know airbyte-ci/connectors/pipelines/ is excluded
-    filtered_entries = await test_context.get_repo_dir("airbyte-ci/connectors/pipelines/").entries()
+    filtered_entries = await test_context.get_repo_dir(
+        "airbyte-ci/connectors/pipelines/"
+    ).entries()
     assert not filtered_entries
-    unfiltered_entries = await dagger_client.host().directory("airbyte-ci/connectors/pipelines/").entries()
+    unfiltered_entries = (
+        await dagger_client.host()
+        .directory("airbyte-ci/connectors/pipelines/")
+        .entries()
+    )
     assert unfiltered_entries
     # we also know that **/secrets is excluded and that source-mysql contains a secrets file
-    filtered_entries = await test_context.get_repo_dir("airbyte-integrations/connectors/source-mysql/").entries()
+    filtered_entries = await test_context.get_repo_dir(
+        "airbyte-integrations/connectors/source-mysql/"
+    ).entries()
     assert "secrets" not in filtered_entries
-    unfiltered_entries = await dagger_client.host().directory("airbyte-integrations/connectors/source-mysql/").entries()
+    unfiltered_entries = (
+        await dagger_client.host()
+        .directory("airbyte-integrations/connectors/source-mysql/")
+        .entries()
+    )
     assert "secrets" in unfiltered_entries

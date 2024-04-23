@@ -15,60 +15,68 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     def products_endpoint(
         cls, client_id: str, client_access_token: str, profile_id: str, start_date: datetime.date, end_date: datetime.date, limit: int = 300
     ) -> "AttributionReportRequestBuilder":
-        return cls("attribution/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_report_type("PRODUCTS") \
-            .with_metrics(METRICS_MAP["PRODUCTS"]) \
-            .with_limit(limit) \
-            .with_start_date(start_date) \
+        return (
+            cls("attribution/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_report_type("PRODUCTS")
+            .with_metrics(METRICS_MAP["PRODUCTS"])
+            .with_limit(limit)
+            .with_start_date(start_date)
             .with_end_date(end_date)
+        )
 
     @classmethod
     def performance_adgroup_endpoint(
         cls, client_id: str, client_access_token: str, profile_id: str, start_date: datetime.date, end_date: datetime.date, limit: int = 300
     ) -> "AttributionReportRequestBuilder":
-        return cls("attribution/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_report_type("PERFORMANCE") \
-            .with_metrics(METRICS_MAP["PERFORMANCE"] + [BRAND_REFERRAL_BONUS]) \
-            .with_limit(limit) \
-            .with_start_date(start_date) \
-            .with_end_date(end_date) \
+        return (
+            cls("attribution/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_report_type("PERFORMANCE")
+            .with_metrics(METRICS_MAP["PERFORMANCE"] + [BRAND_REFERRAL_BONUS])
+            .with_limit(limit)
+            .with_start_date(start_date)
+            .with_end_date(end_date)
             .with_grouping("ADGROUP")
+        )
 
     @classmethod
     def performance_campaign_endpoint(
         cls, client_id: str, client_access_token: str, profile_id: str, start_date: datetime.date, end_date: datetime.date, limit: int = 300
     ) -> "AttributionReportRequestBuilder":
-        return cls("attribution/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_report_type("PERFORMANCE") \
-            .with_metrics(METRICS_MAP["PERFORMANCE"] + [BRAND_REFERRAL_BONUS]) \
-            .with_limit(limit) \
-            .with_start_date(start_date) \
-            .with_end_date(end_date) \
+        return (
+            cls("attribution/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_report_type("PERFORMANCE")
+            .with_metrics(METRICS_MAP["PERFORMANCE"] + [BRAND_REFERRAL_BONUS])
+            .with_limit(limit)
+            .with_start_date(start_date)
+            .with_end_date(end_date)
             .with_grouping("CAMPAIGN")
+        )
 
     @classmethod
     def performance_creative_endpoint(
         cls, client_id: str, client_access_token: str, profile_id: str, start_date: datetime.date, end_date: datetime.date, limit: int = 300
     ) -> "AttributionReportRequestBuilder":
-        return cls("attribution/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_report_type("PERFORMANCE") \
-            .with_metrics(METRICS_MAP["PERFORMANCE"]) \
-            .with_limit(limit) \
-            .with_start_date(start_date) \
-            .with_end_date(end_date) \
+        return (
+            cls("attribution/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_report_type("PERFORMANCE")
+            .with_metrics(METRICS_MAP["PERFORMANCE"])
+            .with_limit(limit)
+            .with_start_date(start_date)
+            .with_end_date(end_date)
             .with_grouping("CREATIVE")
+        )
 
     def __init__(self, resource: str) -> None:
         super().__init__(resource)
@@ -85,7 +93,7 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         return None
 
     @property
-    def request_body(self) ->Optional[str]:
+    def request_body(self) -> Optional[str]:
         body: dict = OrderedDict()
         if self._report_type:
             body["reportType"] = self._report_type
@@ -112,7 +120,7 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     def with_end_date(self, end_date: datetime.date) -> "AttributionReportRequestBuilder":
         self._end_date: str = end_date.isoformat().replace("-", "")
         return self
-    
+
     def with_grouping(self, grouping: str) -> "AttributionReportRequestBuilder":
         self._grouping: str = grouping
         return self
@@ -124,7 +132,7 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     def with_metrics(self, metrics: List[str]) -> "AttributionReportRequestBuilder":
         self._metrics: str = metrics
         return self
-    
+
     def with_report_type(self, report_type: str) -> "AttributionReportRequestBuilder":
         self._report_type: str = report_type
         return self

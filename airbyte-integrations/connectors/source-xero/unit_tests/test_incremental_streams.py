@@ -58,7 +58,6 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
 
 
 def test_read_incremental(requests_mock):
-
     json_responses = iter(
         [
             {

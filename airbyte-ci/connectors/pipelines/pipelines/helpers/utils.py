@@ -3,6 +3,7 @@
 #
 
 """This module groups util function used in pipelines."""
+
 from __future__ import annotations
 
 import contextlib
@@ -19,7 +20,17 @@ from typing import TYPE_CHECKING
 import anyio
 import asyncclick as click
 import asyncer
-from dagger import Client, Config, Container, Directory, ExecError, File, ImageLayerCompression, Platform, Secret
+from dagger import (
+    Client,
+    Config,
+    Container,
+    Directory,
+    ExecError,
+    File,
+    ImageLayerCompression,
+    Platform,
+    Secret,
+)
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -46,7 +57,9 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     Returns:
         bool: Whether the path exists in the container working directory.
     """
-    workdir = (await container.with_exec(["pwd"], skip_entrypoint=True).stdout()).strip()
+    workdir = (
+        await container.with_exec(["pwd"], skip_entrypoint=True).stdout()
+    ).strip()
     mounts = await container.mounts()
     if workdir in mounts:
         expected_file_path = Path(workdir[1:]) / path
@@ -55,7 +68,9 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return False
 
 
-def secret_host_variable(client: Client, name: str, default: str = "") -> Callable[[Container], Container]:
+def secret_host_variable(
+    client: Client, name: str, default: str = ""
+) -> Callable[[Container], Container]:
     """Add a host environment variable as a secret in a container.
 
     Example:
@@ -72,7 +87,9 @@ def secret_host_variable(client: Client, name: str, default: str = "") -> Callab
     """
 
     def _secret_host_variable(container: Container) -> Container:
-        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+        return container.with_secret_variable(
+            name, get_secret_host_variable(client, name, default)
+        )
 
     return _secret_host_variable
 
@@ -210,7 +227,11 @@ def slugify(value: object, allow_unicode: bool = False) -> str:
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)
     else:
-        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        value = (
+            unicodedata.normalize("NFKD", value)
+            .encode("ascii", "ignore")
+            .decode("ascii")
+        )
     value = re.sub(r"[^\w\s-]", "", value.lower())
     return re.sub(r"[-\s]+", "-", value).strip("-_")
 
@@ -232,7 +253,11 @@ async def key_value_file_to_dict(file: File) -> dict:
 
 
 async def get_dockerfile_labels(dockerfile: File) -> dict:
-    return {k.replace("LABEL ", ""): v for k, v in (await key_value_file_to_dict(dockerfile)).items() if k.startswith("LABEL")}
+    return {
+        k.replace("LABEL ", ""): v
+        for k, v in (await key_value_file_to_dict(dockerfile)).items()
+        if k.startswith("LABEL")
+    }
 
 
 async def get_version_from_dockerfile(dockerfile: File) -> str:
@@ -257,7 +282,9 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
     return file_path.open("w")
 
 
-async def execute_concurrently(steps: List[Callable], concurrency: int = 5) -> List[Any]:
+async def execute_concurrently(
+    steps: List[Callable], concurrency: int = 5
+) -> List[Any]:
     tasks = []
     # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
     # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
@@ -268,7 +295,10 @@ async def execute_concurrently(steps: List[Callable], concurrency: int = 5) -> L
 
 
 async def export_container_to_tarball(
-    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None
+    context: ConnectorContext,
+    container: Container,
+    platform: Platform,
+    tar_file_name: Optional[str] = None,
 ) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
@@ -290,7 +320,9 @@ async def export_container_to_tarball(
         else tar_file_name
     )
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
+    export_success = await container.export(
+        str(local_path), forced_compression=ImageLayerCompression.Gzip
+    )
     if export_success:
         return context.dagger_client.host().file(str(local_path)), local_path
     return None, None
@@ -355,7 +387,9 @@ def java_log_scrub_pattern(secrets_to_mask: List[str]) -> str:
     )
 
 
-def dagger_directory_as_zip_file(dagger_client: Client, directory: Directory, directory_name: str) -> File:
+def dagger_directory_as_zip_file(
+    dagger_client: Client, directory: Directory, directory_name: str
+) -> File:
     """Compress a directory and return a File object representing the zip file.
 
     Args:

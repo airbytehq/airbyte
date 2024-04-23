@@ -78,7 +78,6 @@ ALWAYS_PERMITTED_STREAMS: List[str] = [
 
 
 class ShopifyScopes:
-
     # define default logger
     logger = logging.getLogger("airbyte")
 

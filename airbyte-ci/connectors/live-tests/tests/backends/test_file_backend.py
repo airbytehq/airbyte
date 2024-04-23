@@ -21,14 +21,18 @@ from live_tests.commons.backends import FileBackend
     [
         (
             [
-                AirbyteMessage(type=AirbyteMessageType.CATALOG, catalog=AirbyteCatalog(streams=[])),
+                AirbyteMessage(
+                    type=AirbyteMessageType.CATALOG, catalog=AirbyteCatalog(streams=[])
+                ),
                 AirbyteMessage(
                     type=AirbyteMessageType.CONNECTION_STATUS,
                     connectionStatus=AirbyteConnectionStatus(status=Status.SUCCEEDED),
                 ),
                 AirbyteMessage(
                     type=AirbyteMessageType.RECORD,
-                    record=AirbyteRecordMessage(stream="test_stream", data={}, emitted_at=123456789),
+                    record=AirbyteRecordMessage(
+                        stream="test_stream", data={}, emitted_at=123456789
+                    ),
                 ),
                 AirbyteMessage(
                     type=AirbyteMessageType.SPEC,

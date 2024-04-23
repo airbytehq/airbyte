@@ -51,7 +51,6 @@ class SourceLeverHiring(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         authenticator = _auth_from_config(config)
         full_refresh_params = {
             "authenticator": authenticator,

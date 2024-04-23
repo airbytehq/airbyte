@@ -53,7 +53,6 @@ class CustomFieldTransformation(RecordTransformation):
 
 @dataclass
 class IncrementalSingleSliceCursor(Cursor):
-
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]

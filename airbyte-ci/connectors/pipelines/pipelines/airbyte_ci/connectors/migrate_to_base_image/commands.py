@@ -5,7 +5,9 @@
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
+from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import (
+    run_connector_migration_to_base_image_pipeline,
+)
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds

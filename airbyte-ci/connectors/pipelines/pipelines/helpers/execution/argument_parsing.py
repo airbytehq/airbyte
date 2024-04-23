@@ -14,14 +14,20 @@ if TYPE_CHECKING:
     from pipelines.models.steps import STEP_PARAMS
 
 # Pattern  for extra param options: --<step_id>.<option_name>=<option_value>
-EXTRA_PARAM_PATTERN_FOR_OPTION = re.compile(r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)=([^=]+)$")
+EXTRA_PARAM_PATTERN_FOR_OPTION = re.compile(
+    r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)=([^=]+)$"
+)
 # Pattern  for extra param flag: --<step_id>.<option_name>
-EXTRA_PARAM_PATTERN_FOR_FLAG = re.compile(r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)$")
+EXTRA_PARAM_PATTERN_FOR_FLAG = re.compile(
+    r"^--([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_-][a-zA-Z0-9_-]*)$"
+)
 EXTRA_PARAM_PATTERN_ERROR_MESSAGE = "The extra flags must be structured as --<step_id>.<flag_name> for flags or --<step_id>.<option_name>=<option_value> for options. You can use - or -- for option/flag names."
 
 
 def build_extra_params_mapping(SupportedStepIds: Type[Enum]) -> Callable:
-    def callback(ctx: click.Context, argument: click.core.Argument, raw_extra_params: Tuple[str]) -> Dict[str, STEP_PARAMS]:
+    def callback(
+        ctx: click.Context, argument: click.core.Argument, raw_extra_params: Tuple[str]
+    ) -> Dict[str, STEP_PARAMS]:
         """Build a mapping of step id to extra params.
         Validate the extra params and raise a ValueError if they are invalid.
         Validation rules:
@@ -43,10 +49,16 @@ def build_extra_params_mapping(SupportedStepIds: Type[Enum]) -> Callable:
         extra_params_mapping: Dict[str, STEP_PARAMS] = {}
         for param in raw_extra_params:
             is_flag = "=" not in param
-            pattern = EXTRA_PARAM_PATTERN_FOR_FLAG if is_flag else EXTRA_PARAM_PATTERN_FOR_OPTION
+            pattern = (
+                EXTRA_PARAM_PATTERN_FOR_FLAG
+                if is_flag
+                else EXTRA_PARAM_PATTERN_FOR_OPTION
+            )
             matches = pattern.match(param)
             if not matches:
-                raise ValueError(f"Invalid parameter {param}. {EXTRA_PARAM_PATTERN_ERROR_MESSAGE}")
+                raise ValueError(
+                    f"Invalid parameter {param}. {EXTRA_PARAM_PATTERN_ERROR_MESSAGE}"
+                )
             if is_flag:
                 step_name, param_name = matches.groups()
                 param_value = None
@@ -55,7 +67,9 @@ def build_extra_params_mapping(SupportedStepIds: Type[Enum]) -> Callable:
             try:
                 step_id = SupportedStepIds(step_name).value
             except ValueError:
-                raise ValueError(f"Invalid step name {step_name}, it must be one of {[step_id.value for step_id in SupportedStepIds]}")
+                raise ValueError(
+                    f"Invalid step name {step_name}, it must be one of {[step_id.value for step_id in SupportedStepIds]}"
+                )
 
             extra_params_mapping.setdefault(step_id, {}).setdefault(param_name, [])
             # param_value is None if the param is a flag

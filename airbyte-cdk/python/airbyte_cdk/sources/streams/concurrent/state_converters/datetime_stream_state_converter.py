@@ -24,8 +24,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
     @property
     @abstractmethod
-    def _zero_value(self) -> Any:
-        ...
+    def _zero_value(self) -> Any: ...
 
     @property
     def zero_value(self) -> datetime:
@@ -36,16 +35,13 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         return lambda: datetime.now(timezone.utc)
 
     @abstractmethod
-    def increment(self, timestamp: datetime) -> datetime:
-        ...
+    def increment(self, timestamp: datetime) -> datetime: ...
 
     @abstractmethod
-    def parse_timestamp(self, timestamp: Any) -> datetime:
-        ...
+    def parse_timestamp(self, timestamp: Any) -> datetime: ...
 
     @abstractmethod
-    def output_format(self, timestamp: datetime) -> Any:
-        ...
+    def output_format(self, timestamp: datetime) -> Any: ...
 
     def parse_value(self, value: Any) -> Any:
         """

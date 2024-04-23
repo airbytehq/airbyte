@@ -19,7 +19,6 @@ from requests.auth import AuthBase
 
 # Basic full refresh stream
 class SalesloftStream(HttpStream, ABC):
-
     url_base = "https://api.salesloft.com/v2/"
     datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     primary_key = "id"

@@ -128,7 +128,6 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
 
 @freeze_time("2022-05-15 12:00:00")
 def test_attribution_report_slices(config):
-
     profiles = [
         Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(id="1", type="seller", marketplaceStringId="")),
         Profile(profileId=2, timezone="America/Los_Angeles", accountInfo=AccountInfo(id="1", type="seller", marketplaceStringId="")),

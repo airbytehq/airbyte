@@ -12,7 +12,9 @@ from pipelines import main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 
-def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> Tuple[str, str]:
+def upload_to_gcs(
+    file_path: Path, bucket_name: str, object_name: str, credentials: str
+) -> Tuple[str, str]:
     """Upload a file to a GCS bucket.
 
     Args:
@@ -26,7 +28,9 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
         main_logger.warning(f"File {file_path} does not exist. Skipping upload to GCS.")
         return "", ""
 
-    credentials = service_account.Credentials.from_service_account_info(json.loads(credentials))
+    credentials = service_account.Credentials.from_service_account_info(
+        json.loads(credentials)
+    )
     client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(object_name)

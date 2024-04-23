@@ -25,7 +25,6 @@ class NotImplementedAuth(Exception):
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
-
     """
     Making Authenticator to be able to accept Header-Based authentication.
     """

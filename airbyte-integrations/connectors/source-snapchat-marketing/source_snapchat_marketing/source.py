@@ -244,7 +244,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         return f"adaccounts/{stream_slice['id']}/{self.response_root_name}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-
         stream_state = kwargs.get("stream_state")
         self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
         self.max_state = self.initial_state
@@ -402,7 +401,6 @@ class Stats(SnapchatMarketingStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["granularity"] = self.granularity.value
         params["action_report_time"] = self.action_report_time
@@ -532,7 +530,6 @@ class StatsIncremental(Stats, IncrementalMixin):
         for record in super().parse_response(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         ):
-
             record_identifiers = {
                 "id": record["id"],
                 "type": record["type"],

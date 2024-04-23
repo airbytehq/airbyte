@@ -12,12 +12,19 @@ import dagger
 from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter
-from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
+from pipelines.airbyte_ci.format.consts import (
+    DEFAULT_FORMAT_IGNORE_LIST,
+    REPO_MOUNT_PATH,
+    WARM_UP_INCLUSIONS,
+)
 from pipelines.consts import GIT_IMAGE
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
+from pipelines.models.contexts.click_pipeline_context import (
+    ClickPipelineContext,
+    pass_pipeline_context,
+)
 from pipelines.models.steps import CommandResult, StepStatus
 
 
@@ -85,7 +92,9 @@ class FormatCommand(click.Command):
         """
         # Load a directory from the host with all the files to format according to the file_filter and the .gitignore files
         dir_to_format = dagger_client.host().directory(
-            self.LOCAL_REPO_PATH, include=self.file_filter + ["**/.gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+            self.LOCAL_REPO_PATH,
+            include=self.file_filter + ["**/.gitignore"],
+            exclude=DEFAULT_FORMAT_IGNORE_LIST,
         )
 
         return (
@@ -98,7 +107,10 @@ class FormatCommand(click.Command):
             # Remove all gitignored files
             .with_exec(["clean", "-dfqX"])
             # Delete all .gitignore files
-            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
+            .with_exec(
+                sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']),
+                skip_entrypoint=True,
+            )
             # Delete .git
             .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
             .directory(REPO_MOUNT_PATH)
@@ -107,7 +119,9 @@ class FormatCommand(click.Command):
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
+    async def invoke(
+        self, ctx: click.Context, click_pipeline_context: ClickPipelineContext
+    ) -> CommandResult:
         """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
@@ -118,17 +132,23 @@ class FormatCommand(click.Command):
             Any: The result of running the command
         """
 
-        dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Format {self.formatter.value}")
+        dagger_client = await click_pipeline_context.get_dagger_client(
+            pipeline_name=f"Format {self.formatter.value}"
+        )
         dir_to_format = self.get_dir_to_format(dagger_client)
 
         container = self.get_format_container_fn(dagger_client, dir_to_format)
-        command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
+        command_result = await self.get_format_command_result(
+            dagger_client, container, dir_to_format
+        )
 
         if (formatted_code_dir := command_result.output) and self.export_formatted_code:
             await formatted_code_dir.export(self.LOCAL_REPO_PATH)
 
         if self._enable_logging:
-            log_command_results(ctx, [command_result], main_logger, LogOptions(quiet=ctx.obj["quiet"]))
+            log_command_results(
+                ctx, [command_result], main_logger, LogOptions(quiet=ctx.obj["quiet"])
+            )
 
         if command_result.status is StepStatus.FAILURE and self._exit_on_failure:
             sys.exit(1)
@@ -158,7 +178,11 @@ class FormatCommand(click.Command):
         return self
 
     async def run_format(
-        self, dagger_client: dagger.Client, container: dagger.Container, format_commands: List[str], not_formatted_code: dagger.Directory
+        self,
+        dagger_client: dagger.Client,
+        container: dagger.Container,
+        format_commands: List[str],
+        not_formatted_code: dagger.Directory,
     ) -> Tuple[dagger.Directory, str, str]:
         """Run the format commands in the container. Return the directory with the modified files, stdout and stderr.
 
@@ -168,14 +192,20 @@ class FormatCommand(click.Command):
             format_commands (List[str]): The list of commands to run to format the repository
             not_formatted_code (dagger.Directory): The directory with the code to format
         """
-        format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
+        format_container = container.with_exec(
+            sh_dash_c(format_commands), skip_entrypoint=True
+        )
         formatted_directory = format_container.directory(REPO_MOUNT_PATH)
         if warmup_inclusion := WARM_UP_INCLUSIONS.get(self.formatter):
-            warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+            warmup_dir = dagger_client.host().directory(
+                ".", include=warmup_inclusion, exclude=DEFAULT_FORMAT_IGNORE_LIST
+            )
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)
             formatted_directory = formatted_directory.with_directory(".", warmup_dir)
         return (
-            await not_formatted_code.with_timestamps(0).diff(formatted_directory.with_timestamps(0)),
+            await not_formatted_code.with_timestamps(0).diff(
+                formatted_directory.with_timestamps(0)
+            ),
             await format_container.stdout(),
             await format_container.stderr(),
         )
@@ -201,9 +231,25 @@ class FormatCommand(click.Command):
                 dagger_client, container, self.format_commands, not_formatted_code
             )
             if await dir_with_modified_files.entries():
-                modified_files = await list_files_in_directory(dagger_client, dir_with_modified_files)
+                modified_files = await list_files_in_directory(
+                    dagger_client, dir_with_modified_files
+                )
                 self.logger.debug(f"Modified files: {modified_files}")
-                return CommandResult(command=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output=dir_with_modified_files)
-            return CommandResult(command=self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
+                return CommandResult(
+                    command=self,
+                    status=StepStatus.FAILURE,
+                    stdout=stdout,
+                    stderr=stderr,
+                    output=dir_with_modified_files,
+                )
+            return CommandResult(
+                command=self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr
+            )
         except dagger.ExecError as e:
-            return CommandResult(command=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)
+            return CommandResult(
+                command=self,
+                status=StepStatus.FAILURE,
+                stderr=e.stderr,
+                stdout=e.stdout,
+                exc_info=e,
+            )

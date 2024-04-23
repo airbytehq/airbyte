@@ -1409,7 +1409,6 @@ class ContactsListMemberships(ContactsAllBase, ABC):
 
 
 class ContactsFormSubmissions(ContactsAllBase, ABC):
-
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
@@ -2014,7 +2013,6 @@ class PropertyHistoryV3(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistoryV3):
-
     scopes = {"crm.objects.companies.read"}
     properties_scopes = {"crm.schemas.companies.read"}
     entity = "companies"
@@ -2356,7 +2354,6 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-
             object_id = parent_slice["parent"][self.object_id_field]
 
             # We require this workaround to shorten the duration of the acceptance test run.

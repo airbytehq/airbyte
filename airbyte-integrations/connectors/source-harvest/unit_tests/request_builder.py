@@ -9,7 +9,6 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 class HarvestRequestBuilder:
-
     @classmethod
     def invoices_endpoint(cls, account_id: str) -> "HarvestRequestBuilder":
         return cls("invoices", account_id)
@@ -31,7 +30,6 @@ class HarvestRequestBuilder:
         self._from: Optional[str] = None
         self._to: Optional[str] = None
         self._any_query_params: bool = False
-
 
     def with_any_query_params(self) -> "HarvestRequestBuilder":
         self._any_query_params = True
@@ -72,11 +70,9 @@ class HarvestRequestBuilder:
 
         if self._any_query_params:
             if query_params:
-                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+                raise ValueError(
+                    f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both."
+                )
             query_params = ANY_QUERY_PARAMS
 
-        return HttpRequest(
-            url=f"https://api.harvestapp.com/v2/{self._resource}",
-            query_params=query_params,
-            headers={}
-        )
+        return HttpRequest(url=f"https://api.harvestapp.com/v2/{self._resource}", query_params=query_params, headers={})

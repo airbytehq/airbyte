@@ -7,8 +7,8 @@ from source_zendesk_chat.components.bans_record_extractor import ZendeskChatBans
 
 
 def test_bans_stream_record_extractor(
-    requests_mock, 
-    bans_stream_record, 
+    requests_mock,
+    bans_stream_record,
     bans_stream_record_extractor_expected_output,
 ) -> None:
     test_url = "https://www.zopim.com/api/v2/bans"

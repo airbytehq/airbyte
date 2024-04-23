@@ -5,7 +5,9 @@ from typing import Optional
 import requests  # type: ignore
 
 
-def is_package_published(package_name: Optional[str], version: Optional[str], registry_url: str) -> bool:
+def is_package_published(
+    package_name: Optional[str], version: Optional[str], registry_url: str
+) -> bool:
     """
     Check if a package with a specific version is published on a python registry.
     """

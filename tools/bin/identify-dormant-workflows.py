@@ -97,7 +97,6 @@ def main():
                 print(message)
 
                 if slack_token:
-
                     print("Sending Slack notification...")
                     client = WebClient(slack_token)
 

@@ -13,11 +13,7 @@ from source_amazon_ads.declarative_source_adapter import DeclarativeSourceAdapte
 
 
 def read_stream(
-    stream_name: str,
-    sync_mode: SyncMode,
-    config: Dict[str, Any],
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    stream_name: str, sync_mode: SyncMode, config: Dict[str, Any], state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     return read(DeclarativeSourceAdapter(source=SourceAmazonAds()), config, catalog, state, expecting_exception)

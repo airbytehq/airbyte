@@ -16,7 +16,6 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuth
 
 
 class LinkedinPagesStream(HttpStream, ABC):
-
     url_base = "https://api.linkedin.com/v2/"
     primary_key = None
 
@@ -56,14 +55,12 @@ class LinkedinPagesStream(HttpStream, ABC):
 
 class OrganizationLookup(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
         path = f"organizations/{self.org}"
         return path
 
 
 class FollowerStatistics(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
         path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
         return path
 
@@ -75,7 +72,6 @@ class FollowerStatistics(LinkedinPagesStream):
 
 class ShareStatistics(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
         path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
         return path
 
@@ -87,7 +83,6 @@ class ShareStatistics(LinkedinPagesStream):
 
 class TotalFollowerCount(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
         path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
         return path
 

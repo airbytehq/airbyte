@@ -41,7 +41,6 @@ class PersistentMode(BaseModel):
 
 
 class ChromaIndexingConfigModel(BaseModel):
-
     auth_method: Union[PersistentMode, HttpMode] = Field(
         ..., title="Connection Mode", description="Mode how to connect to Chroma", discriminator="mode", type="object", order=0
     )

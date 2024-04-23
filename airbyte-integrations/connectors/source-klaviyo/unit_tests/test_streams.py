@@ -62,9 +62,7 @@ class SomeIncrementalStream(IncrementalKlaviyoStream):
 class TestKlaviyoStream:
     def test_request_headers(self):
         stream = SomeStream(api_key=API_KEY)
-        expected_headers = {
-            "Accept": "application/json", "Revision": stream.api_revision, "Authorization": f"Klaviyo-API-Key {API_KEY}"
-        }
+        expected_headers = {"Accept": "application/json", "Revision": stream.api_revision, "Authorization": f"Klaviyo-API-Key {API_KEY}"}
         assert stream.request_headers() == expected_headers
 
     @pytest.mark.parametrize(
@@ -126,9 +124,7 @@ class TestKlaviyoStream:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to create and use an API key with read permission for the 'some_stream' stream granted"
         )
-        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(
-            stream, None, None, None
-        )
+        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(stream, None, None, None)
         assert expected_status_code in reasons_for_unavailable_status_codes
         assert reasons_for_unavailable_status_codes[expected_status_code] == expected_message
 
@@ -152,8 +148,7 @@ class TestKlaviyoStream:
         with pytest.raises(KlaviyoBackoffError) as e:
             stream.backoff_time(response_mock)
         error_message = (
-            f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, "
-            "exit from stream."
+            f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, " "exit from stream."
         )
         assert str(e.value) == error_message
 
@@ -273,9 +268,7 @@ class TestSemiIncrementalKlaviyoStream:
     )
     def test_read_records(self, start_date, stream_state, input_records, expected_records, requests_mock):
         stream = get_stream_by_name("metrics", CONFIG | {"start_date": start_date})
-        requests_mock.register_uri(
-            "GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records}
-        )
+        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records})
         stream.stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
         records = get_records(stream=stream, sync_mode=SyncMode.incremental)
         assert records == expected_records
@@ -523,9 +516,9 @@ class TestCampaignsStream:
     )
     def test_request_params(self, stream_state, stream_slice, next_page_token, expected_params):
         stream = Campaigns(api_key=API_KEY)
-        assert stream.request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        ) == expected_params
+        assert (
+            stream.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
+        )
 
 
 class TestCampaignsDetailedStream:

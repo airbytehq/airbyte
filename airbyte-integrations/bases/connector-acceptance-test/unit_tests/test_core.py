@@ -99,18 +99,11 @@ def test_discovery_uniquely_named_streams():
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": ["null", "integer"]
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": ["null", "integer"]}},
+                },
             },
-            True
+            True,
         ),
         (
             {
@@ -118,38 +111,22 @@ def test_discovery_uniquely_named_streams():
                 "type": ["null", "object"],
                 "properties": {
                     "amount": "integer",
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            True
+            True,
         ),
         (
             {
                 "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "properties": {
-                    "amount": {
-                        "type": ["null", "integer"]
-                    },
-                    "amount_details": {
-                        "type": ["null", "object"],
-                        "properties": {
-                            "atm_fee": {
-                                "type": ["null", "integer"]
-                            }
-                        }
-                    }
-                }
+                    "amount": {"type": ["null", "integer"]},
+                    "amount_details": {"type": ["null", "object"], "properties": {"atm_fee": {"type": ["null", "integer"]}}},
+                },
             },
-            False
-        )
+            False,
+        ),
     ],
 )
 def test_streams_have_valid_json_schemas(schema, should_fail):
@@ -661,7 +638,7 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
             _DEFAULT_RECORD_CONFIG,
             [
                 {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
-                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}
+                {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             ],
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
             None,
@@ -689,13 +666,13 @@ _DEFAULT_RECORD_CONFIG = ExpectedRecordsConfig(path="foobar")
         ),
         # Expected is in actual but not in order (for case when exact_order=True)
         (
-                {"type": "object"},
-                {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
-                ExpectedRecordsConfig(exact_order=True, path="foobar"),
-                [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
-                {"test_stream": [{"constant_field": "must equal"}]},
-                None,
-                does_not_raise(),
+            {"type": "object"},
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+            ExpectedRecordsConfig(exact_order=True, path="foobar"),
+            [{"constant_field": "not in order"}, {"constant_field": "must equal"}],
+            {"test_stream": [{"constant_field": "must equal"}]},
+            None,
+            does_not_raise(),
         ),
         # Match by primary key
         (
@@ -763,12 +740,14 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({
-                    "name": "test_stream",
-                    "json_schema": schema,
-                    "supported_sync_modes": ["full_refresh"],
-                    "source_defined_primary_key": primary_key
-                }),
+                stream=AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream",
+                        "json_schema": schema,
+                        "supported_sync_modes": ["full_refresh"],
+                        "source_defined_primary_key": primary_key,
+                    }
+                ),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -776,7 +755,10 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
     )
     docker_runner_mock = mocker.MagicMock(
         call_read=mocker.AsyncMock(
-            return_value=[AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111)) for record in records]
+            return_value=[
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
+                for record in records
+            ]
         )
     )
     t = test_core.TestBasicRead()
@@ -1708,14 +1690,14 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
     else:
         await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
 
+
 @pytest.mark.parametrize(
     ("state_message_params", "should_fail"),
     (
-            ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
-            ({"type": AirbyteStateType.STREAM}, True),
-            ({"type": AirbyteStateType.LEGACY}, True),
-            ({}, True),  # Case where state was not emitted
-
+        ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
+        ({"type": AirbyteStateType.STREAM}, True),
+        ({"type": AirbyteStateType.LEGACY}, True),
+        ({}, True),  # Case where state was not emitted
     ),
 )
 async def test_read_validate_async_output_state_messages(mocker, state_message_params, should_fail):
@@ -1729,8 +1711,8 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
         ]
     )
     stream = AirbyteStreamState(
-        stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
-        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True)
+        stream_descriptor=StreamDescriptor(name="test_stream_0", namespace=None),
+        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
     )
     async_stream_output = [
         AirbyteMessage(
@@ -1764,7 +1746,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
                     stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.COMPLETE
                 ),
             ),
-        )
+        ),
     ]
 
     if not state_message_params:
@@ -1790,7 +1772,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
                 docker_runner=docker_runner_mock,
                 ignored_fields=None,
                 detailed_logger=MagicMock(),
-                certified_file_based_connector=False
+                certified_file_based_connector=False,
             )
     else:
         await t.test_read(
@@ -1807,5 +1789,5 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
             docker_runner=docker_runner_mock,
             ignored_fields=None,
             detailed_logger=MagicMock(),
-            certified_file_based_connector=False
+            certified_file_based_connector=False,
         )

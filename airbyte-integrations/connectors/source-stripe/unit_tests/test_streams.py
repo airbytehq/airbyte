@@ -133,7 +133,6 @@ def test_lazy_substream_data_cursor_value_is_populated(
 def test_lazy_substream_data_is_expanded(
     requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
 ):
-
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name("bank_accounts", config)
     for url, body in requests_mock_map.items():

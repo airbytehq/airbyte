@@ -731,6 +731,7 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
     else:
         assert state_filter is None
 
+
 @pytest.mark.parametrize(
     "state_filter, stream_class",
     [

@@ -32,7 +32,6 @@ from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
-
     primary_key = "id"
 
     # Detect streams with high API load
@@ -67,7 +66,6 @@ class GithubStreamABC(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"per_page": self.page_size}
 
         if next_page_token:
@@ -783,7 +781,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class GitHubGraphQLStream(GithubStream, ABC):
-
     http_method = "POST"
 
     def path(
@@ -1005,7 +1002,6 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 
 
 class ReactionStream(GithubStream, ABC):
-
     parent_key = "id"
     copy_parent_key = "comment_id"
     cursor_field = "created_at"
@@ -1412,9 +1408,9 @@ class ProjectCards(GithubStream):
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[
-            self.cursor_field
-        ] = updated_state
+        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[self.cursor_field] = (
+            updated_state
+        )
         return current_stream_state
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:

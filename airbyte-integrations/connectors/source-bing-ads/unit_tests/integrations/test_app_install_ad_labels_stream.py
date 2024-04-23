@@ -46,14 +46,12 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
         state = self._state("app_install_ad_labels_state", self.stream_name)
         self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            "app_install_ad_labels_with_state",
-            state
+            self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_state", state
         )
         assert dict(output.most_recent_state.stream_state).get(self.account_id, {}) == {self.cursor_field: "2024-01-29T12:55:12.028+00:00"}
 
         previous_state = state[0].stream.stream_state.dict()
         # gets DownloadParams object
-        assert service_call_mock.call_args.args[0].last_sync_time_in_utc == pendulum.parse(previous_state[self.account_id][self.cursor_field])
+        assert service_call_mock.call_args.args[0].last_sync_time_in_utc == pendulum.parse(
+            previous_state[self.account_id][self.cursor_field]
+        )

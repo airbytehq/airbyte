@@ -291,7 +291,6 @@ class TestRequestBody:
         return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
 
     def test_json_body(self, mocker, requests_mock):
-
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
 
@@ -302,7 +301,6 @@ class TestRequestBody:
         assert json.loads(response["body"]) == self.json_body
 
     def test_text_body(self, mocker, requests_mock):
-
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
 
@@ -313,7 +311,6 @@ class TestRequestBody:
         assert response["body"] == self.data_body
 
     def test_form_body(self, mocker, requests_mock):
-
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_data", return_value=self.form_body)
 

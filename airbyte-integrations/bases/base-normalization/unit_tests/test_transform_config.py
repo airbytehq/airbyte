@@ -302,7 +302,6 @@ class TestTransformConfig:
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_snowflake_oauth(self):
-
         input = {
             "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",
@@ -345,7 +344,6 @@ class TestTransformConfig:
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_snowflake_key_pair(self):
-
         input = {
             "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",

@@ -90,7 +90,9 @@ class AirbyteTracedException(Exception):
         print(filtered_message)
 
     @classmethod
-    def from_exception(cls, exc: BaseException, stream_descriptor: Optional[StreamDescriptor] = None, *args, **kwargs) -> "AirbyteTracedException":  # type: ignore  # ignoring because of args and kwargs
+    def from_exception(
+        cls, exc: BaseException, stream_descriptor: Optional[StreamDescriptor] = None, *args, **kwargs
+    ) -> "AirbyteTracedException":  # type: ignore  # ignoring because of args and kwargs
         """
         Helper to create an AirbyteTracedException from an existing exception
         :param exc: the exception that caused the error

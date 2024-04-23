@@ -123,7 +123,6 @@ class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
         )
 
     def parse_response(self, response: Response, **kwargs) -> Iterable[Mapping]:
-
         resp = response.json()
         if response.status_code == HTTPStatus.OK:
             yield resp

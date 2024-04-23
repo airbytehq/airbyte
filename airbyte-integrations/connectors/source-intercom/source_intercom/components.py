@@ -200,7 +200,6 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         cursor_field: Optional[str],
         stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
-
         self.parent_stream.state = stream_state
 
         parent_stream_slices_gen = self.parent_stream.stream_slices(

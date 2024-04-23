@@ -89,7 +89,6 @@ response_organizations = {
 
 
 def test_organizations(requests_mock):
-
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     stream = Organizations(**config_mock)
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
@@ -129,7 +128,6 @@ def run_stream(stream):
 
 
 def test_accounts(requests_mock):
-
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
 
@@ -170,7 +168,6 @@ response_ads = {
 
 
 def test_ads(requests_mock):
-
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
     requests_mock.get("https://adsapi.snapchat.com/v1/adaccounts/adaccount_id_1/ads", json={"ads": []})
@@ -241,7 +238,6 @@ response_ads_stats_lifetime_2 = {
 
 
 def test_ads_stats_lifetime(requests_mock):
-
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
     requests_mock.get("https://adsapi.snapchat.com/v1/adaccounts/adaccount_id_1/ads", json={"ads": []})
@@ -322,7 +318,6 @@ response_ads_stats_daily_1 = {
 
 
 def test_ads_stats_daily(requests_mock):
-
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
     requests_mock.get("https://adsapi.snapchat.com/v1/adaccounts/adaccount_id_1/ads", json={"ads": []})

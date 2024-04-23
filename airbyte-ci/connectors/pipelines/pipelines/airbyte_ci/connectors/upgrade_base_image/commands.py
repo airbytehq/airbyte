@@ -4,16 +4,26 @@
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_base_image_upgrade_pipeline
+from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import (
+    run_connector_base_image_upgrade_pipeline,
+)
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
-@click.command(cls=DaggerPipelineCommand, short_help="Upgrades the base image version used by the selected connectors.")
+@click.command(
+    cls=DaggerPipelineCommand,
+    short_help="Upgrades the base image version used by the selected connectors.",
+)
 @click.option("--set-if-not-exists", default=True)
 @click.pass_context
-async def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
+async def upgrade_base_image(
+    ctx: click.Context,
+    set_if_not_exists: bool,
+    docker_hub_username: str,
+    docker_hub_password: str,
+) -> bool:
     """Upgrades the base image version used by the selected connectors."""
 
     fail_if_missing_docker_hub_creds(ctx)

@@ -194,7 +194,6 @@ class TestEventsExtractor:
         assert len(parsed_response) == records_count
 
         if content_is_valid:
-
             # RFC3339 pattern
             pattern = r"^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$"
 

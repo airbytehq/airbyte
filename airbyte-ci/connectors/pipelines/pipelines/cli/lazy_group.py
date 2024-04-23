@@ -13,7 +13,12 @@ class LazyGroup(click.Group):
     A click Group that can lazily load subcommands.
     """
 
-    def __init__(self, *args: Any, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        lazy_subcommands: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         # lazy_subcommands is a map of the form:
         #
@@ -42,5 +47,8 @@ class LazyGroup(click.Group):
         # check the result to make debugging easier
         if not isinstance(cmd_object, click.Command):
             print(f"{cmd_object} is of instance {type(cmd_object)}")
-            raise ValueError(f"Lazy loading of {import_path} failed by returning " "a non-command object")
+            raise ValueError(
+                f"Lazy loading of {import_path} failed by returning "
+                "a non-command object"
+            )
         return cmd_object

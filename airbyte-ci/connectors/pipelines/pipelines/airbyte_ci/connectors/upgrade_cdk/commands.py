@@ -5,7 +5,9 @@
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
-from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_cdk_upgrade_pipeline
+from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import (
+    run_connector_cdk_upgrade_pipeline,
+)
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 

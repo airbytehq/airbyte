@@ -52,9 +52,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(
-                    Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken
-                )  # type: ignore[unreachable]
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)  # type: ignore[unreachable]
             else:
                 kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             try:

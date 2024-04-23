@@ -14,7 +14,10 @@ from dagger import Container, Directory
 from pipelines.consts import PYPROJECT_TOML_FILE_PATH, SETUP_PY_FILE_PATH
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
+from pipelines.models.contexts.python_registry_publish import (
+    PythonPackageMetadata,
+    PythonRegistryPublishContext,
+)
 from pipelines.models.steps import Step, StepResult
 
 
@@ -30,16 +33,23 @@ class PublishToPythonRegistry(Step):
     def _get_base_container(self) -> Container:
         return with_poetry(self.context)
 
-    async def _get_package_metadata_from_pyproject_toml(self, package_dir_to_publish: Directory) -> Optional[PythonPackageMetadata]:
+    async def _get_package_metadata_from_pyproject_toml(
+        self, package_dir_to_publish: Directory
+    ) -> Optional[PythonPackageMetadata]:
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
         contents = tomli.loads(pyproject_toml_content)
         try:
-            return PythonPackageMetadata(contents["tool"]["poetry"]["name"], contents["tool"]["poetry"]["version"])
+            return PythonPackageMetadata(
+                contents["tool"]["poetry"]["name"],
+                contents["tool"]["poetry"]["version"],
+            )
         except KeyError:
             return None
 
-    async def _get_package_type(self, package_dir_to_publish: Directory) -> Optional[PackageType]:
+    async def _get_package_type(
+        self, package_dir_to_publish: Directory
+    ) -> Optional[PackageType]:
         files = await package_dir_to_publish.entries()
         has_pyproject_toml = PYPROJECT_TOML_FILE_PATH in files
         has_setup_py = SETUP_PY_FILE_PATH in files
@@ -51,13 +61,19 @@ class PublishToPythonRegistry(Step):
             return None
 
     async def _run(self) -> StepResult:
-        package_dir_to_publish = await self.context.get_repo_dir(self.context.package_path)
+        package_dir_to_publish = await self.context.get_repo_dir(
+            self.context.package_path
+        )
         package_type = await self._get_package_type(package_dir_to_publish)
 
         if not package_type:
-            return self.skip("Connector does not have a pyproject.toml file or setup.py file, skipping.")
+            return self.skip(
+                "Connector does not have a pyproject.toml file or setup.py file, skipping."
+            )
 
-        result = await self._ensure_package_name_and_version(package_dir_to_publish, package_type)
+        result = await self._ensure_package_name_and_version(
+            package_dir_to_publish, package_type
+        )
         if result:
             return result
 
@@ -67,7 +83,9 @@ class PublishToPythonRegistry(Step):
 
         return await self._publish(package_dir_to_publish, package_type)
 
-    async def _ensure_package_name_and_version(self, package_dir_to_publish: Directory, package_type: PackageType) -> Optional[StepResult]:
+    async def _ensure_package_name_and_version(
+        self, package_dir_to_publish: Directory, package_type: PackageType
+    ) -> Optional[StepResult]:
         """
         Try to infer package name and version from the pyproject.toml file. If it is not present, we need to have the package name and version set.
         Setup.py packages need to set package name and version as parameter.
@@ -78,9 +96,13 @@ class PublishToPythonRegistry(Step):
             return None
 
         if package_type is not PackageType.POETRY:
-            return self.skip("Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping.")
+            return self.skip(
+                "Connector does not have a pyproject.toml file and version and package name is not set otherwise, skipping."
+            )
 
-        inferred_package_metadata = await self._get_package_metadata_from_pyproject_toml(package_dir_to_publish)
+        inferred_package_metadata = (
+            await self._get_package_metadata_from_pyproject_toml(package_dir_to_publish)
+        )
 
         if not inferred_package_metadata:
             return self.skip(
@@ -94,14 +116,18 @@ class PublishToPythonRegistry(Step):
 
         return None
 
-    async def _publish(self, package_dir_to_publish: Directory, package_type: PackageType) -> StepResult:
+    async def _publish(
+        self, package_dir_to_publish: Directory, package_type: PackageType
+    ) -> StepResult:
         if package_type is PackageType.PIP:
             return await self._pip_publish(package_dir_to_publish)
         else:
             return await self._poetry_publish(package_dir_to_publish)
 
     async def _poetry_publish(self, package_dir_to_publish: Directory) -> StepResult:
-        python_registry_token = self.context.dagger_client.set_secret("python_registry_token", self.context.python_registry_token)
+        python_registry_token = self.context.dagger_client.set_secret(
+            "python_registry_token", self.context.python_registry_token
+        )
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
         contents = tomli.loads(pyproject_toml_content)
@@ -119,17 +145,29 @@ class PublishToPythonRegistry(Step):
             # Make sure these steps are always executed and not cached as they are triggering a side-effect (calling the registry)
             # Env var setting needs to be in this block as well to make sure a change of the env var will be propagated correctly
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
-            .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"]))
-            .with_exec(sh_dash_c(["poetry publish --build --repository mypypi -vvv --no-interaction"]))
+            .with_exec(
+                ["poetry", "config", "repositories.mypypi", self.context.registry]
+            )
+            .with_exec(
+                sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"])
+            )
+            .with_exec(
+                sh_dash_c(
+                    ["poetry publish --build --repository mypypi -vvv --no-interaction"]
+                )
+            )
         )
 
         return await self.get_step_result(poetry_publish)
 
     async def _pip_publish(self, package_dir_to_publish: Directory) -> StepResult:
         files = await package_dir_to_publish.entries()
-        pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
-        pypi_password = self.context.dagger_client.set_secret("pypi_password", self.context.python_registry_token)
+        pypi_username = self.context.dagger_client.set_secret(
+            "pypi_username", "__token__"
+        )
+        pypi_password = self.context.dagger_client.set_secret(
+            "pypi_password", self.context.python_registry_token
+        )
         metadata: Dict[str, str] = {
             "name": str(self.context.package_metadata.name),
             "version": str(self.context.package_metadata.version),
@@ -138,7 +176,9 @@ class PublishToPythonRegistry(Step):
             "author_email": "contact@airbyte.io",
         }
         if "README.md" in files:
-            metadata["long_description"] = await package_dir_to_publish.file("README.md").contents()
+            metadata["long_description"] = await package_dir_to_publish.file(
+                "README.md"
+            ).contents()
             metadata["long_description_content_type"] = "text/markdown"
 
         config = configparser.ConfigParser()
@@ -154,7 +194,14 @@ class PublishToPythonRegistry(Step):
             .with_directory("package", package_dir_to_publish)
             .with_workdir("package")
             # clear out setup.py metadata so setup.cfg is used
-            .with_exec(["sed", "-i", "/name=/d; /author=/d; /author_email=/d; /version=/d", SETUP_PY_FILE_PATH])
+            .with_exec(
+                [
+                    "sed",
+                    "-i",
+                    "/name=/d; /author=/d; /author_email=/d; /version=/d",
+                    SETUP_PY_FILE_PATH,
+                ]
+            )
             .with_new_file("setup.cfg", contents=setup_cfg)
             .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
             .with_exec(["python", SETUP_PY_FILE_PATH, "sdist", "bdist_wheel"])
@@ -163,7 +210,16 @@ class PublishToPythonRegistry(Step):
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_secret_variable("TWINE_USERNAME", pypi_username)
             .with_secret_variable("TWINE_PASSWORD", pypi_password)
-            .with_exec(["twine", "upload", "--verbose", "--repository-url", self.context.registry, "dist/*"])
+            .with_exec(
+                [
+                    "twine",
+                    "upload",
+                    "--verbose",
+                    "--repository-url",
+                    self.context.registry,
+                    "dist/*",
+                ]
+            )
         )
 
         return await self.get_step_result(twine_upload)

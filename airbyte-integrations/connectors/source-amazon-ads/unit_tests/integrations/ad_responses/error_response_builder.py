@@ -17,7 +17,9 @@ from .records.fields import DictTemplatePath
 
 
 class ErrorResponseBuilder(HttpResponseBuilder):
-    def __init__(self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Union[PaginationStrategy, None]):
+    def __init__(
+        self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Union[PaginationStrategy, None]
+    ):
         super().__init__(template, records_path, pagination_strategy)
         self._records: Dict[str, Any] = {}
 

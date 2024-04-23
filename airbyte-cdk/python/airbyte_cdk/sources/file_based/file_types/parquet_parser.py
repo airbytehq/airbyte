@@ -20,7 +20,6 @@ from pyarrow import DictionaryArray, Scalar
 
 
 class ParquetParser(FileTypeParser):
-
     ENCODING = None
 
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:

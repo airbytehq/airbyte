@@ -9,7 +9,10 @@ import requests
 from dagger import Client, Platform
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
+from pipelines.models.contexts.python_registry_publish import (
+    PythonPackageMetadata,
+    PythonRegistryPublishContext,
+)
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -53,7 +56,12 @@ def context(dagger_client: Client):
         ),
     ],
 )
-async def test_run_poetry_publish(context: PythonRegistryPublishContext, package_path: str, package_name: str, expected_asset: str):
+async def test_run_poetry_publish(
+    context: PythonRegistryPublishContext,
+    package_path: str,
+    package_name: str,
+    expected_asset: str,
+):
     context.package_metadata = PythonPackageMetadata(package_name, "0.2.0")
     context.package_path = package_path
     pypi_registry = (
@@ -65,7 +73,9 @@ async def test_run_poetry_publish(context: PythonRegistryPublishContext, package
         .as_service()
     )
 
-    base_container = with_poetry(context).with_service_binding("local_registry", pypi_registry)
+    base_container = with_poetry(context).with_service_binding(
+        "local_registry", pypi_registry
+    )
     step = publish_pipeline.PublishToPythonRegistry(context)
     step._get_base_container = MagicMock(return_value=base_container)
     step_result = await step.run()

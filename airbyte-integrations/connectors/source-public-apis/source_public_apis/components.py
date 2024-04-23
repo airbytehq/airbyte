@@ -10,5 +10,4 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 
 class CustomExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response, **kwargs) -> List[Mapping[str, Any]]:
-
         return [{"name": cat} for cat in response.json()["categories"]]

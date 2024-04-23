@@ -17,7 +17,6 @@ from source_netsuite.streams import CustomIncrementalNetsuiteStream, Incremental
 
 
 class SourceNetsuite(AbstractSource):
-
     logger: logging.Logger = logging.getLogger("airbyte")
 
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
@@ -109,7 +108,6 @@ class SourceNetsuite(AbstractSource):
         window_in_days: int,
         max_retry: int = 3,
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
-
         input_args = {
             "auth": auth,
             "object_name": object_name,

@@ -138,8 +138,7 @@ def _verify_state_record_counts(records: List[AirbyteMessage], states: List[Airb
     for state_message in states:
         stream_descriptor = message_utils.get_stream_descriptor(state_message)
         state_record_count_sums[stream_descriptor] = (
-            state_record_count_sums.get(stream_descriptor, 0)
-            + state_message.state.sourceStats.recordCount
+            state_record_count_sums.get(stream_descriptor, 0) + state_message.state.sourceStats.recordCount
         )
 
     for stream, actual_count in actual_record_counts.items():
@@ -154,8 +153,8 @@ def _verify_state_record_counts(records: List[AirbyteMessage], states: List[Airb
 def _verify_analytics(analytics: List[AirbyteMessage], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
     if expected_analytics:
         assert len(analytics) == len(
-            expected_analytics), \
-            f"Number of actual analytics messages ({len(analytics)}) did not match expected ({len(expected_analytics)})"
+            expected_analytics
+        ), f"Number of actual analytics messages ({len(analytics)}) did not match expected ({len(expected_analytics)})"
         for actual, expected in zip(analytics, expected_analytics):
             actual_type, actual_value = actual.trace.analytics.type, actual.trace.analytics.value
             expected_type = expected.type

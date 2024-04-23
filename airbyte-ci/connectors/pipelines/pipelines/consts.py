@@ -78,10 +78,19 @@ class CIContext(str, Enum):
 class ContextState(Enum):
     """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
 
-    INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
+    INITIALIZED = {
+        "github_state": "pending",
+        "description": "Pipelines are being initialized...",
+    }
     RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
-    ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
-    SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
+    ERROR = {
+        "github_state": "error",
+        "description": "Something went wrong while running the Pipelines.",
+    }
+    SUCCESSFUL = {
+        "github_state": "success",
+        "description": "All Pipelines ran successfully.",
+    }
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
 
 

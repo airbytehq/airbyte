@@ -157,7 +157,10 @@ def test_given_partition_associated_with_state_when_stream_slices_then_do_not_re
 
 def test_given_multiple_partitions_then_each_have_their_state(mocked_cursor_factory, mocked_partition_router):
     first_partition = {"first_partition_key": "first_partition_value"}
-    mocked_partition_router.stream_slices.return_value = [StreamSlice(partition=first_partition, cursor_slice={}), StreamSlice(partition={"second_partition_key": "second_partition_value"}, cursor_slice={})]
+    mocked_partition_router.stream_slices.return_value = [
+        StreamSlice(partition=first_partition, cursor_slice={}),
+        StreamSlice(partition={"second_partition_key": "second_partition_value"}, cursor_slice={}),
+    ]
     first_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
     second_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "second slice cursor value"}]).build()
     mocked_cursor_factory.create.side_effect = [first_cursor, second_cursor]
@@ -183,7 +186,10 @@ def test_given_stream_slices_when_get_stream_state_then_return_updated_state(moc
         MockedCursorBuilder().with_stream_state({CURSOR_STATE_KEY: "first slice cursor value"}).build(),
         MockedCursorBuilder().with_stream_state({CURSOR_STATE_KEY: "second slice cursor value"}).build(),
     ]
-    mocked_partition_router.stream_slices.return_value = [StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}), StreamSlice(partition={"partition key": "second partition"}, cursor_slice={})]
+    mocked_partition_router.stream_slices.return_value = [
+        StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}),
+        StreamSlice(partition={"partition key": "second partition"}, cursor_slice={}),
+    ]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
     list(cursor.stream_slices())
     assert cursor.get_stream_state() == {
@@ -265,17 +271,14 @@ def test_given_records_with_different_slice_when_is_greater_than_or_equal_then_r
     [
         pytest.param(StreamSlice(partition={"a slice": "value"}, cursor_slice={}), None, id="second record does not have a slice"),
         pytest.param(None, StreamSlice(partition={"a slice": "value"}, cursor_slice={}), id="first record does not have a slice"),
-    ]
+    ],
 )
 def test_given_records_without_a_slice_when_is_greater_than_or_equal_then_raise_error(first_record_slice, second_record_slice):
     any_cursor_factory = Mock()
     any_partition_router = Mock()
     cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
     with pytest.raises(ValueError):
-        cursor.is_greater_than_or_equal(
-            Record({}, first_record_slice),
-            Record({}, second_record_slice)
-        )
+        cursor.is_greater_than_or_equal(Record({}, first_record_slice), Record({}, second_record_slice))
 
 
 def test_given_slice_is_unknown_when_is_greater_than_or_equal_then_raise_error():
@@ -308,9 +311,13 @@ def test_when_is_greater_than_or_equal_then_return_underlying_cursor_response(mo
 @pytest.mark.parametrize(
     "stream_slice, expected_output",
     [
-        pytest.param(StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}), {"cursor": "params", "router": "params"}, id="first partition"),
+        pytest.param(
+            StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}),
+            {"cursor": "params", "router": "params"},
+            id="first partition",
+        ),
         pytest.param(None, None, id="first partition"),
-    ]
+    ],
 )
 def test_get_request_params(mocked_cursor_factory, mocked_partition_router, stream_slice, expected_output):
     underlying_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
@@ -323,7 +330,9 @@ def test_get_request_params(mocked_cursor_factory, mocked_partition_router, stre
         cursor.set_initial_state({"states": [{"partition": stream_slice.partition, "cursor": CURSOR_STATE}]})
         params = cursor.get_request_params(stream_slice=stream_slice)
         assert params == expected_output
-        mocked_partition_router.get_request_params.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=None)
+        mocked_partition_router.get_request_params.assert_called_once_with(
+            stream_state=None, stream_slice=stream_slice, next_page_token=None
+        )
         underlying_cursor.get_request_params.assert_called_once_with(stream_state=None, stream_slice={}, next_page_token=None)
     else:
         with pytest.raises(ValueError):
@@ -333,9 +342,13 @@ def test_get_request_params(mocked_cursor_factory, mocked_partition_router, stre
 @pytest.mark.parametrize(
     "stream_slice, expected_output",
     [
-        pytest.param(StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}), {"cursor": "params", "router": "params"}, id="first partition"),
+        pytest.param(
+            StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}),
+            {"cursor": "params", "router": "params"},
+            id="first partition",
+        ),
         pytest.param(None, None, id="first partition"),
-    ]
+    ],
 )
 def test_get_request_headers(mocked_cursor_factory, mocked_partition_router, stream_slice, expected_output):
     underlying_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
@@ -348,7 +361,9 @@ def test_get_request_headers(mocked_cursor_factory, mocked_partition_router, str
         cursor.set_initial_state({"states": [{"partition": stream_slice.partition, "cursor": CURSOR_STATE}]})
         params = cursor.get_request_headers(stream_slice=stream_slice)
         assert params == expected_output
-        mocked_partition_router.get_request_headers.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=None)
+        mocked_partition_router.get_request_headers.assert_called_once_with(
+            stream_state=None, stream_slice=stream_slice, next_page_token=None
+        )
         underlying_cursor.get_request_headers.assert_called_once_with(stream_state=None, stream_slice={}, next_page_token=None)
     else:
         with pytest.raises(ValueError):
@@ -358,9 +373,13 @@ def test_get_request_headers(mocked_cursor_factory, mocked_partition_router, str
 @pytest.mark.parametrize(
     "stream_slice, expected_output",
     [
-        pytest.param(StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}), {"cursor": "params", "router": "params"}, id="first partition"),
+        pytest.param(
+            StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}),
+            {"cursor": "params", "router": "params"},
+            id="first partition",
+        ),
         pytest.param(None, None, id="first partition"),
-    ]
+    ],
 )
 def test_get_request_body_data(mocked_cursor_factory, mocked_partition_router, stream_slice, expected_output):
     underlying_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
@@ -373,7 +392,9 @@ def test_get_request_body_data(mocked_cursor_factory, mocked_partition_router, s
         cursor.set_initial_state({"states": [{"partition": stream_slice.partition, "cursor": CURSOR_STATE}]})
         params = cursor.get_request_body_data(stream_slice=stream_slice)
         assert params == expected_output
-        mocked_partition_router.get_request_body_data.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=None)
+        mocked_partition_router.get_request_body_data.assert_called_once_with(
+            stream_state=None, stream_slice=stream_slice, next_page_token=None
+        )
         underlying_cursor.get_request_body_data.assert_called_once_with(stream_state=None, stream_slice={}, next_page_token=None)
     else:
         with pytest.raises(ValueError):
@@ -383,9 +404,13 @@ def test_get_request_body_data(mocked_cursor_factory, mocked_partition_router, s
 @pytest.mark.parametrize(
     "stream_slice, expected_output",
     [
-        pytest.param(StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}), {"cursor": "params", "router": "params"}, id="first partition"),
+        pytest.param(
+            StreamSlice(partition={"partition key": "first partition"}, cursor_slice={}),
+            {"cursor": "params", "router": "params"},
+            id="first partition",
+        ),
         pytest.param(None, None, id="first partition"),
-    ]
+    ],
 )
 def test_get_request_body_json(mocked_cursor_factory, mocked_partition_router, stream_slice, expected_output):
     underlying_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
@@ -398,7 +423,9 @@ def test_get_request_body_json(mocked_cursor_factory, mocked_partition_router, s
         cursor.set_initial_state({"states": [{"partition": stream_slice.partition, "cursor": CURSOR_STATE}]})
         params = cursor.get_request_body_json(stream_slice=stream_slice)
         assert params == expected_output
-        mocked_partition_router.get_request_body_json.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=None)
+        mocked_partition_router.get_request_body_json.assert_called_once_with(
+            stream_state=None, stream_slice=stream_slice, next_page_token=None
+        )
         underlying_cursor.get_request_body_json.assert_called_once_with(stream_state=None, stream_slice={}, next_page_token=None)
     else:
         with pytest.raises(ValueError):

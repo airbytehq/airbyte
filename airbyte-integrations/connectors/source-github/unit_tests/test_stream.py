@@ -316,7 +316,6 @@ def test_stream_repositories_read():
 
 @responses.activate
 def test_stream_projects_disabled():
-
     repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
 
     stream = Projects(**repository_args_with_start_date)
@@ -334,7 +333,6 @@ def test_stream_projects_disabled():
 
 @responses.activate
 def test_stream_pull_requests_incremental_read():
-
     page_size = 2
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
@@ -398,7 +396,6 @@ def test_stream_pull_requests_incremental_read():
 
 @responses.activate
 def test_stream_commits_incremental_read():
-
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
@@ -437,18 +434,18 @@ def test_stream_commits_incremental_read():
                 "name": "branch",
                 "commit": {
                     "sha": "74445338726f0f8e1c27c10dce90ca00c5ae2858",
-                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858"
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858",
                 },
-                "protected": False
+                "protected": False,
             },
             {
                 "name": "main",
                 "commit": {
                     "sha": "c27c10dce90ca00c5ae285874445338726f0f8e1",
-                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1"
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1",
                 },
-                "protected": False
-            }
+                "protected": False,
+            },
         ],
         status=200,
     )
@@ -489,7 +486,6 @@ def test_stream_commits_incremental_read():
 
 @responses.activate
 def test_stream_pull_request_commits():
-
     repository_args = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
@@ -531,7 +527,6 @@ def test_stream_pull_request_commits():
 
 @responses.activate
 def test_stream_project_columns():
-
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
@@ -624,7 +619,6 @@ def test_stream_project_columns():
 
 @responses.activate
 def test_stream_project_cards():
-
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
@@ -720,7 +714,6 @@ def test_stream_project_cards():
 
 @responses.activate
 def test_stream_comments():
-
     repository_args_with_start_date = {
         "repositories": ["organization/repository", "airbytehq/airbyte"],
         "page_size_for_large_streams": 2,
@@ -852,7 +845,6 @@ def test_stream_comments():
 
 @responses.activate
 def test_streams_read_full_refresh():
-
     repository_args = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
@@ -913,7 +905,6 @@ def test_streams_read_full_refresh():
 
 @responses.activate
 def test_stream_reviews_incremental_read():
-
     repository_args_with_start_date = {
         "start_date": "2000-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
@@ -987,7 +978,6 @@ def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
 
 @responses.activate
 def test_stream_commit_comment_reactions_incremental_read():
-
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
     stream = CommitCommentReactions(**repository_args)
     stream._parent_stream._session.cache.clear()
@@ -1068,7 +1058,6 @@ def test_stream_commit_comment_reactions_incremental_read():
 
 @responses.activate
 def test_stream_workflow_runs_read_incremental(monkeypatch):
-
     repository_args_with_start_date = {
         "repositories": ["org/repos"],
         "page_size_for_large_streams": 30,
@@ -1187,7 +1176,6 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
 
 @responses.activate
 def test_stream_workflow_jobs_read():
-
     repository_args = {
         "repositories": ["org/repo"],
         "page_size_for_large_streams": 100,
@@ -1288,7 +1276,6 @@ def test_stream_workflow_jobs_read():
 
 @responses.activate
 def test_stream_pull_request_comment_reactions_read():
-
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 2,

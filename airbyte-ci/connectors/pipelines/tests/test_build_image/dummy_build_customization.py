@@ -20,7 +20,9 @@ async def pre_connector_install(base_image_container: Container) -> Container:
     Returns:
         Container: The mutated base image container.
     """
-    return base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+    return base_image_container.with_env_variable(
+        "MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value"
+    )
 
 
 async def post_connector_install(connector_container: Container) -> Container:
@@ -33,4 +35,6 @@ async def post_connector_install(connector_container: Container) -> Container:
     Returns:
         Container: The mutated connector container.
     """
-    return connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+    return connector_container.with_env_variable(
+        "MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value"
+    )

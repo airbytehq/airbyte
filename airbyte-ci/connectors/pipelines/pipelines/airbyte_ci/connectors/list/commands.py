@@ -9,12 +9,17 @@ from rich.table import Table
 from rich.text import Text
 
 
-@click.command(cls=DaggerPipelineCommand, help="List all selected connectors.", name="list")
+@click.command(
+    cls=DaggerPipelineCommand, help="List all selected connectors.", name="list"
+)
 @click.pass_context
 async def list_connectors(
     ctx: click.Context,
 ) -> bool:
-    selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)
+    selected_connectors = sorted(
+        ctx.obj["selected_connectors_with_modified_files"],
+        key=lambda x: x.technical_name,
+    )
     table = Table(title=f"{len(selected_connectors)} selected connectors")
     table.add_column("Modified")
     table.add_column("Connector")
@@ -26,7 +31,9 @@ async def list_connectors(
     for connector in selected_connectors:
         modified = "X" if connector.modified_files else ""
         connector_name = Text(connector.technical_name)
-        language: Text = Text(connector.language.value) if connector.language else Text("N/A")
+        language: Text = (
+            Text(connector.language.value) if connector.language else Text("N/A")
+        )
         try:
             support_level: Text = Text(connector.support_level)
         except Exception:
@@ -36,7 +43,9 @@ async def list_connectors(
         except Exception:
             version = Text("N/A")
         folder = Text(str(connector.code_directory))
-        table.add_row(modified, connector_name, language, support_level, version, folder)
+        table.add_row(
+            modified, connector_name, language, support_level, version, folder
+        )
 
     console.print(table)
     return True

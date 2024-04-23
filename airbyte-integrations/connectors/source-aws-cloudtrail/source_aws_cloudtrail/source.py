@@ -114,7 +114,6 @@ class AwsCloudtrailStream(Stream, ABC):
 
 
 class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
-
     # API does not support read in ascending order
     # save state only once after full read
     state_checkpoint_interval = None

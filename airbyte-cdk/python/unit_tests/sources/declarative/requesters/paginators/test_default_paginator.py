@@ -303,11 +303,13 @@ def test_paginator_with_page_option_no_page_size():
     pagination_strategy = OffsetIncrement(config={}, page_size=None, parameters={})
 
     with pytest.raises(ValueError):
-        DefaultPaginator(
-            page_size_option=MagicMock(),
-            page_token_option=RequestOption("limit", RequestOptionType.request_parameter, parameters={}),
-            pagination_strategy=pagination_strategy,
-            config=MagicMock(),
-            url_base=MagicMock(),
-            parameters={},
-        ),
+        (
+            DefaultPaginator(
+                page_size_option=MagicMock(),
+                page_token_option=RequestOption("limit", RequestOptionType.request_parameter, parameters={}),
+                pagination_strategy=pagination_strategy,
+                config=MagicMock(),
+                url_base=MagicMock(),
+                parameters={},
+            ),
+        )

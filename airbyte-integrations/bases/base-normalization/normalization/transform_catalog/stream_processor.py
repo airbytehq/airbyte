@@ -673,7 +673,6 @@ where 1 = 1
         return template.render(formats=formats, column_name=column_name)
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
-
         template = Template(
             """
 -- SQL model to build a hash column based on the values of this record
@@ -704,7 +703,6 @@ where 1 = 1
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-
         return [
             StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type)
             for field in column_names
@@ -1402,9 +1400,9 @@ where 1 = 1
         elif self.destination_type == DestinationType.SNOWFLAKE:
             # see https://docs.getdbt.com/reference/resource-configs/snowflake-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config[
-                    "cluster_by"
-                ] = f'["_AIRBYTE_ACTIVE_ROW", "{self.airbyte_unique_key.upper()}_SCD", "{self.airbyte_emitted_at.upper()}"]'
+                config["cluster_by"] = (
+                    f'["_AIRBYTE_ACTIVE_ROW", "{self.airbyte_unique_key.upper()}_SCD", "{self.airbyte_emitted_at.upper()}"]'
+                )
             elif partition_by == PartitionScheme.UNIQUE_KEY:
                 config["cluster_by"] = f'["{self.airbyte_unique_key.upper()}", "{self.airbyte_emitted_at.upper()}"]'
             elif partition_by == PartitionScheme.NOTHING:
