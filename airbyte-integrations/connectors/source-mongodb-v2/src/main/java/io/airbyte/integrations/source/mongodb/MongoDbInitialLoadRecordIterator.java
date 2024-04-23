@@ -43,6 +43,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   private Optional<MongoDbStreamState> currentState;
   private MongoCursor<Document> currentIterator;
 
+  private int numSubqueries = 0;
+
   MongoDbInitialLoadRecordIterator(final MongoCollection<Document> collection,
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
@@ -58,8 +60,10 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   protected Document computeNext() {
     if (shouldBuildNextQuery()) {
       try {
+        LOGGER.info("Finishing subquery number : {}", numSubqueries);
         currentIterator.close();
         currentIterator = buildNewQueryIterator();
+        numSubqueries++;
         if (!currentIterator.hasNext()) {
           return endOfData();
         }
