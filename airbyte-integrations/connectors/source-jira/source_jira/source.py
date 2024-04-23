@@ -37,8 +37,7 @@ class SourceJira(YamlDeclarativeSource):
             # Get streams to check access to any of them
             for stream_name in self._source_config["check"]["stream_names"]:
                 try:
-                    data = next(read_full_refresh(stream_name_to_stream[stream_name]), None)
-                    print(data)
+                    next(read_full_refresh(stream_name_to_stream[stream_name]), None)
                 except:
                     logger.warning(f"No access to stream: {stream_name}")
                 else:
