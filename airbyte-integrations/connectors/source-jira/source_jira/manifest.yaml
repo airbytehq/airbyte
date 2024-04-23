@@ -538,6 +538,13 @@ definitions:
             stream: "#/definitions/__custom_issue_fields_substream"
             parent_key: "id"
             partition_field: "field_id"
+      requester:
+        $ref: "#/definitions/retriever_use_cache/requester"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+          response_filters:
+            - http_codes: [400, 403, 404]
+              action: IGNORE
     transformations:
       - type: AddFields
         fields:
