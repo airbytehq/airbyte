@@ -29,14 +29,12 @@ definitions:
   requester:
     type: CustomRequester
     class_name: "source_mixpanel.components.MixpanelHttpRequester"
-    url_base: "https://{{ config['region'] }}.mixpanel.com/api/"
+    url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
     path: "{{ parameters['path'] }}"
     authenticator: "#/definitions/authenticator"
     http_method: GET
     request_parameters:
       project_id: "{{ config['credentials']['project_id'] }}"
-    request_headers: {}
-    request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
       response_filters:
@@ -58,17 +56,6 @@ definitions:
         - error_message_contains: "to_date cannot be later than today"
           action: FAIL
           error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
-
-  requester_annotation:
-    type: CustomRequester
-    class_name: "source_mixpanel.components.AnnotationsHttpRequester"
-    url_base: "https://{{ config['region'] }}.mixpanel.com/api/app/projects/"
-    path: "{{ parameters['path'] }}"
-    authenticator: "#/definitions/authenticator"
-    http_method: GET
-    request_parameters: {}
-    request_headers: {}
-    request_body_json: {}
 
   selector:
     type: RecordSelector
@@ -228,7 +215,8 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester_annotation"
+        $ref: "#/definitions/requester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/app/projects/{{  config.credentials.project_id }}"
 
   # https://developer.mixpanel.com/reference/funnels-query
   funnel_ids_stream:
@@ -249,16 +237,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/schema#
-        type: object
-        properties:
-          funnel_id:
-            type: number
-          name:
-            type: [string, null]
 
   # https://developer.mixpanel.com/reference/funnels-query
   funnels_stream:
@@ -312,14 +290,20 @@ definitions:
             value: "{{ stream_partition.get('funnel_name') }}"
 
 streams:
-  - "#/definitions/cohorts_stream" # +
-  - "#/definitions/engage_stream" # +
-  - "#/definitions/revenue_stream" # +
-  - "#/definitions/annotations_stream" # +
-  - "#/definitions/cohort_members_stream" # +
-  - "#/definitions/funnels_stream" # +
+  - "#/definitions/cohorts_stream"
+  - "#/definitions/engage_stream"
+  - "#/definitions/revenue_stream"
+  - "#/definitions/annotations_stream"
+  - "#/definitions/cohort_members_stream"
+  - "#/definitions/funnels_stream"
 
 check:
   type: CheckStream
   stream_names:
     - cohorts
+    - cohort_members
+    - funnels
+    - revenue
+    - annotations
+    - engage
+    - export

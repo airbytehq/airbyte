@@ -25,14 +25,6 @@ class MixpanelHttpRequester(HttpRequester):
     reqs_per_hour_limit = 60
     is_first_request = True
 
-    def get_url_base(self) -> str:
-        """
-        REGION: url
-        US    : https://mixpanel.com/api/2.0/
-        EU    : https://EU.mixpanel.com/api/2.0/
-        """
-        return super().get_url_base().replace("US.", "")
-
     def get_request_params(
         self,
         *,
@@ -60,7 +52,7 @@ class MixpanelHttpRequester(HttpRequester):
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
 
-    def send_request(self, **kwargs) -> Mapping[str, Any]:
+    def send_request(self, **kwargs) -> Optional[requests.Response]:
 
         if not self.is_first_request and self.reqs_per_hour_limit:
             self.is_first_request = False
@@ -71,26 +63,6 @@ class MixpanelHttpRequester(HttpRequester):
             time.sleep(3600 / self.reqs_per_hour_limit)
 
         return super().send_request(**kwargs)
-
-
-class AnnotationsHttpRequester(MixpanelHttpRequester):
-    def get_url_base(self) -> str:
-        """
-        REGION: url
-        app/projects/{{ project_id }}/annotations
-        """
-        project_id = self.config.get("credentials", {}).get("project_id", "")
-        project_part = f"{project_id}/" if project_id else ""
-        return f"{super().get_url_base()}{project_part}"
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        return {}
 
 
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
