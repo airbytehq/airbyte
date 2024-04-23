@@ -16,11 +16,11 @@ open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
     }
 
     @Throws(SQLException::class)
-    override fun initialize(connection: Connection, preparedStatement: Statement) {
+    override fun initialize(connection: Connection, statement: Statement) {
         connection.autoCommit = false
-        preparedStatement.fetchSize = FetchSizeConstants.INITIAL_SAMPLE_SIZE
+        statement.fetchSize = FetchSizeConstants.INITIAL_SAMPLE_SIZE
         currentFetchSize = FetchSizeConstants.INITIAL_SAMPLE_SIZE
-        LOGGER.info("Set initial fetch size: {} rows", preparedStatement.fetchSize)
+        LOGGER.info("Set initial fetch size: {} rows", statement.fetchSize)
     }
 
     @Throws(SQLException::class)
@@ -28,7 +28,7 @@ open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
         fetchSizeEstimator.accept(rowData)
         val newFetchSize = fetchSizeEstimator.fetchSize
 
-        if (newFetchSize!!.isPresent && currentFetchSize != newFetchSize.get()) {
+        if (newFetchSize.isPresent && currentFetchSize != newFetchSize.get()) {
             LOGGER.info("Set new fetch size: {} rows", newFetchSize.get())
             resultSet.fetchSize = newFetchSize.get()
             currentFetchSize = newFetchSize.get()

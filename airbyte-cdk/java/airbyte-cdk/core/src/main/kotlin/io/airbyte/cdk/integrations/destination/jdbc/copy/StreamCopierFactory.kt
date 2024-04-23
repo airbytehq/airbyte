@@ -25,7 +25,7 @@ interface StreamCopierFactory<T> {
             namespace: String?,
             configuredSchema: String,
             nameTransformer: StandardNameTransformer
-        ): String? {
+        ): String {
             return if (namespace != null) {
                 nameTransformer.convertStreamName(namespace)
             } else {
