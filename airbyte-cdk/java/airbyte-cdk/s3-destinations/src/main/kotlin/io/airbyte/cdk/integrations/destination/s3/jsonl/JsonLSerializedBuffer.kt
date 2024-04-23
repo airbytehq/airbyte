@@ -84,7 +84,7 @@ class JsonLSerializedBuffer(
 
         @JvmStatic
         fun createBufferFunction(
-            config: S3JsonlFormatConfig?,
+            config: UploadJsonlFormatConfig?,
             createStorageFunction: Callable<BufferStorage>
         ): BufferCreateFunction {
             return BufferCreateFunction {

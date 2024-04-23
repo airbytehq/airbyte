@@ -4,17 +4,17 @@
 package io.airbyte.cdk.integrations.destination.s3.csv
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
-import io.airbyte.cdk.integrations.destination.s3.S3Format
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
 import java.util.*
 
-class S3CsvFormatConfig(val flattening: Flattening, val compressionType: CompressionType) :
-    S3FormatConfig {
+class UploadCsvFormatConfig(val flattening: Flattening, val compressionType: CompressionType) :
+    UploadFormatConfig {
     constructor(
         formatConfig: JsonNode
     ) : this(
@@ -29,7 +29,7 @@ class S3CsvFormatConfig(val flattening: Flattening, val compressionType: Compres
         else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
     )
 
-    override val format: S3Format = S3Format.CSV
+    override val format: FileUploadFormat = FileUploadFormat.CSV
 
     override val fileExtension: String = CSV_SUFFIX + compressionType.fileExtension
 
@@ -38,18 +38,18 @@ class S3CsvFormatConfig(val flattening: Flattening, val compressionType: Compres
             "flattening=" +
             flattening +
             ", compression=" +
-            compressionType!!.name +
+            compressionType.name +
             '}'
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as S3CsvFormatConfig
+        val that = other as UploadCsvFormatConfig
         return flattening == that.flattening && compressionType == that.compressionType
     }
 

@@ -122,12 +122,10 @@ data class Sql(val transactions: List<List<String>>) {
                     .map { transaction: List<String> ->
                         transaction
                             .stream()
-                            .filter { statement: String? ->
-                                statement != null && !statement.isEmpty()
-                            }
-                            .map { statement: String ->
+                            .filter { statement: String? -> !statement.isNullOrEmpty() }
+                            .map internalMap@{ statement: String ->
                                 if (!statement.trim { it <= ' ' }.endsWith(";")) {
-                                    return@map "$statement;"
+                                    return@internalMap "$statement;"
                                 }
                                 statement
                             }

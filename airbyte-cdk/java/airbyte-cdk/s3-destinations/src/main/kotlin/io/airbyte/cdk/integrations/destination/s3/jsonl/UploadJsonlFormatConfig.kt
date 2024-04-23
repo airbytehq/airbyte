@@ -4,9 +4,9 @@
 package io.airbyte.cdk.integrations.destination.s3.jsonl
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
-import io.airbyte.cdk.integrations.destination.s3.S3Format
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
@@ -15,8 +15,10 @@ import java.util.*
 import lombok.ToString
 
 @ToString
-class S3JsonlFormatConfig(val flatteningType: Flattening, val compressionType: CompressionType) :
-    S3FormatConfig {
+class UploadJsonlFormatConfig(
+    val flatteningType: Flattening,
+    val compressionType: CompressionType
+) : UploadFormatConfig {
     constructor(
         formatConfig: JsonNode
     ) : this(
@@ -30,18 +32,18 @@ class S3JsonlFormatConfig(val flatteningType: Flattening, val compressionType: C
         else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
     )
 
-    override val format: S3Format = S3Format.JSONL
+    override val format: FileUploadFormat = FileUploadFormat.JSONL
 
     override val fileExtension: String = JSONL_SUFFIX + compressionType.fileExtension
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as S3JsonlFormatConfig
+        val that = other as UploadJsonlFormatConfig
         return flatteningType == that.flatteningType && compressionType == that.compressionType
     }
 
