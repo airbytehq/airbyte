@@ -16,8 +16,6 @@ import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
 import java.util.*
 import java.util.function.Consumer
-import java.util.stream.Collectors
-import java.util.stream.Stream
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -123,9 +121,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun assertStateDoNotHaveDuplicateStreams(stateMessage: AirbyteStateMessage) {
         val dedupedStreamStates =
             stateMessage.global.streamStates
-                .stream()
                 .map { streamState: AirbyteStreamState -> streamState.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertEquals(dedupedStreamStates.size, stateMessage.global.streamStates.size)
     }
 
@@ -290,7 +287,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             if (message.type == AirbyteMessage.Type.RECORD) {
                 val recordMessage = message.record
                 recordsPerStream
-                    .computeIfAbsent(recordMessage.stream) { c: String -> ArrayList() }
+                    .computeIfAbsent(recordMessage.stream) { _: String -> ArrayList() }
                     .add(recordMessage)
             }
         }
@@ -326,10 +323,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedRecords(
             expectedRecords,
             actualRecords,
-            actualRecords
-                .stream()
-                .map { obj: AirbyteRecordMessage -> obj.stream }
-                .collect(Collectors.toSet()),
+            actualRecords.map { obj: AirbyteRecordMessage -> obj.stream }.toSet(),
         )
     }
 
@@ -356,8 +350,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     ) {
         val actualData =
             actualRecords
-                .stream()
-                .map<JsonNode> { recordMessage: AirbyteRecordMessage ->
+                .map { recordMessage: AirbyteRecordMessage ->
                     Assertions.assertTrue(streamNames.contains(recordMessage.stream))
                     Assertions.assertNotNull(recordMessage.emittedAt)
 
@@ -374,7 +367,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                     removeCDCColumns(data as ObjectNode)
                     data
                 }
-                .collect(Collectors.toSet())
+                .toSet()
 
         Assertions.assertEquals(expectedRecords, actualData)
     }
@@ -639,8 +632,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             // Non resumeable full refresh does not get any state messages.
             assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
             assertExpectedRecords(
-                Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-                    .collect(Collectors.toSet()),
+                (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
                 recordMessages1,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -657,8 +649,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
             assertExpectedStateMessageCountMatches(stateMessages2, 1)
             assertExpectedRecords(
-                Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
-                    .collect(Collectors.toSet()),
+                (MODEL_RECORDS_2 + puntoRecord).toSet(),
                 recordMessages2,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -666,8 +657,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         } else {
             assertExpectedRecords(
-                Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-                    .collect(Collectors.toSet()),
+                (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
                 recordMessages1,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -687,8 +677,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             val stateMessages2 = extractStateMessages(actualRecords2)
 
             assertExpectedRecords(
-                Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
-                    .collect(Collectors.toSet()),
+                (MODEL_RECORDS_2 + puntoRecord).toSet(),
                 recordMessages2,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -706,7 +695,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             val actualRecords3 = AutoCloseableIterators.toListAndClose(read3)
             val recordMessages3 = extractRecordMessages(actualRecords3)
             assertExpectedRecords(
-                Streams.concat(MODEL_RECORDS_2.stream()).collect(Collectors.toSet()),
+                MODEL_RECORDS_2.toSet(),
                 recordMessages3,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -790,8 +779,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         // Non resumeable full refresh does not get any state messages.
         assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
         assertExpectedRecords(
-            Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-                .collect(Collectors.toSet()),
+            (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
             recordMessages1,
             setOf(MODELS_STREAM_NAME),
             names,
@@ -808,8 +796,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
         assertExpectedStateMessageCountMatches(stateMessages2, 1)
         assertExpectedRecords(
-            Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
-                .collect(Collectors.toSet()),
+            (MODEL_RECORDS_2 + puntoRecord).toSet(),
             recordMessages2,
             setOf(MODELS_STREAM_NAME),
             names,
@@ -917,9 +904,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.global.sharedState)
         val streamsInStateAfterFirstSyncCompletion =
             stateMessageEmittedAfterFirstSyncCompletion.global.streamStates
-                .stream()
                 .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertEquals(1, streamsInStateAfterFirstSyncCompletion.size)
         Assertions.assertTrue(
             streamsInStateAfterFirstSyncCompletion.contains(
@@ -1009,9 +995,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             HashSet(MODEL_RECORDS_RANDOM),
             recordsForModelsRandomStreamFromSecondBatch,
             recordsForModelsRandomStreamFromSecondBatch
-                .stream()
                 .map { obj: AirbyteRecordMessage -> obj.stream }
-                .collect(Collectors.toSet()),
+                .toSet(),
             Sets.newHashSet(RANDOM_TABLE_NAME),
             randomSchema(),
         )
@@ -1078,9 +1063,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
         val streamsInSyncCompletionStateAfterThirdSync =
             stateMessageEmittedAfterThirdSyncCompletion.global.streamStates
-                .stream()
                 .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertTrue(
             streamsInSyncCompletionStateAfterThirdSync.contains(
                 StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema()),
@@ -1109,9 +1093,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             recordsWrittenInRandomTable,
             recordsForModelsRandomStreamFromThirdBatch,
             recordsForModelsRandomStreamFromThirdBatch
-                .stream()
                 .map { obj: AirbyteRecordMessage -> obj.stream }
-                .collect(Collectors.toSet()),
+                .toSet(),
             Sets.newHashSet(RANDOM_TABLE_NAME),
             randomSchema(),
         )
@@ -1138,9 +1121,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.global.sharedState)
         val streamsInStateAfterFirstSyncCompletion =
             stateMessageEmittedAfterFirstSyncCompletion.global.streamStates
-                .stream()
                 .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertEquals(1, streamsInStateAfterFirstSyncCompletion.size)
         Assertions.assertTrue(
             streamsInStateAfterFirstSyncCompletion.contains(
@@ -1256,9 +1238,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
         val streamsInSnapshotState =
             stateMessageEmittedAfterSnapshotCompletionInSecondSync.global.streamStates
-                .stream()
                 .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertEquals(2, streamsInSnapshotState.size)
         Assertions.assertTrue(
             streamsInSnapshotState.contains(
@@ -1283,9 +1264,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
         val streamsInSyncCompletionState =
             stateMessageEmittedAfterSecondSyncCompletion.global.streamStates
-                .stream()
                 .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .collect(Collectors.toSet())
+                .toSet()
         Assertions.assertEquals(2, streamsInSnapshotState.size)
         Assertions.assertTrue(
             streamsInSyncCompletionState.contains(
