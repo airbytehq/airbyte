@@ -37,15 +37,13 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
     private val BIG_QUERY_TIMESTAMP_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z")
 
-    override fun rowToJson(bigQueryResultSet: BigQueryResultSet): JsonNode {
+    override fun rowToJson(queryResult: BigQueryResultSet): JsonNode {
         val jsonNode = Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode
-        bigQueryResultSet!!
-            .fieldList
-            .forEach(
-                Consumer { field: Field ->
-                    setJsonField(field, bigQueryResultSet.rowValues[field.name], jsonNode)
-                }
-            )
+        queryResult.fieldList.forEach(
+            Consumer { field: Field ->
+                setJsonField(field, queryResult.rowValues[field.name], jsonNode)
+            }
+        )
         return jsonNode
     }
 
@@ -154,8 +152,8 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
         return parsedValue
     }
 
-    override fun getAirbyteType(bigQueryType: StandardSQLTypeName?): JsonSchemaType {
-        return when (bigQueryType) {
+    override fun getAirbyteType(sourceType: StandardSQLTypeName?): JsonSchemaType {
+        return when (sourceType) {
             StandardSQLTypeName.BOOL -> JsonSchemaType.BOOLEAN
             StandardSQLTypeName.INT64 -> JsonSchemaType.INTEGER
             StandardSQLTypeName.FLOAT64,
