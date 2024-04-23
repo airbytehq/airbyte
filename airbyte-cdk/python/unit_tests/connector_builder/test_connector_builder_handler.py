@@ -50,6 +50,8 @@ _stream_url_base = "https://api.sendgrid.com"
 _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
 _page_size = 2
 
+_NO_STATE = []
+
 MANIFEST = {
     "version": "0.30.3",
     "definitions": {
@@ -266,7 +268,7 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
     limits = TestReadLimits()
-    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), limits)
+    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), _NO_STATE, limits)
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -457,7 +459,7 @@ def test_read():
     limits = TestReadLimits()
     with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _NO_STATE, limits
         )
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
@@ -492,7 +494,7 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits()
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _NO_STATE, TestReadLimits()
         )
         assert output.record.data["latest_config_update"]
 
@@ -529,7 +531,7 @@ def test_read_returns_error_response(mock_from_exception):
 
     source = MockManifestDeclarativeSource()
     limits = TestReadLimits()
-    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits)
+    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _NO_STATE, limits)
 
     expected_stream_read = StreamRead(
         logs=[LogMessage("error_message - a stack trace", "ERROR")],
@@ -716,7 +718,7 @@ def test_read_source(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, limits).record.data
+    output_data = read_stream(source, config, catalog, _NO_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -761,7 +763,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, limits).record.data
+    output_data = read_stream(source, config, catalog, _NO_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -817,7 +819,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, limits).record.data
+        output_data = read_stream(source, config, catalog, _NO_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
@@ -875,7 +877,7 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, limits).record.data
+        output_data = read_stream(source, config, catalog, _NO_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
