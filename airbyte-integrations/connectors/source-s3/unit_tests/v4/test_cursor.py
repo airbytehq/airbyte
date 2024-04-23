@@ -10,12 +10,12 @@ import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from source_s3.v4.cursor import Cursor
 
 
 def _create_datetime(dt: str) -> datetime:
-    return datetime.strptime(dt, DefaultFileBasedCursor.DATE_TIME_FORMAT)
+    return datetime.strptime(dt, FileBasedConcurrentCursor.DATE_TIME_FORMAT)
 
 
 @pytest.mark.parametrize(
