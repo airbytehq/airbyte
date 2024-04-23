@@ -94,13 +94,9 @@ jobs:
   format-check-from-forks:
     # Same-named job as above, in order to ensure 'required checks' pass either way.
     # This should run all the same checks as above, except not requiring any credentials.
-    # This may be slower than the version that runs with creds, due to the affect of
-    # caching.
     name: "Check for formatting errors"
-    # TODO: Revert the 'true' part
     if: >
-      true ||
-      (github.event.pull_request.head.repo.fork == true)
+      github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-latest
     steps:
       # We have no creds. Ignore docker caching and just run the CLI.
