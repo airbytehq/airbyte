@@ -218,8 +218,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(stateMessages.isEmpty(), "Reason");
     ObjectMapper mapper = new ObjectMapper();
 
-    assertTrue(cdcFieldsOmitted(recordMessages.get(0).getData()).equals(
-        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+    assertEquals(cdcFieldsOmitted(recordMessages.get(0).getData()),
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\", \"userid\":null}"));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -234,8 +234,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
-    assertTrue(cdcFieldsOmitted(secondSyncRecords.get(0).getData()).equals(
-        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}")));
+    assertEquals(cdcFieldsOmitted(secondSyncRecords.get(0).getData()),
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}"));
 
   }
 

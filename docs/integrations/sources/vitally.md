@@ -1,4 +1,4 @@
-# Vittally
+# Vitally
 
 ## Sync overview
 

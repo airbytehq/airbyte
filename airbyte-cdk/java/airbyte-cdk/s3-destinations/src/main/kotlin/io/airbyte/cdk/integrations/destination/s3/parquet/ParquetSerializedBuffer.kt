@@ -8,6 +8,7 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunctio
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
@@ -46,7 +47,7 @@ private val logger = KotlinLogging.logger {}
  * data will be buffered in such a hadoop file.
  */
 class ParquetSerializedBuffer(
-    config: S3DestinationConfig,
+    uploadFormatConfig: UploadFormatConfig,
     stream: AirbyteStreamNameNamespacePair,
     catalog: ConfiguredAirbyteCatalog
 ) : SerializableBuffer {
@@ -82,7 +83,8 @@ class ParquetSerializedBuffer(
         bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet")
         Files.deleteIfExists(bufferFile)
         avroRecordFactory = AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER)
-        val formatConfig: S3ParquetFormatConfig = config.formatConfig as S3ParquetFormatConfig
+        val uploadParquetFormatConfig: UploadParquetFormatConfig =
+            uploadFormatConfig as UploadParquetFormatConfig
         val avroConfig = Configuration()
         avroConfig.setBoolean(AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE, false)
         parquetWriter =
@@ -96,12 +98,12 @@ class ParquetSerializedBuffer(
                     avroConfig
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
-                .withCompressionCodec(formatConfig.compressionCodec)
-                .withRowGroupSize(formatConfig.blockSize.toLong())
-                .withMaxPaddingSize(formatConfig.maxPaddingSize)
-                .withPageSize(formatConfig.pageSize)
-                .withDictionaryPageSize(formatConfig.dictionaryPageSize)
-                .withDictionaryEncoding(formatConfig.isDictionaryEncoding)
+                .withCompressionCodec(uploadParquetFormatConfig.compressionCodec)
+                .withRowGroupSize(uploadParquetFormatConfig.blockSize.toLong())
+                .withMaxPaddingSize(uploadParquetFormatConfig.maxPaddingSize)
+                .withPageSize(uploadParquetFormatConfig.pageSize)
+                .withDictionaryPageSize(uploadParquetFormatConfig.dictionaryPageSize)
+                .withDictionaryEncoding(uploadParquetFormatConfig.isDictionaryEncoding)
                 .build()
         isClosed = false
         lastByteCount = 0L
@@ -185,7 +187,7 @@ class ParquetSerializedBuffer(
                 stream: AirbyteStreamNameNamespacePair,
                 catalog: ConfiguredAirbyteCatalog ->
                 ParquetSerializedBuffer(
-                    s3DestinationConfig,
+                    s3DestinationConfig.formatConfig!!,
                     stream,
                     catalog,
                 )

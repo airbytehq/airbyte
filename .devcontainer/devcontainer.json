@@ -1,0 +1,70 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+{
+  "name": "Java Development DevContainer (Generic)",
+  "image": "mcr.microsoft.com/devcontainers/java:0-17",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker": {},
+    "ghcr.io/devcontainers/features/java:1": {
+      "installGradle": true,
+      "version": "latest",
+      "jdkDistro": "open",
+      "gradleVersion": "7.5.1"
+    },
+    // Python needed for `airbyte-ci` CLI
+    "ghcr.io/devcontainers/features/python:1": {
+      "installGradle": true,
+      "version": "3.10",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+  },
+  // Deterministic order reduces cache busting
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/devcontainers/features/docker-in-docker",
+    "ghcr.io/devcontainers/features/java",
+    "ghcr.io/devcontainers/features/python",
+    "ghcr.io/devcontainers-contrib/features/poetry"
+  ],
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Python extensions:
+        "charliermarsh.ruff",
+        "matangover.mypy",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        // Toml support
+        "tamasfe.even-better-toml",
+        // Yaml and JSON Schema support:
+        "redhat.vscode-yaml",
+        // Contributing:
+        "GitHub.vscode-pull-request-github",
+        // General AI Auto-Complete (Python and Java)
+        "VisualStudioExptTeam.vscodeintellicode",
+        // Gradle and Java
+        "redhat.java",
+        "vscjava.vscode-gradle",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-java-dependency"
+      ],
+      "settings": {
+        "extensions.ignoreRecommendations": true,
+        "git.openRepositoryInParentFolders": "always"
+      }
+    }
+  },
+  // Mark the root directory as 'safe' for git.
+  "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
+  // Install Gradle, `airbyte-ci` CLI, and Dagger (installed via airbyte-ci --help)
+  "postCreateCommand": "make tools.airbyte-ci-dev.install",
+  "containerEnv": {
+    // Deterministic Poetry virtual env location: `./.venv`
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+  }
+  // Override to change the directory that the IDE opens by default:
+  // "workspaceFolder": "/workspaces/airbyte"
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
