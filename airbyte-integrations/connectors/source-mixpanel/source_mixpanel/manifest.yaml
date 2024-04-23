@@ -94,6 +94,8 @@ definitions:
     cursor_field: date
     cursor_datetime_formats:
       - "%Y-%m-%d"
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%S%z"
     datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
@@ -215,8 +217,19 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester"
-        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/app/projects/{{  config.credentials.project_id }}"
+        type: CustomRequester
+        class_name: "source_mixpanel.components.AnnotationsHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: "{{ parameters['path'] }}"
+        authenticator: "#/definitions/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "{{ 'results' if config.credentials.project_id else 'annotations' }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   # https://developer.mixpanel.com/reference/funnels-query
   funnel_ids_stream:
