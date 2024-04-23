@@ -6,7 +6,7 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.source import TState
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
@@ -22,5 +22,5 @@ class SourceSFTPBulk(FileBasedSource):
             catalog=catalog,
             config=config,
             state=state,
-            cursor_cls=DefaultFileBasedCursor,
+            cursor_cls=FileBasedConcurrentCursor,
         )

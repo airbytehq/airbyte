@@ -4,7 +4,7 @@ import json
 import os
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials
 
@@ -25,7 +25,7 @@ def test_mailchimp_config_migration():
         catalog={},
         config=load_config(config_path),
         state=None,
-        cursor_cls=DefaultFileBasedCursor,
+        cursor_cls=FileBasedConcurrentCursor,
     )
     migration_instance.migrate(["check", "--config", config_path], source)
     test_migrated_config = load_config(config_path)

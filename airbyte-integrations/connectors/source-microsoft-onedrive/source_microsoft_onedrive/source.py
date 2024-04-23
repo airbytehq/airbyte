@@ -5,7 +5,7 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.source import TState
 from source_microsoft_onedrive.spec import SourceMicrosoftOneDriveSpec
 from source_microsoft_onedrive.stream_reader import SourceMicrosoftOneDriveStreamReader
@@ -19,7 +19,7 @@ class SourceMicrosoftOneDrive(FileBasedSource):
             catalog=catalog,
             config=config,
             state=state,
-            cursor_cls=DefaultFileBasedCursor,
+            cursor_cls=FileBasedConcurrentCursor,
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
