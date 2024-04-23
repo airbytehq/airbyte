@@ -93,15 +93,13 @@ class DebeziumMessageProducer<T>(
             }
         }
 
-        if (checkpointOffsetToSend.size == 1 && !message!!.isSnapshotEvent) {
+        if (checkpointOffsetToSend.size == 1 && !message.isSnapshotEvent) {
             if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
                 shouldEmitStateMessage = true
-            } else {
-                LOGGER.info("Encountered records with the same event offset.")
             }
         }
 
-        return eventConverter.toAirbyteMessage(message!!)
+        return eventConverter.toAirbyteMessage(message)
     }
 
     override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage {

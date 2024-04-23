@@ -19,7 +19,8 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
-abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(S3Format.CSV) {
+abstract class S3BaseCsvDestinationAcceptanceTest :
+    S3DestinationAcceptanceTest(FileUploadFormat.CSV) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -45,12 +46,15 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
         val fieldTypes = getFieldTypes(streamSchema)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key).use { `object` ->
+        for (objectSummary in objectSummaries) {
+            s3Client!!.getObject(objectSummary.bucketName, objectSummary.key).use { `object` ->
                 getReader(`object`).use { `in` ->
                     val records: Iterable<CSVRecord> =
-                        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)
-                            .withFirstRecordAsHeader()
+                        CSVFormat.Builder.create()
+                            .setHeader()
+                            .setSkipHeaderRecord(true)
+                            .setQuoteMode(QuoteMode.NON_NUMERIC)
+                            .build()
                             .parse(`in`)
                     StreamSupport.stream(records.spliterator(), false).forEach { r: CSVRecord ->
                         jsonRecords.add(getJsonNode(r.toMap(), fieldTypes))
@@ -87,7 +91,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
             input: Map<String, String>,
             fieldTypes: Map<String, String>
         ): JsonNode {
-            val json: ObjectNode = S3DestinationAcceptanceTest.Companion.MAPPER.createObjectNode()
+            val json: ObjectNode = MAPPER.createObjectNode()
 
             if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
                 return Jsons.deserialize(input[JavaBaseConstants.COLUMN_NAME_DATA])
@@ -100,7 +104,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
                 ) {
                     continue
                 }
-                if (value == null || value == "") {
+                if (value == "") {
                     continue
                 }
                 val type = fieldTypes[key]

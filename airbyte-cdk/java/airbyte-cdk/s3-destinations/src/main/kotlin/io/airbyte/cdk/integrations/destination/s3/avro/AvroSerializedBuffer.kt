@@ -83,7 +83,7 @@ class AvroSerializedBuffer(
         const val DEFAULT_SUFFIX: String = ".avro"
 
         fun createFunction(
-            config: S3AvroFormatConfig,
+            config: UploadAvroFormatConfig,
             createStorageFunction: Callable<BufferStorage>
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
