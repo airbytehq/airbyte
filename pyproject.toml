@@ -179,7 +179,14 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 [tool.ruff.isort]
 force-sort-within-sections = false
 lines-after-imports = 2
-known-first-party = ["airbyte_cdk", "airbyte_protocol"]
+known-first-party = [
+    "airbyte",
+    "airbyte_cdk",
+    "airbyte_protocol",
+    "airbyte_api_client",
+    "connector_ops",
+    "pipelines",
+]
 known-local-folder = ["airbyte"]
 required-imports = ["from __future__ import annotations"]
 known-third-party = []
