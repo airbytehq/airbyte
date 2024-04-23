@@ -10,7 +10,7 @@ This project contains utilities for running connector tests against live data.
 
 ## Install
 ```bash
-# From tools/connectors/live-tests
+# From airbyte-ci/connectors/live-tests
 pipx install .
 # To install in editable mode for development
 pipx install . --force --editable
@@ -135,7 +135,7 @@ The live connection objects will be fetched.
  --connector-image=airbyte/source-faker \
  --connection-id=<CONNECTION-ID> \
  --target-version=dev \
- --control-version=latest 
+ --control-version=latest \
   --pr-url=<PR-URL> # The URL of the PR you are testing
  ```
 
