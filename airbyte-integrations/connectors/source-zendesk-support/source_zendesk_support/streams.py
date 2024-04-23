@@ -517,6 +517,13 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
         for record in parent_records:
             yield {"ticket_id": record["id"]}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            #  not found in case of deleted ticket
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
