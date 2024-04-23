@@ -21,7 +21,7 @@ class SourceJira(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
-    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool | Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             streams = self.streams(config)
             stream_name_to_stream = {s.name: s for s in streams}
