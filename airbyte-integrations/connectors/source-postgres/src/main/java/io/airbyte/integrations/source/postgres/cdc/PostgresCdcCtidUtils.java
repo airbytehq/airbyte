@@ -34,7 +34,6 @@ public class PostgresCdcCtidUtils {
       return new CtidStreams(
           fullCatalog.getStreams()
               .stream()
-              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
               .collect(Collectors.toList()),
           new HashMap<>());
     }

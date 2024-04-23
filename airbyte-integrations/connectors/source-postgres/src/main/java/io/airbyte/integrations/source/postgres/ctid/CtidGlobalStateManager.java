@@ -33,8 +33,9 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidGlobalStateManager.class);
 
-  protected final CdcState cdcState;
-  private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+  private final CdcState cdcState;
+  private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
+  private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
                                 final FileNodeHandler fileNodeHandler,
@@ -42,20 +43,24 @@ public class CtidGlobalStateManager extends CtidStateManager {
                                 final ConfiguredAirbyteCatalog catalog) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodeHandler));
     this.cdcState = cdcState;
-    this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(ctidStreams, catalog);
+    initStream(ctidStreams, catalog);
   }
 
-  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams,
+  private void initStream(final CtidStreams ctidStreams,
                                                                                   final ConfiguredAirbyteCatalog catalog) {
-    final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
+    this.streamsThatHaveCompletedSnapshot = new HashSet<>();
+    this.resumableFullRefreshStreams = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
-      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
-        return;
+      if (!ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+        streamsThatHaveCompletedSnapshot.add(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
       }
-      streamsThatHaveCompletedSnapshot.add(
-          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream)
+          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        this.resumableFullRefreshStreams.add(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      }
     });
-    return streamsThatHaveCompletedSnapshot;
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(
@@ -79,11 +84,18 @@ public class CtidGlobalStateManager extends CtidStateManager {
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     pairToCtidStatus.put(pair, ctidStatus);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
+
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
 
     });
+
+    resumableFullRefreshStreams.forEach(stream -> {
+      final DbStreamState state = getFinalState(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
+
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ctidStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
@@ -96,9 +108,17 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
-    streamsThatHaveCompletedSnapshot.add(pair);
+    // Only incremental streams can be transformed into the next phase.
+    if (!resumableFullRefreshStreams.contains(pair)) {
+      streamsThatHaveCompletedSnapshot.add(pair);
+    }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
+      final DbStreamState state = getFinalState(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
+
+    resumableFullRefreshStreams.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
     });
@@ -112,7 +132,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
         .withGlobal(globalState);
   }
 
-  protected AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());

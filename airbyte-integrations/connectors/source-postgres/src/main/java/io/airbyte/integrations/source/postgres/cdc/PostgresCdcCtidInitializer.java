@@ -57,13 +57,69 @@ public class PostgresCdcCtidInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcCtidInitializer.class);
 
+  public static CtidGlobalStateManager getCtidInitialLoadGlobalStateManager(final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+      final StateManager stateManager,
+      final String quoteString,
+      final JsonNode replicationSlot) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+
+
+    final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
+        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+    final JsonNode state =
+        (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
+            ? initialDebeziumState
+            : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
+        Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
+        catalog,
+        state,
+        sourceConfig);
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
+        // We can assume that there will be only 1 replication slot cause before the sync starts for
+        // Postgres CDC,
+        // we run all the check operations and one of the check validates that the replication slot exists
+        // and has only 1 entry
+        replicationSlot,
+        savedOffset);
+
+    final CdcState stateToBeUsed = (!savedOffsetAfterReplicationSlotLSN || stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
+        : stateManager.getCdcStateManager().getCdcState();
+    final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
+        savedOffsetAfterReplicationSlotLSN);
+    final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
+    streamsUnderVacuum.addAll(streamsUnderVacuum(database,
+        ctidStreams.streamsForCtidSync(), quoteString).result());
+
+    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+        streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
+            : ctidStreams.streamsForCtidSync().stream()
+                .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
+                .toList();
+    LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+    LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
+    final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
+        finalListOfStreamsToBeSyncedViaCtid,
+        quoteString);
+    final CtidGlobalStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
+    ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.emptyObject(), fileNodeHandler);
+    return ctidStateManager;
+
+  }
+
   public static List<AutoCloseableIterator<AirbyteMessage>> cdcCtidIteratorsCombined(final JdbcDatabase database,
                                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                                      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                                      final StateManager stateManager,
                                                                                      final Instant emittedAt,
                                                                                      final String quoteString,
-                                                                                     final JsonNode replicationSlot) {
+                                                                                     final JsonNode replicationSlot,
+      final CtidGlobalStateManager ctidStateManager) {
     try {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
@@ -144,8 +200,6 @@ public class PostgresCdcCtidInitializer {
         final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             quoteString);
-        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
-        ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.emptyObject(), fileNodeHandler);
         final PostgresCtidHandler ctidHandler =
             createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, quoteString, ctidStateManager);
 
@@ -162,7 +216,7 @@ public class PostgresCdcCtidInitializer {
       // receive that is after the target LSN.
       PostgresUtils.advanceLsn(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
+          targetPosition, false, firstRecordWaitTime, queueSize, false);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
           PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog);
