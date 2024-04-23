@@ -8,105 +8,24 @@ import os
 import responses
 from pytest import fixture
 from responses import matchers
+from source_jira.source import SourceJira
 from source_jira.streams import (
-    ApplicationRoles,
-    Avatars,
-    BoardIssues,
-    Boards,
-    Dashboards,
-    Filters,
-    FilterSharing,
-    Groups,
     IssueComments,
-    IssueCustomFieldContexts,
-    IssueFieldConfigurations,
     IssueFields,
-    IssueLinkTypes,
-    IssueNavigatorSettings,
-    IssueNotificationSchemes,
-    IssuePriorities,
-    IssuePropertyKeys,
-    IssueRemoteLinks,
-    IssueResolutions,
     Issues,
-    IssueSecuritySchemes,
-    IssueTypeSchemes,
-    IssueVotes,
-    IssueWatchers,
     IssueWorklogs,
-    JiraSettings,
-    Labels,
-    Permissions,
-    ProjectAvatars,
-    ProjectCategories,
-    ProjectComponents,
-    ProjectEmail,
-    ProjectPermissionSchemes,
     Projects,
-    ProjectVersions,
-    Screens,
-    ScreenTabs,
-    SprintIssues,
-    Sprints,
-    TimeTracking,
-    Users,
-    UsersGroupsDetailed,
-    Workflows,
-    WorkflowSchemes,
-    WorkflowStatusCategories,
-    WorkflowStatuses,
 )
 
 
 @fixture(scope="session", autouse=True)
 def disable_cache():
     classes = [
-        ApplicationRoles,
-        Avatars,
-        BoardIssues,
-        Boards,
-        Dashboards,
-        Filters,
-        FilterSharing,
-        Groups,
         IssueComments,
-        IssueCustomFieldContexts,
-        IssueFieldConfigurations,
         IssueFields,
-        IssueLinkTypes,
-        IssueNavigatorSettings,
-        IssueNotificationSchemes,
-        IssuePriorities,
-        IssuePropertyKeys,
-        IssueRemoteLinks,
-        IssueResolutions,
         Issues,
-        IssueSecuritySchemes,
-        IssueTypeSchemes,
-        IssueVotes,
-        IssueWatchers,
         IssueWorklogs,
-        JiraSettings,
-        Labels,
-        Permissions,
-        ProjectAvatars,
-        ProjectCategories,
-        ProjectComponents,
-        ProjectEmail,
-        ProjectPermissionSchemes,
         Projects,
-        ProjectVersions,
-        Screens,
-        ScreenTabs,
-        SprintIssues,
-        Sprints,
-        TimeTracking,
-        Users,
-        UsersGroupsDetailed,
-        Workflows,
-        WorkflowSchemes,
-        WorkflowStatusCategories,
-        WorkflowStatuses,
     ]
     for cls in classes:
         # Disabling cache for all streams to assess the number of calls made for each stream.
@@ -625,3 +544,17 @@ def mock_sprints_response(config, sprints_response):
         f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
         json=sprints_response,
     )
+
+
+def find_stream(stream_name, config):
+    streams = SourceJira().streams(config=config)
+
+    # cache should be disabled once this issue is fixed https://github.com/airbytehq/airbyte-internal-issues/issues/6513
+    # for stream in streams:
+    #     stream.retriever.requester.use_cache = True
+
+    # find by name
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
