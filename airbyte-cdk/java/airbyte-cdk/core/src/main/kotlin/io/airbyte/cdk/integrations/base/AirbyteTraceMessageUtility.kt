@@ -85,8 +85,8 @@ object AirbyteTraceMessageUtility {
         // Not sure why defaultOutputRecordCollector is under Destination specifically,
         // but this matches usage elsewhere in base-java
         val outputRecordCollector =
-            Consumer<AirbyteMessage> { message: AirbyteMessage? ->
-                Destination.Companion.defaultOutputRecordCollector(message)
+            Consumer<AirbyteMessage> { m: AirbyteMessage? ->
+                Destination.Companion.defaultOutputRecordCollector(m)
             }
         outputRecordCollector.accept(message)
     }
