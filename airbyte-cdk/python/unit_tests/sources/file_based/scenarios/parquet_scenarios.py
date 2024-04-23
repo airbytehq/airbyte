@@ -189,7 +189,10 @@ single_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -259,7 +262,10 @@ single_partitioned_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_path_prefix/partition1=1/partition2=2/a.parquet",
+                "history": {"path_prefix/partition1=1/partition2=2/a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -369,7 +375,10 @@ multi_parquet_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z", "b.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
 ).build()
@@ -506,7 +515,10 @@ parquet_various_types_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
 ).build()
@@ -541,7 +553,10 @@ parquet_file_with_decimal_no_config_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -596,7 +611,10 @@ parquet_file_with_decimal_as_string_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -647,7 +665,10 @@ parquet_file_with_decimal_as_float_scenario = (
                 "data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.parquet"},
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.parquet",
+                "history": {"a.parquet": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
