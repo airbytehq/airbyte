@@ -1123,14 +1123,14 @@ abstract class BaseTypingDedupingTest {
                             convertProtocolObject(
                                 message,
                                 io.airbyte.protocol.models.AirbyteMessage::class.java
-                            )
+                            )!!
                         )
                     }
                 }
             )
         }
 
-        private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
+        private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0? {
             return Jsons.`object`(Jsons.jsonNode(v1), klass)
         }
     }

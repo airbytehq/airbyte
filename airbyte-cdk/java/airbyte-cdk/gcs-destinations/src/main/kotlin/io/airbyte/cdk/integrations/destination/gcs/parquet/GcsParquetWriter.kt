@@ -65,6 +65,7 @@ class GcsParquetWriter(
         val formatConfig = config.formatConfig as UploadParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
         this.parquetWriter =
+            @Suppress("deprecation")
             AvroParquetWriter.builder<GenericData.Record>(
                     HadoopOutputFile.fromPath(path, hadoopConfig)
                 )

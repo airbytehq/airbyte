@@ -93,13 +93,13 @@ class DebeziumMessageProducer<T>(
             }
         }
 
-        if (checkpointOffsetToSend.size == 1 && !message!!.isSnapshotEvent) {
+        if (checkpointOffsetToSend.size == 1 && !message.isSnapshotEvent) {
             if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
                 shouldEmitStateMessage = true
             }
         }
 
-        return eventConverter.toAirbyteMessage(message!!)
+        return eventConverter.toAirbyteMessage(message)
     }
 
     override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage {

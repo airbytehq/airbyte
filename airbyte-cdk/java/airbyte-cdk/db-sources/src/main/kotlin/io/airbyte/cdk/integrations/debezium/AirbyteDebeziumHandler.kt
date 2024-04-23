@@ -33,7 +33,6 @@ class AirbyteDebeziumHandler<T>(
     private val targetPosition: CdcTargetPosition<T>,
     private val trackSchemaHistory: Boolean,
     private val firstRecordWaitTime: Duration,
-    private val subsequentRecordWaitTime: Duration,
     private val queueSize: Int,
     private val addDbNameToOffsetState: Boolean
 ) {
@@ -106,8 +105,7 @@ class AirbyteDebeziumHandler<T>(
                 targetPosition,
                 { publisher.hasClosed() },
                 DebeziumShutdownProcedure(queue, { publisher.close() }, { publisher.hasClosed() }),
-                firstRecordWaitTime,
-                subsequentRecordWaitTime
+                firstRecordWaitTime
             )
 
         val syncCheckpointDuration =
@@ -134,13 +132,13 @@ class AirbyteDebeziumHandler<T>(
         // not used
         // at all thus we will pass in null.
         val iterator: SourceStateIterator<ChangeEventWithMetadata> =
-            SourceStateIterator<ChangeEventWithMetadata>(
+            SourceStateIterator(
                 eventIterator,
                 null,
-                messageProducer!!,
+                messageProducer,
                 StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)
             )
-        return AutoCloseableIterators.fromIterator<AirbyteMessage>(iterator)
+        return AutoCloseableIterators.fromIterator(iterator)
     }
 
     companion object {

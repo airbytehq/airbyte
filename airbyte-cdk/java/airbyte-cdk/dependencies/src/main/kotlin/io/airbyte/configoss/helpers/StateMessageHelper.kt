@@ -26,17 +26,13 @@ object StateMessageHelper {
         if (state == null) {
             return Optional.empty()
         } else {
-            val stateMessages: List<AirbyteStateMessage>
+            val stateMessages: List<AirbyteStateMessage>?
             try {
-                stateMessages =
-                    `object`<List<AirbyteStateMessage>>(
-                        state,
-                        AirbyteStateMessageListTypeReference()
-                    )
+                stateMessages = `object`(state, AirbyteStateMessageListTypeReference())
             } catch (e: IllegalArgumentException) {
                 return Optional.of(getLegacyStateWrapper(state))
             }
-            if (stateMessages.isEmpty()) {
+            if (stateMessages!!.isEmpty()) {
                 return Optional.empty()
             }
 
