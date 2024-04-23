@@ -62,7 +62,7 @@ object SSLCertificateUtils {
     @Throws(IOException::class, InterruptedException::class)
     private fun runProcess(cmd: String, run: Runtime) {
         LOGGER.debug("running [{}]", cmd)
-        val p = run.exec(cmd)
+        @Suppress("deprecation") val p = run.exec(cmd)
         if (!p.waitFor(30, TimeUnit.SECONDS)) {
             p.destroy()
             throw RuntimeException("Timeout while executing: $cmd")

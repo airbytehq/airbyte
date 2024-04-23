@@ -62,9 +62,7 @@ object StreamStatusUtils {
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        if (airbyteStream is AirbyteStreamAware) {
-            emitRunningStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
-        }
+        emitRunningStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
 
     /**
@@ -90,7 +88,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream!!.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("RUNNING -> {}", s)
             emitStreamStatus(
                 s,
@@ -110,9 +108,7 @@ object StreamStatusUtils {
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        if (airbyteStream is AirbyteStreamAware) {
-            emitStartStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
-        }
+        emitStartStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
 
     /**
@@ -138,7 +134,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream!!.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("STARTING -> {}", s)
             emitStreamStatus(
                 s,
@@ -158,9 +154,7 @@ object StreamStatusUtils {
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        if (airbyteStream is AirbyteStreamAware) {
-            emitCompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
-        }
+        emitCompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
 
     /**
@@ -186,7 +180,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream!!.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("COMPLETE -> {}", s)
             emitStreamStatus(
                 s,
@@ -206,9 +200,7 @@ object StreamStatusUtils {
         airbyteStream: AutoCloseableIterator<AirbyteMessage>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        if (airbyteStream is AirbyteStreamAware) {
-            emitIncompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
-        }
+        emitIncompleteStreamStatus(airbyteStream as AirbyteStreamAware, statusEmitter)
     }
 
     /**
@@ -234,7 +226,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream!!.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("INCOMPLETE -> {}", s)
             emitStreamStatus(
                 s,
