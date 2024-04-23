@@ -315,7 +315,7 @@ def annotations_response():
     return setup_response(
         200,
         {
-            "results": [
+            "annotations": [
                 {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
                 {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
             ]
@@ -325,7 +325,7 @@ def annotations_response():
 
 def test_annotations_stream(requests_mock, annotations_response, config_raw):
     stream = init_stream('annotations', config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/app/projects/annotations", annotations_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", annotations_response)
 
     stream_slice = StreamSlice(partition={}, cursor_slice= {
         "start_time": "2021-01-25",
