@@ -20,7 +20,6 @@ import io.airbyte.commons.string.Strings
 import io.airbyte.protocol.models.JsonSchemaType
 import java.math.BigDecimal
 import java.sql.*
-import java.util.stream.Collectors
 import javax.sql.DataSource
 import org.bouncycastle.util.encoders.Base64
 import org.junit.jupiter.api.Assertions
@@ -122,7 +121,7 @@ internal class TestJdbcUtils {
                 JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet ->
                         sourceOperations.rowToJson(queryContext)
                     }
-                    .collect(Collectors.toList())
+                    .toList()
             Assertions.assertEquals(RECORDS_AS_JSON, actual)
         }
     }

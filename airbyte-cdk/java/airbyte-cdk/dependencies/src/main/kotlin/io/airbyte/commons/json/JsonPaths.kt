@@ -17,7 +17,6 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider
 import io.airbyte.commons.util.MoreIterators
 import java.util.*
 import java.util.function.BiFunction
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -171,7 +170,7 @@ object JsonPaths {
         return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
             .stream()
             .map { obj: JsonNode -> obj.asText() }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     /**

@@ -16,7 +16,6 @@ import java.io.IOException
 import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -106,7 +105,7 @@ constructor(
                         .setType(StandardSQLTypeName.STRING)
                         .build()
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         return query(sql, parameterValueList)
     }

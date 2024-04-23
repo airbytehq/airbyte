@@ -16,7 +16,6 @@ import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 private val log = KotlinLogging.logger {}
 
@@ -68,7 +67,7 @@ object JsonSchemas {
                     resources
                         .map { p: Path -> p.fileName.toString() }
                         .filter { p: String -> p.endsWith(".yaml") }
-                        .collect(Collectors.toList())
+                        .toList()
             }
             val configRoot = Files.createTempDirectory("schemas")
             for (filename in filenames) {
@@ -304,7 +303,7 @@ object JsonSchemas {
                 MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator())
                     .stream()
                     .map { obj: JsonNode -> obj.asText() }
-                    .collect(Collectors.toList())
+                    .toList()
             } else {
                 java.util.List.of(jsonSchema[JSON_SCHEMA_TYPE_KEY].asText())
             }
