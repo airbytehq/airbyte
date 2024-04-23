@@ -69,3 +69,11 @@ class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
         for stream_slice in super().stream_slices():
             setattr(stream_slice, "parent_stream_fields", fields)
             yield stream_slice
+
+
+class SubstreamOrSinglePartitionRouter(SubstreamPartitionRouter):
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        if self.config.get("projects"):
+            yield from super().stream_slices()
+        else:
+            yield from [StreamSlice(partition={}, cursor_slice={})]

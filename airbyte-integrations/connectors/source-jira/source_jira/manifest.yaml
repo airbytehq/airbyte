@@ -1103,7 +1103,8 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_jira.components.partition_routers.SubstreamOrSinglePartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/projects_stream"
@@ -1115,7 +1116,7 @@ definitions:
           fields: "*all"
           jql: >
             "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}' "
-            "and project in ({{ stream_slice.project_id }}) "
+            "{{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id else '' }}"
             "ORDER BY updated asc"
           expand: "renderedFields,transitions,changelog"
         error_handler:
