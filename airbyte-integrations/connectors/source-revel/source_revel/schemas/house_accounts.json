@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "balance": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "max_limit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}

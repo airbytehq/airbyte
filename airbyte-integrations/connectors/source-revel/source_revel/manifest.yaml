@@ -73,12 +73,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /enterprise/Company/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
     customers:
       type: DeclarativeStream
       name: customers
@@ -87,14 +87,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: "#/definitions/incremental_requester"
           path: /resources/Customer/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     employees:
       type: DeclarativeStream
       name: employees
@@ -103,14 +103,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /resources/Employee/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
     establishments:
       type: DeclarativeStream
       name: establishments
@@ -119,12 +119,56 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /enterprise/Establishment/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
+    house_accounts:
+      type: DeclarativeStream
+      name: house_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /resources/HouseAccount/
+        record_selector:
+          $ref: "#/definitions/record_selector"
+        paginator:
+          $ref: "#/definitions/paginator"
+    house_account_payments:
+      type: DeclarativeStream
+      name: house_account_payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /resources/HouseAccountPayment/
+        record_selector:
+          $ref: "#/definitions/record_selector"
+        paginator:
+          $ref: "#/definitions/paginator"
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
+    house_account_transactions:
+      type: DeclarativeStream
+      name: house_account_transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /resources/HouseAccountTransaction/
+        record_selector:
+          $ref: "#/definitions/record_selector"
+        paginator:
+          $ref: "#/definitions/paginator"
     orders:
       type: DeclarativeStream
       name: orders
@@ -133,14 +177,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: "#/definitions/incremental_requester"
           path: /resources/Order/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     order_items:
       type: DeclarativeStream
       name: order_items
@@ -149,14 +193,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: "#/definitions/incremental_requester"
           path: /resources/OrderItem/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     payments:
       type: DeclarativeStream
       name: payments
@@ -165,14 +209,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/incremental_requester'
+          $ref: "#/definitions/incremental_requester"
           path: /resources/Payment/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     products:
       type: DeclarativeStream
       name: products
@@ -181,14 +225,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /resources/Product/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
     product_categories:
       type: DeclarativeStream
       name: product_categories
@@ -197,14 +241,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products/ProductCategory/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
     product_groups:
       type: DeclarativeStream
       name: product_groups
@@ -213,14 +257,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /resources/ProductGroup/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
     product_classes:
       type: DeclarativeStream
       name: product_classes
@@ -229,14 +273,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products/ProductClass/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
     users:
       type: DeclarativeStream
       name: users
@@ -245,42 +289,45 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /enterprise/User/
         record_selector:
-          $ref: '#/definitions/record_selector'
+          $ref: "#/definitions/record_selector"
         paginator:
-          $ref: '#/definitions/paginator'
+          $ref: "#/definitions/paginator"
   base_requester:
     type: HttpRequester
     url_base: https://api.qa.revelup.io/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}:{{ config[''api_secret''] }}'
+      api_token: "{{ config['api_key'] }}:{{ config['api_secret'] }}"
       inject_into:
         type: RequestOption
         field_name: API-AUTHENTICATION
         inject_into: header
     http_method: GET
     request_headers:
-      Client-Id: '{{ config[''client_id''] }}'
+      Client-Id: "{{ config['client_id'] }}"
   incremental_requester:
-    $ref: '#/definitions/base_requester'
+    $ref: "#/definitions/base_requester"
     request_parameters:
-      created_date__gte: '{{ config[''start_date''] }}'
+      created_date__gte: "{{ config['start_date'] }}"
 streams:
-  - $ref: '#/definitions/streams/companies'
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/employees'
-  - $ref: '#/definitions/streams/establishments'
-  - $ref: '#/definitions/streams/orders'
-  - $ref: '#/definitions/streams/order_items'
-  - $ref: '#/definitions/streams/payments'
-  - $ref: '#/definitions/streams/products'
-  - $ref: '#/definitions/streams/product_categories'
-  - $ref: '#/definitions/streams/product_classes'
-  - $ref: '#/definitions/streams/product_groups'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/establishments"
+  - $ref: "#/definitions/streams/house_accounts"
+  - $ref: "#/definitions/streams/house_account_payments"
+  - $ref: "#/definitions/streams/house_account_transactions"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/order_items"
+  - $ref: "#/definitions/streams/payments"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/product_categories"
+  - $ref: "#/definitions/streams/product_classes"
+  - $ref: "#/definitions/streams/product_groups"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec

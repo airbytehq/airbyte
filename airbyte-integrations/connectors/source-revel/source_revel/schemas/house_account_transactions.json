@@ -1,0 +1,336 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "action_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "applied": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "applied_amount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "apply_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "balance": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "end_balance": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "establishment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "house_account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payment": {
+      "properties": {
+        "amount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amount_authorized": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bill": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "card_type": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cash_drawer": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "change": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency_amount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency_tip": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency_type": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "establishment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "gratuity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "id": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "last_4_cc_digits": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "online": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "order": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "payment_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "payment_type": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "processor_accepted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "rate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refunded": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "resource_uri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rounding_delta": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "source_type": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "station": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tip": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transaction_captured": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "transaction_data": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transaction_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updated_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uuid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "updated_date"
+  ],
+  "type": "object"
+}
