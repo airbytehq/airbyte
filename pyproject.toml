@@ -23,30 +23,6 @@ omit = [
     "**/generated/*",
 ]
 
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
-    ".tox",
-    "airbyte_api_client",
-    "**/generated/*",
-]
-max-complexity = 20
-max-line-length = 140
-
-extend-ignore = [
-    "E203", # whitespace before ':' (conflicts with Black)
-    "E231", # Bad trailing comma (conflicts with Black)
-    "E501", # line too long (conflicts with Black)
-    "W503", # line break before binary operator (conflicts with Black)
-    "F811", # TODO: ella fix after pflake8 version update
-]
-
 [tool.ruff.pylint]
 max-args = 8      # Relaxed from default of 5
 max-branches = 15 # Relaxed from default of 12

@@ -57,7 +57,10 @@ pytesseract = { version = "0.3.10", optional = true }
 Sphinx = { version = "~4.2", optional = true }
 sphinx-rtd-theme = { version = "~1.0", optional = true }
 tiktoken = { version = "0.4.0", optional = true }
-unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true }
+unstructured = { version = "0.10.27", extras = [
+    "docx",
+    "pptx",
+], optional = true }
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
@@ -68,7 +71,6 @@ freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
 poethepoet = "^0.24.2"
-pyproject-flake8 = "^6.1.0"
 pytest = "6.2.5"
 pytest-cov = "*"
 pytest-httpserver = "*"
@@ -76,23 +78,45 @@ pytest-mock = "*"
 requests-mock = "*"
 
 [tool.poetry.extras]
-file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown"]
+file-based = [
+    "avro",
+    "fastavro",
+    "pyarrow",
+    "unstructured",
+    "pdf2image",
+    "pdfminer.six",
+    "unstructured.pytesseract",
+    "pytesseract",
+    "markdown",
+]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
 [tool.poe.tasks]
 # Build tasks
-assemble = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
-build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
-build = {sequence = ["assemble", "build-package"], help = "Run all tasks to build the package."}
+assemble = { cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files." }
+build-package = { cmd = "poetry build", help = "Build the python package: source and wheels archives." }
+build = { sequence = [
+    "assemble",
+    "build-package",
+], help = "Run all tasks to build the package." }
 
 # Check tasks
-lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
-type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
-unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
+type-check = { cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy." }
+unit-test-with-cov = { cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report." }
+
 # TODO: find a version of the modified mypy check that works both locally and in CI.
-check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
-check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
+check-local = { sequence = [
+    "type-check",
+    "unit-test-with-cov",
+], help = "Lint all code, type-check modified files, and run unit tests." }
+
+check-ci = { sequence = [
+    "unit-test-with-cov",
+], help = "Lint and run unit tests. Does not include type-checking." }
 
 # Build and check
-pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
+pre-push = { sequence = [
+    "build",
+    "check-local",
+], help = "Run all build and check tasks." }

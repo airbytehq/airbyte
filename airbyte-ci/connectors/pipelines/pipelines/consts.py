@@ -13,8 +13,6 @@ LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
     "mccabe==0.6.1",
-    # "flake8==4.0.1",
-    # "pyproject-flake8==0.0.1a2",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
     "pytest-custom_exit_code",
