@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 1.3.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   githubIssueLabel: source-jira
@@ -30,6 +30,12 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      2.0.0:
+        message: "The migration to low-code will result in incremental stream states changing their format by saving them per partition. Additionally, an issue in the `ProjectAvatars` stream has been fixed, where a field was defined as 'project_id,' when in reality, it holds a project key (now it holds project id)."
+        upgradeDeadline: "2024-05-06"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["board_issues", "issues", "sprint_issues"]
       1.0.0:
         message: "Stream state will be saved for every board in stream `Boards Issues`. Customers who use stream `Board Issues` in Incremental Sync mode must take action with their connections."
         upgradeDeadline: "2024-01-25"
