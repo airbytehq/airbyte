@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import _ from "lodash";
 import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 
 import { Button, LoadingPage, NewMainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
@@ -15,12 +15,14 @@ import { PageSize } from "components/PageSize";
 import { Pagination } from "components/Pagination";
 import { Separator } from "components/Separator";
 
+import { useUser } from "core/AuthContext";
 import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFilteredConnectionList, useConnectionFilterOptions } from "hooks/services/useConnectionHook";
 import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import NewConnectionsTable from "./components/NewConnectionsTable";
@@ -71,6 +73,10 @@ const Footer = styled.div`
 const AllConnectionsPage: React.FC = () => {
   // const CONNECTION_PAGE_SIZE = 10;
   const { push, pathname, query } = useRouter();
+  const { user, setUser } = useUser();
+  const [searchParams] = useSearchParams();
+  const authService = useAuthenticationService();
+  const token = searchParams.get("token");
   const location = useLocation();
   // const { push, pathname, query } = useRouter();
   const [messageId, setMessageId] = useState<string | undefined>("");
@@ -100,8 +106,29 @@ const AllConnectionsPage: React.FC = () => {
   };
 
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
-  console.log(query, "query");
+
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
+
+  const getUserInfo = useCallback(() => {
+    if (user?.token !== token) {
+      authService
+        .getUserInfo(token as string)
+        .then((res: any) => {
+          setUser?.({ ...res.data, token });
+        })
+        .catch((err) => {
+          if (err.message) {
+            console.log(err?.message);
+          }
+        });
+    }
+  }, [authService, setUser, token]);
+
+  useEffect(() => {
+    if (token) {
+      getUserInfo();
+    }
+  }, []);
   // const connectionIds = connections?.map((con: any) => con?.connectionId);
   // const apiData = {
   //   connectionIds,
