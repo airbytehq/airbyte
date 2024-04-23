@@ -413,7 +413,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
                 .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
                 .collect(Collectors.toList())
-        Assertions.assertEquals(prunedExpected.size, prunedActual.size, message)
+        Assertions.assertEquals(prunedExpected.size, prunedActual.size, message+ "pruned expected: " + prunedExpected + " prunedActual: " + prunedActual )
         Assertions.assertTrue(prunedExpected.containsAll(prunedActual), message + "pruned expected: " + prunedExpected + " prunedActual: " + prunedActual )
         Assertions.assertTrue(prunedActual.containsAll(prunedExpected), message+ "pruned expected: " + prunedExpected + " prunedActual: " + prunedActual )
     }
