@@ -10,8 +10,8 @@ This project contains utilities for running connector tests against live data.
 
 ## Install
 ```bash
-# From tools/connectors/live-tests
-pipx install .
+# From airbyte-ci/connectors/live-tests
+poetry install
 # To install in editable mode for development
 pipx install . --force --editable
 ```
@@ -119,7 +119,8 @@ You can run the existing test suites with the following command:
 #### With local connection objects (`config.json`, `catalog.json`, `state.json`)
 ```bash
 poetry run pytest src/live_tests/regression_tests \ 
---connector-image=airbyte/source-faker \
+ --connector-image=airbyte/source-faker \
+ --connection-id=<CONNECTION-ID> \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
  --target-version=dev \
