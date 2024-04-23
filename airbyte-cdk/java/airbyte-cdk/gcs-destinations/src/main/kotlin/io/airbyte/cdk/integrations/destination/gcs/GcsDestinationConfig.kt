@@ -32,12 +32,12 @@ class GcsDestinationConfig(
 ) :
     S3DestinationConfig(
         GCS_ENDPOINT,
-        bucketName!!,
-        bucketPath!!,
+        bucketName,
+        bucketPath,
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         gcsCredentialConfig.s3CredentialConfig.orElseThrow(),
-        formatConfig!!,
+        formatConfig,
         null,
         null,
         false,
