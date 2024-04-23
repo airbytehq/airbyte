@@ -210,7 +210,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records. first run: " + recordMessagesFirstRun +"; second run: " + recordMessagesSecondRun
+            "Expected two full refresh syncs to produce the same records."
         )
     }
 
@@ -413,8 +413,8 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
                 .collect(Collectors.toList())
         Assertions.assertEquals(prunedExpected.size, prunedActual.size, message)
-        Assertions.assertTrue(prunedExpected.containsAll(prunedActual), message)
-        Assertions.assertTrue(prunedActual.containsAll(prunedExpected), message)
+        Assertions.assertTrue(prunedExpected.containsAll(prunedActual), message + "pruned expected: " + prunedExpected + " prunedActual: " + prunedActual )
+        Assertions.assertTrue(prunedActual.containsAll(prunedExpected), message+ "pruned expected: " + prunedExpected + " prunedActual: " + prunedActual )
     }
 
     private fun pruneEmittedAt(m: AirbyteRecordMessage): AirbyteRecordMessage {
