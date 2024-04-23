@@ -113,7 +113,14 @@ simple_markdown_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_c",
+                "history": {
+                    "a.md": "2023-06-05T03:54:07.000000Z",
+                    "b.md": "2023-06-05T03:54:07.000000Z",
+                    "c": "2023-06-05T03:54:07.000000Z",
+                },
+            },
         ]
     )
 ).build()
@@ -186,7 +193,10 @@ simple_txt_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b",
+                "history": {"a.txt": "2023-06-05T03:54:07.000000Z", "b": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
 ).build()
@@ -295,7 +305,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {"_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.csv", "history": {"a.csv": "2023-06-05T03:54:07.000000Z"}},
         ]
     )
 ).build()
@@ -360,7 +370,7 @@ unstructured_invalid_file_type_read_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {"_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_b.csv", "history": {"a.md": "2023-06-05T03:54:07.000000Z"}},
         ]
     )
 ).build()
@@ -461,7 +471,14 @@ simple_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z_sample.pptx",
+                "history": {
+                    "sample.docx": "2023-06-06T03:54:07.000000Z",
+                    "sample.pdf": "2023-06-05T03:54:07.000000Z",
+                    "sample.pptx": "2023-06-07T03:54:07.000000Z",
+                },
+            },
         ]
     )
 ).build()
@@ -520,7 +537,10 @@ corrupted_file_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_sample.pdf",
+                "history": {"sample.pdf": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
 ).build()
@@ -609,7 +629,14 @@ no_file_extension_unstructured_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z_pptx_without_extension",
+                "history": {
+                    "docx_without_extension": "2023-06-06T03:54:07.000000Z",
+                    "pdf_without_extension": "2023-06-05T03:54:07.000000Z",
+                    "pptx_without_extension": "2023-06-07T03:54:07.000000Z",
+                },
+            },
         ]
     )
 ).build()
