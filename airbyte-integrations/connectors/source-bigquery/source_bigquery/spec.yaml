@@ -1,12 +1,60 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
+supportsIncremental: true
+supported_sync_modes": 
+  - overwrite
+  - append
+  - append_dedup
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Bigquery Spec
+  title: Bigquery New Spec
   type: object
   required:
-    - TODO
+    - project_id
+    - credentials_json
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    project_id:
       type: string
-      description: describe me
+      description: The GCP project ID for the project containing the target BigQuery dataset.
+      title: Project ID
+    dataset_id:
+      type: string
+      description: The dataset ID to search for tables and views. If you are only loading data from one dataset, setting this option could result in much faster schema discovery.
+      title: Default Dataset ID
+    credentials_json:
+      type: string
+      description: The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.
+      title: Credentials JSON
+      airbyte_secret: true
+    streams:
+      title: Push Down Filter
+      description: Used to filter out data on the source and creates a dedicated stream
+      order: 10
+      type: array
+      items:
+        title: FileBasedStreamConfig
+        type: object
+        properties:
+          namespace:
+            title: Namespace
+            description: The namespace that will be used to identify the pushdown filter stream in the connection (nullable).
+            type: string
+          name:
+            title: Name
+            description: The name that will be used to identify the pushdown filter stream in the connection (not nullable)
+            type: string
+          parent_namespace:
+            title: Parent namespace
+            description: The namespace of the relevant stream that the filter is being applied on (nullable).
+            type: string
+          parent_stream:
+            title: Parent stream
+            description: The name of the relevant stream that the filter is being applied on (not nullable).
+            type: string
+          where_clause:
+            title: Where Clause
+            description: A string that must be a valid where clause in the relevant warehouse (not nullable).
+            type: string
+        required:
+        - name
+        - parent_stream
+        - where_clause
