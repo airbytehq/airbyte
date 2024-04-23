@@ -6,7 +6,12 @@ import { LoadingButton, Button } from "components";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
-import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
+import {
+  CHINESE_PAYMENT_STATUS,
+  getChinesePaymentStatus,
+  getPaymentStatus,
+  PAYMENT_STATUS,
+} from "core/Constants/statuses";
 import { useUserPlanDetail } from "services/payments/PaymentsService";
 import { remainingDaysForFreeTrial } from "utils/common";
 
@@ -113,10 +118,12 @@ const ProfessionalCell: React.FC<IProps> = ({
           onClick={onSelectPlan}
           disabled={
             ((remainingDaysForFreeTrial(expiresTime) <= 0 ? false : selectPlanBtnDisability) &&
-              getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription) ||
+              getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription &&
+              getChinesePaymentStatus(user?.status) !== CHINESE_PAYMENT_STATUS.Pause_Subscription) ||
             (remainingDaysForFreeTrial(expiresTime) > 0 &&
               selectedProduct?.price === Number(price) &&
-              userInfo?.statusDesc !== PAYMENT_STATUS.Pause_Subscription)
+              userInfo?.statusDesc !== PAYMENT_STATUS.Pause_Subscription &&
+              getChinesePaymentStatus(user?.status) !== CHINESE_PAYMENT_STATUS.Pause_Subscription)
           }
           isLoading={paymentLoading}
         >
