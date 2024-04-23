@@ -1,0 +1,390 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "RUID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "about_access_to_location": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "about_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "about_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ach_payments_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "active": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "android_settings": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "billing_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "brand": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "brand_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cancelable_by_billing": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "client_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "contact_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ctuit": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "delivery_management": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "disabled_backend_for_payment": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "disabled_for_cancellation": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "disabled_for_payment": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "display_unit_bg_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "export_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "hierarchy_type": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "number"
+    },
+    "images": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "information_verified": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "kiosk_image_url_legacy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location_email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lock_add_category": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "lock_add_discount": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "lock_add_modifierclass": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "logo_url_legacy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "manager": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "matrix_inventory": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "non_production_lab": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ns_internal_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "on_boarding_completed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "payment_gateway": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quick_books": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "resource_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "revel_guard_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "revel_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rti": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "sc_cert": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "settings": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "settings_last_update": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "show_backend_payment_warning": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "show_payment_warning": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "social_networks": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tax": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tax_payer_num": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_worked_available": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "time_zone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type_of_service": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vip": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}

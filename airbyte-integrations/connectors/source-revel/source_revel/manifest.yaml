@@ -111,6 +111,20 @@ definitions:
           $ref: '#/definitions/paginator'
       incremental_sync:
         $ref: '#/definitions/incremental_sync_with_initial_full_refresh'
+    establishments:
+      type: DeclarativeStream
+      name: establishments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /enterprise/Establishment/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
     orders:
       type: DeclarativeStream
       name: orders
@@ -258,6 +272,7 @@ streams:
   - $ref: '#/definitions/streams/companies'
   - $ref: '#/definitions/streams/customers'
   - $ref: '#/definitions/streams/employees'
+  - $ref: '#/definitions/streams/establishments'
   - $ref: '#/definitions/streams/orders'
   - $ref: '#/definitions/streams/order_items'
   - $ref: '#/definitions/streams/payments'
