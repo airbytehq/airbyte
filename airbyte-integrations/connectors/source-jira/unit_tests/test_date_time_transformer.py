@@ -3,8 +3,9 @@
 #
 
 import pytest
-from source_jira.source import SourceJira
 from conftest import find_stream
+from source_jira.source import SourceJira
+
 
 @pytest.mark.parametrize(
     "origin_item,sub_schema,expected",

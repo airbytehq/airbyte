@@ -9,13 +9,7 @@ import responses
 from pytest import fixture
 from responses import matchers
 from source_jira.source import SourceJira
-from source_jira.streams import (
-    IssueComments,
-    IssueFields,
-    Issues,
-    IssueWorklogs,
-    Projects,
-)
+from source_jira.streams import IssueComments, IssueFields, Issues, IssueWorklogs, Projects
 
 
 @fixture(scope="session", autouse=True)
