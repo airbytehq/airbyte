@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.identifyNew
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
@@ -67,7 +68,7 @@ public class CursorBasedCtidUtils {
             cursorBasedSyncStreamPairs.add(pair);
             statesFromCursorBasedSync.add(stateMessage);
           } else {
-            throw new RuntimeException("Unknown state type: " + streamState.get(STATE_TYPE_KEY).asText());
+            throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector");
           }
         } else {
           LOGGER.info("State type not present, syncing stream {} via cursor", streamDescriptor.getName());
