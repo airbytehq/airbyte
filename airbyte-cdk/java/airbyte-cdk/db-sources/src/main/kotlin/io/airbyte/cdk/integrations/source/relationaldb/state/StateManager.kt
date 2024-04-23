@@ -117,7 +117,7 @@ interface StateManager {
      * stream name/namespace tuple.
      */
     fun getCursorInfo(pair: AirbyteStreamNameNamespacePair?): Optional<CursorInfo> {
-        return Optional.ofNullable(pairToCursorInfoMap!![pair])
+        return Optional.ofNullable(pairToCursorInfoMap[pair])
     }
 
     /**

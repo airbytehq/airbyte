@@ -227,7 +227,7 @@ protected constructor(driverClassName: String) :
                 continue
             }
             val cursorType =
-                table.fields!!
+                table.fields
                     .stream()
                     .filter { info: CommonField<DataType> -> info.name == cursorField.get() }
                     .map { obj: CommonField<DataType> -> obj.type }
@@ -310,7 +310,7 @@ protected constructor(driverClassName: String) :
         val systemNameSpaces = excludedInternalNameSpaces
         val systemViews = excludedViews
         val discoveredTables = discoverInternal(database)
-        return (if (systemNameSpaces == null || systemNameSpaces.isEmpty()) discoveredTables
+        return (if (systemNameSpaces.isEmpty()) discoveredTables
         else
             discoveredTables
                 .stream()
@@ -443,7 +443,7 @@ protected constructor(driverClassName: String) :
             val cursorInfo = stateManager!!.getCursorInfo(pair)
 
             val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage>
-            if (cursorInfo!!.map { it.cursor }.isPresent) {
+            if (cursorInfo.map { it.cursor }.isPresent) {
                 airbyteMessageIterator =
                     getIncrementalStream(
                         database,
@@ -472,7 +472,7 @@ protected constructor(driverClassName: String) :
                     )
             }
 
-            val cursorType = getCursorType(airbyteStream, cursorField)
+            getCursorType(airbyteStream, cursorField)
 
             val messageProducer =
                 CursorStateMessageProducer(stateManager, cursorInfo.map { it.cursor })
@@ -693,13 +693,6 @@ protected constructor(driverClassName: String) :
     protected abstract fun getAirbyteType(columnType: DataType): JsonSchemaType
 
     protected abstract val excludedInternalNameSpaces: Set<String>
-        /**
-         * Get list of system namespaces(schemas) in order to exclude them from the `discover`
-         * result list.
-         *
-         * @return set of system namespaces(schemas) to be excluded
-         */
-        get
 
     protected open val excludedViews: Set<String>
         /**
@@ -753,12 +746,6 @@ protected constructor(driverClassName: String) :
     ): Map<String, MutableList<String>>
 
     protected abstract val quoteString: String?
-        /**
-         * Returns quote symbol of the database
-         *
-         * @return quote symbol
-         */
-        get
 
     /**
      * Read all data from a table.

@@ -10,10 +10,11 @@ python = "~3.10"
 [tool.poetry.group.dev.dependencies]
 isort = "5.6.4"
 black = "~22.3.0"
+ruff = "^0.4"
 
 [tool.black]
 line-length = 140
-target-version = ["py37"]
+target-version = ["py310"]
 extend-exclude = "(build|integration_tests|unit_tests|generated)"
 
 [tool.coverage.report]
@@ -46,11 +47,11 @@ max-complexity = 20
 max-line-length = 140
 
 extend-ignore = [
-  "E203",  # whitespace before ':' (conflicts with Black)
-  "E231",  # Bad trailing comma (conflicts with Black)
-  "E501",  # line too long (conflicts with Black)
-  "W503",  # line break before binary operator (conflicts with Black)
-  "F811", # TODO: ella fix after pflake8 version update
+    "E203", # whitespace before ':' (conflicts with Black)
+    "E231", # Bad trailing comma (conflicts with Black)
+    "E501", # line too long (conflicts with Black)
+    "W503", # line break before binary operator (conflicts with Black)
+    "F811", # TODO: ella fix after pflake8 version update
 ]
 
 [tool.isort]
@@ -63,11 +64,99 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
-  "**/connector_builder/generated/**",
-  # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
-  # correctly handles first-party imports in subdirectories.
+    "**/connector_builder/generated/**",
+    # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
+    # correctly handles first-party imports in subdirectories.
 ]
 
+[tool.ruff]
+target-version = "py38"
+line-length = 140
+exclude = [
+    # If any files should not be checked, add them here:
+    "setup.py", # These should be deprecated and will eventually replaced with pyproject.toml-based configuration.
+]
+ignore = [
+    # If any rules should be ignored, add them here:
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in class method
+    "PT004",  # Add leading underscore to fixtures that do not return anything
+]
+select = [
+    "A",    # flake8-builtins
+    "ANN",  # flake8-annotations
+    "ARG",  # flake8-unused-arguments
+    "B",    # flake8-bugbear
+    "BLE",  # flake8-blind-except
+    "C4",   # flake8-comprehensions
+    "C90",  # mccabe
+    "COM",  # flake8-commas
+    "D",    # pydocstyle/flake8-docstrings
+    "DTZ",  # flake8-datetimezs
+    "E",    # pycodestyle (error)
+    "EM",   # flake8-errmsg
+    "ERA",  # eradicate
+    "F",    # Pyflakes
+    "FA",   # flake8-future-annotations
+    "FBT",  # flake8-boolean-trap
+    "G",    # flake8-logging-format
+    "I",    # isort
+    "ICN",  # flake8-import-conventions
+    "INP",  # flake8-no-pep420
+    "ISC",  # flake8-implicit-str-concat
+    "N",    # pep8-naming
+    "PERF", # perflint
+    "PGH",  # pygrep-hooks
+    "PIE",  # flake8-pie
+    "PLC",  # pylint (convention)
+    "PLE",  # pylint (error)
+    "PLR",  # pylint (refactor)
+    "PLW",  # pylint (warning)
+    "PT",   # flake8-pytest-style
+    "PTH",  # flake8-use-pathlib
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "RSE",  # flake8-raise
+    "RUF",  # ruff
+    "S",    # flake8-bandit
+    "SIM",  # flake8-simplify
+    "T10",  # flake8-debugger
+    "T20",  # flake8-print
+    "TCH",  # flake8-type-checking
+    "TID",  # flake8-tidy-imports
+    "UP",   # pyupgrade
+    "W",    # pycodestyle (warning)
+    "YTT",  # flake8-2020
+    "SLF",  # flake8-self
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    "F401", # Permit unused imports in `__init__.py` files
+]
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+mypy-init-return = true
+suppress-dummy-args = true
+
+[tool.ruff.flake8-pytest-style]
+parametrize-values-type = "tuple"
+
+[tool.ruff.isort]
+known-first-party = [
+    "airbyte",
+    "airbyte_cdk",
+    "airbyte_protocol",
+    "airbyte_api_client",
+    "connector_ops",
+    "pipelines",
+]
+# No longer required with Python >=3.8
+# required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
 
 [tool.mypy]
 platform = "linux"
@@ -100,4 +189,4 @@ error_summary = true
 
 [tool.pytest.ini_options]
 minversion = "6.2.5"
-addopts ="-r a --capture=no -vv --color=yes"
+addopts = "-r a --capture=no -vv --color=yes"

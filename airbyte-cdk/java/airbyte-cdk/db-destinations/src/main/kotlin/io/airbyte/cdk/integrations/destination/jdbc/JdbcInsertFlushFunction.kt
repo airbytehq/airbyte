@@ -15,9 +15,9 @@ class JdbcInsertFlushFunction(
     override val optimalBatchSizeBytes: Long
 ) : DestinationFlushFunction {
     @Throws(Exception::class)
-    override fun flush(desc: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
+    override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         recordWriter.accept(
-            AirbyteStreamNameNamespacePair(desc.name, desc.namespace),
+            AirbyteStreamNameNamespacePair(streamDescriptor.name, streamDescriptor.namespace),
             stream.toList()
         )
     }

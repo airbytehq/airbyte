@@ -94,7 +94,8 @@ class GlobalStateManager(
         if (airbyteStateMessage!!.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             return Jsons.`object`(airbyteStateMessage.global.sharedState, CdcState::class.java)
         } else {
-            val legacyState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
+            val legacyState: DbState? =
+                Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
             return legacyState?.cdcState
         }
     }
@@ -114,7 +115,8 @@ class GlobalStateManager(
                 }
                 .collect(Collectors.toSet())
         } else {
-            val legacyState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
+            val legacyState: DbState? =
+                Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
             return if (legacyState != null)
                 extractNamespacePairsFromDbStreamState(legacyState.streams)
             else emptySet<AirbyteStreamNameNamespacePair>()
@@ -157,7 +159,7 @@ class GlobalStateManager(
                     return@Supplier Jsons.`object`<DbState>(
                             airbyteStateMessage.data,
                             DbState::class.java
-                        )
+                        )!!
                         .streams
                         .stream()
                         .map<AirbyteStreamState?> { s: DbStreamState ->

@@ -10,9 +10,9 @@ import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig
 import io.airbyte.cdk.integrations.destination.gcs.util.GcsS3FileSystem
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
-import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.parquet.UploadParquetFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -46,7 +46,7 @@ class GcsParquetWriter(
 
     init {
         val outputFilename: String =
-            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.PARQUET)
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, FileUploadFormat.PARQUET)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         LOGGER.info(
             "Storage path for stream '{}': {}/{}",
@@ -62,9 +62,10 @@ class GcsParquetWriter(
 
         LOGGER.info("Full GCS path for stream '{}': {}", stream.name, path)
 
-        val formatConfig = config.formatConfig as S3ParquetFormatConfig
+        val formatConfig = config.formatConfig as UploadParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
         this.parquetWriter =
+            @Suppress("deprecation")
             AvroParquetWriter.builder<GenericData.Record>(
                     HadoopOutputFile.fromPath(path, hadoopConfig)
                 )
@@ -102,8 +103,8 @@ class GcsParquetWriter(
         }
     }
 
-    override val fileFormat: S3Format
-        get() = S3Format.PARQUET
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.PARQUET
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(GcsParquetWriter::class.java)

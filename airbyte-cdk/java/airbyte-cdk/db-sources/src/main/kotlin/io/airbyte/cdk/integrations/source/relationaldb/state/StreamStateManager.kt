@@ -56,7 +56,7 @@ open class StreamStateManager
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {
         if (pair.isPresent) {
             val pairToCursorInfoMap = pairToCursorInfoMap
-            val cursorInfo = Optional.ofNullable(pairToCursorInfoMap!![pair.get()])
+            val cursorInfo = Optional.ofNullable(pairToCursorInfoMap[pair.get()])
 
             if (cursorInfo.isPresent) {
                 LOGGER.debug("Generating state message for {}...", pair)

@@ -70,16 +70,14 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
 
     override fun getConsumer(
         config: JsonNode,
-        configuredCatalog: ConfiguredAirbyteCatalog,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
-        val gcsConfig: GcsDestinationConfig =
-            GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
+        val gcsConfig: GcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         return S3ConsumerFactory()
             .create(
                 outputRecordCollector,
                 GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
-                nameTransformer,
                 getCreateFunction(
                     gcsConfig,
                     Function<String, BufferStorage> { fileExtension: String ->
@@ -87,7 +85,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
                     }
                 ),
                 gcsConfig,
-                configuredCatalog
+                catalog
             )
     }
 
