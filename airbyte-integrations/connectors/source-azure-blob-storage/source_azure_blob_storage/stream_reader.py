@@ -8,7 +8,10 @@ import pytz
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from azure.core.credentials import AccessToken
+from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
 
@@ -80,10 +83,13 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
     ) -> Iterable[RemoteFile]:
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         prefixes = prefixes or [None]
-        for prefix in prefixes:
-            for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
-                remote_file = RemoteFile(uri=blob.name, last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None))
-                yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
+        try:
+            for prefix in prefixes:
+                for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
+                    remote_file = RemoteFile(uri=blob.name, last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None))
+                    yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
+        except ResourceNotFoundError as e:
+            raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=e.message, message=e.reason or e.message)
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
