@@ -18,7 +18,6 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import Prima
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFinalStateCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -70,7 +69,6 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
                 partition_generator=FileBasedStreamPartitionGenerator(
                     stream,
                     message_repository,
-                    SyncMode.full_refresh if isinstance(cursor, FileBasedFinalStateCursor) else SyncMode.incremental,
                     [cursor_field] if cursor_field is not None else None,
                     state,
                     cursor,
@@ -200,7 +198,6 @@ class FileBasedStreamPartition(Partition):
         stream: AbstractFileBasedStream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: "AbstractConcurrentFileBasedCursor",
@@ -208,7 +205,6 @@ class FileBasedStreamPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._message_repository = message_repository
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
@@ -218,7 +214,7 @@ class FileBasedStreamPartition(Partition):
         try:
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
-                sync_mode=SyncMode.full_refresh,
+                sync_mode=SyncMode.incremental,  # TODO: check why this was full refresh
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
             ):
@@ -279,21 +275,19 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
         self,
         stream: AbstractFileBasedStream,
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: "AbstractConcurrentFileBasedCursor",
     ):
         self._stream = stream
         self._message_repository = message_repository
-        self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
 
     def generate(self) -> Iterable[FileBasedStreamPartition]:
         pending_partitions = []
-        for _slice in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
+        for _slice in self._stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=self._cursor_field, stream_state=self._state):
             if _slice is not None:
                 for file in _slice.get("files", []):
                     pending_partitions.append(
@@ -301,7 +295,6 @@ class FileBasedStreamPartitionGenerator(PartitionGenerator):
                             self._stream,
                             {"files": [copy.deepcopy(file)]},
                             self._message_repository,
-                            self._sync_mode,
                             self._cursor_field,
                             self._state,
                             self._cursor,

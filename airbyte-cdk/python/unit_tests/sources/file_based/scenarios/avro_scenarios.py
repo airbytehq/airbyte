@@ -236,7 +236,7 @@ single_avro_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {"_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.avro", "history": {"a.avro": "2023-06-05T03:54:07.000000Z"}},
         ]
     )
     .set_expected_catalog(
@@ -324,7 +324,10 @@ multiple_avro_combine_schema_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_b.avro",
+                "history": {"a.avro": "2023-06-05T03:54:07.000000Z", "b.avro": "2023-06-06T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -421,7 +424,7 @@ avro_all_types_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {"_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_a.avro", "history": {"a.avro": "2023-06-05T03:54:07.000000Z"}},
         ]
     )
     .set_expected_catalog(
@@ -594,7 +597,10 @@ multiple_streams_avro_scenario = (
                 },
                 "stream": "festivals_stream",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z_odesza_songs.avro",
+                "history": {"odesza_songs.avro": "2023-06-05T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(
@@ -710,7 +716,10 @@ avro_file_with_double_as_number_scenario = (
                 },
                 "stream": "stream1",
             },
-            {"__ab_full_refresh_state_message": True},
+            {
+                "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z_b.avro",
+                "history": {"a.avro": "2023-06-05T03:54:07.000000Z", "b.avro": "2023-06-06T03:54:07.000000Z"},
+            },
         ]
     )
     .set_expected_catalog(

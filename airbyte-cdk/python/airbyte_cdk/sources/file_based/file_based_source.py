@@ -33,11 +33,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamFacade
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import (
-    AbstractConcurrentFileBasedCursor,
-    FileBasedConcurrentCursor,
-    FileBasedFinalStateCursor,
-)
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor, FileBasedConcurrentCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -188,15 +184,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     # TODO: should use stream facade
                     stream = self._make_default_stream(stream_config, cursor)
 
-                elif sync_mode == SyncMode.full_refresh:
-                    cursor = FileBasedFinalStateCursor(
-                        stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
-                    )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
-
-                elif sync_mode == SyncMode.incremental:
+                else:
                     assert (
                         state_manager is not None
                     ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."

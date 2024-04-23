@@ -23,20 +23,20 @@ from airbyte_cdk.sources.file_based.stream.concurrent.adapters import (
     FileBasedStreamPartition,
     FileBasedStreamPartitionGenerator,
 )
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFinalStateCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from freezegun import freeze_time
 
-_ANY_SYNC_MODE = SyncMode.full_refresh
+_DEFAULT_SYNC_MODE = SyncMode.incremental
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 _STREAM_NAME = "stream"
-_ANY_CURSOR = Mock(spec=FileBasedFinalStateCursor)
+_ANY_CURSOR = Mock(spec=FileBasedConcurrentCursor)
 
 
 @pytest.mark.parametrize(
@@ -56,13 +56,13 @@ def test_file_based_stream_partition_generator(sync_mode):
     stream.stream_slices.return_value = stream_slices
 
     partition_generator = FileBasedStreamPartitionGenerator(
-        stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR
+        stream, message_repository, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR
     )
 
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
     assert slices == stream_slices
-    stream.stream_slices.assert_called_once_with(sync_mode=_ANY_SYNC_MODE, cursor_field=_ANY_CURSOR_FIELD, stream_state=_ANY_STATE)
+    stream.stream_slices.assert_called_once_with(sync_mode=_DEFAULT_SYNC_MODE, cursor_field=_ANY_CURSOR_FIELD, stream_state=_ANY_STATE)
 
 
 @pytest.mark.parametrize(
@@ -87,10 +87,9 @@ def test_file_based_stream_partition(transformer, expected_records):
     stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
     _slice = None
-    sync_mode = SyncMode.full_refresh
     cursor_field = None
     state = None
-    partition = FileBasedStreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, message_repository, cursor_field, state, _ANY_CURSOR)
 
     a_log_message = AirbyteMessage(
         type=MessageType.LOG,
@@ -124,7 +123,7 @@ def test_file_based_stream_partition_raising_exception(exception_type, expected_
     message_repository = InMemoryMessageRepository()
     _slice = None
 
-    partition = FileBasedStreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, message_repository, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     stream.read_records.side_effect = Exception()
 
@@ -149,7 +148,7 @@ def test_file_based_stream_partition_raising_exception(exception_type, expected_
 def test_file_based_stream_partition_hash(_slice, expected_hash):
     stream = Mock()
     stream.name = "stream"
-    partition = FileBasedStreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
+    partition = FileBasedStreamPartition(stream, _slice, Mock(), _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     _hash = partition.__hash__()
     assert _hash == expected_hash
@@ -165,7 +164,15 @@ class StreamFacadeTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
         self._legacy_stream = DefaultFileBasedStream(
-            cursor=FileBasedFinalStateCursor(stream_config=MagicMock(), stream_namespace=None, message_repository=Mock()),
+            cursor=FileBasedConcurrentCursor(
+                stream_config=FileBasedStreamConfig(name="stream", format=CsvFormat()),
+                stream_name="stream",
+                stream_namespace=None,
+                stream_state={},
+                message_repository=InMemoryMessageRepository(),
+                connector_state_manager=Mock(),
+                cursor_field=CursorField("cursor"),
+            ),
             config=FileBasedStreamConfig(name="stream", format=CsvFormat()),
             catalog_schema={},
             stream_reader=MagicMock(),
@@ -200,19 +207,6 @@ class StreamFacadeTest(unittest.TestCase):
         self._abstract_stream.get_json_schema.return_value = json_schema
         assert self._facade.get_json_schema() == json_schema
         self._abstract_stream.get_json_schema.assert_called_once_with()
-
-    def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
-        assert (
-            FileBasedStreamFacade(
-                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-            ).supports_incremental
-            == self._legacy_stream.supports_incremental
-        )
-
-    def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
-        assert FileBasedStreamFacade(
-            self._abstract_stream, self._legacy_stream, Mock(spec=Cursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-        ).supports_incremental
 
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]

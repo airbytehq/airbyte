@@ -6,7 +6,7 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamPartition
@@ -166,7 +166,6 @@ def test_add_file(
                 stream,
                 {"files": [RemoteFile(uri=uri, last_modified=datetime.strptime(timestamp, DATE_TIME_FORMAT))]},
                 mock_message_repository,
-                SyncMode.full_refresh,
                 FileBasedConcurrentCursor.CURSOR_FIELD,
                 initial_state,
                 cursor,
