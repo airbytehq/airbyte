@@ -1730,7 +1730,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
     )
     stream = AirbyteStreamState(
         stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
-        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True)
+        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True)
     )
     async_stream_output = [
         AirbyteMessage(

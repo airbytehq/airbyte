@@ -23,7 +23,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -211,11 +211,6 @@ class AbstractSource(Source, ABC):
 
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
-        # stream_state = (
-        #     state_manager.get_stream_state(stream_name, stream_instance.namespace)
-        #     if configured_stream.sync_mode == SyncMode.incremental
-        #     else {}
-        # )
 
         if stream_state and "state" in dir(stream_instance):
             # if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
@@ -274,9 +269,3 @@ class AbstractSource(Source, ABC):
         on the first error seen and emit a single error trace message for that stream.
         """
         return False
-
-    @staticmethod
-    def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]) -> bool:
-        # For full refresh syncs that don't have a suitable cursor value, we emit a state that contains a sentinel key.
-        # This key is never used by a connector and is needed during a read to skip assigning the incoming state.
-        return FULL_REFRESH_SENTINEL_STATE_KEY in stream_state

@@ -212,7 +212,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
+                        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
                     )
                 ),
             ),
@@ -222,7 +222,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 
     if constructor == _concurrent_stream:
         assert hasattr(stream._cursor, "state")
-        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+        assert str(stream._cursor.state) == "{'__ab_no_cursor_state_message': True}"
 
     assert actual_records == expected_records
 
@@ -264,7 +264,7 @@ def test_full_refresh_read_a_single_slice(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
+                        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
                     )
                 ),
             ),
@@ -274,7 +274,7 @@ def test_full_refresh_read_a_single_slice(constructor):
 
     if constructor == _concurrent_stream:
         assert hasattr(stream._cursor, "state")
-        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+        assert str(stream._cursor.state) == "{'__ab_no_cursor_state_message': True}"
 
     assert actual_records == expected_records
 
@@ -324,7 +324,7 @@ def test_full_refresh_read_two_slices(constructor):
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
-                        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
+                        stream_state=AirbyteStateBlob(__ab_no_cursor_state_message=True),
                     )
                 ),
             ),
@@ -334,7 +334,7 @@ def test_full_refresh_read_two_slices(constructor):
 
     if constructor == _concurrent_stream:
         assert hasattr(stream._cursor, "state")
-        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+        assert str(stream._cursor.state) == "{'__ab_no_cursor_state_message': True}"
 
     for record in expected_records:
         assert record in actual_records

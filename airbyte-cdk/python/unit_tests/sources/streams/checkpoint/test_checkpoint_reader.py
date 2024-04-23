@@ -65,4 +65,4 @@ def test_full_refresh_checkpoint_reader_next():
     assert checkpoint_reader.next() == {}
     assert checkpoint_reader.next() is None
     assert checkpoint_reader.get_checkpoint() is None
-    assert checkpoint_reader.final_checkpoint() == {"__ab_full_refresh_state_message": True}
+    assert checkpoint_reader.final_checkpoint() == {"__ab_no_cursor_state_message": True}

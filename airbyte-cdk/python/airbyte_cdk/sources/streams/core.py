@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import inspect
 import logging
 import typing
@@ -38,9 +37,7 @@ StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 JsonSchema = Mapping[str, Any]
 
-# Streams that only support full refresh don't have a suitable cursor so this sentinel
-# value is used to indicate that stream should not load the incoming state value
-FULL_REFRESH_SENTINEL_STATE_KEY = "__ab_full_refresh_state_message"
+NO_CURSOR_STATE_KEY = "__ab_no_cursor_state_message"
 
 
 def package_name_from_class(cls: object) -> str:
@@ -182,13 +179,11 @@ class Stream(ABC):
                         self._observe_state(checkpoint_reader, self.get_updated_state(stream_state, record_data))
                     record_counter += 1
 
-                    if sync_mode == SyncMode.incremental:
-                        # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
-                        checkpoint_interval = self.state_checkpoint_interval
-                        checkpoint = checkpoint_reader.get_checkpoint()
-                        if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
-                            airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
-                            yield airbyte_state_message
+                    checkpoint_interval = self.state_checkpoint_interval
+                    checkpoint = checkpoint_reader.get_checkpoint()
+                    if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
+                        airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
+                        yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
                         break
@@ -200,12 +195,8 @@ class Stream(ABC):
 
             next_slice = checkpoint_reader.next()
 
-        # A stream should still emit a state if there were no slices. For an incremental, if there were no slices we should emit
-        # the original incoming state. To preserve the legacy state case where a stream doesn't manage state, it uses the
-        # incoming stream_state value as a backup if Stream.state is undefined
-        # Also likely handled by Ella's work, but leaving it in and I'll adapt the changes once they're in
+        # Streams should always emit state even if there were no slices which defaults to the original incoming state
         if not has_slices:
-            self._observe_state(checkpoint_reader)
             checkpoint = checkpoint_reader.get_checkpoint()
         else:
             checkpoint = checkpoint_reader.final_checkpoint()
@@ -272,16 +263,17 @@ class Stream(ABC):
     @property
     def supports_checkpointing(self) -> bool:
         """
-        :return: True if this stream allows the checkpointing of sync progress. This differs from supports_incremental
-        because certain types like resumable full refresh streams can checkpoint progress in between attempts for improved
-        fault tolerance. However, they will start from the beginning on the next sync.
+        :return: True if this stream allows the checkpointing of sync progress and can resume from it on subsequent attempts.
+        This differs from supports_incremental because certain kinds of streams like those supporting resumable full refresh
+        can checkpoint progress in between attempts for improved fault tolerance. However, they will start from the beginning
+        on the next sync job.
         """
         if hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
             # Modern case where a stream manages state using getter/setter
             return True
         else:
-            # Legacy case where the CDK manages state via the get_updated_state() method. This is determined by
-            # whether the stream's get_updated_state() differs from the Stream class and therefore has been overridden
+            # Legacy case where the CDK manages state via the get_updated_state() method. This is determined by checking if
+            # the stream's get_updated_state() differs from the Stream class and therefore has been overridden
             return type(self).get_updated_state != Stream.get_updated_state
 
     def _wrapped_cursor_field(self) -> List[str]:
@@ -406,7 +398,7 @@ class Stream(ABC):
             # specific slice values. None is bad, and now I feel bad that I have to write this hack.
             if slices == [None]:
                 slices = [{}]
-            logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
+            logger.debug(f"Processing stream slices for {self.name}", extra={"stream_slices": slices})
             if checkpoint_mode == CheckpointMode.INCREMENTAL:
                 return IncrementalCheckpointReader(stream_slices=slices, stream_state=stream_state)
             else:
@@ -469,7 +461,7 @@ class Stream(ABC):
         except AttributeError:
             # Only when the stream uses legacy state should the checkpoint reader observe the parameter stream_state which
             # is derived from the get_updated_state() method. The checkpoint reader should preserve existing state over
-            # zeroing it out
+            # where there is no stream_state
             if stream_state:
                 checkpoint_reader.observe(stream_state)
 
