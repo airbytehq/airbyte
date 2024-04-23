@@ -632,6 +632,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   @Override
   protected void initializeForStateManager(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable, final StateManager stateManager) {
+    if (initialLoadStateManager != null) {
+      return;
+    }
     var sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig)) {
       initialLoadStateManager = getMssqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
