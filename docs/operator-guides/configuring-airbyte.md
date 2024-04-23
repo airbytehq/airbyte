@@ -94,6 +94,12 @@ The following variables are relevant to both Docker and Kubernetes.
 12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 
+#### Connections
+
+1. `MAX_FIELDS_PER_CONNECTION` - Defines the maximum number of fields able to be selected for a single connection.
+2. `MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative days of only failed jobs before the connection is disabled.
+3. `MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative failed jobs before the connection is disabled.
+
 #### Logging
 
 1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
