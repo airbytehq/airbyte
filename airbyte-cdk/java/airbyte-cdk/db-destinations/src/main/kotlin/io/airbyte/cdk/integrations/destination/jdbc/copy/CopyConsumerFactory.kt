@@ -47,22 +47,26 @@ object CopyConsumerFactory {
 
         val pairToIgnoredRecordCount: MutableMap<AirbyteStreamNameNamespacePair, Long> = HashMap()
         return BufferedStreamConsumer(
-            outputRecordCollector,
-            onStartFunction(pairToIgnoredRecordCount),
-            InMemoryRecordBufferingStrategy(
-                recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
-                removeStagingFilePrinter(pairToCopier),
-                GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
-            ),
-            onCloseFunction(
-                pairToCopier,
-                database,
-                sqlOperations,
-                pairToIgnoredRecordCount,
-                dataSource
-            ),
-            catalog
-        ) { data: JsonNode? -> sqlOperations.isValidData(data) }
+            outputRecordCollector = outputRecordCollector,
+            onStart = onStartFunction(pairToIgnoredRecordCount),
+            bufferingStrategy =
+                InMemoryRecordBufferingStrategy(
+                    recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+                    removeStagingFilePrinter(pairToCopier),
+                    GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+                ),
+            onClose =
+                onCloseFunction(
+                    pairToCopier,
+                    database,
+                    sqlOperations,
+                    pairToIgnoredRecordCount,
+                    dataSource
+                ),
+            catalog = catalog,
+            isValidRecord = { data: JsonNode? -> sqlOperations.isValidData(data) },
+            defaultNamespace = null,
+        )
     }
 
     private fun <T> createWriteConfigs(
@@ -171,15 +175,15 @@ object CopyConsumerFactory {
         sqlOperations: SqlOperations,
         dataSource: DataSource
     ) {
-        var hasFailed = hasFailed
+        var failed = hasFailed
         var firstException: Exception? = null
         val streamCopiers: List<StreamCopier?> = ArrayList(pairToCopier.values)
         try {
             val queries: MutableList<String> = ArrayList()
             for (copier in streamCopiers) {
                 try {
-                    copier!!.closeStagingUploader(hasFailed)
-                    if (!hasFailed) {
+                    copier!!.closeStagingUploader(failed)
+                    if (!failed) {
                         copier.createDestinationSchema()
                         copier.createTemporaryTable()
                         copier.copyStagingFileToTemporaryTable()
@@ -191,13 +195,13 @@ object CopyConsumerFactory {
                     val message =
                         String.format("Failed to finalize copy to temp table due to: %s", e)
                     LOGGER.error(message)
-                    hasFailed = true
+                    failed = true
                     if (firstException == null) {
                         firstException = e
                     }
                 }
             }
-            if (!hasFailed) {
+            if (!failed) {
                 sqlOperations.executeTransaction(db, queries)
             }
         } finally {

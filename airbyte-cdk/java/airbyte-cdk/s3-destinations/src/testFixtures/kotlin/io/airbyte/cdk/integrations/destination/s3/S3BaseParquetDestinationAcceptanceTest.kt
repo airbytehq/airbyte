@@ -21,7 +21,7 @@ import org.apache.parquet.avro.AvroReadSupport
 import org.apache.parquet.hadoop.ParquetReader
 
 abstract class S3BaseParquetDestinationAcceptanceTest protected constructor() :
-    S3AvroParquetDestinationAcceptanceTest(S3Format.PARQUET) {
+    S3AvroParquetDestinationAcceptanceTest(FileUploadFormat.PARQUET) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(java.util.Map.of("format_type", "Parquet", "compression_codec", "GZIP"))

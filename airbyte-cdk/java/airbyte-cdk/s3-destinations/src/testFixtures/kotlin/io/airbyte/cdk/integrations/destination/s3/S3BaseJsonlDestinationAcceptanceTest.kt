@@ -17,7 +17,7 @@ import kotlin.collections.List
 import kotlin.collections.MutableList
 
 abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
-    S3DestinationAcceptanceTest(S3Format.JSONL) {
+    S3DestinationAcceptanceTest(FileUploadFormat.JSONL) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(

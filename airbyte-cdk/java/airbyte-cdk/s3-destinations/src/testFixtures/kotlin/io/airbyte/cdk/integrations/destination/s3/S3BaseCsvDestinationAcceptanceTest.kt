@@ -19,7 +19,8 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
-abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(S3Format.CSV) {
+abstract class S3BaseCsvDestinationAcceptanceTest :
+    S3DestinationAcceptanceTest(FileUploadFormat.CSV) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(

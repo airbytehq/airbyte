@@ -181,7 +181,7 @@ class ConcurrentStreamConsumer(
     private fun executeStream(stream: AutoCloseableIterator<AirbyteMessage>) {
         try {
             stream.use {
-                stream!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
                     LOGGER.debug("Consuming from stream {}...", s)
                 }
                 StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter)
@@ -192,7 +192,7 @@ class ConcurrentStreamConsumer(
                 }
             }
         } catch (e: Exception) {
-            stream!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
                 LOGGER.error("Unable to consume from stream {}.", s, e)
             }
             StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter)
@@ -213,7 +213,7 @@ class ConcurrentStreamConsumer(
             val thread = Thread(r)
             if (r is ConcurrentStreamRunnable) {
                 val stream = r.stream
-                if (stream!!.airbyteStream.isPresent) {
+                if (stream.airbyteStream.isPresent) {
                     val airbyteStream = stream.airbyteStream.get()
                     thread.name =
                         String.format(

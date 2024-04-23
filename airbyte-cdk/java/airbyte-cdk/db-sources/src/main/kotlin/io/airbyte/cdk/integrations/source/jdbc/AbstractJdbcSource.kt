@@ -98,7 +98,7 @@ abstract class AbstractJdbcSource<Datatype>(
         this.sourceOperations = sourceOperations
     }
 
-    open fun supportResumableFullRefresh(): Boolean {
+    open fun supportResumableFullRefresh(airbyteStream: ConfiguredAirbyteStream): Boolean {
         return false
     }
 
@@ -123,7 +123,7 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (supportResumableFullRefresh()) {
+        if (supportResumableFullRefresh(airbyteStream) && syncMode == SyncMode.FULL_REFRESH) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
@@ -674,8 +674,8 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     @Throws(SQLException::class)
-    public override fun createDatabase(sourceConfig: JsonNode): JdbcDatabase {
-        return createDatabase(sourceConfig, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
+    public override fun createDatabase(config: JsonNode): JdbcDatabase {
+        return createDatabase(config, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
     }
 
     @Throws(SQLException::class)
@@ -686,7 +686,7 @@ abstract class AbstractJdbcSource<Datatype>(
         // Create the data source
         val dataSource =
             create(
-                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY))
+                if (jdbcConfig.has(JdbcUtils.USERNAME_KEY))
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText()
                 else null,
                 if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
@@ -695,7 +695,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 driverClassName,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties!!)
+                getConnectionTimeout(connectionProperties)
             )
         // Record the data source so that it can be closed.
         dataSources.add(dataSource)

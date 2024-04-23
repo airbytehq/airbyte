@@ -3,19 +3,6 @@ plugins {
     id "java-library"
 }
 
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-varargs,-try,-deprecation,-unchecked,-this-escape"
-    }
-    compileTestJava {
-        options.compilerArgs += "-Xlint:-try"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-try"
-    }
-}
-compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
@@ -41,6 +28,7 @@ dependencies {
     api 'org.slf4j:log4j-over-slf4j:2.0.11'
     api 'org.slf4j:slf4j-api:2.0.11'
     api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
 
 
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
@@ -51,6 +39,7 @@ dependencies {
     implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
     implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2' // needed so that we can follow $ref when parsing json
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 

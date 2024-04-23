@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.commons.jackson.MoreMappers
@@ -40,7 +40,7 @@ class GcsJsonlWriter(
 
     init {
         val outputFilename: String =
-            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.JSONL)
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, FileUploadFormat.JSONL)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
@@ -84,8 +84,8 @@ class GcsJsonlWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format
-        get() = S3Format.JSONL
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.JSONL
 
     companion object {
         protected val LOGGER: Logger = LoggerFactory.getLogger(GcsJsonlWriter::class.java)

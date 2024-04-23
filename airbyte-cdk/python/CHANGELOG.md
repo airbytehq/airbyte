@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
+## 0.82.0
+Connector builder: emit state messages
+
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
 ## 0.81.6
 Upgrade to recent version of langchain
 

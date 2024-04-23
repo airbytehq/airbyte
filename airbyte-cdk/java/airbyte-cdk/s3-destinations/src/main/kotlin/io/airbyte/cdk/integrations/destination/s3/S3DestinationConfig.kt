@@ -31,7 +31,7 @@ open class S3DestinationConfig {
     val bucketRegion: String?
     val pathFormat: String?
     val s3CredentialConfig: S3CredentialConfig?
-    val formatConfig: S3FormatConfig?
+    val formatConfig: UploadFormatConfig?
     var fileNamePattern: String? = null
         private set
 
@@ -59,7 +59,7 @@ open class S3DestinationConfig {
         bucketRegion: String?,
         pathFormat: String?,
         credentialConfig: S3CredentialConfig?,
-        formatConfig: S3FormatConfig?,
+        formatConfig: UploadFormatConfig?,
         s3Client: AmazonS3
     ) {
         this.endpoint = endpoint
@@ -79,7 +79,7 @@ open class S3DestinationConfig {
         bucketRegion: String?,
         pathFormat: String?,
         credentialConfig: S3CredentialConfig?,
-        formatConfig: S3FormatConfig?,
+        formatConfig: UploadFormatConfig?,
         s3Client: AmazonS3?,
         fileNamePattern: String?,
         checkIntegrity: Boolean,
@@ -111,7 +111,7 @@ open class S3DestinationConfig {
         LOGGER.info("Creating S3 client...")
 
         val credentialsProvider = s3CredentialConfig!!.s3CredentialsProvider
-        val credentialType = s3CredentialConfig!!.credentialType
+        val credentialType = s3CredentialConfig.credentialType
 
         if (S3CredentialType.DEFAULT_PROFILE == credentialType) {
             return AmazonS3ClientBuilder.standard()
@@ -145,14 +145,14 @@ open class S3DestinationConfig {
             .build()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as S3DestinationConfig
+        val that = other as S3DestinationConfig
         return endpoint == that.endpoint &&
             bucketName == that.bucketName &&
             bucketPath == that.bucketPath &&
@@ -181,7 +181,7 @@ open class S3DestinationConfig {
         private var pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT
 
         private lateinit var credentialConfig: S3CredentialConfig
-        private var formatConfig: S3FormatConfig? = null
+        private var formatConfig: UploadFormatConfig? = null
         private var s3Client: AmazonS3? = null
         private var fileNamePattern: String? = null
 
@@ -219,7 +219,7 @@ open class S3DestinationConfig {
             return this
         }
 
-        fun withFormatConfig(formatConfig: S3FormatConfig?): Builder {
+        fun withFormatConfig(formatConfig: UploadFormatConfig?): Builder {
             this.formatConfig = formatConfig
             return this
         }
@@ -300,7 +300,7 @@ open class S3DestinationConfig {
                     getProperty(config, S3Constants.S_3_BUCKET_REGION)
                 )
 
-            if (config!!.has(S3Constants.S_3_BUCKET_PATH)) {
+            if (config.has(S3Constants.S_3_BUCKET_PATH)) {
                 builder = builder.withBucketPath(config[S3Constants.S_3_BUCKET_PATH].asText())
             }
 
@@ -352,7 +352,10 @@ open class S3DestinationConfig {
             // Snowflake copy
             // destinations don't set a Format config.
             if (config.has("format")) {
-                builder = builder.withFormatConfig(S3FormatConfigs.getS3FormatConfig(config))
+                builder =
+                    builder.withFormatConfig(
+                        UploadFormatConfigFactory.getUploadFormatConfig(config)
+                    )
             }
 
             return builder.get()
