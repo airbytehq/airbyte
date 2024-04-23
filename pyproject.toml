@@ -8,14 +8,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "~3.10"
 
 [tool.poetry.group.dev.dependencies]
-isort = "5.6.4"
-black = "~22.3.0"
 ruff = "^0.4"
-
-[tool.black]
-line-length = 140
-target-version = ["py310"]
-extend-exclude = "(build|integration_tests|unit_tests|generated)"
 
 [tool.coverage.report]
 fail_under = 0
@@ -54,22 +47,6 @@ extend-ignore = [
     "F811", # TODO: ella fix after pflake8 version update
 ]
 
-# TODO: This will be removed in favor of the section below.
-[tool.isort]
-profile = "black"
-color_output = false
-# skip_gitignore = true
-line_length = 140
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-skip_glob = [
-    "**/connector_builder/generated/**",
-    # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
-    # correctly handles first-party imports in subdirectories.
-]
-
 [tool.ruff.pylint]
 max-args = 8      # Relaxed from default of 5
 max-branches = 15 # Relaxed from default of 12
@@ -90,40 +67,40 @@ select = [
     "COM",   # flake8-commas
     "CPY",   # missing copyright notice
     # "D", # pydocstyle # TODO: Re-enable when adding docstrings
-    "DTZ",  # flake8-datetimez
-    "E",    # pycodestyle (errors)
-    "ERA",  # flake8-eradicate (commented out code)
-    "EXE",  # flake8-executable
-    "F",    # Pyflakes
-    "FA",   # flake8-future-annotations
-    "FIX",  # flake8-fixme
-    "FLY",  # flynt
-    "FURB", # Refurb
-    "I",    # isort
-    "ICN",  # flake8-import-conventions
-    "INP",  # flake8-no-pep420
-    "INT",  # flake8-gettext
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "LOG",  # flake8-logging
-    "N",    # pep8-naming
-    "PD",   # pandas-vet
-    "PERF", # Perflint
-    "PIE",  # flake8-pie
-    "PGH",  # pygrep-hooks
-    "PL",   # Pylint
-    "PT",   # flake8-pytest-style
-    "PTH",  # flake8-use-pathlib
-    "PYI",  # flake8-pyi
-    "Q",    # flake8-quotes
-    "RET",  # flake8-return
-    "RSE",  # flake8-raise
-    "RUF",  # Ruff-specific rules
-    "SIM",  # flake8-simplify
-    "SLF",  # flake8-self
-    "SLOT", # flake8-slots
-    "T10",  # debugger calls
-    # "T20", # flake8-print # TODO: Re-enable once we have logging
+    "DTZ",    # flake8-datetimez
+    "E",      # pycodestyle (errors)
+    "ERA",    # flake8-eradicate (commented out code)
+    "EXE",    # flake8-executable
+    "F",      # Pyflakes
+    "FA",     # flake8-future-annotations
+    "FIX",    # flake8-fixme
+    "FLY",    # flynt
+    "FURB",   # Refurb
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "INP",    # flake8-no-pep420
+    "INT",    # flake8-gettext
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "LOG",    # flake8-logging
+    "N",      # pep8-naming
+    "PD",     # pandas-vet
+    "PERF",   # Perflint
+    "PIE",    # flake8-pie
+    "PGH",    # pygrep-hooks
+    "PL",     # Pylint
+    "PT",     # flake8-pytest-style
+    "PTH",    # flake8-use-pathlib
+    "PYI",    # flake8-pyi
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
+    "RUF",    # Ruff-specific rules
+    "SIM",    # flake8-simplify
+    "SLF",    # flake8-self
+    "SLOT",   # flake8-slots
+    "T10",    # debugger calls
+    "T20",    # flake8-print # TODO: Re-enable once we have logging
     "TCH",    # flake8-type-checking
     "TD",     # flake8-todos
     "TID",    # flake8-tidy-imports
