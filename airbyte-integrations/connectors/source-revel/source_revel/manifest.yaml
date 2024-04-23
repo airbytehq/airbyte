@@ -87,14 +87,28 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/incremental_requester"
+          $ref: "#/definitions/base_requester"
           path: /resources/Customer/
         record_selector:
           $ref: "#/definitions/record_selector"
         paginator:
           $ref: "#/definitions/paginator"
       incremental_sync:
-        $ref: "#/definitions/incremental_sync"
+        $ref: "#/definitions/incremental_sync_with_initial_full_refresh"
+    customer_establishments:
+      type: DeclarativeStream
+      name: customer_establishments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /resources/CustomerEstablishment/
+        record_selector:
+          $ref: "#/definitions/record_selector"
+        paginator:
+          $ref: "#/definitions/paginator"
     employees:
       type: DeclarativeStream
       name: employees
@@ -315,6 +329,7 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/companies"
   - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/customer_establishments"
   - $ref: "#/definitions/streams/employees"
   - $ref: "#/definitions/streams/establishments"
   - $ref: "#/definitions/streams/house_accounts"
