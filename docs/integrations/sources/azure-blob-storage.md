@@ -6,6 +6,33 @@ This page contains the setup guide and reference information for the Azure Blob 
 Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Azure Blob Storage pricing guide](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/).
 :::
 
+## Prerequisites
+
+- Tenant ID of the Microsoft Azure Application user
+- Azure Blob Storage account name
+- Azure blob storage container (Bucket) Name
+
+<details>
+<summary>
+Minimum permissions (role [Storage Blob Data Reader](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-reader) ):
+</summary>
+```json
+[
+   {
+      "actions": [
+         "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+         "Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"
+      ],
+      "notActions": [],
+      "dataActions": [
+         "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read"
+      ],
+      "notDataActions": []
+   }
+]
+```
+</details>
+
 ## Setup guide
 
 ### Step 1: Set up Azure Blob Storage
