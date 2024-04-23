@@ -367,7 +367,7 @@ constructor(
                 expectedValue.size() == actualValue.size() &&
                     Stream.generate { expectedValue.fieldNames().next() }
                         .limit(expectedValue.size().toLong())
-                        .allMatch { field: String? ->
+                        .allMatch { field: String ->
                             areJsonNodesEquivalent(expectedValue[field], actualValue[field])
                         }
             } else {

@@ -28,7 +28,7 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
         sqlOperations: SqlOperations?
-    ): StreamCopier? {
+    ): StreamCopier {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
@@ -72,5 +72,5 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
         gcsConfig: GcsConfig?,
         nameTransformer: StandardNameTransformer?,
         sqlOperations: SqlOperations?
-    ): StreamCopier?
+    ): StreamCopier
 }

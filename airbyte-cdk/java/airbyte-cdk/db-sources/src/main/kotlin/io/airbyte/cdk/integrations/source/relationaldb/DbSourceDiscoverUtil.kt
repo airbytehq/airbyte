@@ -129,7 +129,7 @@ object DbSourceDiscoverUtil {
                     val primaryKeys =
                         tableInfo.primaryKeys
                             .stream()
-                            .filter { obj: String? -> Objects.nonNull(obj) }
+                            .filter { obj: String -> Objects.nonNull(obj) }
                             .map { listOf(it) }
                             .toList()
                     CatalogHelpers.createAirbyteStream(
