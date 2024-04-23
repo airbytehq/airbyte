@@ -478,7 +478,7 @@ class BulkSalesforceStream(SalesforceStream):
                         f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
                 else:
-                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}")
+                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}")
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
@@ -513,6 +513,7 @@ class BulkSalesforceStream(SalesforceStream):
             if not job_id:
                 return None, job_status
             job_full_url = f"{url}/{job_id}"
+            self.logger.info(f"Job: {self.name}/{job_id} created, Job Full Url: {job_full_url}")
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
                 break
