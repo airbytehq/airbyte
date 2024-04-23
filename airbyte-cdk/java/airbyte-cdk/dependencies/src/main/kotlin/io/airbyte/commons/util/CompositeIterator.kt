@@ -108,7 +108,7 @@ internal constructor(
     private fun emitStartStreamStatus(
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>
     ): Boolean {
-        if (airbyteStream!!.isPresent && !seenIterators.contains(airbyteStream)) {
+        if (airbyteStream.isPresent && !seenIterators.contains(airbyteStream)) {
             seenIterators.add(airbyteStream)
             StreamStatusUtils.emitStartStreamStatus(airbyteStream, airbyteStreamStatusConsumer)
             return true
@@ -136,12 +136,7 @@ internal constructor(
     }
 
     override val airbyteStream: Optional<AirbyteStreamNameNamespacePair>
-        get() =
-            if (currentIterator() is AirbyteStreamAware) {
-                AirbyteStreamAware::class.java.cast(currentIterator()).airbyteStream
-            } else {
-                Optional.empty()
-            }
+        get() = AirbyteStreamAware::class.java.cast(currentIterator()).airbyteStream
 
     private fun assertHasNotClosed() {
         Preconditions.checkState(!hasClosed)
