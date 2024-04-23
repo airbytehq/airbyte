@@ -100,7 +100,7 @@ jobs:
     # TODO: Revert the 'true' part
     if: >
       true ||
-      github.event.pull_request.head.repo.fork == true
+      (github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
     steps:
       # We have no creds. Ignore docker caching and just run the CLI.
