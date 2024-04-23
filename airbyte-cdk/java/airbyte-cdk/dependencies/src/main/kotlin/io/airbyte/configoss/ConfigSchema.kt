@@ -102,7 +102,7 @@ enum class ConfigSchema : AirbyteConfig {
     constructor(schemaFilename: String, className: Class<*>) {
         this.schemaFilename = schemaFilename
         this.className = className
-        extractId = Function { `object`: Any? ->
+        extractId = Function { _: Any? ->
             throw RuntimeException(className.getSimpleName() + " doesn't have an id")
         }
         idFieldName = null
@@ -112,15 +112,15 @@ enum class ConfigSchema : AirbyteConfig {
         get() = KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile()
 
     override fun <T> getClassName(): Class<T> {
-        return className as Class<T>
+        @Suppress("unchecked_cast") return className as Class<T>
     }
 
-    override fun <T> getId(`object`: T): String {
-        if (getClassName<Any>().isInstance(`object`)) {
-            return (extractId as Function<T, String>).apply(`object`)
+    override fun <T> getId(config: T): String {
+        if (getClassName<Any>().isInstance(config)) {
+            @Suppress("unchecked_cast") return (extractId as Function<T, String>).apply(config)
         }
         throw RuntimeException(
-            "Object: " + `object` + " is not instance of class " + getClassName<Any>().name
+            "Object: " + config + " is not instance of class " + getClassName<Any>().name
         )
     }
 
