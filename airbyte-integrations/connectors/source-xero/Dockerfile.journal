@@ -1,0 +1,6 @@
+FROM airbyte/source-xero:0.2.5
+
+COPY source_xero/source.py /airbyte/integration_code/source_xero/source.py
+COPY source_xero/streams.py /airbyte/integration_code/source_xero/streams.py
+
+

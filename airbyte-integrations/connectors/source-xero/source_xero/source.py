@@ -33,6 +33,7 @@ from .streams import (
     TaxRates,
     TrackingCategories,
     Users,
+    Journals,
 )
 
 
@@ -87,6 +88,7 @@ class SourceXero(AbstractSource):
             RepeatingInvoices(**stream_kwargs),
             TaxRates(**stream_kwargs),
             TrackingCategories(**stream_kwargs),
+            Journals(**incremental_kwargs),
         ]
         return streams
 
