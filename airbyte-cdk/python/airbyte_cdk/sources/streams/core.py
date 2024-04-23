@@ -205,7 +205,7 @@ class Stream(ABC):
         # incoming stream_state value as a backup if Stream.state is undefined
         # Also likely handled by Ella's work, but leaving it in and I'll adapt the changes once they're in
         if not has_slices:
-            self._observe_state(checkpoint_reader, stream_state)
+            self._observe_state(checkpoint_reader)
             checkpoint = checkpoint_reader.get_checkpoint()
         else:
             checkpoint = checkpoint_reader.final_checkpoint()
@@ -243,7 +243,7 @@ class Stream(ABC):
             json_schema=dict(self.get_json_schema()),
             supported_sync_modes=[SyncMode.full_refresh],
             # This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73/files
-            # The logic may also be tweaked pending the protocol review discussions
+            # The logic or field name may also be tweaked pending the protocol review discussions
             # is_resumable=self.supports_checkpointing,
         )
 
@@ -280,8 +280,8 @@ class Stream(ABC):
             # Modern case where a stream manages state using getter/setter
             return True
         else:
-            # Legacy case where the CDK manages state via the get_updated_state method. This is determined by
-            # whether the stream's get_updated_state is different from the base class and therefore overridden
+            # Legacy case where the CDK manages state via the get_updated_state() method. This is determined by
+            # whether the stream's get_updated_state() differs from the Stream class and therefore has been overridden
             return type(self).get_updated_state != Stream.get_updated_state
 
     def _wrapped_cursor_field(self) -> List[str]:
@@ -408,7 +408,7 @@ class Stream(ABC):
                 slices = [{}]
             logger.debug(f"Processing stream slices for {self.name} (sync_mode: {sync_mode.name})", extra={"stream_slices": slices})
             if checkpoint_mode == CheckpointMode.INCREMENTAL:
-                return IncrementalCheckpointReader(stream_slices=slices)
+                return IncrementalCheckpointReader(stream_slices=slices, stream_state=stream_state)
             else:
                 return FullRefreshCheckpointReader(stream_slices=slices)
 
@@ -467,18 +467,18 @@ class Stream(ABC):
             new_state = self.state  # type: ignore # we know the field might not exist...
             checkpoint_reader.observe(new_state)
         except AttributeError:
-            # For the final state its possible to observe no incoming stream_state param and the stream uses legacy state.
-            # For this case we should never zero out the state that previously observed
-            new_state = stream_state
-            if new_state:
-                checkpoint_reader.observe(new_state)
+            # Only when the stream uses legacy state should the checkpoint reader observe the parameter stream_state which
+            # is derived from the get_updated_state() method. The checkpoint reader should preserve existing state over
+            # zeroing it out
+            if stream_state:
+                checkpoint_reader.observe(stream_state)
 
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         stream_state: Mapping[str, Any],
         state_manager,
     ) -> AirbyteMessage:
-        # This should be consolidated into one ConnectorStateManager.update_and_create_state_message() method, but I want
-        # to reduce changes right now and this would span concurrent as well
+        # todo: This can be consolidated into one ConnectorStateManager.update_and_create_state_message() method, but I want
+        #  to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)

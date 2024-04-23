@@ -12,6 +12,11 @@ class CheckpointMode(Enum):
 
 
 class CheckpointReader(ABC):
+    """
+    CheckpointReader manages how to iterate over a stream's partitions and serves as the bridge for interpreting the current state
+    of the stream that should be emitted back to the platform.
+    """
+
     @abstractmethod
     def next(self) -> Optional[Mapping[str, Any]]:
         """
@@ -32,13 +37,11 @@ class CheckpointReader(ABC):
     @abstractmethod
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
         """
-        This is interesting. With this move, we've turned checkpoint reader to resemble even more of a cursor because we are acting
-        even more like an intermediary since we are more regularly assigning Stream.state to CheckpointReader._state via observe
+        Retrieves the current state value of the stream
         """
 
-    # It would be interesting if we wanted to get rid of this. Right now the main use case for a different get_checkpoint
-    # and final_checkpoint is for a full refresh substream we don't want to checkpoint after every slice because there is not
-    # a meaningful state value to emit.
+    # The separate get_checkpoint() and final_checkpoint() methods make the the two interfaces a little odd because looking at the
+    # implementation in isolation, based fields on the implementations of the CheckpointReaders aren't optional.
     @abstractmethod
     def final_checkpoint(self) -> Optional[Mapping[str, Any]]:
         """
@@ -48,8 +51,13 @@ class CheckpointReader(ABC):
 
 
 class IncrementalCheckpointReader(CheckpointReader):
-    def __init__(self, stream_slices: Iterable[Optional[Mapping[str, Any]]]):
-        self._state: Optional[Mapping[str, Any]] = None
+    """
+    IncrementalCheckpointReader handles iterating through a stream based on partitioned windows of data that are determined
+    before syncing data.
+    """
+
+    def __init__(self, stream_state: Mapping[str, Any], stream_slices: Iterable[Optional[Mapping[str, Any]]]):
+        self._state: Mapping[str, Any] = stream_state
         self._stream_slices = iter(stream_slices)
 
     def next(self) -> Optional[Mapping[str, Any]]:
@@ -69,17 +77,28 @@ class IncrementalCheckpointReader(CheckpointReader):
 
 
 class ResumableFullRefreshCheckpointReader(CheckpointReader):
+    """
+    ResumableFullRefreshCheckpointReader allows for iteration over an unbounded set of records based on the pagination strategy
+    of the stream. Because the number of pages is unknown, the stream's current state is used to determine whether to continue
+    fetching more pages or stopping the sync.
+    """
+
     def __init__(self, stream_state: Mapping[str, Any]):
-        self._state: Optional[Mapping[str, Any]] = stream_state or {"first_slice": True}
-        # can i have a dummy for first iteration to trigger the loop, and subsequent ones, we see {} and then therefor end the loop
+        # The first attempt of an RFR stream has an empty {} incoming state, but should still make a first attempt to read records
+        # from the first page in next().
+        self._first_page = bool(stream_state == {})
+        self._state: Mapping[str, Any] = stream_state
 
     def next(self) -> Optional[Mapping[str, Any]]:
-        # todo blai: Does it feel weird that we only observe real maps, but treat empty map as stop iterating?
-        #  I don't love forcing the developer to do more, but a terminal state finished value might be nice instead of assuming {}
-        #  I think this is my main concern with the interface is that it puts a lot of onus on the connector developer to structure
-        #  their state object correctly to coincide with how the checkpoint_reader interprets values.
-        return None if self._state == {} else self._state
-        # return None if self._state.get("is_done") else self._state
+        #  todo blai: I think this is my main concern with the interface is that it puts a lot of onus on the connector developer to
+        #   structure their state object correctly to coincide with how the checkpoint_reader interprets values.
+        if self._first_page:
+            self._first_page = False
+            return self._state
+        elif self._state == {}:
+            return None
+        else:
+            return self._state
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
         self._state = new_state
@@ -92,6 +111,11 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
 
 
 class FullRefreshCheckpointReader(CheckpointReader):
+    """
+    FullRefreshCheckpointReader iterates over data that cannot be checkpointed incrementally during the sync because the stream
+    is not capable of managing state. At the end of a sync, a final state message is emitted to signal completion.
+    """
+
     def __init__(self, stream_slices: Iterable[Optional[Mapping[str, Any]]]):
         self._stream_slices = iter(stream_slices)
 

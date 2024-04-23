@@ -1274,7 +1274,7 @@ class TestResumableFullRefreshRead:
         # So in reality we can probably get rid of this test entirely
         s1 = MockResumableFullRefreshStream(
             [
-                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"first_slice": True}}, responses[0]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {}}, responses[0]),
                 ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 1}}, responses[1]),
                 ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 2}}, responses[2]),
             ],
@@ -1383,7 +1383,7 @@ class TestResumableFullRefreshRead:
         # So in reality we can probably get rid of this test entirely
         s1 = MockResumableFullRefreshStream(
             [
-                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"first_slice": True}}, responses[0]),
+                ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {}}, responses[0]),
                 ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 1}}, responses[1]),
                 ({"stream_state": {}, "sync_mode": SyncMode.full_refresh, "stream_slice": {"page": 2}}, responses[2]),
             ],
@@ -1437,8 +1437,8 @@ def test_observe_state_from_stream_instance():
         [],
     )
 
-    teams_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[])
-    managers_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[])
+    teams_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[], stream_state={})
+    managers_checkpoint_reader = IncrementalCheckpointReader(stream_slices=[], stream_state={})
 
     # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
@@ -1448,6 +1448,13 @@ def test_observe_state_from_stream_instance():
 
     # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
     managers_stream._observe_state(managers_checkpoint_reader, {"updated": "expected_here"})
+    actual_message = managers_stream._checkpoint_state(
+        stream_state=managers_checkpoint_reader.get_checkpoint(), state_manager=state_manager
+    )
+    assert actual_message == _as_state("managers", {"updated": "expected_here"})
+
+    # Stream_state None when passed to checkpoint_state() should be ignored and retain the existing state value
+    managers_stream._observe_state(managers_checkpoint_reader)
     actual_message = managers_stream._checkpoint_state(
         stream_state=managers_checkpoint_reader.get_checkpoint(), state_manager=state_manager
     )

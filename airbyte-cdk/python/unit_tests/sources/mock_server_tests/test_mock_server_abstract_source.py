@@ -19,6 +19,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_record_builder,
     create_response_builder,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.sources.mock_server_tests.mock_source_fixture import SourceFixture
 from unit_tests.sources.mock_server_tests.test_helpers import emits_successful_sync_status_messages, validate_message_order
 
@@ -375,6 +376,62 @@ class IncrementalStreamTest(TestCase):
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "legacies"
         assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
+
+    @HttpMocker()
+    def test_legacy_no_records_retains_incoming_state(self, http_mocker):
+        start_datetime = _NOW - timedelta(days=14)
+        config = {
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
+        }
+
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        http_mocker.get(
+            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
+            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
+        )
+
+        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        http_mocker.get(
+            _create_legacies_request().with_start_date(_NOW - timedelta(days=1)).with_end_date(_NOW).build(),
+            _create_response().build(),
+        )
+
+        incoming_state = {"created_at": last_record_date_1}
+        state = StateBuilder().with_stream_state("legacies", incoming_state).build()
+
+        source = SourceFixture()
+        actual_messages = read(source, config=config, catalog=_create_catalog([("legacies", SyncMode.incremental)]), state=state)
+
+        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "legacies"
+        assert actual_messages.state_messages[0].state.stream.stream_state == incoming_state
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 0.0
+
+    @HttpMocker()
+    def test_legacy_no_slices_retains_incoming_state(self, http_mocker):
+        start_datetime = _NOW - timedelta(days=14)
+        config = {
+            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
+        }
+
+        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        http_mocker.get(
+            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
+            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
+                record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
+                record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
+        )
+
+        last_record_date_1 = _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        incoming_state = {"created_at": last_record_date_1}
+        state = StateBuilder().with_stream_state("legacies", incoming_state).build()
+
+        source = SourceFixture()
+        actual_messages = read(source, config=config, catalog=_create_catalog([("legacies", SyncMode.incremental)]), state=state)
+
+        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "legacies"
+        assert actual_messages.state_messages[0].state.stream.stream_state == incoming_state
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 0.0
 
 
 @freezegun.freeze_time(_NOW)

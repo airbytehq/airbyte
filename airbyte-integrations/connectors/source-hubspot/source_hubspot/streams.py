@@ -1361,7 +1361,7 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsAllBase(Stream):
+class ContactsAllBase(Stream, StateMixin):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
@@ -1374,45 +1374,6 @@ class ContactsAllBase(Stream):
     records_field = None
     filter_field = None
     filter_value = None
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in super()._transform(records):
-            canonical_vid = record.get("canonical-vid")
-            for item in record.get(self.records_field, []):
-                yield {"canonical-vid": canonical_vid, **item}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.filter_field and self.filter_value:
-            params.update({self.filter_field: self.filter_value})
-        return params
-
-
-class ContactsListMemberships(ContactsAllBase, ABC):
-    """Contacts list Memberships, API v1
-    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
-    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
-    in get all contacts endpoint. API will return list memberships for each contact record.
-    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
-    Therefore, new stream was created based on get all contacts endpoint of API V1.
-    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
-    """
-
-    records_field = "list-memberships"
-    filter_field = "showListMemberships"
-    filter_value = True
-
-
-class ContactsFormSubmissions(ContactsAllBase, StateMixin, ABC):
-
-    records_field = "form-submissions"
-    filter_field = "formSubmissionMode"
-    filter_value = "all"
     _state = {}
     limit_field = "count"
     limit = 100
@@ -1460,6 +1421,8 @@ class ContactsFormSubmissions(ContactsAllBase, StateMixin, ABC):
                 records = self._filter_old_records(records)
             yield from self.record_unnester.unnest(records)
 
+            # todo blai: This is how the gotcha mentioned in the RFR checkpoint reader manifests that the developer must know to
+            #  set state as the empty. Although the state setter expects a real value so maybe this isn't the worst interface
             self.state = self.next_page_token(response) or {}
 
             # Always return an empty generator just in case no records were ever yielded
@@ -1470,6 +1433,45 @@ class ContactsFormSubmissions(ContactsAllBase, StateMixin, ABC):
                 raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
             else:
                 raise e
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            canonical_vid = record.get("canonical-vid")
+            for item in record.get(self.records_field, []):
+                yield {"canonical-vid": canonical_vid, **item}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if self.filter_field and self.filter_value:
+            params.update({self.filter_field: self.filter_value})
+        return params
+
+
+class ContactsListMemberships(ContactsAllBase, ABC):
+    """Contacts list Memberships, API v1
+    The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
+    According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
+    in get all contacts endpoint. API will return list memberships for each contact record.
+    But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
+    Therefore, new stream was created based on get all contacts endpoint of API V1.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+    """
+
+    records_field = "list-memberships"
+    filter_field = "showListMemberships"
+    filter_value = True
+
+
+class ContactsFormSubmissions(ContactsAllBase, ABC):
+
+    records_field = "form-submissions"
+    filter_field = "formSubmissionMode"
+    filter_value = "all"
 
 
 class Deals(CRMSearchStream):
