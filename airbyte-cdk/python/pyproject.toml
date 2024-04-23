@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.10",
 ]
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
