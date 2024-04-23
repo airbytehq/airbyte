@@ -237,7 +237,6 @@ public class MySqlInitialReadUtil {
         MySqlCdcTargetPosition.targetPosition(database),
         true,
         firstRecordWaitTime,
-        subsequentRecordWaitTime,
         AirbyteDebeziumHandler.QUEUE_CAPACITY,
         false);
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
