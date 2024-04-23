@@ -134,7 +134,6 @@ class IntegrationCliParser {
                             .build()
                     )
                 }
-                else -> throw IllegalStateException("Unexpected value: $command")
             }
             val parsed =
                 Clis.parse(args, options, command.toString().lowercase(Locale.getDefault()))
@@ -174,7 +173,6 @@ class IntegrationCliParser {
                         Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY])
                     )
                 }
-                else -> throw IllegalStateException("Unexpected value: $command")
             }
         }
     }
