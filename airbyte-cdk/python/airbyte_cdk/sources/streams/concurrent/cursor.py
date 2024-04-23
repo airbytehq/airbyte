@@ -87,44 +87,6 @@ class Cursor(ABC):
         raise NotImplementedError()
 
 
-class FinalStateCursor(Cursor):
-    """Cursor that is used to guarantee at least one state message is emitted for a concurrent stream."""
-
-    def __init__(
-        self,
-        stream_name: str,
-        stream_namespace: Optional[str],
-        message_repository: MessageRepository,
-    ) -> None:
-        self._stream_name = stream_name
-        self._stream_namespace = stream_namespace
-        self._message_repository = message_repository
-        # Normally the connector state manager operates at the source-level. However, we only need it to write the sentinel
-        # state message rather than manage overall source state. This is also only temporary as we move to the resumable
-        # full refresh world where every stream uses a FileBasedConcurrentCursor with incremental state.
-        self._connector_state_manager = ConnectorStateManager(stream_instance_map={})
-        self._has_closed_at_least_one_slice = False
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {FULL_REFRESH_SENTINEL_STATE_KEY: True}
-
-    def observe(self, record: Record) -> None:
-        pass
-
-    def close_partition(self, partition: Partition) -> None:
-        pass
-
-    def ensure_at_least_one_state_emitted(self) -> None:
-        """
-        Used primarily for full refresh syncs that do not have a valid cursor value to emit at the end of a sync
-        """
-
-        self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self.state)
-        state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
-        self._message_repository.emit_message(state_message)
-
-
 class ConcurrentCursor(Cursor):
     _START_BOUNDARY = 0
     _END_BOUNDARY = 1
