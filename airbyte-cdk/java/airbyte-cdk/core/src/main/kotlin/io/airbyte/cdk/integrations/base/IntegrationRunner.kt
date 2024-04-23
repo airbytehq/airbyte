@@ -176,7 +176,7 @@ internal constructor(
                     val config = parseConfig(parsed!!.getConfigPath())
                     validateConfig(integration.spec()!!.connectionSpecification, config, "READ")
                     val catalog =
-                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
+                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
                     val stateOptional =
                         parsed.getStatePath().map { path: Path? -> parseConfig(path) }
                     try {
@@ -201,7 +201,7 @@ internal constructor(
                         (integration as Destination).isV2Destination
                     )
                     val catalog =
-                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
+                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
 
                     try {
                         destination!!
@@ -517,7 +517,7 @@ internal constructor(
             return Jsons.deserialize(IOs.readFile(path))
         }
 
-        private fun <T> parseConfig(path: Path?, klass: Class<T>): T {
+        private fun <T> parseConfig(path: Path?, klass: Class<T>): T? {
             val jsonNode = parseConfig(path)
             return Jsons.`object`(jsonNode, klass)
         }

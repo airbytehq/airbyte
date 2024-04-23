@@ -194,12 +194,12 @@ object Jsons {
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T {
+    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, klass)
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T {
+    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, typeReference)
     }
 
@@ -243,7 +243,7 @@ object Jsons {
 
     fun keys(jsonNode: JsonNode): Set<String> {
         return if (jsonNode.isObject) {
-            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {}).keys
+            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {})!!.keys
         } else {
             HashSet()
         }
