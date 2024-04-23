@@ -8,7 +8,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
-from airbyte_cdk.sources.declarative.manifest_declarative_source import DeclarativeSource
+from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
