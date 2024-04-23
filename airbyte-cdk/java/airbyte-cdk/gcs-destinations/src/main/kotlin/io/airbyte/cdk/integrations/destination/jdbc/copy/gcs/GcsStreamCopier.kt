@@ -86,9 +86,9 @@ abstract class GcsStreamCopier(
     }
 
     @Throws(Exception::class)
-    override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, gcsFileName: String?) {
-        if (csvPrinters.containsKey(gcsFileName)) {
-            csvPrinters[gcsFileName]!!.printRecord(
+    override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, fileName: String?) {
+        if (csvPrinters.containsKey(fileName)) {
+            csvPrinters[fileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
                 Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
