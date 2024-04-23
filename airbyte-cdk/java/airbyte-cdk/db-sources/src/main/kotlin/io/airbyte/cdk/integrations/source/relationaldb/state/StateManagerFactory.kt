@@ -96,6 +96,7 @@ object StateManagerFactory {
 
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.STREAM ->
+                throw ConfigErrorException(
                     "Unable to convert connector state from stream to global.  Please reset the connection to continue."
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
