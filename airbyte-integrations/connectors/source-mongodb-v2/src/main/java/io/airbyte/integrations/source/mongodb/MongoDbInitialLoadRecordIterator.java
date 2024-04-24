@@ -50,7 +50,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   MongoDbInitialLoadRecordIterator(final MongoCollection<Document> collection,
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
-                                   final boolean isEnforceSchema, final int chunkSize) {
+                                   final boolean isEnforceSchema,
+                                   final int chunkSize) {
     this.collection = collection;
     this.fields = fields;
     this.currentState = existingState;
@@ -63,7 +64,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   protected Document computeNext() {
     if (shouldBuildNextQuery()) {
       try {
-        LOGGER.info("Finishing subquery number : {}", numSubqueries);
+        LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries,
+            currentState.get() == null ? "starting null" : currentState.get().id());
         currentIterator.close();
         currentIterator = buildNewQueryIterator();
         numSubqueries++;
