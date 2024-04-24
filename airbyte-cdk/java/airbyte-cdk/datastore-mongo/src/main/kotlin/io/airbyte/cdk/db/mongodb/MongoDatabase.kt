@@ -52,7 +52,7 @@ class MongoDatabase(connectionString: String, databaseName: String) :
     val databaseNames: MongoIterable<String>
         get() = mongoClient.listDatabaseNames()
 
-    val collectionNames: Set<String?>
+    val collectionNames: Set<String>
         get() {
             val collectionNames = database.listCollectionNames() ?: return Collections.emptySet()
             return MoreIterators.toSet(collectionNames.iterator())

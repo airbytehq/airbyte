@@ -109,7 +109,7 @@ object SerialFlush {
                         database,
                         stageName,
                         stagingPath,
-                        java.util.List.of(stagedFile),
+                        listOf(stagedFile),
                         writeConfig.outputTableName,
                         schemaName,
                         stagingOperations,

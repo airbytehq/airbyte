@@ -117,7 +117,7 @@ object JsonSchemas {
     fun <T> traverseJsonSchemaWithCollector(
         jsonSchema: JsonNode,
         mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>
-    ): List<T?> {
+    ): List<T> {
         // for the sake of code reuse, use the filtered collector method but makes sure the filter
         // always
         // returns true.
@@ -173,7 +173,7 @@ object JsonSchemas {
             node: JsonNode?,
             path: List<FieldNameOrList> ->
             if (predicate.test(node)) {
-                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
+                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>>(
                     path
                 )
             } else {

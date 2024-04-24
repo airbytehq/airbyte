@@ -221,7 +221,7 @@ object MongoUtils {
         fieldName: String
     ): JsonNode {
         reader.readStartArray()
-        val elements = Lists.newArrayList<Any?>()
+        val elements = Lists.newArrayList<Any>()
 
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
             val arrayFieldType = reader.currentBsonType

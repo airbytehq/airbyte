@@ -265,7 +265,7 @@ abstract class AbstractJdbcSource<Datatype>(
         database: JdbcDatabase,
         schema: String?
     ): List<TableInfo<CommonField<Datatype>>> {
-        val internalSchemas: Set<String?> = HashSet(excludedInternalNameSpaces)
+        val internalSchemas: Set<String> = HashSet(excludedInternalNameSpaces)
         LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
         val tablesWithSelectGrantPrivilege =
             getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
@@ -329,7 +329,7 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     protected fun excludeNotAccessibleTables(
-        internalSchemas: Set<String?>,
+        internalSchemas: Set<String>,
         tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?
     ): Predicate<JsonNode> {
         return Predicate<JsonNode> { jsonNode: JsonNode ->
@@ -350,7 +350,7 @@ abstract class AbstractJdbcSource<Datatype>(
     // getPrivilegesTableForCurrentUser()
     protected open fun isNotInternalSchema(
         jsonNode: JsonNode,
-        internalSchemas: Set<String?>
+        internalSchemas: Set<String>
     ): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
