@@ -408,8 +408,8 @@ class ShopifyBulkManager:
                 return response if not errors else None
             else:
                 return self.job_retry_on_concurrency(request)
-        except (ShopifyBulkExceptions.BulkJobBadResponse, ShopifyBulkExceptions.BulkJobUnknownError) as err:
-            # sometimes we face with `HTTP-500 Internal Server Error`
+        except (ShopifyBulkExceptions.BulkJobBadResponse, ShopifyBulkExceptions.BulkJobUnknownError, ConnectionError) as err:
+            # sometimes we face `HTTP-500-Internal Server Error` or `HTTP-1xx-Connection Error`
             # we should retry such at least once
             self.logger.info(f"Stream: `{self.stream_name}`, retrying Bad Request: {request.body}, error: {repr(err)}.")
             return self.job_retry_request(request)

@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 import requests
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, Customers
 
 
 def test_get_next_page_token(requests_mock, auth_config):
@@ -97,6 +97,25 @@ def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_
     ],
 )
 def test_unavailable_stream(requests_mock, basic_config, stream, slice, status, json_response, expected_output):
+    config = basic_config
+    config["authenticator"] = None
+    stream = stream(config)
+    url = stream.url_base + stream.path(stream_slice=slice)
+    requests_mock.get(url=url, json=json_response, status_code=status)
+    response = requests.get(url)
+    assert stream.should_retry(response) is expected_output
+
+
+@pytest.mark.parametrize(
+    "stream, slice, status, json_response, expected_output",
+    [
+        (Customers, {"customer_id": 123}, 104, "Connection reset by peer", True),
+    ],
+    ids=[
+        "Connection reset by peer (104)",
+    ],
+)
+def test_retryable_transient_error(requests_mock, basic_config, stream, slice, status, json_response, expected_output):
     config = basic_config
     config["authenticator"] = None
     stream = stream(config)

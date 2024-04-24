@@ -115,6 +115,9 @@ class ShopifyStream(HttpStream, ABC):
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(known_errors.get(status))
             return False
+        elif status == 104:
+            self.logger.warning(f"Stream: {self.name}: Shopify connection reset, retrying the request.")
+            return True
         else:
             return super().should_retry(response)
 
