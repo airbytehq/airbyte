@@ -6,6 +6,7 @@ import json
 import os
 
 import responses
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from pytest import fixture
 from responses import matchers
 from source_jira.source import SourceJira
@@ -390,23 +391,23 @@ def mock_issues_responses(config, issues_response):
 def mock_project_emails(config, project_email_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/1/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/1/email",
         json=project_email_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/2/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/2/email",
         json=project_email_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/3/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/3/email",
         json={"errorMessages": ["No access to emails for project 3"]},
         status=403,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/4/email?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/project/4/email",
         json=project_email_response,
     )
 
@@ -415,12 +416,12 @@ def mock_project_emails(config, project_email_response):
 def mock_issue_watchers_responses(config, issue_watchers_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers",
         json=issue_watchers_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-2/watchers?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-2/watchers",
         json={"errorMessages": ["Not found watchers for issue TESTKEY13-2"]},
         status=404,
     )
@@ -480,7 +481,7 @@ def mock_issue_custom_field_options_response(config, issue_custom_field_options_
 def mock_fields_response(config, issue_fields_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/field",
         json=issue_fields_response,
     )
 
@@ -544,8 +545,9 @@ def find_stream(stream_name, config):
     streams = SourceJira().streams(config=config)
 
     # cache should be disabled once this issue is fixed https://github.com/airbytehq/airbyte-internal-issues/issues/6513
-    # for stream in streams:
-    #     stream.retriever.requester.use_cache = True
+    for stream in streams:
+        if isinstance(stream, DeclarativeStream):
+            stream.retriever.requester.use_cache = True
 
     # find by name
     for stream in streams:

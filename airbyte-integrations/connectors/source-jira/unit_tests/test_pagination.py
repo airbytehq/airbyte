@@ -112,7 +112,6 @@ def test_pagination_users(config):
         content_type="application/json",
     )
 
-
     stream = find_stream("users", config)
     stream.retriever.paginator.pagination_strategy.page_size = 2
     records = list(read_full_refresh(stream))
@@ -126,4 +125,3 @@ def test_pagination_users(config):
 
     for rec, exp in zip(records, expected_records):
         assert dict(rec) == exp, f"Failed at {rec} vs {exp}"
-

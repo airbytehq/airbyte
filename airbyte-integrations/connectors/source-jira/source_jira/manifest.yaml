@@ -60,8 +60,8 @@ definitions:
     # If this condition is not met, None is returned, resulting in end of pagination.
     pagination_strategy:
       type: CursorPagination
-      cursor_value: "{{ response.startAt + response.maxResults }}"
-      stop_condition: "{{ response.isLast or response.startAt + response.maxResults >= response.total }}"
+      cursor_value: "{{ response.get('startAt') + response['maxResults'] }}"
+      stop_condition: "{{ response.get('isLast') or response.get('startAt') + response.get('maxResults') >= response.get('total') }}"
       page_size: 50
 
   # Retriever
