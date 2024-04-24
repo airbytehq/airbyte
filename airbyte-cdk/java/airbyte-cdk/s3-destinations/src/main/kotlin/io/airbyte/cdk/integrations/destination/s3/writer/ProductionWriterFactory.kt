@@ -24,7 +24,7 @@ class ProductionWriterFactory : S3WriterFactory {
         s3Client: AmazonS3,
         configuredStream: ConfiguredAirbyteStream,
         uploadTimestamp: Timestamp
-    ): DestinationFileWriter? {
+    ): DestinationFileWriter {
         val format = config.formatConfig!!.format
 
         if (format == FileUploadFormat.AVRO || format == FileUploadFormat.PARQUET) {

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
 ## 0.83.1
 Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
 

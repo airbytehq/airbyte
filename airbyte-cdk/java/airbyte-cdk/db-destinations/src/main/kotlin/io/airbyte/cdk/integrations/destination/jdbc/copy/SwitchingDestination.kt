@@ -50,7 +50,7 @@ open class SwitchingDestination<T : Enum<T>>(
     @Throws(Exception::class)
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val destinationType = configToType.apply(config)
-        LOGGER.info("Using destination type: " + destinationType!!.name)
+        LOGGER.info("Using destination type: " + destinationType.name)
         return typeToDestination[destinationType]!!.check(config)
     }
 
@@ -61,7 +61,7 @@ open class SwitchingDestination<T : Enum<T>>(
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
-        LOGGER.info("Using destination type: " + destinationType!!.name)
+        LOGGER.info("Using destination type: " + destinationType.name)
         return typeToDestination[destinationType]!!.getConsumer(
             config,
             catalog,
@@ -76,7 +76,7 @@ open class SwitchingDestination<T : Enum<T>>(
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
-        LOGGER.info("Using destination type: " + destinationType!!.name)
+        LOGGER.info("Using destination type: " + destinationType.name)
         return typeToDestination[destinationType]!!.getSerializedMessageConsumer(
             config,
             catalog,
