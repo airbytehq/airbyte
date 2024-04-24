@@ -67,12 +67,13 @@ This guide describes in details how you can configure the connector to connect w
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                                              |
-|:--------| :--------- | :-------------------------------------------------------- |:---------------------------------------------------------------------|
-| 0.2.3 | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
-| 0.2.2   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                     |
-| 0.2.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                    |
-| 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485           | Remove LEGACY state                                                  |
-| 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172           | Fix reserved words in projection expression & make them configurable |
-| 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682           | Fix build                                                            |
-| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750           | Initial version                                                      |
+| Version | Date       | Pull Request                                              | Subject                                                                |
+|:--------| :--------- | :-------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.0   | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access                                                |
+| 0.2.3   | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4                                                       |
+| 0.2.2   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                       |
+| 0.2.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                      |
+| 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485           | Remove LEGACY state                                                    |
+| 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172           | Fix reserved words in projection expression & make them configurable   |
+| 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682           | Fix build                                                              |
+| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750           | Initial version                                                        |

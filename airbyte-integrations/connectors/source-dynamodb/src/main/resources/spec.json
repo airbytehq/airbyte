@@ -4,7 +4,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Dynamodb Source Spec",
     "type": "object",
-    "required": ["access_key_id", "secret_access_key"],
     "additionalProperties": false,
     "properties": {
       "endpoint": {
