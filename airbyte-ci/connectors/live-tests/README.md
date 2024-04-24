@@ -12,8 +12,6 @@ This project contains utilities for running connector tests against live data.
 ```bash
 # From airbyte-ci/connectors/live-tests
 poetry install
-# To install in editable mode for development
-pipx install . --force --editable
 ```
 
 ## Commands
@@ -21,7 +19,7 @@ pipx install . --force --editable
 ### `debug`
 
 ```
-Usage: live-tests debug [OPTIONS] {check|discover|read|read-with-state|spec}
+Usage: poetry run live-tests debug [OPTIONS] {check|discover|read|read-with-state|spec}
 
   Run a specific command on one or multiple connectors and persists the
   outputs to local storage.
@@ -57,7 +55,7 @@ It will write artifacts to an output directory:
 Let's run `debug` to check the output of `read` on two different versions of the same connector:
 
 ```bash
-live-tests debug read \
+poetry run live-tests debug read \
 --connection-id=d3bd39cd-6fec-4691-a661-d52c466d8554
 --connector-image=airbyte/source-pokeapi:dev \
 --connector-image=airbyte/source-pokeapi:latest \
@@ -94,7 +92,7 @@ live_tests_debug_reports
 You can also run the `debug` command on a live connection by passing the `--connection-id` option:
 
 ```bash
-live-tests debug read \
+poetry run live-tests debug read \
 --connector-image=airbyte/source-pokeapi:dev \
 --connector-image=airbyte/source-pokeapi:latest \
 --connection-id=<CONNECTION-ID>
