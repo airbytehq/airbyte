@@ -67,11 +67,7 @@ def mock_auth(http_mocker: HttpMocker) -> None:
     http_mocker.post(RequestBuilder.auth_endpoint().build(), build_response(response_body, status_code=HTTPStatus.OK))
 
 
-def assert_message_in_log_output(
-    message: str, entrypoint_output: EntrypointOutput, log_level: Optional[Level] = Level.WARN
-) -> None:
+def assert_message_in_log_output(message: str, entrypoint_output: EntrypointOutput, log_level: Optional[Level] = Level.WARN) -> None:
     assert any(
-        message in airbyte_message.log.message
-        for airbyte_message in entrypoint_output.logs
-        if airbyte_message.log.level == log_level
+        message in airbyte_message.log.message for airbyte_message in entrypoint_output.logs if airbyte_message.log.level == log_level
     )

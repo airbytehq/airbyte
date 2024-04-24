@@ -50,7 +50,7 @@ public class MongoConnectionUtils {
   }
 
   private static String buildConnectionString(final MongoDbSourceConfig config) {
-    return MongoDbDebeziumPropertiesManager.buildConnectionString(config.getDatabaseConfig(), true);
+    return MongoDbDebeziumPropertiesManager.buildConnectionString(config.getDatabaseConfig());
   }
 
 }

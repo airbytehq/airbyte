@@ -43,7 +43,8 @@
           "id": { "type": ["null", "string"] },
           "text": { "type": ["null", "string"] },
           "type": { "type": ["null", "string"] },
-          "value": { "type": ["null", "string"] }
+          "value": { "type": ["null", "string"] },
+          "display_value": { "type": ["null", "string"] }
         }
       }
     },

@@ -96,7 +96,7 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert files == ["setup.py"]
     setup_py = resulting_directory.file("setup.py")
     actual_setup_py_content = await setup_py.contents()
-    assert expected_setup_py_content == actual_setup_py_content
+    assert actual_setup_py_content == expected_setup_py_content
 
     # Assert that the diff was exported to the repo
     assert updated_connector_dir.diff.return_value.export.call_count == 1

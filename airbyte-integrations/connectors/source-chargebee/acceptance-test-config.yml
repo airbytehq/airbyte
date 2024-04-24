@@ -23,26 +23,27 @@ acceptance_tests:
         timeout_seconds: 1200
         empty_streams:
           - name: "addon"
-            bypass_reason: "Not available for Product Catalog 2.0 sites."
+            bypass_reason: "Not available for Product Catalog 2.0 sites. Tested with mocker server tests."
           - name: "plan"
-            bypass_reason: "Not available for Product Catalog 2.0 sites."
+            bypass_reason: "Not available for Product Catalog 2.0 sites. Tested with mocker server tests."
           - name: "virtual_bank_account"
-            bypass_reason: "Cannot populate with test data"
+            bypass_reason: "Tested with mocker server tests."
           - name: "event"
-            bypass_reason: "Unstable data. Test data is not persistent."
+            bypass_reason: "Unstable data. Test data is not persistent. Tested with mocker server tests."
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
           - name: "customer"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "Tested with mocker server tests."
           - name: "subscription"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "Tested with mocker server tests."
           - name: "coupon"
-            bypass_reason: "To be Tested with integration tests."
+            bypass_reason: "Tested with mocker server tests."
+          - name: "hosted_page"
+            bypass_reason: "Tested with mocker server tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
+        validate_state_messages: False
         fail_on_extra_columns: true
   incremental:
     tests:

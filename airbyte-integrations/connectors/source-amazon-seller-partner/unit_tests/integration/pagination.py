@@ -10,7 +10,7 @@ from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 NEXT_TOKEN_STRING = "MDAwMDAwMDAwMQ=="
 
 
-class VendorDirectFulfillmentShippingPaginationStrategy(PaginationStrategy):
+class VendorFulfillmentPaginationStrategy(PaginationStrategy):
     def update(self, response: Dict[str, Any]) -> None:
         response["payload"]["pagination"] = {}
         response["payload"]["pagination"]["nextToken"] = NEXT_TOKEN_STRING

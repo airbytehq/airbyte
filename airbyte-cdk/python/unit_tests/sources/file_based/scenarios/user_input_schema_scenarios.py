@@ -442,7 +442,13 @@ multi_stream_user_input_schema_scenario_schema_is_invalid = (
             ]
         }
     )
-    .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).with_stream("stream2", SyncMode.full_refresh).with_stream("stream3", SyncMode.full_refresh).build())
+    .set_catalog(
+        CatalogBuilder()
+        .with_stream("stream1", SyncMode.full_refresh)
+        .with_stream("stream2", SyncMode.full_refresh)
+        .with_stream("stream3", SyncMode.full_refresh)
+        .build()
+    )
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)

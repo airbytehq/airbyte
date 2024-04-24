@@ -19,6 +19,7 @@ REFRESH_TOKEN = "amazon_refresh_token"
 CONFIG_START_DATE = "2023-01-01T00:00:00Z"
 CONFIG_END_DATE = "2023-01-30T00:00:00Z"
 NOW = pendulum.now(tz="utc")
+TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class ConfigBuilder:
@@ -35,11 +36,11 @@ class ConfigBuilder:
         }
 
     def with_start_date(self, start_date: datetime) -> ConfigBuilder:
-        self._config["replication_start_date"] = start_date.isoformat()[:-13] + "Z"
+        self._config["replication_start_date"] = start_date.strftime(TIME_FORMAT)
         return self
 
     def with_end_date(self, end_date: datetime) -> ConfigBuilder:
-        self._config["replication_end_date"] = end_date.isoformat()[:-13] + "Z"
+        self._config["replication_end_date"] = end_date.strftime(TIME_FORMAT)
         return self
 
     def build(self) -> Dict[str, str]:

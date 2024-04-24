@@ -128,6 +128,11 @@ def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
     with open(f, mode="rb") as file:
         assert client._cache_stream(file)
+        
+def test_unzip_stream(client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/test.csv.zip"
+    with open(f, mode="rb") as file:
+        assert client._unzip(file)
 
 
 def test_open_aws_url():

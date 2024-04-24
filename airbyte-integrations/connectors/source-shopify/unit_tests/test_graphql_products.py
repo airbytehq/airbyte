@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import pytest
-from source_shopify.graphql import get_query_products
+from source_shopify.shopify_graphql.graphql import get_query_products
 
 
 @pytest.mark.parametrize(

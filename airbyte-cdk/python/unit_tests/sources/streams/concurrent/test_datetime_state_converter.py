@@ -94,72 +94,72 @@ def test_concurrent_stream_state_converter_is_state_message_compatible(converter
             None,
             {},
             EpochValueConcurrentStreamStateConverter().zero_value,
-            id="epoch-converter-no-state-no-start-start-is-zero-value"
+            id="epoch-converter-no-state-no-start-start-is-zero-value",
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            1617030403,
+            datetime.fromtimestamp(1617030403, timezone.utc),
             {},
             datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
-            id="epoch-converter-no-state-with-start-start-is-start"
+            id="epoch-converter-no-state-with-start-start-is-start",
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
             None,
             {"created_at": 1617030404},
             datetime(2021, 3, 29, 15, 6, 44, tzinfo=timezone.utc),
-            id="epoch-converter-state-without-start-start-is-from-state"
+            id="epoch-converter-state-without-start-start-is-from-state",
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            1617030404,
+            datetime.fromtimestamp(1617030404, timezone.utc),
             {"created_at": 1617030403},
             datetime(2021, 3, 29, 15, 6, 44, tzinfo=timezone.utc),
-            id="epoch-converter-state-before-start-start-is-start"
+            id="epoch-converter-state-before-start-start-is-start",
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            1617030403,
+            datetime.fromtimestamp(1617030403, timezone.utc),
             {"created_at": 1617030404},
             datetime(2021, 3, 29, 15, 6, 44, tzinfo=timezone.utc),
-            id="epoch-converter-state-after-start-start-is-from-state"
+            id="epoch-converter-state-after-start-start-is-from-state",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
             None,
             {},
             IsoMillisConcurrentStreamStateConverter().zero_value,
-            id="isomillis-converter-no-state-no-start-start-is-zero-value"
+            id="isomillis-converter-no-state-no-start-start-is-zero-value",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
-            "2021-08-22T05:03:27.000Z",
+            datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
             {},
             datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
-            id="isomillis-converter-no-state-with-start-start-is-start"
+            id="isomillis-converter-no-state-with-start-start-is-start",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
             None,
             {"created_at": "2021-08-22T05:03:27.000Z"},
             datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
-            id="isomillis-converter-state-without-start-start-is-from-state"
+            id="isomillis-converter-state-without-start-start-is-from-state",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
-            "2022-08-22T05:03:27.000Z",
+            datetime(2022, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
             {"created_at": "2021-08-22T05:03:27.000Z"},
             datetime(2022, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
-            id="isomillis-converter-state-before-start-start-is-start"
+            id="isomillis-converter-state-before-start-start-is-start",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
-            "2022-08-22T05:03:27.000Z",
+            datetime(2022, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
             {"created_at": "2023-08-22T05:03:27.000Z"},
             datetime(2023, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
-            id="isomillis-converter-state-after-start-start-is-from-state"
+            id="isomillis-converter-state-after-start-start-is-from-state",
         ),
-    ]
+    ],
 )
 def test_get_sync_start(converter, start, state, expected_start):
     assert converter._get_sync_start(CursorField("created_at"), state, start) == expected_start
@@ -170,36 +170,48 @@ def test_get_sync_start(converter, start, state, expected_start):
     [
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            0,
+            datetime.fromtimestamp(0, timezone.utc),
             {},
             {
                 "legacy": {},
-                "slices": [{"start": EpochValueConcurrentStreamStateConverter().zero_value,
-                            "end": EpochValueConcurrentStreamStateConverter().zero_value}],
+                "slices": [
+                    {
+                        "start": EpochValueConcurrentStreamStateConverter().zero_value,
+                        "end": EpochValueConcurrentStreamStateConverter().zero_value,
+                    }
+                ],
                 "state_type": "date-range",
             },
             id="empty-input-state-epoch",
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            1617030403,
+            datetime.fromtimestamp(1577836800, timezone.utc),
             {"created": 1617030403},
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(2020, 1, 1, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    }
+                ],
                 "legacy": {"created": 1617030403},
             },
             id="with-input-state-epoch",
         ),
         pytest.param(
             IsoMillisConcurrentStreamStateConverter(),
-            "2020-01-01T00:00:00.000Z",
+            datetime(2020, 1, 1, tzinfo=timezone.utc),
             {"created": "2021-08-22T05:03:27.000Z"},
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
-                            "end": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(2020, 1, 1, tzinfo=timezone.utc),
+                        "end": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
+                    }
+                ],
                 "legacy": {"created": "2021-08-22T05:03:27.000Z"},
             },
             id="with-input-state-isomillis",
@@ -227,8 +239,12 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             EpochValueConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    }
+                ],
             },
             {"created": 1617030403},
             id="epoch-single-slice",
@@ -237,10 +253,16 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             EpochValueConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)},
-                           {"start": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2022, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                    {
+                        "start": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2022, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                ],
             },
             {"created": 1648566403},
             id="epoch-overlapping-slices",
@@ -249,10 +271,16 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             EpochValueConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)},
-                           {"start": datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                           "end": datetime(2023, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                    {
+                        "start": datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2023, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                ],
             },
             {"created": 1617030403},
             id="epoch-multiple-slices",
@@ -261,8 +289,12 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             IsoMillisConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    }
+                ],
             },
             {"created": "2021-03-29T15:06:43.000Z"},
             id="isomillis-single-slice",
@@ -271,10 +303,16 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             IsoMillisConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)},
-                           {"start": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2022, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                    {
+                        "start": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2022, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                ],
             },
             {"created": "2022-03-29T15:06:43.000Z"},
             id="isomillis-overlapping-slices",
@@ -283,10 +321,16 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
             IsoMillisConcurrentStreamStateConverter(),
             {
                 "state_type": "date-range",
-                "slices": [{"start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                            "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc)},
-                           {"start": datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                           "end": datetime(2023, 3, 29, 15, 6, 43, tzinfo=timezone.utc)}],
+                "slices": [
+                    {
+                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                    {
+                        "start": datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "end": datetime(2023, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                    },
+                ],
             },
             {"created": "2021-03-29T15:06:43.000Z"},
             id="isomillis-multiple-slices",
@@ -294,7 +338,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
     ],
 )
 def test_convert_to_sequential_state(converter, concurrent_state, expected_output_state):
-    assert converter.convert_to_sequential_state(CursorField("created"), concurrent_state) == expected_output_state
+    assert converter.convert_to_state_message(CursorField("created"), concurrent_state) == expected_output_state
 
 
 @pytest.mark.parametrize(
@@ -322,4 +366,4 @@ def test_convert_to_sequential_state(converter, concurrent_state, expected_outpu
 )
 def test_convert_to_sequential_state_no_slices_returns_legacy_state(converter, concurrent_state, expected_output_state):
     with pytest.raises(RuntimeError):
-        converter.convert_to_sequential_state(CursorField("created"), concurrent_state)
+        converter.convert_to_state_message(CursorField("created"), concurrent_state)

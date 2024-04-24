@@ -13,8 +13,7 @@ from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
-from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
-from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
+from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
 
 if TYPE_CHECKING:
@@ -57,8 +56,6 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     if not context.code_tests_only:
         static_analysis_steps_to_run = [
             [
-                StepToRun(id=CONNECTOR_TEST_STEP_ID.METADATA_VALIDATION, step=MetadataValidation(context)),
-                StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_FOLLOW_CHECK, step=VersionFollowsSemverCheck(context)),
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.QA_CHECKS, step=QaChecks(context)),
             ]

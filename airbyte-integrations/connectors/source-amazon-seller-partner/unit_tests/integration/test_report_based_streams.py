@@ -4,6 +4,7 @@
 
 
 import gzip
+import json
 from http import HTTPStatus
 from typing import List, Optional
 
@@ -118,11 +119,11 @@ def _check_report_status_response(
         "dataEndTime": CONFIG_END_DATE,
         "createdTime": CONFIG_START_DATE,
         "dataStartTime": CONFIG_START_DATE,
+        "reportDocumentId": report_document_id,
     }
     if processing_status == ReportProcessingStatus.DONE:
         response_body.update(
             {
-                "reportDocumentId": report_document_id,
                 "processingEndTime": CONFIG_START_DATE,
                 "processingStartTime": CONFIG_START_DATE,
             }
@@ -141,10 +142,15 @@ def _get_document_download_url_response(
     return build_response(response_body, status_code=HTTPStatus.OK)
 
 
-def _download_document_response(
-    stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False
-) -> HttpResponse:
+def _download_document_response(stream_name: str, data_format: Optional[str] = "csv", compressed: Optional[bool] = False) -> HttpResponse:
     response_body = find_template(stream_name, __file__, data_format)
+    if compressed:
+        response_body = gzip.compress(response_body.encode("iso-8859-1"))
+    return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
+
+
+def _download_document_error_response(compressed: Optional[bool] = False) -> HttpResponse:
+    response_body = '{"errorDetails":"Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again."}'
     if compressed:
         response_body = gzip.compress(response_body.encode("iso-8859-1"))
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
@@ -152,7 +158,6 @@ def _download_document_response(
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
-
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -164,11 +169,8 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
-    def test_given_report_when_read_then_return_records(
-        self, stream_name: str, data_format: str, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_report_when_read_then_return_records(self, stream_name: str, data_format: str, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
@@ -192,7 +194,6 @@ class TestFullRefresh:
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
         mock_auth(http_mocker)
-
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
@@ -329,9 +330,7 @@ class TestFullRefresh:
     ) -> None:
         mock_auth(http_mocker)
 
-        http_mocker.post(
-            _create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN)
-        )
+        http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
         message_on_access_forbidden = (
@@ -354,9 +353,7 @@ class TestFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = (
-            f"The report for stream '{stream_name}' was cancelled or there is no data to return."
-        )
+        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
 
         output = self._read(stream_name, config())
         assert_message_in_log_output(message_on_report_cancelled, output)
@@ -372,15 +369,28 @@ class TestFullRefresh:
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
-            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.FATAL),
+            _check_report_status_response(
+                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+            ),
+        )
+
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_error_response(),
+            ],
         )
 
         output = self._read(stream_name, config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
-        assert output.errors[-1].trace.error.internal_message == (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE} "
-            "due to Amazon Seller Partner platform issues. This will be read during the next sync."
-        )
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert (
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{CONFIG_END_DATE}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
+        ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
         ("stream_name", "date_field", "expected_date_value"),
@@ -405,9 +415,7 @@ class TestFullRefresh:
             _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
             _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
         )
-        http_mocker.get(
-            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name)
-        )
+        http_mocker.get(_download_document_request(_DOCUMENT_DOWNLOAD_URL).build(), _download_document_response(stream_name))
 
         output = self._read(stream_name, config())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
@@ -425,9 +433,7 @@ class TestFullRefresh:
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = (
-            f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
-        )
+        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
         assert_message_in_log_output(message_on_backoff_exception, output)
@@ -503,6 +509,313 @@ class TestIncremental:
         assert len(output.state_messages) == 1
 
         cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
-        cursor_value_from_state_message = output.most_recent_state.get(stream_name, {}).get(cursor_field)
         cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
-        assert cursor_value_from_state_message == cursor_value_from_latest_record
+
+        most_recent_state = output.most_recent_state.stream_state
+        assert most_recent_state == {cursor_field: cursor_value_from_latest_record}
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestVendorSalesReportsFullRefresh:
+    data_format = "json"
+    selling_program = ("RETAIL", "FRESH")
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @staticmethod
+    def _get_stream_name(selling_program: str) -> str:
+        return f"GET_VENDOR_FORECASTING_{selling_program}_REPORT"
+
+    @staticmethod
+    def _get_report_request_body(selling_program: str) -> str:
+        return json.dumps(
+            {
+                "reportType": "GET_VENDOR_FORECASTING_REPORT",
+                "marketplaceIds": [MARKETPLACE_ID],
+                "reportOptions": {"sellingProgram": selling_program},
+            }
+        )
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_compressed_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID, compressed=True),
+        )
+
+        # a workaround to pass compressed document to the mocked response
+        document_request = _download_document_request(_DOCUMENT_DOWNLOAD_URL).build()
+        document_response = _download_document_response(stream_name, data_format=self.data_format, compressed=True)
+        document_request_matcher = HttpRequestMatcher(document_request, minimum_number_of_expected_match=1)
+        http_mocker._matchers.append(document_request_matcher)
+
+        http_mocker._mocker.get(
+            requests_mock.ANY,
+            additional_matcher=http_mocker._matches_wrapper(document_request_matcher),
+            response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            [response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR), _create_report_response(_REPORT_ID)],
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_response(stream_name, data_format=self.data_format),
+            ],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            response_with_status(status_code=HTTPStatus.FORBIDDEN),
+        )
+
+        output = self._read(stream_name, config())
+        message_on_access_forbidden = (
+            "This is most likely due to insufficient permissions on the credentials in use. "
+            "Try to grant required permissions/scopes or re-authenticate."
+        )
+        assert_message_in_log_output(message_on_access_forbidden, output)
+        assert len(output.records) == 0
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_status_cancelled_when_read_then_stream_completed_successfully_and_warn_about_cancellation(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
+        )
+
+        message_on_report_cancelled = f"The report for stream '{stream_name}' was cancelled or there is no data to return."
+
+        output = self._read(stream_name, config())
+        assert_message_in_log_output(message_on_report_cancelled, output)
+        assert len(output.records) == 0
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_report_status_fatal_when_read_then_exception_raised(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(
+                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+            ),
+        )
+
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            [
+                response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+                _download_document_error_response(),
+            ],
+        )
+
+        output = self._read(stream_name, config(), expecting_exception=True)
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert f"Failed to retrieve the report '{stream_name}'" in output.errors[-1].trace.error.message
+
+    @pytest.mark.parametrize("selling_program", selling_program)
+    @HttpMocker()
+    def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
+        self, selling_program: str, http_mocker: HttpMocker
+    ) -> None:
+        mock_auth(http_mocker)
+        stream_name = self._get_stream_name(selling_program)
+        create_report_request_body = self._get_report_request_body(selling_program)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+        )
+
+        message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
+
+        output = self._read(stream_name, config())
+        assert_message_in_log_output(message_on_backoff_exception, output)
+        assert len(output.records) == 0

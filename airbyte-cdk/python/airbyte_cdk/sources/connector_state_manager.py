@@ -77,33 +77,25 @@ class ConnectorStateManager:
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
         self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
 
-    def create_state_message(self, stream_name: str, namespace: Optional[str], send_per_stream_state: bool) -> AirbyteMessage:
+    def create_state_message(self, stream_name: str, namespace: Optional[str]) -> AirbyteMessage:
         """
         Generates an AirbyteMessage using the current per-stream state of a specified stream in either the per-stream or legacy format
         :param stream_name: The name of the stream for the message that is being created
         :param namespace: The namespace of the stream for the message that is being created
-        :param send_per_stream_state: Decides which state format the message should be generated as
         :return: The Airbyte state message to be emitted by the connector during a sync
         """
-        if send_per_stream_state:
-            hashable_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-            stream_state = self.per_stream_states.get(hashable_descriptor) or AirbyteStateBlob()
+        hashable_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
+        stream_state = self.per_stream_states.get(hashable_descriptor) or AirbyteStateBlob()
 
-            # According to the Airbyte protocol, the StreamDescriptor namespace field is not required. However, the platform will throw
-            # a validation error if it receives namespace=null. That is why if namespace is None, the field should be omitted instead.
-            stream_descriptor = (
-                StreamDescriptor(name=stream_name) if namespace is None else StreamDescriptor(name=stream_name, namespace=namespace)
-            )
-
-            return AirbyteMessage(
-                type=MessageType.STATE,
-                state=AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(stream_descriptor=stream_descriptor, stream_state=stream_state),
-                    data=dict(self._get_legacy_state()),
+        return AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name=stream_name, namespace=namespace), stream_state=stream_state
                 ),
-            )
-        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=dict(self._get_legacy_state())))
+            ),
+        )
 
     @classmethod
     def _extract_from_state_message(
@@ -175,13 +167,6 @@ class ConnectorStateManager:
             stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
             streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value or {})
         return streams
-
-    def _get_legacy_state(self) -> Mapping[str, Any]:
-        """
-        Using the current per-stream state, creates a mapping of all the stream states for the connector being synced
-        :return: A deep copy of the mapping of stream name to stream state value
-        """
-        return {descriptor.name: state.dict() if state else {} for descriptor, state in self.per_stream_states.items()}
 
     @staticmethod
     def _is_legacy_dict_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:

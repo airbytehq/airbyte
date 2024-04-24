@@ -33,5 +33,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
+    - cdk:low-code
+    - language:python
 metadataSpecVersion: "1.0"

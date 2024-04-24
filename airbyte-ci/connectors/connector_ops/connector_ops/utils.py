@@ -51,6 +51,7 @@ TEST_GRADLE_DEPENDENCIES = [
 
 def download_catalog(catalog_url):
     response = requests.get(catalog_url)
+    response.raise_for_status()
     return response.json()
 
 
@@ -555,6 +556,25 @@ class Connector:
     def is_using_poetry(self) -> bool:
         return Path(self.code_directory / "pyproject.toml").exists()
 
+    @property
+    def is_released(self) -> bool:
+        """Pull the the OSS registry and check if it the current definition ID and docker image tag are in the registry.
+        If there is a match it means the connector is released.
+        We use the OSS registry as the source of truth for released connectors as the cloud registry can be a subset of the OSS registry.
+
+        Returns:
+            bool: True if the connector is released, False otherwise.
+        """
+        metadata = self.metadata
+        registry = download_catalog(OSS_CATALOG_URL)
+        for connector in registry[f"{self.connector_type}s"]:
+            if (
+                connector[f"{self.connector_type}DefinitionId"] == metadata["definitionId"]
+                and connector["dockerImageTag"] == metadata["dockerImageTag"]
+            ):
+                return True
+        return False
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
@@ -640,3 +660,4 @@ class ConnectorTypeEnum(str, Enum):
 class SupportLevelEnum(str, Enum):
     certified = "certified"
     community = "community"
+    archived = "archived"

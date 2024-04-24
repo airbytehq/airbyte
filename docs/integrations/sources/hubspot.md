@@ -102,7 +102,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     :::
     - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
@@ -116,7 +116,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
     - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
     - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
@@ -322,12 +322,17 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.1 | 2024-02-12 | [35165](https://github.com/airbytehq/airbyte/pull/35165) | Manage dependencies with Poetry. |
+| 4.1.1   | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests                                                                                                                                                            |
+| 4.1.0   | 2024-03-27 | [36541](https://github.com/airbytehq/airbyte/pull/36541) | Added test configuration features, fixed type hints                                                                                                                              |
+| 4.0.0   | 2024-03-10 | [35662](https://github.com/airbytehq/airbyte/pull/35662) | Update `Deals Property History` and `Companies Property History` schemas                                                                                                         |
+| 3.3.0   | 2024-02-16 | [34597](https://github.com/airbytehq/airbyte/pull/34597) | Make start date not required, sync all data from default value if it's not provided                                                                                              |
+| 3.2.0   | 2024-02-15 | [35328](https://github.com/airbytehq/airbyte/pull/35328) | Add mailingIlsListsIncluded and mailingIlsListsExcluded fields to Marketing emails stream schema                                                                                 |
+| 3.1.1   | 2024-02-12 | [35165](https://github.com/airbytehq/airbyte/pull/35165) | Manage dependencies with Poetry.                                                                                                                                                 |
 | 3.1.0   | 2024-02-05 | [34829](https://github.com/airbytehq/airbyte/pull/34829) | Add `Contacts Form Submissions` stream                                                                                                                                           |
 | 3.0.1   | 2024-01-29 | [34635](https://github.com/airbytehq/airbyte/pull/34635) | Fix pagination for `CompaniesPropertyHistory` stream                                                                                                                             |
 | 3.0.0   | 2024-01-25 | [34492](https://github.com/airbytehq/airbyte/pull/34492) | Update `marketing_emails` stream schema                                                                                                                                          |
 | 2.0.2   | 2023-12-15 | [33844](https://github.com/airbytehq/airbyte/pull/33844) | Make property_history PK combined to support Incremental/Deduped sync type                                                                                                       |
-| 2.0.1   | 2023-12-15 | [33527](https://github.com/airbytehq/airbyte/pull/33527) | Make query string calculated correctly for ProertyHistory streams to avoid 414 HTTP Errors                                                                                       |
+| 2.0.1   | 2023-12-15 | [33527](https://github.com/airbytehq/airbyte/pull/33527) | Make query string calculated correctly for PropertyHistory streams to avoid 414 HTTP Errors                                                                                      |
 | 2.0.0   | 2023-12-08 | [33266](https://github.com/airbytehq/airbyte/pull/33266) | Add ContactsPropertyHistory, CompaniesPropertyHistory, DealsPropertyHistory streams                                                                                              |
 | 1.9.0   | 2023-12-04 | [33042](https://github.com/airbytehq/airbyte/pull/33042) | Add Web Analytics streams                                                                                                                                                        |
 | 1.8.0   | 2023-11-23 | [32778](https://github.com/airbytehq/airbyte/pull/32778) | Extend `PropertyHistory` stream to support incremental sync                                                                                                                      |

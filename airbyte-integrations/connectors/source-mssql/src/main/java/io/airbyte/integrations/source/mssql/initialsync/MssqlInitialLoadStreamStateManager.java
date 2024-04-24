@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,23 +26,18 @@ import org.slf4j.LoggerFactory;
  * keys to the stream state when they're going through the iterator Once we have verified that
  * expanding StreamStateManager itself to include this functionality, this class will be removed
  */
-public class MssqlInitialLoadStreamStateManager implements MssqlInitialLoadStateManager {
+public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadStateManager.class);
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
-
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
 
   public MssqlInitialLoadStreamStateManager(final ConfiguredAirbyteCatalog catalog,
                                             final InitialLoadStreams initialLoadStreams,
-                                            final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo) {
+                                            final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
+                                            final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
-  }
-
-  @Override
-  public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
-    pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
   @Override
@@ -49,11 +45,6 @@ public class MssqlInitialLoadStreamStateManager implements MssqlInitialLoadState
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(getAirbyteStreamState(pair, streamStateForIncrementalRun));
-  }
-
-  @Override
-  public OrderedColumnLoadStatus getOrderedColumnLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColLoadStatus.get(pair);
   }
 
   @Override

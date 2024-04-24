@@ -219,7 +219,7 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
     for _, method in request_option_type_to_method.items():
         if expected_mapping is not None:
             actual_mapping = method(None, None, None)
-            assert expected_mapping == actual_mapping
+            assert actual_mapping == expected_mapping
         else:
             try:
                 method(None, None, None)
@@ -264,13 +264,53 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
     for _, method in request_option_type_to_method.items():
         if expected_mapping:
             actual_mapping = method(None, None, None)
-            assert expected_mapping == actual_mapping
+            assert actual_mapping == expected_mapping
         else:
             try:
                 method(None, None, None)
                 assert False
             except ValueError:
                 pass
+
+
+@pytest.mark.parametrize(
+    "test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping",
+    [
+        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_true_but_no_next_page_token", {"key_from_pagination": "1000"}, True, None, {"key_from_pagination": "1000"}),
+        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_false_and_no_next_page_token", {"key_from_pagination": "1000"}, False, None, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
+        ("test_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, True, {"page": 2}, {"key_from_pagination": "1000"}),
+        ("test_do_not_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, False, {"page": 2}, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
+    ],
+)
+def test_ignore_stream_slicer_parameters_on_paginated_requests(test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping):
+    # This test is separate from the other request options because request headers must be strings
+    paginator = MagicMock()
+    paginator.get_request_headers.return_value = paginator_mapping
+    requester = MagicMock(use_cache=False)
+
+    stream_slicer = MagicMock()
+    stream_slicer.get_request_headers.return_value = {"key_from_slicer": "value"}
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        paginator=paginator,
+        ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
+        parameters={},
+        config={},
+    )
+
+    request_option_type_to_method = {
+        RequestOptionType.header: retriever._request_headers,
+    }
+
+    for _, method in request_option_type_to_method.items():
+        actual_mapping = method(None, None, next_page_token={"next_page_token": "1000"})
+        assert actual_mapping == expected_mapping
 
 
 @pytest.mark.parametrize(
@@ -305,7 +345,7 @@ def test_request_body_data(test_name, slicer_body_data, paginator_body_data, exp
 
     if expected_body_data:
         actual_body_data = retriever._request_body_data(None, None, None)
-        assert expected_body_data == actual_body_data
+        assert actual_body_data == expected_body_data
     else:
         try:
             retriever._request_body_data(None, None, None)
@@ -340,7 +380,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
     )
 
     actual_path = retriever._paginator_path()
-    assert expected_path == actual_path
+    assert actual_path == expected_path
 
 
 def test_limit_stream_slices():
@@ -437,6 +477,7 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
         side_effect=retriever_read_pages,
     ):
         list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
+        cursor.observe.assert_not_called()
         cursor.close_slice.assert_called_once_with(stream_slice, None)
 
 

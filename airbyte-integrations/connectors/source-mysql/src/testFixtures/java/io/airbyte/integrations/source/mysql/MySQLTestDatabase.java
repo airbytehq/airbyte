@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.RESYNC_DATA_OPTION;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.testutils.TestDatabase;
@@ -54,15 +57,6 @@ public class MySQLTestDatabase extends
     return new MySQLTestDatabase(container).initialized();
   }
 
-  static public MySQLTestDatabase inWithDbName(BaseImage baseImage, String dbName, ContainerModifier... methods) {
-    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
-    final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
-    MySQLTestDatabase db = new MySQLTestDatabase(container);
-    db.setDatabaseName(dbName);
-    db.initialized();
-    return db;
-  }
-
   public MySQLTestDatabase(MySQLContainer<?> container) {
     super(container);
   }
@@ -80,26 +74,6 @@ public class MySQLTestDatabase extends
   }
 
   static private final int MAX_CONNECTIONS = 1000;
-  private String databaseName = "";
-
-  @Override
-  public String getDatabaseName() {
-    if (databaseName.isBlank()) {
-      return super.getDatabaseName();
-    } else {
-      return databaseName;
-    }
-  }
-
-  @Override
-  public void close() {
-    super.close();
-    databaseName = "";
-  }
-
-  public void setDatabaseName(final String databaseName) {
-    this.databaseName = databaseName;
-  }
 
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
@@ -157,12 +131,17 @@ public class MySQLTestDatabase extends
     }
 
     public MySQLConfigBuilder withCdcReplication() {
+      return withCdcReplication(RESYNC_DATA_OPTION);
+    }
+
+    public MySQLConfigBuilder withCdcReplication(String cdcCursorFailBehaviour) {
       return this
           .with("is_test", true)
           .with("replication_method", ImmutableMap.builder()
               .put("method", "CDC")
               .put("initial_waiting_seconds", 5)
               .put("server_time_zone", "America/Los_Angeles")
+              .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
               .build());
     }
 
