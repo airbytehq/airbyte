@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "clicks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "ctr": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "date": {
+      "format": "date",
+      "type": "string"
+    },
+    "impressions": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "position": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "search_type": {
+      "type": "string"
+    },
+    "site_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "search_type",
+    "date",
+    "site_url"
+  ],
+  "type": "object"
+}

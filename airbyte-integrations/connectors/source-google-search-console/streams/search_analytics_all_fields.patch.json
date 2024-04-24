@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "clicks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "country": {
+      "type": "string"
+    },
+    "ctr": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "date": {
+      "format": "date",
+      "type": "string"
+    },
+    "device": {
+      "type": "string"
+    },
+    "impressions": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "page": {
+      "type": "string"
+    },
+    "position": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "query": {
+      "type": "string"
+    },
+    "search_type": {
+      "type": "string"
+    },
+    "site_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "search_type",
+    "site_url",
+    "date",
+    "query",
+    "device",
+    "country",
+    "page"
+  ],
+  "type": "object"
+}
