@@ -1,42 +1,105 @@
-# Snowflake Source
+# {{capitalCase name}} Source
 
-## Documentation
-* [User Documentation](https://docs.airbyte.io/integrations/sources/snowflake)
+This is the repository for the {{capitalCase name}} source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/snowflake-python).
 
-## Community Contributor
-1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role for Airbyte to sync into.
-1. Create a file at `secrets/config.json` with the following format:
+## Local development
+
+### Prerequisites
+
+* Python (`^3.9`)
+* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
+
+
+
+### Installing the connector
+
+From this connector directory, run:
+```bash
+poetry install --with dev
 ```
-{
-  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
-  "role": "AIRBYTE_ROLE",
-  "warehouse": "AIRBYTE_WAREHOUSE",
-  "database": "AIRBYTE_DATABASE",
-  "schema": "AIRBYTE_SCHEMA",
-  "credentials": {
-    "auth_type": "username/password",
-    "username": "AIRBYTE_USER",
-    "password": "SOMEPASSWORD"
-  }
-}
+
+
+### Create credentials
+
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/snowflake-python)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_snowflake/spec.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
+
+
+### Locally running the connector
+
 ```
-3. Create a file at `secrets/config_auth.json` with the following format:
+poetry run source-snowflake spec
+poetry run source-snowflake check --config secrets/config.json
+poetry run source-snowflake discover --config secrets/config.json
+poetry run source-snowflake read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
-{
-  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
-  "role": "AIRBYTE_ROLE",
-  "warehouse": "AIRBYTE_WAREHOUSE",
-  "database": "AIRBYTE_DATABASE",
-  "schema": "AIRBYTE_SCHEMA",
-  "credentials": {
-    "auth_type": "OAuth",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token"
-  }
-}
+
+### Running tests
+
+To run tests locally, from the connector directory run:
+
 ```
-## For Airbyte employees
-To be able to run integration tests locally:
-1. Put the contents of the `Source snowflake test creds (secrets/config.json)` secret on Lastpass into `secrets/config.json`.
-1. Put the contents of the `SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS (secrets/config_auth.json)` secret on Lastpass into `secrets/config_auth.json`.
+poetry run pytest tests
+```
+
+### Building the docker image
+
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+```bash
+airbyte-ci connectors --name=source-snowflake build
+```
+
+An image will be available on your host with the tag `airbyte/source-snowflake:dev`.
+
+
+### Running as a docker container
+
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/source-snowflake:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-snowflake:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-snowflake:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-snowflake:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
+
+### Running our CI test suite
+
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
+```bash
+airbyte-ci connectors --name=source-snowflake test
+```
+
+### Customizing acceptance Tests
+
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+
+### Dependency Management
+
+All of your dependencies should be managed via Poetry. 
+To add a new dependency, run:
+
+```bash
+poetry add <package-name>
+```
+
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
+
+## Publishing a new version of the connector
+
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-snowflake test`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/snowflake.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
