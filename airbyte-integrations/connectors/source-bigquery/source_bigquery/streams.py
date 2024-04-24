@@ -71,10 +71,7 @@ class BigqueryStream(HttpStream, ABC):
 class BigqueryDatasets(BigqueryStream):
     """
     """
-    url_base = URL_BASE
     name = "datasets"
-    primary_key = "id"
-    raise_on_http_errors = True
 
     def __init__(self, project_id: list, **kwargs):
         self.stream_path = self.path()
