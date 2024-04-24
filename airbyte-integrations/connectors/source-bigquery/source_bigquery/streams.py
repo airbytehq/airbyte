@@ -75,10 +75,7 @@ class BigqueryDatasets(BigqueryStream):
 
     def __init__(self, project_id: list, **kwargs):
         self.project_id = project_id
-        self.stream_path = self.path()
-        self.stream_name = self.name
-        self.stream_schema = self.get_json_schema()
-        super().__init__(self.stream_path, self.stream_name, self.stream_schema, **kwargs)
+        super().__init__(self.path(), self.name, self.get_json_schema(), **kwargs)
 
     def path(self, **kwargs) -> str:
         """
