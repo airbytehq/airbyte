@@ -7,7 +7,7 @@ import re
 from typing import TYPE_CHECKING
 
 import dagger
-import semver
+from packaging.version import Version
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
@@ -16,6 +16,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
+from pipelines.helpers.connectors.cdk_helpers import get_latest_python_cdk_version
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -96,31 +97,47 @@ class UpdatePoetry(Step):
         )
 
         try:
-            before_versions = extract_poetry_show_versions(await connector_container.with_exec(["poetry", "show"]).stdout())
+            before_versions = await get_poetry_versions(connector_container)
+            before_main = await get_poetry_versions(connector_container, only="main")
 
-            current_cdk_version = before_versions.get("airbyte-cdk") or "None"
+            current_cdk_version = before_versions.get("airbyte-cdk") or None
 
-            with_updates = await connector_container.with_exec(["poetry", "update"])
-            poetry_update_output = await with_updates.stdout()
+            if current_cdk_version:
+                # We want the CDK pinned exactly so it also works as expected in PyAirbyte and other `pip` scenarios
+                new_cdk_version = pick_airbyte_cdk_version(current_cdk_version, self.context)
+                if new_cdk_version > current_cdk_version:
+                    connector_container = await connector_container.with_exec(["poetry", "add", f"airbyte-cdk=={new_cdk_version}"])
+
+            connector_container = await connector_container.with_exec(["poetry", "update"])
+            poetry_update_output = await connector_container.stdout()
             self.logger.info(poetry_update_output)
 
-            await with_updates.file(POETRY_TOML_FILE).export(f"{self.context.connector.code_directory}/{POETRY_TOML_FILE}")
+            after_versions = await get_poetry_versions(connector_container)
+            updated_cdk_version = after_versions.get("airbyte-cdk") or None
+            self.logger.info(f"airbyte-cdk updates: {current_cdk_version or 'None'} -> {updated_cdk_version or 'None'}")
+
+            # see what changed
+            main_changeset = get_package_changes(before_main, after_versions)
+            all_changeset = get_package_changes(before_versions, after_versions)
+            for package, version in main_changeset.items():
+                self.logger.info(f"Main {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
+            for package, version in all_changeset.items():
+                if package not in main_changeset:
+                    self.logger.info(f" Dev {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
+
+            if not main_changeset:
+                self.logger.info("No main dependencies updated.")
+                return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No main dependencies updated.")
+
+            await connector_container.file(POETRY_TOML_FILE).export(f"{self.context.connector.code_directory}/{POETRY_TOML_FILE}")
             self.logger.info(f"Generated {POETRY_TOML_FILE} for {self.context.connector.technical_name}")
-            await with_updates.file(POETRY_LOCK_FILE).export(f"{self.context.connector.code_directory}/{POETRY_LOCK_FILE}")
+            await connector_container.file(POETRY_LOCK_FILE).export(f"{self.context.connector.code_directory}/{POETRY_LOCK_FILE}")
             self.logger.info(f"Generated {POETRY_LOCK_FILE} for {self.context.connector.technical_name}")
 
-            # TODO: see what changed and deal with it. for example, maybe we should update the cdk version in the metadata.yaml
-            # we could also use this to update the changelog
-            # we could also decide that it's not even worth continuing (no important changes)
-            # TODO: output this for future steps to use
-            after_versions = extract_poetry_show_versions(await with_updates.with_exec(["poetry", "show"]).stdout())
-            updated_cdk_version = after_versions.get("airbyte-cdk") or "None"
-
-            self.logger.info(f"airbyte-cdk updates: {current_cdk_version} -> {updated_cdk_version}")
         except dagger.ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
-        return StepResult(step=self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS, output=all_changeset)
 
 
 class RestoreOriginalState(Step):
@@ -181,27 +198,46 @@ class RegressionTest(Step):
         )
 
 
-def compare_semver_versions(version1: str, version2: str) -> int:
-    """Compare two semver versions.
-    Return:
-    - 0 if the versions are equal.
-    - 1 if version1 is greater than version2.
-    - -1 if version1 is less than version2.
-    """
-    one = semver.Version.parse(version1)
-    two = semver.Version.parse(version2)
-    return one.compare(two)
+def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext) -> Version:
+    latest = Version(get_latest_python_cdk_version())
+
+    # TODO: could add more logic here for semantic and other known things
+
+    # 0.84: where from airbyte_cdk.sources.deprecated is removed
+    if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.84.0"):
+        return Version("0.83.0")
+
+    return latest
 
 
-def extract_poetry_show_versions(poetry_show_result: str) -> dict[str, str]:
-    versions: dict[str, str] = {}
+def get_package_changes(before_versions: dict[str, Version], after_versions: dict[str, Version]) -> dict[str, Version]:
+    changes: dict[str, Version] = {}
+    for package, before_version in before_versions.items():
+        after_version = after_versions.get(package)
+        if after_version and before_version < after_version:
+            changes[package] = after_version
+    return changes
+
+
+async def get_poetry_versions(connector_container: dagger.Container, only: str | None = None) -> dict[str, Version]:
+    # -T makes it only the top-level ones
+    # poetry show -T --only main will jsut be the main dependecies
+    command = ["poetry", "show", "-T"]
+    if only:
+        command.append("--only")
+        command.append(only)
+    poetry_show_result = await connector_container.with_exec(command).stdout()
+    versions: dict[str, Version] = {}
     lines = poetry_show_result.strip().split("\n")
     for line in lines:
-        parts = line.split()
-        if parts:
+        parts = line.split(maxsplit=2)  # Use maxsplit to limit the split parts
+        if len(parts) >= 2:
             package = parts[0]
-            version = parts[1]
-            versions[package] = version
+            # Regex to find version-like patterns. saw case with (!) before version
+            version_match = re.search(r"\d+\.\d+.*", parts[1])
+            if version_match:
+                version = version_match.group()
+                versions[package] = Version(version)
     return versions
 
 
