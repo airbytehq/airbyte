@@ -145,9 +145,11 @@ class BufferedStreamConsumerTest {
         verifyStartAndClose()
 
         val expectedRecords =
-            Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
-                .flatMap { obj: List<AirbyteMessage> -> obj }
-                .toList()
+            Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2).flatMap {
+                obj: List<AirbyteMessage> ->
+                obj
+            }
+
         verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords)
 
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
@@ -580,7 +582,7 @@ class BufferedStreamConsumerTest {
         Mockito.verify(recordWriter)
             .accept(
                 AirbyteStreamNameNamespacePair(streamName, namespace),
-                expectedRecords.map { obj: AirbyteMessage -> obj.record }.toList()
+                expectedRecords.map { obj: AirbyteMessage -> obj.record }
             )
     }
 

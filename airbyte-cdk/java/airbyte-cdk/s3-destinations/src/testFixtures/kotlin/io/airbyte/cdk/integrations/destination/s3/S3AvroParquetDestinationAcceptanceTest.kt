@@ -98,11 +98,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
 
     @Throws(IOException::class)
     private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
-        return MoreResources.readResource(messagesFilename)
-            .trim()
-            .lines()
-            .map { record -> Jsons.deserialize(record, AirbyteMessage::class.java) }
-            .toList()
+        return MoreResources.readResource(messagesFilename).trim().lines().map { record ->
+            Jsons.deserialize(record, AirbyteMessage::class.java)
+        }
     }
 
     @Throws(Exception::class)
@@ -113,9 +111,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =
-            record.schema.fields
-                .filter { field: Schema.Field -> !field.name().startsWith("_airbyte") }
-                .toList()
+            record.schema.fields.filter { field: Schema.Field ->
+                !field.name().startsWith("_airbyte")
+            }
 
         return if (fieldList.size == 1) {
             fieldList.associate {

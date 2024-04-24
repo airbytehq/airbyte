@@ -15,21 +15,15 @@ internal class JsonPathsTest {
     fun testGetValues() {
         Assertions.assertEquals(
             listOf(0, 1, 2),
-            JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY)
-                .map { obj: JsonNode -> obj.asInt() }
-                .toList()
+            JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY).map { obj: JsonNode -> obj.asInt() }
         )
         Assertions.assertEquals(
             listOf(1),
-            JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY)
-                .map { obj: JsonNode -> obj.asInt() }
-                .toList()
+            JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY).map { obj: JsonNode -> obj.asInt() }
         )
         Assertions.assertEquals(
             listOf(10),
-            JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY)
-                .map { obj: JsonNode -> obj.asInt() }
-                .toList()
+            JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY).map { obj: JsonNode -> obj.asInt() }
         )
         Assertions.assertEquals(
             JSON_NODE["two"],

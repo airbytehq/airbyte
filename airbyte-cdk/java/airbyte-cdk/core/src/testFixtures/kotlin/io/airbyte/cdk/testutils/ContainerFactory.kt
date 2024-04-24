@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
-import java.util.stream.Stream
 import kotlin.concurrent.Volatile
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -87,9 +86,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun shared(imageName: String, vararg methods: String): C {
         return shared(
             imageName,
-            Stream.of(*methods)
-                .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
         )
     }
 
@@ -106,7 +103,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }.toList()
+                namedContainerModifiers.map { it.name() }
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -131,9 +128,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun exclusive(imageName: String, vararg methods: String): C {
         return exclusive(
             imageName,
-            Stream.of(*methods)
-                .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
         )
     }
 

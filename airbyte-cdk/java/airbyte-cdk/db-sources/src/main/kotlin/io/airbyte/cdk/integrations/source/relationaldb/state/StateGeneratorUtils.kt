@@ -100,7 +100,6 @@ object StateGeneratorUtils {
                 generateStreamState(e.key, e.value)
             }
             .filter { s: AirbyteStreamState -> isValidStreamDescriptor(s.streamDescriptor) }
-            .toList()
     }
 
     /**
@@ -123,7 +122,6 @@ object StateGeneratorUtils {
                     .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
                         generateDbStreamState(e.key, e.value)
                     }
-                    .toList()
             )
     }
 
@@ -203,17 +201,15 @@ object StateGeneratorUtils {
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(dbState.cdcState))
                 .withStreamStates(
-                    dbState.streams
-                        .map { s: DbStreamState ->
-                            AirbyteStreamState()
-                                .withStreamDescriptor(
-                                    StreamDescriptor()
-                                        .withName(s.streamName)
-                                        .withNamespace(s.streamNamespace)
-                                )
-                                .withStreamState(Jsons.jsonNode(s))
-                        }
-                        .toList()
+                    dbState.streams.map { s: DbStreamState ->
+                        AirbyteStreamState()
+                            .withStreamDescriptor(
+                                StreamDescriptor()
+                                    .withName(s.streamName)
+                                    .withNamespace(s.streamNamespace)
+                            )
+                            .withStreamState(Jsons.jsonNode(s))
+                    }
                 )
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
@@ -230,22 +226,20 @@ object StateGeneratorUtils {
     fun convertLegacyStateToStreamState(
         airbyteStateMessage: AirbyteStateMessage
     ): List<AirbyteStateMessage> {
-        return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!
-            .streams
-            .map { s: DbStreamState ->
-                AirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(
-                        AirbyteStreamState()
-                            .withStreamDescriptor(
-                                StreamDescriptor()
-                                    .withNamespace(s.streamNamespace)
-                                    .withName(s.streamName)
-                            )
-                            .withStreamState(Jsons.jsonNode(s))
-                    )
-            }
-            .toList()
+        return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!.streams.map {
+            s: DbStreamState ->
+            AirbyteStateMessage()
+                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                .withStream(
+                    AirbyteStreamState()
+                        .withStreamDescriptor(
+                            StreamDescriptor()
+                                .withNamespace(s.streamNamespace)
+                                .withName(s.streamName)
+                        )
+                        .withStreamState(Jsons.jsonNode(s))
+                )
+        }
     }
 
     fun convertStateMessage(

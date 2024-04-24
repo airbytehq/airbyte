@@ -122,7 +122,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
-                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }.toList()
+                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }
                 )
                 .toCompletableFuture()
                 .join()

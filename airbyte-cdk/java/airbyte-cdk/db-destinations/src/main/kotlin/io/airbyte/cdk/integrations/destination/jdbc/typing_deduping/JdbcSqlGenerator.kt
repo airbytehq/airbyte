@@ -172,11 +172,10 @@ constructor(
         metaColumns: Map<String, DataType<*>>
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .toList()
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         val dataFields =
             columns.entries
                 .map { column: Map.Entry<ColumnId?, AirbyteType> ->
@@ -220,11 +219,10 @@ constructor(
         useExpensiveSaferCasting: Boolean
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .toList()
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         // Use originalName with non-sanitized characters when extracting data from _airbyte_data
         val dataFields = extractRawDataFields(columns, useExpensiveSaferCasting)
         dataFields.addAll(fields)

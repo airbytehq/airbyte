@@ -184,16 +184,13 @@ protected constructor(val container: C) : AutoCloseable {
 
     protected fun execInContainer(cmds: Stream<String>) {
         val cmd = cmds.toList()
-        if (cmd!!.isEmpty()) {
+        if (cmd.isEmpty()) {
             return
         }
         try {
             LOGGER!!.info(
                 formatLogLine(
-                    String.format(
-                        "executing command %s",
-                        Strings.join(cmd.toList().asIterable(), " ")
-                    )
+                    String.format("executing command %s", Strings.join(cmd.asIterable(), " "))
                 )
             )
             val exec = container.execInContainer(*cmd.toTypedArray<String?>())

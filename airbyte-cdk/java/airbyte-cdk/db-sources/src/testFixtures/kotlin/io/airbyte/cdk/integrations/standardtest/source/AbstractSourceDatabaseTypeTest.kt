@@ -129,9 +129,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val allMessages = runRead(catalog)
 
         val recordMessages =
-            allMessages
-                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
-                .toList()
+            allMessages.filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
+
         val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
         val missedValuesByStream: MutableMap<String?, ArrayList<MissedRecords>> = HashMap()
         val unexpectedValuesByStream: MutableMap<String, MutableList<UnexpectedRecord>> = HashMap()
@@ -272,32 +271,30 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    testDataHolders
-                        .map { test: TestDataHolder ->
-                            ConfiguredAirbyteStream()
-                                .withSyncMode(SyncMode.INCREMENTAL)
-                                .withCursorField(Lists.newArrayList(idColumnName))
-                                .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                                .withStream(
-                                    CatalogHelpers.createAirbyteStream(
-                                            String.format("%s", test.nameWithTestPrefix),
-                                            String.format("%s", nameSpace),
-                                            Field.of(idColumnName, JsonSchemaType.INTEGER),
-                                            Field.of(testColumnName, test.airbyteType)
+                    testDataHolders.map { test: TestDataHolder ->
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withCursorField(Lists.newArrayList(idColumnName))
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withStream(
+                                CatalogHelpers.createAirbyteStream(
+                                        String.format("%s", test.nameWithTestPrefix),
+                                        String.format("%s", nameSpace),
+                                        Field.of(idColumnName, JsonSchemaType.INTEGER),
+                                        Field.of(testColumnName, test.airbyteType)
+                                    )
+                                    .withSourceDefinedCursor(true)
+                                    .withSourceDefinedPrimaryKey(
+                                        java.util.List.of(java.util.List.of(idColumnName))
+                                    )
+                                    .withSupportedSyncModes(
+                                        Lists.newArrayList(
+                                            SyncMode.FULL_REFRESH,
+                                            SyncMode.INCREMENTAL
                                         )
-                                        .withSourceDefinedCursor(true)
-                                        .withSourceDefinedPrimaryKey(
-                                            java.util.List.of(java.util.List.of(idColumnName))
-                                        )
-                                        .withSupportedSyncModes(
-                                            Lists.newArrayList(
-                                                SyncMode.FULL_REFRESH,
-                                                SyncMode.INCREMENTAL
-                                            )
-                                        )
-                                )
-                        }
-                        .toList()
+                                    )
+                            )
+                    }
                 )
 
     /**
@@ -393,7 +390,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         return messages
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .toList()
     }
 
     companion object {

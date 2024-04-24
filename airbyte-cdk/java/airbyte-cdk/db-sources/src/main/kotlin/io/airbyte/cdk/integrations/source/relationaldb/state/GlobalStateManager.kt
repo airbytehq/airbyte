@@ -167,7 +167,6 @@ class GlobalStateManager(
                                         .withName(s.streamName)
                                 )
                         }
-                        .toList()
                 } else {
                     return@Supplier listOf<AirbyteStreamState>()
                 }

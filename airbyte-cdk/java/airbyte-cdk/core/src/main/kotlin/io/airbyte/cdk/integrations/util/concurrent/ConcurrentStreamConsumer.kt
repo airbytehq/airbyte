@@ -83,7 +83,6 @@ class ConcurrentStreamConsumer(
                 .map { runnable: ConcurrentStreamRunnable ->
                     CompletableFuture.runAsync(runnable, executorService)
                 }
-                .toList()
 
         /*
          * Wait for the submitted streams to complete before returning. This uses the join() method to allow
