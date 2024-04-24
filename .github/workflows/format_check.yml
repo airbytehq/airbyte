@@ -17,7 +17,7 @@ jobs:
       (github.event.pull_request.head.repo.fork == false)
     runs-on: tooling-test-small
     steps:
-      - name: Checkout Airbyte
+      - name: Checkout Airbyte (with credentials)
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # We have no creds. Ignore docker caching and just run the CLI.
-      - name: Checkout code
+      - name: Checkout code (Unprivileged)
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
@@ -114,8 +114,8 @@ jobs:
         id: install-airbyte-ci-binary
         shell: bash
         run: |
-          curl -sSL "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" --output airbyte-ci-bin 
-          sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci 
+          curl -sSL "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" --output airbyte-ci-bin
+          sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
           sudo chmod +x /usr/local/bin/airbyte-ci
       - name: Run format checks
         run: |
