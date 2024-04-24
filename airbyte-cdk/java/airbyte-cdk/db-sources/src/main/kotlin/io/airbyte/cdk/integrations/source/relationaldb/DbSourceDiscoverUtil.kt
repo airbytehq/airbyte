@@ -29,6 +29,7 @@ object DbSourceDiscoverUtil {
      * underlying table schema changed between syncs (ii) The source connector's mapping of datatypes to
      * Airbyte types changed between runs
      */
+    @JvmStatic
     fun <DataType> logSourceSchemaChange(
         fullyQualifiedTableNameToInfo: Map<String?, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
@@ -137,7 +138,7 @@ object DbSourceDiscoverUtil {
                             tableInfo.fields
                         )
                         .withSupportedSyncModes(
-                            if (tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty())
+                            if (tableInfo.cursorFields.isEmpty())
                                 Lists.newArrayList(SyncMode.FULL_REFRESH)
                             else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
@@ -147,6 +148,7 @@ object DbSourceDiscoverUtil {
         return AirbyteCatalog().withStreams(streams)
     }
 
+    @JvmStatic
     fun getFullyQualifiedTableName(nameSpace: String?, tableName: String): String {
         return if (nameSpace != null) "$nameSpace.$tableName" else tableName
     }

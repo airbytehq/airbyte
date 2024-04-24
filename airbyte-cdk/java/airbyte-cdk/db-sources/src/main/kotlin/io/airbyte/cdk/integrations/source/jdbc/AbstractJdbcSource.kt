@@ -83,13 +83,13 @@ import org.slf4j.LoggerFactory
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
-    protected val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
+    @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
     sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 ) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
-    protected val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
+    @JvmField val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 
     override var quoteString: String? = null
-    protected var dataSources: MutableCollection<DataSource> = ArrayList()
+    @JvmField val dataSources: MutableCollection<DataSource> = ArrayList()
 
     init {
         this.sourceOperations = sourceOperations
@@ -304,7 +304,10 @@ abstract class AbstractJdbcSource<Datatype>(
 
     // needs to override isNotInternalSchema for connectors that override
     // getPrivilegesTableForCurrentUser()
-    protected fun isNotInternalSchema(jsonNode: JsonNode, internalSchemas: Set<String?>): Boolean {
+    protected open fun isNotInternalSchema(
+        jsonNode: JsonNode,
+        internalSchemas: Set<String?>
+    ): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
 
@@ -569,7 +572,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     /** Some databases need special column names in the query. */
     @Throws(SQLException::class)
-    protected fun getWrappedColumnNames(
+    protected open fun getWrappedColumnNames(
         database: JdbcDatabase?,
         connection: Connection?,
         columnNames: List<String>,
@@ -619,8 +622,8 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     @Throws(SQLException::class)
-    public override fun createDatabase(sourceConfig: JsonNode): JdbcDatabase {
-        return createDatabase(sourceConfig, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
+    public override fun createDatabase(config: JsonNode): JdbcDatabase {
+        return createDatabase(config, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
     }
 
     @Throws(SQLException::class)
@@ -631,7 +634,7 @@ abstract class AbstractJdbcSource<Datatype>(
         // Create the data source
         val dataSource =
             create(
-                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY))
+                if (jdbcConfig.has(JdbcUtils.USERNAME_KEY))
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText()
                 else null,
                 if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
@@ -640,7 +643,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 driverClassName,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties!!)
+                getConnectionTimeout(connectionProperties)
             )
         // Record the data source so that it can be closed.
         dataSources.add(dataSource)
@@ -722,6 +725,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
+        @JvmStatic
         fun aggregatePrimateKeys(
             entries: List<PrimaryKeyAttributesFromDb>
         ): Map<String, MutableList<String>> {

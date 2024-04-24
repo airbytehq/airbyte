@@ -90,7 +90,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected abstract fun dumpRawTableRecords(
         streamNamespace: String?,
-        streamName: String?
+        streamName: String
     ): List<JsonNode>
 
     /**
@@ -136,7 +136,7 @@ abstract class BaseTypingDedupingTest {
      * airbyte.<streamNamespace>_<streamName>; DROP SCHEMA IF EXISTS <streamNamespace>`.
      */
     @Throws(Exception::class)
-    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?)
+    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String)
 
     protected abstract val sqlGenerator: SqlGenerator
         get
@@ -1123,14 +1123,14 @@ abstract class BaseTypingDedupingTest {
                             convertProtocolObject(
                                 message,
                                 io.airbyte.protocol.models.AirbyteMessage::class.java
-                            )
+                            )!!
                         )
                     }
                 }
             )
         }
 
-        private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
+        private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0? {
             return Jsons.`object`(Jsons.jsonNode(v1), klass)
         }
     }

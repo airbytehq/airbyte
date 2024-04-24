@@ -28,8 +28,8 @@ class AvroNameTransformer : StandardNameTransformer() {
         }
     }
 
-    override fun getNamespace(input: String): String {
-        val tokens = input.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    override fun getNamespace(namespace: String): String {
+        val tokens = namespace.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         return Arrays.stream(tokens)
             .map { name: String ->
                 this.getIdentifier(

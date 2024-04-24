@@ -12,6 +12,7 @@ data:
   githubIssueLabel: source-recharge
   icon: recharge.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Recharge
   remoteRegistries:
     pypi:

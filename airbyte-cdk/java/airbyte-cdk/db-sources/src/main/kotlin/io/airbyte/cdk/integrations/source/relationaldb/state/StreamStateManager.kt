@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
  * This implementation generates a state object for each stream detected in catalog/map of known
  * streams to cursor information stored in this manager.
  */
-class StreamStateManager
+open class StreamStateManager
 /**
  * Constructs a new [StreamStateManager] that is seeded with the provided [AirbyteStateMessage].
  *
@@ -56,7 +56,7 @@ class StreamStateManager
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {
         if (pair.isPresent) {
             val pairToCursorInfoMap = pairToCursorInfoMap
-            val cursorInfo = Optional.ofNullable(pairToCursorInfoMap!![pair.get()])
+            val cursorInfo = Optional.ofNullable(pairToCursorInfoMap[pair.get()])
 
             if (cursorInfo.isPresent) {
                 LOGGER.debug("Generating state message for {}...", pair)

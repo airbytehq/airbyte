@@ -107,9 +107,6 @@
     "otherEngagements": {
       "type": ["null", "number"]
     },
-    "pivotValue": {
-      "type": ["null", "string"]
-    },
     "pivotValues": {
       "type": ["null", "array"],
       "items": {
@@ -299,6 +296,9 @@
     },
     "viralVideoViews": {
       "type": ["null", "number"]
+    },
+    "pivot": {
+      "type": ["null", "string"]
     }
   }
 }

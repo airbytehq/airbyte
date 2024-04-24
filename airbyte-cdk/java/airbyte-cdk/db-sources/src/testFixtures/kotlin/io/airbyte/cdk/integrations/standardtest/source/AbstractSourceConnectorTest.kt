@@ -138,7 +138,7 @@ abstract class AbstractSourceConnectorTest {
      * Override this method if you want to do any per-test setup that depends on being able to e.g.
      * [.runRead].
      */
-    @Throws(Exception::class) protected fun postSetup() {}
+    @Throws(Exception::class) protected open fun postSetup() {}
 
     @AfterEach
     @Throws(Exception::class)
@@ -146,7 +146,7 @@ abstract class AbstractSourceConnectorTest {
         tearDown(environment)
     }
 
-    protected fun featureFlags(): FeatureFlags {
+    protected open fun featureFlags(): FeatureFlags {
         return EnvVariableFeatureFlags()
     }
 
@@ -253,7 +253,7 @@ abstract class AbstractSourceConnectorTest {
     }
 
     @Throws(Exception::class)
-    protected fun runRead(configuredCatalog: ConfiguredAirbyteCatalog?): List<AirbyteMessage> {
+    protected open fun runRead(configuredCatalog: ConfiguredAirbyteCatalog?): List<AirbyteMessage> {
         return runRead(configuredCatalog, null)
     }
 
@@ -304,8 +304,8 @@ abstract class AbstractSourceConnectorTest {
     protected fun runReadVerifyNumberOfReceivedMsgs(
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?,
-        mapOfExpectedRecordsCount: MutableMap<String?, Int>
-    ): Map<String?, Int> {
+        mapOfExpectedRecordsCount: MutableMap<String, Int>
+    ): Map<String, Int> {
         val sourceConfig =
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
@@ -371,7 +371,7 @@ abstract class AbstractSourceConnectorTest {
         private const val MEMORY_LIMIT_FIELD_NAME = "memoryLimit"
 
         private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
-            return Jsons.`object`(Jsons.jsonNode(v1), klass)
+            return Jsons.`object`(Jsons.jsonNode(v1), klass)!!
         }
     }
 }

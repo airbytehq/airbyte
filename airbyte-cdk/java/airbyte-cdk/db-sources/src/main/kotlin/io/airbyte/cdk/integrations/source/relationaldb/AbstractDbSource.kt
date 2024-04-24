@@ -52,7 +52,7 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
 protected constructor(driverClassName: String) :
     JdbcConnector(driverClassName), Source, AutoCloseable {
     // TODO: Remove when the flag is not use anymore
-    protected var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
+    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
@@ -217,7 +217,7 @@ protected constructor(driverClassName: String) :
                 continue
             }
             val cursorType =
-                table.fields!!
+                table.fields
                     .stream()
                     .filter { info: CommonField<DataType> -> info.name == cursorField.get() }
                     .map { obj: CommonField<DataType> -> obj.type }
@@ -270,7 +270,7 @@ protected constructor(driverClassName: String) :
      * @throws SQLException exception
      */
     @Throws(SQLException::class)
-    protected fun verifyCursorColumnValues(
+    protected open fun verifyCursorColumnValues(
         database: Database,
         schema: String?,
         tableName: String?,
@@ -286,7 +286,7 @@ protected constructor(driverClassName: String) :
      *
      * @param database database
      */
-    protected fun estimateFullRefreshSyncSize(
+    protected open fun estimateFullRefreshSyncSize(
         database: Database,
         configuredAirbyteStream: ConfiguredAirbyteStream?
     ) {
@@ -300,7 +300,7 @@ protected constructor(driverClassName: String) :
         val systemNameSpaces = excludedInternalNameSpaces
         val systemViews = excludedViews
         val discoveredTables = discoverInternal(database)
-        return (if (systemNameSpaces == null || systemNameSpaces.isEmpty()) discoveredTables
+        return (if (systemNameSpaces.isEmpty()) discoveredTables
         else
             discoveredTables
                 .stream()
@@ -327,7 +327,7 @@ protected constructor(driverClassName: String) :
         )
     }
 
-    protected fun getIncrementalIterators(
+    protected open fun getIncrementalIterators(
         database: Database,
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
@@ -425,7 +425,7 @@ protected constructor(driverClassName: String) :
             val cursorInfo = stateManager!!.getCursorInfo(pair)
 
             val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage>
-            if (cursorInfo!!.map { it.cursor }.isPresent) {
+            if (cursorInfo.map { it.cursor }.isPresent) {
                 airbyteMessageIterator =
                     getIncrementalStream(
                         database,
@@ -452,7 +452,7 @@ protected constructor(driverClassName: String) :
                     )
             }
 
-            val cursorType = getCursorType(airbyteStream, cursorField)
+            getCursorType(airbyteStream, cursorField)
 
             val messageProducer =
                 CursorStateMessageProducer(stateManager, cursorInfo.map { it.cursor })
@@ -601,7 +601,7 @@ protected constructor(driverClassName: String) :
      * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
      */
     @Throws(SQLException::class)
-    protected fun <T> getPrivilegesTableForCurrentUser(
+    protected open fun <T> getPrivilegesTableForCurrentUser(
         database: JdbcDatabase?,
         schema: String?
     ): Set<T> {
@@ -662,15 +662,8 @@ protected constructor(driverClassName: String) :
     protected abstract fun getAirbyteType(columnType: DataType): JsonSchemaType
 
     protected abstract val excludedInternalNameSpaces: Set<String>
-        /**
-         * Get list of system namespaces(schemas) in order to exclude them from the `discover`
-         * result list.
-         *
-         * @return set of system namespaces(schemas) to be excluded
-         */
-        get
 
-    protected val excludedViews: Set<String>
+    protected open val excludedViews: Set<String>
         /**
          * Get list of system views in order to exclude them from the `discover` result list.
          *
@@ -722,12 +715,6 @@ protected constructor(driverClassName: String) :
     ): Map<String, MutableList<String>>
 
     protected abstract val quoteString: String?
-        /**
-         * Returns quote symbol of the database
-         *
-         * @return quote symbol
-         */
-        get
 
     /**
      * Read all data from a table.
@@ -765,7 +752,7 @@ protected constructor(driverClassName: String) :
         cursorFieldType: DataType
     ): AutoCloseableIterator<AirbyteRecordData>
 
-    protected val stateEmissionFrequency: Int
+    protected open val stateEmissionFrequency: Int
         /**
          * When larger than 0, the incremental iterator will emit intermediate state for every N
          * records. Please note that if intermediate state emission is enabled, the incremental

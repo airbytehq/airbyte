@@ -72,6 +72,7 @@ object IOs {
     }
 
     @Throws(IOException::class)
+    @JvmStatic
     fun getTail(numLines: Int, path: Path?): List<String?> {
         if (path == null) {
             return emptyList<String>()
@@ -82,7 +83,8 @@ object IOs {
             return emptyList<String>()
         }
 
-        ReversedLinesFileReader(file, Charsets.UTF_8).use { fileReader ->
+        ReversedLinesFileReader.Builder().setFile(file).setCharset(Charsets.UTF_8).get().use {
+            fileReader ->
             val lines: MutableList<String?> = ArrayList()
             var line = fileReader.readLine()
             while (line != null && lines.size < numLines) {

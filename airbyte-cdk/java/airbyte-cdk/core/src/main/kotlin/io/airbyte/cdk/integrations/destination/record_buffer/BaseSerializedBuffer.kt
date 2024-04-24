@@ -77,6 +77,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         throw RuntimeException("Options should be configured before starting to write")
     }
 
+    @Deprecated("")
     @Throws(Exception::class)
     override fun accept(record: AirbyteRecordMessage): Long {
         if (!isStarted) {
@@ -90,7 +91,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         }
         if (inputStream == null && !isClosed) {
             val startCount = byteCounter.count
-            writeRecord(record)
+            @Suppress("deprecation") writeRecord(record)
             return byteCounter.count - startCount
         } else {
             throw IllegalCallerException("Buffer is already closed, it cannot accept more messages")
@@ -129,8 +130,8 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     override val file: File?
         @Throws(IOException::class)
         get() {
-            if (useCompression && !bufferStorage.filename!!.endsWith(GZ_SUFFIX)) {
-                if (bufferStorage.file!!.renameTo(File(bufferStorage.filename + GZ_SUFFIX))) {
+            if (useCompression && !bufferStorage.filename.endsWith(GZ_SUFFIX)) {
+                if (bufferStorage.file.renameTo(File(bufferStorage.filename + GZ_SUFFIX))) {
                     LOGGER.info("Renaming compressed file to include .gz file extension")
                 }
             }
