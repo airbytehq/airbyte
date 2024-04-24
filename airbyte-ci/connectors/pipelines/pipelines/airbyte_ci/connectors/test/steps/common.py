@@ -16,7 +16,7 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
-from pipelines import hacks
+from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -381,11 +381,16 @@ class RegressionTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
+        main_logger.info(">>>>>>>>>>>>>>> about to _build_regression_test_container")
         container = await self._build_regression_test_container(await connector_under_test_container.id())
         container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
+        main_logger.info(f">>>>>>>>>>>>>>> never_fail_exec stdout: {await container.stdout()}")
+        main_logger.info(f">>>>>>>>>>>>>>> never_fail_exec stderr: {await container.stderr()}")
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
+
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
         await container.file(path_to_report).export(path_to_report)
+
         exit_code, stdout, stderr = await get_exec_result(container)
 
         with open(path_to_report, "r") as fp:
@@ -402,6 +407,9 @@ class RegressionTests(Step):
 
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
+        main_logger.info(
+            f"_build_regression_test_container(): gsm credentials={os.getenv('GCP_GSM_CREDENTIALS') is not None}")
+
         container = with_python_base(self.context)
 
         container = (
@@ -410,22 +418,38 @@ class RegressionTests(Step):
                 .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
                 .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
                 .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
-                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))  # TODO
-                .with_mounted_file(
-                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
-                )
-                .with_mounted_file(
-                    "/root/.config/gcloud/application_default_credentials.json",
-                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
-                )
+                # .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))  # TODO
+                # .with_mounted_file(
+                #     "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
+                # )
+                # .with_mounted_file(
+                #     "/root/.config/gcloud/application_default_credentials.json",
+                #     self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
+                # )
                 .with_mounted_directory("/app", self.context.live_tests_dir)
                 .with_workdir("/app")
                 .with_exec(["pip", "install", "poetry"])
+                .with_exec(
+                    ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
+                     "https://github.com/airbytehq/airbyte-platform-internal.git"]
+                ).with_exec(
+                    ["poetry", "config", "http-basic.airbyte-platform-internal-source", "octavia-squidington-iii",
+                     self.context.ci_github_access_token]
+                ).with_exec(
+                    ["pip", "install", f"git+https://octavia-squidington-iii:{self.context.ci_github_access_token}@github.com/airbytehq/airbyte-platform-internal#subdirectory=tools/connection-retriever"]
+                )
                 .with_exec(["poetry", "lock", "--no-update"])
                 .with_exec(["poetry", "install"])
+                .with_exec(
+                    ["bash", "-c", "echo did poetry install; pwd; ls"]
+                )
             )
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_env_variable(
+                "GCP_GSM_CREDENTIALS", os.getenv("GCP_GSM_CREDENTIALS")
+            )
             .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
         )
+        main_logger.info(f"_built_regression_test_container()")
         return container

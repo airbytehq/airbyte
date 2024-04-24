@@ -112,12 +112,14 @@ runs:
       id: run-airbyte-ci
       shell: bash
       run: |
-        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        echo repo owner: ${{ github.repository_owner }}
+        ./airbyte-ci/connectors/pipelines/.venv/bin/airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         CI_CONTEXT: "${{ inputs.context }}"
         CI_GIT_REPO_URL: ${{ inputs.git_repo_url }}
         CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
         CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
+        CI_GIT_USER: ${{ github.repository_owner }}
         CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}

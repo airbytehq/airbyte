@@ -85,6 +85,7 @@ async def test(
     Args:
         ctx (click.Context): The click context.
     """
+    main_logger.info("<<<<<<<<<<<< starting test() command")
     if only_steps and skip_steps:
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
@@ -114,6 +115,8 @@ async def test(
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            ci_git_user=ctx.obj["ci_git_user"],
+            ci_github_access_token=ctx.obj["ci_github_access_token"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
@@ -137,6 +140,7 @@ async def test(
     ]
 
     try:
+        main_logger.info(f"<<<<<<<<<<<< about to run_connectors_pipelines() run_step_options={run_step_options}")
         await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,

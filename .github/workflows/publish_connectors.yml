@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          ref: catherine/live-tests-gha
       - name: Publish modified connectors [On merge to master]
         id: publish-modified-connectors
         if: github.event_name == 'push'

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+assert os.getenv("GCP_GSM_CREDENTIALS") is not None
 import textwrap
 import time
 import webbrowser
