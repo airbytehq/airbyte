@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import (
 from airbyte_cdk.utils import AirbyteTracedException
 
 # class BigqueryServiceAccountCredentials(ServiceAccountCredentials):
-
+SCOPES = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
 
 class BigqueryOAuth(Oauth2Authenticator):
     """
@@ -34,11 +34,11 @@ class BigqueryAuth:
         credentials_json = json.loads(config["credentials_json"], strict=False)
 
         credentials = ServiceAccountCredentials(credentials_json["client_email"], RSASigner.from_string(credentials_json["private_key"], credentials_json["private_key_id"]),\
-                                                scopes=['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/devstorage.full_control'], \
+                                                scopes=SCOPES, \
                                                 private_key_id=credentials_json["private_key_id"], client_id=credentials_json["client_id"])
         h = httplib2.Http()
         h = credentials.authorize(h)
-        sc = credentials.create_scoped(scopes=['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only'])
+        sc = credentials.create_scoped(scopes=SCOPES)
         token = sc.get_access_token()
         access_token = str(token.access_token)
         auth = TokenAuthenticator(token=access_token)
