@@ -127,6 +127,14 @@ class BigqueryTable(BigqueryTables):
                        https://cloud.google.com/bigquery/docs/reference/rest/v2/tables/get
         """
         return f"{super().path()}/{self.table_id}"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+
+        :return an iterable containing each record in the response
+        """
+        record = response.json()
+        yield record
 
 
 class BigqueryTableData(BigqueryTable):
@@ -140,6 +148,14 @@ class BigqueryTableData(BigqueryTable):
         Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tabledata
         """
         return f"{super().path()}/data"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        records = response.json().get("rows")
+        for record in records:
+            yield record
     
 
 # Basic incremental stream
