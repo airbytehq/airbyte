@@ -83,7 +83,8 @@ public class CtidPerStreamStateManager extends CtidStateManager {
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     if (streamStateForIncrementalRun == null || streamStateForIncrementalRun.isEmpty()) {
       // resumeable full refresh
-      return generateStateMessageAtCheckpoint(stream);
+      var ctidStatus = pairToCtidStatus.get(pair);
+      return createCtidStateMessage(pair, ctidStatus);
     }
     return XminStateManager.getAirbyteStateMessage(pair, Jsons.object(streamStateForIncrementalRun, XminStatus.class));
   }
