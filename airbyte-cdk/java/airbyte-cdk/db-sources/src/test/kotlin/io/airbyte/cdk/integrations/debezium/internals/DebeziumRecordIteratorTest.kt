@@ -28,13 +28,12 @@ class DebeziumRecordIteratorTest {
                     override fun extractPositionFromHeartbeatOffset(
                         sourceOffset: Map<String?, *>
                     ): Long {
-                        return sourceOffset!!["lsn"] as Long
+                        return sourceOffset["lsn"] as Long
                     }
                 },
                 { false },
                 mock(),
                 Duration.ZERO,
-                Duration.ZERO
             )
         val lsn =
             debeziumRecordIterator.getHeartbeatPosition(

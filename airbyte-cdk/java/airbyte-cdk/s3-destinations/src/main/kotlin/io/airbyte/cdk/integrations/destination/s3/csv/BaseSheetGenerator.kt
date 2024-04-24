@@ -28,7 +28,7 @@ abstract class BaseSheetGenerator : CsvSheetGenerator {
         id: UUID,
         formattedString: String,
         emittedAt: Long,
-        airbyteMetaString: String
+        formattedAirbyteMetaString: String
     ): List<Any> {
         // TODO: Make this abstract or default if No-op is intended in NoFlatteningSheetGenerator or
         // RootLevelFlatteningSheetGenerator

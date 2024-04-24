@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
  * ones, which is needed for unit tests. <br></br> For limitations of this converter, see the README
  * of this connector: https://docs.airbyte.io/integrations/destinations/s3#avro
  */
-class JsonToAvroSchemaConverter() {
+class JsonToAvroSchemaConverter {
     private val standardizedNames: MutableMap<String, String> = HashMap()
 
     fun getStandardizedNames(): Map<String, String> {

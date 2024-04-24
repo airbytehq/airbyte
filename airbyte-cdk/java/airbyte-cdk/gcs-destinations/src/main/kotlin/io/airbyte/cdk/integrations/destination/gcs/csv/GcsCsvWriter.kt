@@ -68,6 +68,7 @@ class GcsCsvWriter(
         this.csvPrinter =
             CSVPrinter(
                 PrintWriter(outputStream, true, StandardCharsets.UTF_8),
+                @Suppress("deprecation")
                 CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
                     .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
             )

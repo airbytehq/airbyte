@@ -49,7 +49,7 @@ interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, A
         fun appendOnClose(
             consumer: AirbyteMessageConsumer?,
             voidCallable: VoidCallable
-        ): AirbyteMessageConsumer? {
+        ): AirbyteMessageConsumer {
             return object : AirbyteMessageConsumer {
                 @Throws(Exception::class)
                 override fun start() {
