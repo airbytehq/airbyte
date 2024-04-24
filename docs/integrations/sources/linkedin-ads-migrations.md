@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-Version 2.0.0 introduces changes in the primary key selected for all *-analytics streams (including custom ones).
+Version 2.0.0 introduces changes in the primary key selected for all *-analytics streams (including custom ones) from pivotValues[array of strings] to string_of_pivot_values[string] so that it is compatible with more destination types.
 
 - "ad_campaign_analytics"
 - "ad_creative_analytics"
