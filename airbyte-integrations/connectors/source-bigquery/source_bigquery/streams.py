@@ -30,10 +30,47 @@ The approach here is not authoritative, and devs are free to use their own judge
 There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
 """
 URL_BASE: str = "https://bigquery.googleapis.com"
+    
+
+class BigqueryStream(HttpStream, ABC):
+    """
+    """ 
+    url_base = URL_BASE
+    primary_key = "id"
+    raise_on_http_errors = True
+
+    def __init__(self, stream_path: str, stream_name: str, stream_schema, **kwargs):
+        super().__init__(**kwargs)
+        self.stream_path = stream_path
+        self.stream_name = stream_name
+        self.stream_schema = stream_schema
+
+    @property
+    def name(self):
+        return self.stream_name
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self.stream_schema
+
+    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
+        # TODO: check if correct
+        next_page = response.json().get("offset")
+        if next_page:
+            return next_page
+        return None
+
+    def process_records(self, record) -> Iterable[Mapping[str, Any]]:
+        pass
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = response.json()
+        yield from self.process_records(records)
+
+    def path(self, **kwargs) -> str:
+        return self.stream_path
 
 
-# Basic full refresh stream
-class BigqueryDatasets(HttpStream, ABC):
+class BigqueryDatasets(BigqueryStream):
     """
     """
     url_base = URL_BASE
@@ -42,7 +79,10 @@ class BigqueryDatasets(HttpStream, ABC):
     raise_on_http_errors = True
 
     def __init__(self, project_id: list, **kwargs):
-        super().__init__(**kwargs)
+        self.stream_path = self.path()
+        self.stream_name = self.name
+        self.stream_schema = self.get_json_schema()
+        super().__init__(self.stream_path, self.stream_name, self.stream_schema, **kwargs)
         self.project_id = project_id
 
     def path(self, **kwargs) -> str:
@@ -51,22 +91,25 @@ class BigqueryDatasets(HttpStream, ABC):
         """
         return f"/bigquery/v2/projects/{self.project_id}/datasets"
     
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+    
+    # def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    #     """
+    #     TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
 
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
+    #     This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+    #     to most other methods in this class to help you form headers, request bodies, query params, etc..
 
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
+    #     For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
+    #     'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
+    #     The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
 
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
+    #     :param response: the most recent response from the API
+    #     :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+    #             If there are no more pages in the result, return None.
+    #     """
+    #     return None
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -74,8 +117,8 @@ class BigqueryDatasets(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         records = response.json().get(self.name)
-        for dataset in records:
-            yield dataset
+        for record in records:
+            yield record
 
 
 class BigqueryTables(BigqueryDatasets):
@@ -120,46 +163,6 @@ class BigqueryTableData(BigqueryTable):
         """
         return f"{super().path()}/data"
     
-
-class BigqueryStream(HttpStream, ABC):
-    """
-    """ 
-    url_base = URL_BASE
-    primary_key = "id"
-    raise_on_http_errors = True
-
-    def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, table_data, **kwargs):
-        super().__init__(**kwargs)
-        self.stream_path = stream_path
-        self.stream_name = stream_name
-        self.stream_schema = stream_schema
-        self.table_name = table_name
-        self.table_data = table_data
-
-    @property
-    def name(self):
-        return self.stream_name
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self.stream_schema
-
-    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
-        # TODO: check if correct
-        next_page = response.json().get("offset")
-        if next_page:
-            return next_page
-        return None
-
-    def process_records(self, record) -> Iterable[Mapping[str, Any]]:
-        pass
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json()
-        yield from self.process_records(records)
-
-    def path(self, **kwargs) -> str:
-        return self.stream_path
-
 
 # Basic incremental stream
 class IncrementalBigqueryDatasets(BigqueryDatasets, ABC):
