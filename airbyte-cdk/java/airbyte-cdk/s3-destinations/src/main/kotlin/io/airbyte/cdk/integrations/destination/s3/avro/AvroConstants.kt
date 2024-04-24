@@ -23,7 +23,7 @@ class AvroConstants {
         @JvmField
         val JSON_CONVERTER: JsonAvroConverter =
             JsonAvroConverter.builder()
-                .setNameTransformer { name: String? ->
+                .setNameTransformer { name: String ->
                     NAME_TRANSFORMER.getIdentifier(
                         name,
                     )

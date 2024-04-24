@@ -170,7 +170,9 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
         *records,
     ]
 
-    # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
+    # Synchronous streams emit a final state message to indicate that the stream has finished reading
+    # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
+    # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
     if constructor == _stream:
         expected_records.append(
             AirbyteMessage(
@@ -187,7 +189,11 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
-    assert expected_records == actual_records
+    if constructor == _concurrent_stream:
+        assert hasattr(stream._cursor, "state")
+        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+
+    assert actual_records == expected_records
 
 
 @pytest.mark.parametrize(
@@ -216,7 +222,9 @@ def test_full_refresh_read_a_single_slice(constructor):
 
     expected_records = [*records]
 
-    # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
+    # Synchronous streams emit a final state message to indicate that the stream has finished reading
+    # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
+    # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
     if constructor == _stream:
         expected_records.append(
             AirbyteMessage(
@@ -233,7 +241,11 @@ def test_full_refresh_read_a_single_slice(constructor):
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
-    assert expected_records == actual_records
+    if constructor == _concurrent_stream:
+        assert hasattr(stream._cursor, "state")
+        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+
+    assert actual_records == expected_records
 
 
 @pytest.mark.parametrize(
@@ -270,7 +282,9 @@ def test_full_refresh_read_two_slices(constructor):
         *records_partition_2,
     ]
 
-    # Temporary check to only validate the final state message for synchronous sources since it has not been implemented for concurrent yet
+    # Synchronous streams emit a final state message to indicate that the stream has finished reading
+    # Concurrent streams don't emit their own state messages - the concurrent source observes the cursor
+    # and emits the state messages. Therefore, we can only check the value of the cursor's state at the end
     if constructor == _stream or constructor == _stream_with_no_cursor_field:
         expected_records.append(
             AirbyteMessage(
@@ -287,9 +301,13 @@ def test_full_refresh_read_two_slices(constructor):
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
+    if constructor == _concurrent_stream:
+        assert hasattr(stream._cursor, "state")
+        assert str(stream._cursor.state) == "{'__ab_full_refresh_state_message': True}"
+
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
 
 def test_incremental_read_two_slices():
@@ -324,7 +342,7 @@ def test_incremental_read_two_slices():
 
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
 
 def test_concurrent_incremental_read_two_slices():
@@ -361,7 +379,7 @@ def test_concurrent_incremental_read_two_slices():
 
     for record in expected_records:
         assert record in actual_records
-    assert len(expected_records) == len(actual_records)
+    assert len(actual_records) == len(expected_records)
 
     # We don't have a real source that reads from the message_repository for state, so we read from the queue directly to verify
     # the cursor observed records correctly and updated partition states

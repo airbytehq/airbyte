@@ -32,6 +32,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
+import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
@@ -40,7 +41,6 @@ import io.airbyte.integrations.source.mysql.cdc.MySqlCdcStateHandler;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
@@ -141,8 +141,8 @@ public class MySqlInitialReadUtil {
               stateToBeUsed, catalog);
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
 
-      final MySqlInitialLoadSourceOperations sourceOperations =
-          new MySqlInitialLoadSourceOperations(
+      final MySqlSourceOperations sourceOperations =
+          new MySqlSourceOperations(
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,

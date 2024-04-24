@@ -23,11 +23,8 @@ jobs:
           permission: write
           commands: |
             test
-            legacy-test
             test-performance
-            publish
             publish-java-cdk
-            legacy-publish
             connector-performance
           static-args: |
             repo=${{ steps.getref.outputs.repo }}

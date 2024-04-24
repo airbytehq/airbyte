@@ -273,7 +273,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        airbyte_lib_validation[Run airbyte-lib validation tests]
+        pyairbyte_validation[Run PyAirbyte validation tests]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -281,7 +281,7 @@ flowchart TD
         unit-->build
         secret-->integration
         secret-->cat
-        secret-->airbyte_lib_validation
+        secret-->pyairbyte_validation
         build-->integration
         build-->cat
     end
@@ -295,14 +295,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -642,16 +642,20 @@ You can find the list of internal packages
 
 You can pass multiple `--poetry-package-path` options to run poe tasks.
 
-E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
-`airbyte-ci test --poetry-package-path=airbyte-ci/connectors/pipelines --poetry-package-path=airbyte-lib`
-
 E.G.: running Poe tasks on the modified internal packages of the current branch:
 `airbyte-ci test --modified`
 
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
-| ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| ------- | ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.7.3   | [#37101](https://github.com/airbytehq/airbyte/pull/37101)  | Pin PyAirbyte version.                                                                                                     |
+| 4.7.2   | [#36962](https://github.com/airbytehq/airbyte/pull/36962)  | Re-enable connector dependencies upload on publish.                                                                        |
+| 4.7.1   | [#36961](https://github.com/airbytehq/airbyte/pull/36961)  | Temporarily disable python connectors dependencies upload until we find a schema the data team can work with.              |
+| 4.7.0   | [#36892](https://github.com/airbytehq/airbyte/pull/36892)  | Upload Python connectors dependencies list to GCS on publish.                                                              |
+| 4.6.5   | [#36722](https://github.com/airbytehq/airbyte/pull/36527)  | Fix incorrect pipeline names                                                                                               |
+| 4.6.4   | [#36480](https://github.com/airbytehq/airbyte/pull/36480)  | Burst the Gradle Task cache if a new CDK version was released                                                              |
+| 4.6.3   | [#36527](https://github.com/airbytehq/airbyte/pull/36527)  | Handle extras as well as groups in `airbyte ci test` [poetry packages]                                                     |
 | 4.6.2   | [#36220](https://github.com/airbytehq/airbyte/pull/36220)  | Allow using `migrate-to-base-image` without PULL_REQUEST_NUMBER                                                            |
 | 4.6.1   | [#36319](https://github.com/airbytehq/airbyte/pull/36319)  | Fix `ValueError` related to PR number in migrate-to-poetry                                                                 |
 | 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |

@@ -127,13 +127,15 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     endpoint = "adAnalytics"
     # For Analytics streams, the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc.] + `end_date`
-    primary_key = ["pivotValue", "end_date"]
+    primary_key = ["pivotValues", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
-    FIELDS_CHUNK_SIZE = 19
+    FIELDS_CHUNK_SIZE = 18
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
+        schema["properties"].update({self.search_param_value: {"type": ["null", "string"]}})
+        return schema
 
     def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
         self.user_stream_name = name
@@ -211,7 +213,18 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
+
+        if is_elements_less_than_limit and is_end_of_records:
             return None
         raise Exception(
             f"Limit {self.records_limit} elements exceeded. "
@@ -286,6 +299,8 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         for chunk in chunks:
             if "dateRange" not in chunk:
                 chunk.append("dateRange")
+            if "pivotValues" not in chunk:
+                chunk.append("pivotValues")
         yield from chunks
 
     def read_records(
@@ -294,7 +309,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         merged_records = defaultdict(dict)
         for field_slice in stream_slice:
             for rec in super().read_records(stream_slice=field_slice, **kwargs):
-                merged_records[rec[self.cursor_field]].update(rec)
+                merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(rec)
         yield from merged_records.values()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -302,7 +317,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
         for rec in transform_data(response.json().get("elements")):
-            yield rec | {"pivotValue": f"urn:li:{self.search_param_value}:{self.get_primary_key_from_slice(kwargs.get('stream_slice'))}"}
+            yield rec | {self.search_param_value: self.get_primary_key_from_slice(kwargs.get("stream_slice")), "pivot": self.pivot_by}
 
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):

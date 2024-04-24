@@ -42,6 +42,7 @@ in [`sidebars.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/s
 We welcome documentation updates! If you'd like to contribute a change, please make sure to:
 
 - Run `pnpm build` and check that all build steps are successful.
+- Run `pnpm prettier . -w`.
 - Push your changes into a pull request, and follow the PR template instructions.
 
 When you make a pull request, Vercel will automatically build a test instance of the full docs site
