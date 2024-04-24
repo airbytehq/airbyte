@@ -144,6 +144,7 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.30.9  | 2024-04-24 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | remove unnecessary logs
 | 0.30.7  | 2024-04-23 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | fix kotlin warnings in core CDK submodule
 | 0.30.7  | 2024-04-23 | [\#37484](https://github.com/airbytehq/airbyte/pull/37484) | fix kotlin warnings in dependencies CDK submodule                                                                                                   |
 | 0.30.7  | 2024-04-23 | [\#37479](https://github.com/airbytehq/airbyte/pull/37479) | fix kotlin warnings in azure-destination, datastore-{bigquery,mongo,postgres} CDK submodules                                                                                                   |
