@@ -102,3 +102,6 @@ scan-journal.log
 
 # connectors' cache
 *.sqlite
+
+# mvn
+target/

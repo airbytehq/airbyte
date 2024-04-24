@@ -20,7 +20,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 
 
 class _MockSource(ConcurrentSourceAdapter):
@@ -36,7 +36,7 @@ class _MockSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            StreamFacade.create_from_stream(s, self, self._logger, None, NoopCursor()) if is_concurrent else s
+            StreamFacade.create_from_stream(s, self, self._logger, None, FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository())) if is_concurrent else s
             for s, is_concurrent in self._streams_to_is_concurrent.items()
         ]
 

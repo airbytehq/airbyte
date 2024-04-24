@@ -116,6 +116,10 @@ class AdsInsights(FBMarketingIncrementalStream):
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
 
+    def _add_account_id(self, record: dict[str, Any], account_id: str):
+        if "account_id" not in record:
+            record["account_id"] = account_id
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -131,6 +135,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             for obj in job.get_result():
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
+                    self._add_account_id(data, account_id)
                     yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
@@ -298,7 +303,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today().date()
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
 
         start_dates_for_account = {}
@@ -314,6 +319,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                 start_date = min(start_date, refresh_date)
             else:
                 start_date = self._start_date
+
+            if start_date < self._start_date:
+                logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
+            start_date = max(start_date, self._start_date)
             if start_date < oldest_date:
                 logger.warning(
                     f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}."

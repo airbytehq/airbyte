@@ -24,7 +24,7 @@ async def bump_version(
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Bump version of connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

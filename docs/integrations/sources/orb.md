@@ -38,6 +38,14 @@ In order to capture data that has been updated after creation, please run a peri
 
 The Orb connector should not run into Orb API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+:::warning
+The `credit_ledger_entries` stream will now include `events` data. This upgrade uses the `created_at` timestamps from the `credits` to establish a 30-day timeframe, with the earliest `created_at` as the starting point. This restriction is set by the Orb API.
+:::
+
+:::info
+If you are using the `start_date` and `end_date` parameter with the `credit_ledger_entries` stream it will sync all customers created during the that time window. It isn't possible to query data directly to `credit_ledger_entries`. The connector need to retrieve data from customers first to ingest the credit data. 
+:::
+
 ## Getting started
 
 ### Requirements
@@ -54,6 +62,8 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject |
 | --- |------------|----------------------------------------------------------| --- |
+| 1.2.0 | 2024-03-19 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Expose `end_date`parameter |
+| 1.1.2 | 2024-03-13 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Fix window to 30 days for events query timesframe start and query |
 | 1.1.1 | 2024-02-07 | [35005](https://github.com/airbytehq/airbyte/pull/35005) | Pass timeframe_start, timeframe_end to events query |
 | 1.1.0 | 2023-03-03 | [24567](https://github.com/airbytehq/airbyte/pull/24567) | Add Invoices incremental stream merged from [#24737](https://github.com/airbytehq/airbyte/pull/24737) |
 | 1.0.0 | 2023-02-02 | [21951](https://github.com/airbytehq/airbyte/pull/21951) | Add SubscriptionUsage stream, and made `start_date` a required field |

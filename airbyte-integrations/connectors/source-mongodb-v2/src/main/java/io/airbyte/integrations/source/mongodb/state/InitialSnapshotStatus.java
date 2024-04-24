@@ -12,5 +12,9 @@ package io.airbyte.integrations.source.mongodb.state;
 public enum InitialSnapshotStatus {
 
   IN_PROGRESS,
-  COMPLETE
+  COMPLETE,
+  // A Full Refresh stream state behaves like In Progress,
+  // but its value set to null when collection is fully read
+  // Rather than turning into Complete
+  FULL_REFRESH
 }

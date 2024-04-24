@@ -25,7 +25,5 @@ def build_request(config: Dict[str, Any]) -> HttpRequest:
         url="https://login.microsoftonline.com/common/oauth2/v2.0/token",
         query_params={},
         body=body,
-        headers={
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )

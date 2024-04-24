@@ -168,8 +168,6 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: created_at
-          include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "coupon"
@@ -198,8 +196,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: "occurred_at"
-          include_deleted: "true"
+          sort_by[asc]: occurred_at
           occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "event"
@@ -270,7 +267,6 @@ definitions:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "promotional_credit"
@@ -363,7 +359,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/nested_selector"
         record_filter:
-          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
+          condition: "{{ record['migrated_at'] >= ( stream_state.get('prior_state', {}).get('migrated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('migrated_at', 0) ) }}"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
@@ -377,7 +373,6 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
