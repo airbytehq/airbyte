@@ -6,11 +6,11 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 
 class ParsedCatalog(streams: List<StreamConfig>) {
-    fun getStream(streamId: AirbyteStreamNameNamespacePair): StreamConfig? {
+    fun getStream(streamId: AirbyteStreamNameNamespacePair): StreamConfig {
         return getStream(streamId.namespace, streamId.name)
     }
 
-    fun getStream(streamId: StreamId): StreamConfig? {
+    fun getStream(streamId: StreamId): StreamConfig {
         return getStream(streamId.originalNamespace, streamId.originalName)
     }
 

@@ -34,7 +34,7 @@ class RootLevelFlatteningSheetGenerator(jsonSchema: JsonNode) :
     }
 
     /** With root level flattening, the record columns are the first level fields of the json. */
-    public override fun getRecordColumns(json: JsonNode): List<String> {
+    override fun getRecordColumns(json: JsonNode): List<String> {
         val values: MutableList<String> = LinkedList()
         for (field in recordHeaders) {
             val value = json[field]

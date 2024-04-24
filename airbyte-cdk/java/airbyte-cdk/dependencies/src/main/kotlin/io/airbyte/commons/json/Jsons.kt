@@ -194,12 +194,12 @@ object Jsons {
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T {
+    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, klass)
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T {
+    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, typeReference)
     }
 
@@ -221,7 +221,7 @@ object Jsons {
 
     @JvmStatic
     fun <T : Any> clone(o: T): T {
-        return deserialize(serialize(o), o::class.java) as T
+        return deserialize(serialize(o), o::class.java)
     }
 
     fun toBytes(jsonNode: JsonNode): ByteArray {
@@ -243,7 +243,7 @@ object Jsons {
 
     fun keys(jsonNode: JsonNode): Set<String> {
         return if (jsonNode.isObject) {
-            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {}).keys
+            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {})!!.keys
         } else {
             HashSet()
         }
@@ -262,16 +262,16 @@ object Jsons {
     }
 
     fun navigateTo(node: JsonNode, keys: List<String?>): JsonNode {
-        var node = node
+        var targetNode = node
         for (key in keys) {
-            node = node[key]
+            targetNode = targetNode[key]
         }
-        return node
+        return targetNode
     }
 
     fun replaceNestedValue(json: JsonNode, keys: List<String?>, replacement: JsonNode?) {
         replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
-            node.put(finalKey, replacement)
+            node.replace(finalKey, replacement)
         }
     }
 
@@ -302,16 +302,16 @@ object Jsons {
     }
 
     fun getOptional(json: JsonNode?, keys: List<String>): Optional<JsonNode> {
-        var json = json
+        var retVal = json
         for (key in keys) {
-            if (json == null) {
+            if (retVal == null) {
                 return Optional.empty()
             }
 
-            json = json[key]
+            retVal = retVal[key]
         }
 
-        return Optional.ofNullable(json)
+        return Optional.ofNullable(retVal)
     }
 
     fun getStringOrNull(json: JsonNode?, vararg keys: String): String? {
@@ -419,21 +419,21 @@ object Jsons {
      * the class name can at least help narrow down the problem, without leaking
      * potentially-sensitive information. </snip...>
      */
-    private fun <T : Any> handleDeserThrowable(t: Throwable): Optional<T> {
+    private fun <T : Any> handleDeserThrowable(throwable: Throwable): Optional<T> {
         // Manually build the stacktrace, excluding the top-level exception object
         // so that we don't accidentally include the exception message.
         // Otherwise we could just do ExceptionUtils.getStackTrace(t).
-        var t: Throwable? = t
+        var t: Throwable = throwable
         val sb = StringBuilder()
-        sb.append(t!!.javaClass)
+        sb.append(t.javaClass)
         for (traceElement in t.stackTrace) {
             sb.append("\n\tat ")
             sb.append(traceElement.toString())
         }
-        while (t!!.cause != null) {
-            t = t.cause
+        while (t.cause != null) {
+            t = t.cause!!
             sb.append("\nCaused by ")
-            sb.append(t!!.javaClass)
+            sb.append(t.javaClass)
             for (traceElement in t.stackTrace) {
                 sb.append("\n\tat ")
                 sb.append(traceElement.toString())

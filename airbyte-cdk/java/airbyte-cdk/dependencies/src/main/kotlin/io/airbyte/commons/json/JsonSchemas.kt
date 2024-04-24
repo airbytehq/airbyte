@@ -226,9 +226,9 @@ object JsonSchemas {
                             consumer
                         )
                     } else {
-                        log.warn(
+                        log.warn {
                             "The array is missing an items field. The traversal is silently stopped. Current schema: $jsonSchemaNode"
-                        )
+                        }
                     }
                 }
                 OBJECT_TYPE -> {
@@ -247,9 +247,9 @@ object JsonSchemas {
                             traverseJsonSchemaInternal(arrayItem, path, consumer)
                         }
                     } else {
-                        log.warn(
+                        log.warn {
                             "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: $jsonSchemaNode"
-                        )
+                        }
                     }
                 }
             }
@@ -331,14 +331,14 @@ object JsonSchemas {
     class FieldNameOrList private constructor(val fieldName: String?) {
         val isList: Boolean = fieldName == null
 
-        override fun equals(o: Any?): Boolean {
-            if (this === o) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
                 return true
             }
-            if (o !is FieldNameOrList) {
+            if (other !is FieldNameOrList) {
                 return false
             }
-            val that = o
+            val that = other
             return isList == that.isList && fieldName == that.fieldName
         }
 

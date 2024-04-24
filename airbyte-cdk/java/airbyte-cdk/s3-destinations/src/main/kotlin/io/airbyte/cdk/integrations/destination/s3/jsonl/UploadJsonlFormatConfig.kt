@@ -36,14 +36,14 @@ class UploadJsonlFormatConfig(
 
     override val fileExtension: String = JSONL_SUFFIX + compressionType.fileExtension
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as UploadJsonlFormatConfig
+        val that = other as UploadJsonlFormatConfig
         return flatteningType == that.flatteningType && compressionType == that.compressionType
     }
 

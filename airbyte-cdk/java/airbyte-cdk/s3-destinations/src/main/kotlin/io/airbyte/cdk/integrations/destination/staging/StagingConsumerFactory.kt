@@ -296,9 +296,11 @@ private constructor(
                 } else {
                     outputSchema =
                         getOutputSchema(abStream, config!!["schema"].asText(), namingResolver)
-                    tableName = namingResolver!!.getRawTableName(streamName)
+                    tableName =
+                        @Suppress("deprecation") namingResolver!!.getRawTableName(streamName)
                 }
-                val tmpTableName = namingResolver!!.getTmpTableName(streamName)
+                val tmpTableName =
+                    @Suppress("deprecation") namingResolver!!.getTmpTableName(streamName)
                 val syncMode = stream.destinationSyncMode
 
                 val writeConfig: WriteConfig =

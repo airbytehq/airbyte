@@ -18,7 +18,7 @@ internal class DatabaseConnectionHelperTest {
     fun testCreatingFromATestContainer() {
         val dataSource = createDataSource(container)
         Assertions.assertNotNull(dataSource)
-        Assertions.assertEquals(HikariDataSource::class.java, dataSource!!.javaClass)
+        Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
             (dataSource as HikariDataSource?)!!.hikariConfigMXBean.maximumPoolSize
@@ -51,7 +51,7 @@ internal class DatabaseConnectionHelperTest {
         @AfterAll
         @JvmStatic
         fun dbDown() {
-            container!!.close()
+            container.close()
         }
     }
 }

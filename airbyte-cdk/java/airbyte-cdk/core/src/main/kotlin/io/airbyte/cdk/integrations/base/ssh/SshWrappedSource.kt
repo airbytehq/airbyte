@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.base.ssh
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.Source
-import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.v0.*
@@ -42,15 +41,7 @@ class SshWrappedSource : Source {
     @Throws(Exception::class)
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            return SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
-                config,
-                hostKey,
-                portKey,
-                CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> { config: JsonNode
-                    ->
-                    delegate.check(config)
-                }
-            )
+            return SshTunnel.sshWrap(config, hostKey, portKey) { c: JsonNode -> delegate.check(c) }
         } catch (e: RuntimeException) {
             val sshErrorMessage =
                 "Could not connect with provided SSH configuration. Error: " + e.message
@@ -63,14 +54,7 @@ class SshWrappedSource : Source {
 
     @Throws(Exception::class)
     override fun discover(config: JsonNode): AirbyteCatalog {
-        return SshTunnel.Companion.sshWrap<AirbyteCatalog>(
-            config,
-            hostKey,
-            portKey,
-            CheckedFunction<JsonNode, AirbyteCatalog, Exception?> { config: JsonNode ->
-                delegate.discover(config)
-            }
-        )
+        return SshTunnel.sshWrap(config, hostKey, portKey) { c: JsonNode -> delegate.discover(c) }
     }
 
     @Throws(Exception::class)
@@ -79,7 +63,7 @@ class SshWrappedSource : Source {
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage> {
-        val tunnel: SshTunnel = SshTunnel.Companion.getInstance(config, hostKey, portKey)
+        val tunnel: SshTunnel = SshTunnel.getInstance(config, hostKey, portKey)
         val delegateRead: AutoCloseableIterator<AirbyteMessage>
         try {
             delegateRead = delegate.read(tunnel.configInTunnel, catalog, state)
@@ -100,7 +84,7 @@ class SshWrappedSource : Source {
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
-        val tunnel: SshTunnel = SshTunnel.Companion.getInstance(config, hostKey, portKey)
+        val tunnel: SshTunnel = SshTunnel.getInstance(config, hostKey, portKey)
         try {
             return delegate.readStreams(tunnel.configInTunnel, catalog, state)
         } catch (e: Exception) {
