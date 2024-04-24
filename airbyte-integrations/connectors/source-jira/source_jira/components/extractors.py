@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Any, List, Mapping, Union
 from dataclasses import dataclass
+from typing import Any, List, Mapping, Union
 
 import dpath.util
 import requests
