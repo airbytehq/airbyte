@@ -10,7 +10,6 @@ from source_mixpanel.streams import Annotations, Export
 
 
 def test_date_slices():
-
     now = pendulum.today(tz="US/Pacific").date()
     # Test with start_date now range
     stream_slices = Annotations(

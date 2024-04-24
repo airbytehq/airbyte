@@ -35,7 +35,9 @@ class TestSimpleDockerStep:
         env_variables = {"VAR1": "value1", "VAR2": "value2"}
 
         # Create SimpleDockerStep instance
-        step = SimpleDockerStep(title=title, context=context, env_variables=env_variables)
+        step = SimpleDockerStep(
+            title=title, context=context, env_variables=env_variables
+        )
 
         # Initialize container
         container = await step.init_container()
@@ -58,13 +60,17 @@ class TestSimpleDockerStep:
         ]
 
         # Create SimpleDockerStep instance
-        step = SimpleDockerStep(title=title, context=context, paths_to_mount=paths_to_mount)
+        step = SimpleDockerStep(
+            title=title, context=context, paths_to_mount=paths_to_mount
+        )
 
         # Initialize container
         container = await step.init_container()
 
         for path_to_mount in paths_to_mount:
-            exit_code, _stdout, _stderr = await get_exec_result(container.with_exec(["test", "-f", f"{str(path_to_mount)}"]))
+            exit_code, _stdout, _stderr = await get_exec_result(
+                container.with_exec(["test", "-f", f"{str(path_to_mount)}"])
+            )
 
             expected_exit_code = 1 if path_to_mount.optional else 0
             assert exit_code == expected_exit_code
@@ -87,7 +93,9 @@ class TestSimpleDockerStep:
         working_directory = "/test"
 
         # Create SimpleDockerStep instance
-        step = SimpleDockerStep(title=title, context=context, working_directory=working_directory)
+        step = SimpleDockerStep(
+            title=title, context=context, working_directory=working_directory
+        )
 
         # Initialize container
         container = await step.init_container()

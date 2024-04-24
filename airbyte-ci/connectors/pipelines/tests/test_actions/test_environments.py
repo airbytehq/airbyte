@@ -29,14 +29,28 @@ def connector_context(dagger_client):
 @pytest.mark.parametrize("use_local_cdk", [True, False])
 async def test_apply_python_development_overrides(connector_context, use_local_cdk):
     connector_context.use_local_cdk = use_local_cdk
-    fake_connector_container = connector_context.dagger_client.container().from_("airbyte/python-connector-base:1.0.0")
-    before_override_pip_freeze = await fake_connector_container.with_exec(["pip", "freeze"]).stdout()
+    fake_connector_container = connector_context.dagger_client.container().from_(
+        "airbyte/python-connector-base:1.0.0"
+    )
+    before_override_pip_freeze = await fake_connector_container.with_exec(
+        ["pip", "freeze"]
+    ).stdout()
 
-    assert "airbyte-cdk" not in before_override_pip_freeze.splitlines(), "The base image should not have the airbyte-cdk installed."
-    connector_with_overrides = await common.apply_python_development_overrides(connector_context, fake_connector_container)
+    assert (
+        "airbyte-cdk" not in before_override_pip_freeze.splitlines()
+    ), "The base image should not have the airbyte-cdk installed."
+    connector_with_overrides = await common.apply_python_development_overrides(
+        connector_context, fake_connector_container
+    )
 
-    after_override_pip_freeze = await connector_with_overrides.with_exec(["pip", "freeze"]).stdout()
+    after_override_pip_freeze = await connector_with_overrides.with_exec(
+        ["pip", "freeze"]
+    ).stdout()
     if use_local_cdk:
-        assert "airbyte-cdk" not in after_override_pip_freeze.splitlines(), "The override should not install the airbyte-cdk package."
+        assert (
+            "airbyte-cdk" not in after_override_pip_freeze.splitlines()
+        ), "The override should not install the airbyte-cdk package."
     else:
-        assert "airbyte-cdk" not in after_override_pip_freeze.splitlines(), "The override should install the airbyte-cdk package."
+        assert (
+            "airbyte-cdk" not in after_override_pip_freeze.splitlines()
+        ), "The override should install the airbyte-cdk package."

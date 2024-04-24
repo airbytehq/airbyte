@@ -2,13 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from .attribution_report import AttributionReportModel
-from .common import (
-    CatalogModel,
-    Keywords,
-    MetricsReport,
-    NegativeKeywords,
-    Portfolio
-)
+from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords, Portfolio
 from .profile import Profile
 from .sponsored_brands import (
     BrandsAdGroup,
@@ -24,7 +18,7 @@ from .sponsored_products import (
     ProductTargeting,
     SponsoredProductCampaignNegativeKeywordsModel,
     SponsoredProductKeywordsModel,
-    SponsoredProductNegativeKeywordsModel
+    SponsoredProductNegativeKeywordsModel,
 )
 
 __all__ = [
@@ -52,5 +46,5 @@ __all__ = [
     "AttributionReportModel",
     "SponsoredProductCampaignNegativeKeywordsModel",
     "SponsoredProductKeywordsModel",
-    "SponsoredProductNegativeKeywordsModel"
+    "SponsoredProductNegativeKeywordsModel",
 ]

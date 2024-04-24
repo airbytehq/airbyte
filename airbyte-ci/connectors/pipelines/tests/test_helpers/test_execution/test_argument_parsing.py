@@ -25,7 +25,9 @@ def test_build_extra_params_mapping(mocker):
         "--step1.param4",
     )
 
-    result = argument_parsing.build_extra_params_mapping(SupportedStepIds)(ctx, argument, raw_extra_params)
+    result = argument_parsing.build_extra_params_mapping(SupportedStepIds)(
+        ctx, argument, raw_extra_params
+    )
 
     expected_result = {
         SupportedStepIds.STEP1.value: {"param1": ["value1"], "param4": []},

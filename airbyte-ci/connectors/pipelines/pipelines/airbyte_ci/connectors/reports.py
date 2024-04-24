@@ -64,7 +64,9 @@ class ConnectorReport(Report):
         Returns:
             str: The JSON representation of the report.
         """
-        assert self.pipeline_context.pipeline_start_timestamp is not None, "The pipeline start timestamp must be set to save reports."
+        assert (
+            self.pipeline_context.pipeline_start_timestamp is not None
+        ), "The pipeline start timestamp must be set to save reports."
 
         return json.dumps(
             {
@@ -74,12 +76,17 @@ class ConnectorReport(Report):
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
+                "successful_steps": [
+                    s.step.__class__.__name__ for s in self.successful_steps
+                ],  # type: ignore
+                "skipped_steps": [
+                    s.step.__class__.__name__ for s in self.skipped_steps
+                ],  # type: ignore
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
-                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "pipeline_duration": round(self.created_at.timestamp())
+                - self.pipeline_context.pipeline_start_timestamp,
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
@@ -99,7 +106,9 @@ class ConnectorReport(Report):
         template = env.get_template("test_report.html.j2")
         template.globals["StepStatus"] = StepStatus
         template.globals["format_duration"] = format_duration
-        local_icon_path = Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
+        local_icon_path = Path(
+            f"{self.pipeline_context.connector.code_directory}/icon.svg"
+        ).resolve()
         step_result_to_artifact_links: Dict[str, List[Dict]] = {}
         for step_result in self.steps_results:
             for artifact in step_result.artifacts:
@@ -109,7 +118,9 @@ class ConnectorReport(Report):
                     url = artifact.local_path.resolve().as_uri()
                 else:
                     continue
-                step_result_to_artifact_links.setdefault(step_result.step.title, []).append({"name": artifact.name, "url": url})
+                step_result_to_artifact_links.setdefault(
+                    step_result.step.title, []
+                ).append({"name": artifact.name, "url": url})
 
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
@@ -124,30 +135,48 @@ class ConnectorReport(Report):
             "commit_url": None,
             "icon_url": local_icon_path.as_uri(),
             "report": self,
-            "step_result_to_artifact_links": MappingProxyType(step_result_to_artifact_links),
+            "step_result_to_artifact_links": MappingProxyType(
+                step_result_to_artifact_links
+            ),
         }
 
         if self.pipeline_context.is_ci:
-            template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
-            template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context["commit_url"] = (
+                f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
+            )
+            template_context["gha_workflow_run_url"] = (
+                self.pipeline_context.gha_workflow_run_url
+            )
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
-            template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
-            template_context[
-                "icon_url"
-            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            template_context["dagger_cloud_url"] = (
+                self.pipeline_context.dagger_cloud_url
+            )
+            template_context["icon_url"] = (
+                f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            )
         return template.render(template_context)
 
     async def save_html_report(self) -> None:
         """Save the report as HTML, upload it to GCS if the pipeline is running in CI"""
 
         html_report_path = self.report_dir_path / self.html_report_file_name
-        report_dir = self.pipeline_context.dagger_client.host().directory(str(self.report_dir_path))
-        local_html_report_file = report_dir.with_new_file(self.html_report_file_name, self.to_html()).file(self.html_report_file_name)
-        html_report_artifact = Artifact(name="HTML Report", content_type="text/html", content=local_html_report_file)
+        report_dir = self.pipeline_context.dagger_client.host().directory(
+            str(self.report_dir_path)
+        )
+        local_html_report_file = report_dir.with_new_file(
+            self.html_report_file_name, self.to_html()
+        ).file(self.html_report_file_name)
+        html_report_artifact = Artifact(
+            name="HTML Report", content_type="text/html", content=local_html_report_file
+        )
         await html_report_artifact.save_to_local_path(html_report_path)
         absolute_path = html_report_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
-        if self.remote_storage_enabled and self.pipeline_context.ci_gcs_credentials_secret and self.pipeline_context.ci_report_bucket:
+        if (
+            self.remote_storage_enabled
+            and self.pipeline_context.ci_gcs_credentials_secret
+            and self.pipeline_context.ci_report_bucket
+        ):
             gcs_url = await html_report_artifact.upload_to_gcs(
                 dagger_client=self.pipeline_context.dagger_client,
                 bucket=self.pipeline_context.ci_report_bucket,
@@ -169,7 +198,9 @@ class ConnectorReport(Report):
         connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
-        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}")
+        duration_subtitle = Text(
+            f"⏲️  Total pipeline duration for {connector_name}: {format_duration(self.run_duration)}"
+        )
         step_results_table = Table(title="Steps results")
         step_results_table.add_column("Step")
         step_results_table.add_column("Result")
@@ -180,13 +211,21 @@ class ConnectorReport(Report):
             step.stylize(step_result.status.get_rich_style())
             result = Text(step_result.status.value)
             result.stylize(step_result.status.get_rich_style())
-            step_results_table.add_row(step, result, format_duration(step_result.step.run_duration))
+            step_results_table.add_row(
+                step, result, format_duration(step_result.step.run_duration)
+            )
 
-        details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
+        details_instructions = Text(
+            "ℹ️  You can find more details with step executions logs in the saved HTML report."
+        )
         to_render: List[RenderableType] = [step_results_table, details_instructions]
 
         if self.pipeline_context.dagger_cloud_url:
-            self.pipeline_context.logger.info(f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}")
+            self.pipeline_context.logger.info(
+                f"🔗 View runs for commit in Dagger Cloud: {self.pipeline_context.dagger_cloud_url}"
+            )
 
-        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
+        main_panel = Panel(
+            Group(*to_render), title=main_panel_title, subtitle=duration_subtitle
+        )
         console.print(main_panel)

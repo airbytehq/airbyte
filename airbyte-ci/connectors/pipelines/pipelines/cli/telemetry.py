@@ -13,7 +13,9 @@ from typing import TYPE_CHECKING
 import segment.analytics as analytics  # type: ignore
 from asyncclick import get_current_context
 
-DISABLE_TELEMETRY = os.environ.get("AIRBYTE_CI_DISABLE_TELEMETRY", "false").lower() == "true"
+DISABLE_TELEMETRY = (
+    os.environ.get("AIRBYTE_CI_DISABLE_TELEMETRY", "false").lower() == "true"
+)
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Dict, Tuple
@@ -67,7 +69,11 @@ def click_track_command(f: Callable) -> Callable:
         event = f"airbyte-ci:{f.__name__}"
 
         # IMPORTANT! do not log kwargs as they may contain secrets
-        analytics.track(user_id, event, {"username": sys_user_name, "command": sanitized_cmd, "airbyter": airbyter})
+        analytics.track(
+            user_id,
+            event,
+            {"username": sys_user_name, "command": sanitized_cmd, "airbyter": airbyter},
+        )
 
         return f(*args, **kwargs)
 

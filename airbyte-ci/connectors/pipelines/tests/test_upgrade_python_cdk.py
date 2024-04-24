@@ -65,20 +65,45 @@ def connector_context(sample_connector, dagger_client, current_platform):
     "setup_py_content, expected_setup_py_content",
     [
         (get_sample_setup_py("airbyte-cdk"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk[file-based]"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk==1.2.3"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk>=1.2.3"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk[file-based]>=1.2.3"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk==1.2"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk>=1.2"), get_sample_setup_py("airbyte-cdk>=6.6.6")),
-        (get_sample_setup_py("airbyte-cdk[file-based]>=1.2"), get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6")),
+        (
+            get_sample_setup_py("airbyte-cdk[file-based]"),
+            get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk==1.2.3"),
+            get_sample_setup_py("airbyte-cdk>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk>=1.2.3"),
+            get_sample_setup_py("airbyte-cdk>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk[file-based]>=1.2.3"),
+            get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk==1.2"),
+            get_sample_setup_py("airbyte-cdk>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk>=1.2"),
+            get_sample_setup_py("airbyte-cdk>=6.6.6"),
+        ),
+        (
+            get_sample_setup_py("airbyte-cdk[file-based]>=1.2"),
+            get_sample_setup_py("airbyte-cdk[file-based]>=6.6.6"),
+        ),
     ],
 )
 async def test_run_connector_cdk_upgrade_pipeline(
-    connector_context: ConnectorContext, setup_py_content: str, expected_setup_py_content: str
+    connector_context: ConnectorContext,
+    setup_py_content: str,
+    expected_setup_py_content: str,
 ):
     full_og_connector_dir = await connector_context.get_connector_dir()
-    updated_connector_dir = full_og_connector_dir.with_new_file("setup.py", setup_py_content)
+    updated_connector_dir = full_og_connector_dir.with_new_file(
+        "setup.py", setup_py_content
+    )
 
     # For this test, replace the actual connector dir with an updated version that sets the setup.py contents
     connector_context.get_connector_dir = AsyncMock(return_value=updated_connector_dir)
@@ -90,7 +115,9 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert step_result.status == StepStatus.SUCCESS
 
     # Check that the resulting directory that got passed to the mocked diff method looks as expected
-    resulting_directory: Directory = await full_og_connector_dir.diff(updated_connector_dir.diff.call_args[0][0])
+    resulting_directory: Directory = await full_og_connector_dir.diff(
+        updated_connector_dir.diff.call_args[0][0]
+    )
     files = await resulting_directory.entries()
     # validate only setup.py is changed
     assert files == ["setup.py"]
@@ -102,7 +129,9 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert updated_connector_dir.diff.return_value.export.call_count == 1
 
 
-async def test_skip_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector_context: ConnectorContext):
+async def test_skip_connector_cdk_upgrade_pipeline_on_missing_setup_py(
+    connector_context: ConnectorContext,
+):
     full_og_connector_dir = await connector_context.get_connector_dir()
     updated_connector_dir = full_og_connector_dir.without_file("setup.py")
 
@@ -113,9 +142,13 @@ async def test_skip_connector_cdk_upgrade_pipeline_on_missing_setup_py(connector
     assert step_result.status == StepStatus.SKIPPED
 
 
-async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(connector_context: ConnectorContext):
+async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(
+    connector_context: ConnectorContext,
+):
     full_og_connector_dir = await connector_context.get_connector_dir()
-    updated_connector_dir = full_og_connector_dir.with_new_file("setup.py", get_sample_setup_py("another-lib==1.2.3"))
+    updated_connector_dir = full_og_connector_dir.with_new_file(
+        "setup.py", get_sample_setup_py("another-lib==1.2.3")
+    )
 
     connector_context.get_connector_dir = AsyncMock(return_value=updated_connector_dir)
 

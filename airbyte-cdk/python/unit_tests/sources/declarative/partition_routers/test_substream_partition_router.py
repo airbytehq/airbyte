@@ -106,20 +106,24 @@ class MockStream(DeclarativeStream):
             ],
         ),
         (
-                [
-                    ParentStreamConfig(
-                        stream=MockStream([StreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices], all_parent_data, "first_stream"),
-                        parent_key="id",
-                        partition_field="first_stream_id",
-                        parameters={},
-                        config={},
-                    )
-                ],
-                [
-                    {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
-                    {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
-                    {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
-                ],
+            [
+                ParentStreamConfig(
+                    stream=MockStream(
+                        [StreamSlice(partition=p, cursor_slice={"start": 0, "end": 1}) for p in parent_slices],
+                        all_parent_data,
+                        "first_stream",
+                    ),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    parameters={},
+                    config={},
+                )
+            ],
+            [
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+                {"parent_slice": {"slice": "second"}, "first_stream_id": 2},
+            ],
         ),
         (
             [

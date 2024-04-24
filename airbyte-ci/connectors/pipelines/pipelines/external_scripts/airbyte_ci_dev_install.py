@@ -13,7 +13,9 @@ def check_command_exists(command: str, not_found_message: str) -> None:
     Check if a command exists in the system path.
     """
     try:
-        subprocess.check_call(["which", command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call(
+            ["which", command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
     except subprocess.CalledProcessError:
         print(not_found_message)
         sys.exit(1)
@@ -47,7 +49,16 @@ configuration file to ensure the pipx command is available.""",
     print("pipx is already installed.")
 
     # Install airbyte-ci development version
-    subprocess.run(["pipx", "install", "--editable", "--force", "--python=python3.10", "airbyte-ci/connectors/pipelines/"])
+    subprocess.run(
+        [
+            "pipx",
+            "install",
+            "--editable",
+            "--force",
+            "--python=python3.10",
+            "airbyte-ci/connectors/pipelines/",
+        ]
+    )
     print("Development version of airbyte-ci installed.....")
 
 

@@ -35,7 +35,7 @@ def read(
     sync_mode: SyncMode,
     config_builder: Optional[ConfigBuilder] = None,
     state_builder: Optional[StateBuilder] = None,
-    expecting_exception: bool = False
+    expecting_exception: bool = False,
 ) -> EntrypointOutput:
     catalog = _catalog(stream_name, sync_mode)
     config = config_builder.build() if config_builder else ConfigBuilder().build()
@@ -48,7 +48,7 @@ def given_authentication(http_mocker: HttpMocker, client_id: str, client_secret:
         HttpRequest(
             "https://login.salesforce.com/services/oauth2/token",
             query_params=ANY_QUERY_PARAMS,
-            body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
+            body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}",
         ),
         HttpResponse(json.dumps({"access_token": "any_access_token", "instance_url": instance_url})),
     )

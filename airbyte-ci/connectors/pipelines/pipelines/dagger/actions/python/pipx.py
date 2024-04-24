@@ -6,8 +6,13 @@ from typing import List, Optional
 
 from dagger import Container
 from pipelines.airbyte_ci.connectors.context import PipelineContext
-from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
-from pipelines.dagger.actions.python.poetry import find_local_dependencies_in_pyproject_toml
+from pipelines.dagger.actions.python.common import (
+    with_pip_packages,
+    with_python_package,
+)
+from pipelines.dagger.actions.python.poetry import (
+    find_local_dependencies_in_pyproject_toml,
+)
 
 
 def with_pipx(base_python_container: Container) -> Container:
@@ -19,7 +24,9 @@ def with_pipx(base_python_container: Container) -> Container:
     Returns:
         Container: A python environment with pipx installed.
     """
-    python_with_pipx = with_pip_packages(base_python_container, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+    python_with_pipx = with_pip_packages(
+        base_python_container, ["pipx"]
+    ).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
 
     return python_with_pipx
 
@@ -42,11 +49,17 @@ async def with_installed_pipx_package(
         Container: A python environment container with the python package installed.
     """
     pipx_python_environment = with_pipx(python_environment)
-    container = with_python_package(context, pipx_python_environment, package_source_code_path, exclude=exclude)
+    container = with_python_package(
+        context, pipx_python_environment, package_source_code_path, exclude=exclude
+    )
 
-    local_dependencies = await find_local_dependencies_in_pyproject_toml(context, container, package_source_code_path, exclude=exclude)
+    local_dependencies = await find_local_dependencies_in_pyproject_toml(
+        context, container, package_source_code_path, exclude=exclude
+    )
     for dependency_directory in local_dependencies:
-        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+        container = container.with_mounted_directory(
+            "/" + dependency_directory, context.get_repo_dir(dependency_directory)
+        )
 
     container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"])
 

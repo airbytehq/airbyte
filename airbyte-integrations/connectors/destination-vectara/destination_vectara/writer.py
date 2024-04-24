@@ -15,7 +15,6 @@ METADATA_STREAM_FIELD = "_ab_stream"
 
 
 class VectaraWriter:
-
     write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 

@@ -56,13 +56,19 @@ def update_commit_status_check(
     if not should_send:
         return
 
-    safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
+    safe_log(
+        logger,
+        f"Attempting to create {state} status for commit {sha} on Github in {context} context.",
+    )
     try:
         github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
         airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
     except Exception as e:
         if logger:
-            logger.error("No commit status check sent, the connection to Github API failed", exc_info=True)
+            logger.error(
+                "No commit status check sent, the connection to Github API failed",
+                exc_info=True,
+            )
         else:
             console.print(e)
         return
@@ -74,17 +80,26 @@ def update_commit_status_check(
         state = "success"
         description = f"[WARNING] optional check failed {context}: {description}"
 
-    context = context if bool(os.environ.get("PRODUCTION", False)) is True else f"[please ignore] {context}"
+    context = (
+        context
+        if bool(os.environ.get("PRODUCTION", False)) is True
+        else f"[please ignore] {context}"
+    )
     airbyte_repo.get_commit(sha=sha).create_status(
         state=state,
         target_url=target_url,
         description=description,
         context=context,
     )
-    safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
+    safe_log(
+        logger,
+        f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.",
+    )
 
 
-def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest.PullRequest:
+def get_pull_request(
+    pull_request_number: int, github_access_token: str
+) -> PullRequest.PullRequest:
     """Get a pull request object from its number.
 
     Args:
@@ -98,8 +113,9 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
     return airbyte_repo.get_pull(pull_request_number)
 
 
-def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
-
+def update_global_commit_status_check_for_tests(
+    click_context: dict, github_state: str, logger: Optional[Logger] = None
+) -> None:
     update_commit_status_check(
         click_context["git_revision"],
         github_state,

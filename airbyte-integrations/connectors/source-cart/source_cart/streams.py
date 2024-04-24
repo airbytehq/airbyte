@@ -93,7 +93,6 @@ class CartStream(HttpStream, ABC):
 
 
 class IncrementalCartStream(CartStream, ABC):
-
     state_checkpoint_interval = 1000
     cursor_field = "updated_at"
 

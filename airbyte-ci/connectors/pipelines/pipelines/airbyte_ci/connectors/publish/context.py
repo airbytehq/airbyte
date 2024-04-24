@@ -53,16 +53,24 @@ class PublishConnectorContext(ConnectorContext):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
-        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
-        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
+        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(
+            spec_cache_gcs_credentials
+        )
+        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(
+            metadata_service_gcs_credentials
+        )
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
         self.python_registry_check_url = python_registry_check_url
         pipeline_name = f"Publish {connector.technical_name}"
-        pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
+        pipeline_name = (
+            pipeline_name + " (pre-release)" if pre_release else pipeline_name
+        )
 
         if use_local_cdk and not self.pre_release:
-            raise click.UsageError("Publishing with the local CDK is only supported for pre-release publishing.")
+            raise click.UsageError(
+                "Publishing with the local CDK is only supported for pre-release publishing."
+            )
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -89,11 +97,15 @@ class PublishConnectorContext(ConnectorContext):
 
     @property
     def metadata_service_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
+        return self.dagger_client.set_secret(
+            "metadata_service_gcs_credentials", self.metadata_service_gcs_credentials
+        )
 
     @property
     def spec_cache_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
+        return self.dagger_client.set_secret(
+            "spec_cache_gcs_credentials", self.spec_cache_gcs_credentials
+        )
 
     @property
     def pre_release_suffix(self) -> str:
@@ -109,7 +121,6 @@ class PublishConnectorContext(ConnectorContext):
             return metadata_tag
 
     def create_slack_message(self) -> str:
-
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
@@ -130,7 +141,9 @@ class PublishConnectorContext(ConnectorContext):
             message += "🔴"
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
-            assert self.report is not None, "Report should be set when state is successful"
+            assert (
+                self.report is not None
+            ), "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
             message += "\ncc. <!subteam^S03BQLNTFNC>"

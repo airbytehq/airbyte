@@ -20,10 +20,15 @@ async def test_get_dagger_client_singleton(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
+        with patch(
+            "pipelines.models.contexts.click_pipeline_context.dagger.Connection",
+            lambda _x: dagger_connection,
+        ):
             client1 = await click_pipeline_context.get_dagger_client()
             client2 = await click_pipeline_context.get_dagger_client()
-            client3 = await click_pipeline_context.get_dagger_client(pipeline_name="pipeline_name")
+            client3 = await click_pipeline_context.get_dagger_client(
+                pipeline_name="pipeline_name"
+            )
             assert isinstance(client1, dagger.Client)
             assert isinstance(client2, dagger.Client)
             assert isinstance(client3, dagger.Client)
@@ -46,7 +51,10 @@ async def test_get_dagger_client_click_params(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
+        with patch(
+            "pipelines.models.contexts.click_pipeline_context.dagger.Connection",
+            lambda _x: dagger_connection,
+        ):
             pipeline_context_params = click_pipeline_context.params
             assert pipeline_context_params == {**given_click_obj, **given_click_params}
 
@@ -66,6 +74,9 @@ async def test_get_dagger_client_click_params_duplicate(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
+        with patch(
+            "pipelines.models.contexts.click_pipeline_context.dagger.Connection",
+            lambda _x: dagger_connection,
+        ):
             with pytest.raises(ValueError):
                 click_pipeline_context.params

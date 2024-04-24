@@ -558,9 +558,10 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        with (
+            closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response,
+            open(tmp_file, "wb") as data_file,
+        ):
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
             for chunk in response.iter_content(chunk_size=chunk_size):

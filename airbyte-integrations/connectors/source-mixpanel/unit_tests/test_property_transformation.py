@@ -7,6 +7,7 @@ Test case, when custom Export, ExportSchema properties contains names,
 that will conflict in further data normalization, like:
 `userName` and `username`
 """
+
 from unittest.mock import MagicMock
 
 import pytest

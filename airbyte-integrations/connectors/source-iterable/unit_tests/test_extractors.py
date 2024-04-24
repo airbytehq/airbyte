@@ -17,7 +17,7 @@ def mock_response():
 
 
 def test_list_users_extraction(mock_response):
-    mock_response.iter_lines.return_value = [b'user1@example.com', b'user2@example.com']
+    mock_response.iter_lines.return_value = [b"user1@example.com", b"user2@example.com"]
 
     extractor = ListUsersRecordExtractor(
         field_path=["getUsers"],
@@ -32,10 +32,7 @@ def test_list_users_extraction(mock_response):
 
 
 def test_xjson_extraction(mock_response):
-    mock_response.iter_lines.return_value = [
-        b'{"id": 1, "name": "Alice"}',
-        b'{"id": 2, "name": "Bob"}'
-    ]
+    mock_response.iter_lines.return_value = [b'{"id": 1, "name": "Alice"}', b'{"id": 2, "name": "Bob"}']
 
     extractor = XJsonRecordExtractor(
         field_path=["users"],
@@ -50,8 +47,10 @@ def test_xjson_extraction(mock_response):
 
 
 def test_events_extraction(mock_response):
-    mock_response.text = '{"itblInternal": 1, "_type": "event", "createdAt": "2024-03-21", "email": "user@example.com", "data": {"event_type": "click"}}\n' \
-                         '{"_type": "event", "createdAt": "2024-03-22", "data": {"event_type": "purchase"}}'
+    mock_response.text = (
+        '{"itblInternal": 1, "_type": "event", "createdAt": "2024-03-21", "email": "user@example.com", "data": {"event_type": "click"}}\n'
+        '{"_type": "event", "createdAt": "2024-03-22", "data": {"event_type": "purchase"}}'
+    )
 
     extractor = EventsRecordExtractor(
         field_path=["events"],
@@ -61,5 +60,17 @@ def test_events_extraction(mock_response):
     records = extractor.extract_records(mock_response)
 
     assert len(records) == 2
-    assert records[0] == {'_type': 'event', 'createdAt': '2024-03-21', 'data': {'data': {'event_type': 'click'}}, 'email': 'user@example.com', 'itblInternal': 1}
-    assert records[1] == {'_type': 'event', 'createdAt': '2024-03-22', 'data': {'data': {'event_type': 'purchase'}}, 'email': None, 'itblInternal': None}
+    assert records[0] == {
+        "_type": "event",
+        "createdAt": "2024-03-21",
+        "data": {"data": {"event_type": "click"}},
+        "email": "user@example.com",
+        "itblInternal": 1,
+    }
+    assert records[1] == {
+        "_type": "event",
+        "createdAt": "2024-03-22",
+        "data": {"data": {"event_type": "purchase"}},
+        "email": None,
+        "itblInternal": None,
+    }

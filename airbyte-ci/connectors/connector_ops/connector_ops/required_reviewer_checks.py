@@ -20,7 +20,7 @@ def find_changed_strategic_connectors(
         utils.ConnectorLanguage.JAVA,
         utils.ConnectorLanguage.LOW_CODE,
         utils.ConnectorLanguage.PYTHON,
-    )
+    ),
 ) -> Set[utils.Connector]:
     """Find important connectors modified on the current branch.
 

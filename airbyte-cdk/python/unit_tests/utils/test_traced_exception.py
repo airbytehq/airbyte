@@ -118,7 +118,9 @@ def test_given_both_init_and_as_message_with_stream_descriptor_when_as_airbyte_m
     assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
 
 
-def test_given_both_init_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+def test_given_both_init_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> (
+    None
+):
     traced_exc = AirbyteTracedException(stream_descriptor=_A_STREAM_DESCRIPTOR)
     message = traced_exc.as_sanitized_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
     assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
@@ -130,7 +132,9 @@ def test_given_both_from_exception_and_as_message_with_stream_descriptor_when_as
     assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
 
 
-def test_given_both_from_exception_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+def test_given_both_from_exception_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> (
+    None
+):
     traced_exc = AirbyteTracedException.from_exception(_AN_EXCEPTION, stream_descriptor=_A_STREAM_DESCRIPTOR)
     message = traced_exc.as_sanitized_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
     assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR

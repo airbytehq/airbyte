@@ -162,7 +162,6 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     minimum_days_until_deadline = 7
 
     def _run(self, connector: Connector) -> CheckResult:
-
         # fetch the current branch version of the connector first.
         # we'll try and see if there are any breaking changes associated
         # with it next.

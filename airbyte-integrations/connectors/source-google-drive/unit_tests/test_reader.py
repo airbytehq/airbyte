@@ -18,7 +18,7 @@ def create_reader(
         folder_url="https://drive.google.com/drive/folders/1Z2Q3",
         streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
         credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
-    )
+    ),
 ):
     reader = SourceGoogleDriveStreamReader()
     reader.config = config

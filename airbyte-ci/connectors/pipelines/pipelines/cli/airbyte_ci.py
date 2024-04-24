@@ -23,7 +23,11 @@ import asyncclick as click
 import docker  # type: ignore
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
+from pipelines.cli.auto_update import (
+    __installed_version__,
+    check_for_upgrade,
+    pre_confirm_auto_update_flag,
+)
 from pipelines.cli.click_decorators import (
     CI_REQUIREMENTS_OPTION_NAME,
     click_append_to_context_object,
@@ -142,23 +146,44 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.version_option(__installed_version__)
 @pre_confirm_all_flag
 @pre_confirm_auto_update_flag
-@click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option(
+    "--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default
+)
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
-@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
+@click.option(
+    "--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION"
+)
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
     default="origin/master",
     type=str,
 )
-@click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice([c for c in CIContext]))
-@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
+@click.option(
+    "--gha-workflow-run-id",
+    help="[CI Only] The run id of the GitHub action workflow",
+    default=None,
+    type=str,
+)
+@click.option(
+    "--ci-context",
+    default=CIContext.MANUAL,
+    envvar="CI_CONTEXT",
+    type=click.Choice([c for c in CIContext]),
+)
+@click.option(
+    "--pipeline-start-timestamp",
+    default=get_current_epoch_time,
+    envvar="CI_PIPELINE_START_TIMESTAMP",
+    type=int,
+)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
-@click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
+@click.option(
+    "--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str
+)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
@@ -170,8 +195,12 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     envvar="GCP_GSM_CREDENTIALS",
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
-@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
-@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
+@click.option(
+    "--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str
+)
+@click.option(
+    "--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str
+)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_ci_requirements_option()
 @click_track_command

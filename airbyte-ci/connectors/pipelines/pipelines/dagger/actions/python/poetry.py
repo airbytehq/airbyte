@@ -9,7 +9,10 @@ from typing import List, Optional
 import toml  # type: ignore
 from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.context import PipelineContext
-from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
+from pipelines.dagger.actions.python.common import (
+    with_pip_packages,
+    with_python_package,
+)
 from pipelines.dagger.actions.system.common import with_debian_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.utils import get_file_contents
@@ -39,7 +42,11 @@ async def find_local_dependencies_in_pyproject_toml(
     local_dependency_paths = []
     for value in pyproject_content["tool"]["poetry"]["dependencies"].values():
         if isinstance(value, dict) and "path" in value:
-            local_dependency_path = str((Path(pyproject_file_path) / Path(value["path"])).resolve().relative_to(Path.cwd()))
+            local_dependency_path = str(
+                (Path(pyproject_file_path) / Path(value["path"]))
+                .resolve()
+                .relative_to(Path.cwd())
+            )
             local_dependency_paths.append(local_dependency_path)
 
             # Ensure we parse the child dependencies
@@ -70,7 +77,9 @@ def with_poetry(context: PipelineContext) -> Container:
     return python_with_poetry
 
 
-def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
+def with_poetry_module(
+    context: PipelineContext, parent_dir: Directory, module_path: str
+) -> Container:
     """Sets up a Poetry module.
 
     Args:

@@ -70,8 +70,7 @@ MANIFEST = {
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
                 "cursor_field": "item_id",
             },
-            ""
-            "requester": {
+            "" "requester": {
                 "path": "/v3/marketing/lists",
                 "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                 "request_parameters": {"a_param": "10"},
@@ -119,8 +118,7 @@ OAUTH_MANIFEST = {
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
                 "cursor_field": "item_id",
             },
-            ""
-            "requester": {
+            "" "requester": {
                 "path": "/v3/marketing/lists",
                 "authenticator": {"type": "OAuthAuthenticator", "api_token": "{{ config.apikey }}"},
                 "request_parameters": {"a_param": "10"},

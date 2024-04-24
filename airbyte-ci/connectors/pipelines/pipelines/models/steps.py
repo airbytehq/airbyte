@@ -96,9 +96,13 @@ class StepResult(Result):
 
     def __post_init__(self) -> None:
         if self.stderr:
-            object.__setattr__(self, "stderr", self.redact_secrets_from_string(self.stderr))
+            object.__setattr__(
+                self, "stderr", self.redact_secrets_from_string(self.stderr)
+            )
         if self.stdout:
-            object.__setattr__(self, "stdout", self.redact_secrets_from_string(self.stdout))
+            object.__setattr__(
+                self, "stdout", self.redact_secrets_from_string(self.stdout)
+            )
 
     def redact_secrets_from_string(self, value: str) -> str:
         for secret in self.step.context.secrets_to_mask:
@@ -121,7 +125,6 @@ class CommandResult(Result):
 
 @dataclass(kw_only=True, frozen=True)
 class PoeTaskResult(Result):
-
     task_name: str
 
     def __repr__(self) -> str:  # noqa D105
@@ -139,7 +142,9 @@ class PoeTaskResult(Result):
         if self.status is StepStatus.FAILURE:
             logger.exception(self.exc_info)
         else:
-            logger.info(f"{self.status.get_emoji()} - Poe {self.task_name} - {self.status.value}")
+            logger.info(
+                f"{self.status.get_emoji()} - Poe {self.task_name} - {self.status.value}"
+            )
             if verbose:
                 if self.stdout:
                     for line in self.stdout.splitlines():
@@ -270,14 +275,20 @@ class Step(ABC):
     async def log_progress(self, completion_event: anyio.Event) -> None:
         """Log the step progress every 30 seconds until the step is done."""
         while not completion_event.is_set():
-            assert self.started_at is not None, "The step must be started before logging its progress."
+            assert (
+                self.started_at is not None
+            ), "The step must be started before logging its progress."
             duration = datetime.utcnow() - self.started_at
             elapsed_seconds = duration.total_seconds()
             if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
-                self.logger.info(f"⏳ Still running... (duration: {format_duration(duration)})")
+                self.logger.info(
+                    f"⏳ Still running... (duration: {format_duration(duration)})"
+                )
             await anyio.sleep(1)
 
-    async def run_with_completion(self, completion_event: anyio.Event, *args: Any, **kwargs: Any) -> StepResult:
+    async def run_with_completion(
+        self, completion_event: anyio.Event, *args: Any, **kwargs: Any
+    ) -> StepResult:
         """Run the step with a timeout and set the completion event when the step is done."""
         try:
             with anyio.fail_after(self.max_duration.total_seconds()):
@@ -286,7 +297,9 @@ class Step(ABC):
             return result
         except TimeoutError:
             self.retry_count = self.max_retries + 1
-            self.logger.error(f"🚨 {self.title} timed out after {self.max_duration}. No additional retry will happen.")
+            self.logger.error(
+                f"🚨 {self.title} timed out after {self.max_duration}. No additional retry will happen."
+            )
             completion_event.set()
             return self._get_timed_out_step_result()
 
@@ -304,28 +317,40 @@ class Step(ABC):
         completion_event = anyio.Event()
         try:
             async with asyncer.create_task_group() as task_group:
-                soon_result = task_group.soonify(self.run_with_completion)(completion_event, *args, **kwargs)
+                soon_result = task_group.soonify(self.run_with_completion)(
+                    completion_event, *args, **kwargs
+                )
                 task_group.soonify(self.log_progress)(completion_event)
             step_result = soon_result.value
         except DaggerError as e:
             self.logger.error("Step failed with an unexpected dagger error", exc_info=e)
-            step_result = StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
+            step_result = StepResult(
+                step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e
+            )
 
         self.stopped_at = datetime.utcnow()
         self.log_step_result(step_result)
 
         lets_retry = self.should_retry(step_result)
-        step_result = await self.retry(step_result, *args, **kwargs) if lets_retry else step_result
+        step_result = (
+            await self.retry(step_result, *args, **kwargs)
+            if lets_retry
+            else step_result
+        )
         return step_result
 
     def should_retry(self, step_result: StepResult) -> bool:
         """Return True if the step should be retried."""
         if step_result.status is not StepStatus.FAILURE:
             return False
-        max_retries = self.max_dagger_error_retries if step_result.exc_info else self.max_retries
+        max_retries = (
+            self.max_dagger_error_retries if step_result.exc_info else self.max_retries
+        )
         return self.retry_count < max_retries and max_retries > 0
 
-    async def retry(self, step_result: StepResult, *args: Any, **kwargs: Any) -> StepResult:
+    async def retry(
+        self, step_result: StepResult, *args: Any, **kwargs: Any
+    ) -> StepResult:
         self.retry_count += 1
         self.logger.warn(
             f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
@@ -341,11 +366,17 @@ class Step(ABC):
         """
         duration = format_duration(self.run_duration)
         if result.status is StepStatus.FAILURE:
-            self.logger.info(f"{result.status.get_emoji()} failed (duration: {duration})")
+            self.logger.info(
+                f"{result.status.get_emoji()} failed (duration: {duration})"
+            )
         if result.status is StepStatus.SKIPPED:
-            self.logger.info(f"{result.status.get_emoji()} was skipped (duration: {duration})")
+            self.logger.info(
+                f"{result.status.get_emoji()} was skipped (duration: {duration})"
+            )
         if result.status is StepStatus.SUCCESS:
-            self.logger.info(f"{result.status.get_emoji()} was successful (duration: {duration})")
+            self.logger.info(
+                f"{result.status.get_emoji()} was successful (duration: {duration})"
+            )
 
     @abstractmethod
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
@@ -389,7 +420,9 @@ class Step(ABC):
         else:
             return StepStatus.FAILURE
 
-    async def get_step_result(self, container: Container, *args: Any, **kwargs: Any) -> StepResult:
+    async def get_step_result(
+        self, container: Container, *args: Any, **kwargs: Any
+    ) -> StepResult:
         """Concurrent retrieval of exit code, stdout and stdout of a container.
 
         Create a StepResult object from these objects.

@@ -355,7 +355,6 @@ def annotations_response():
 
 
 def test_annotations_stream(requests_mock, annotations_response, config):
-
     stream = Annotations(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
 
@@ -385,7 +384,6 @@ def revenue_response():
 
 
 def test_revenue_stream(requests_mock, revenue_response, config):
-
     stream = Revenue(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
 
@@ -417,7 +415,6 @@ def export_schema_response():
 
 
 def test_export_schema(requests_mock, export_schema_response, config):
-
     stream = ExportSchema(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_schema_response)
 
@@ -450,7 +447,6 @@ def export_response():
 
 
 def test_export_stream(requests_mock, export_response, config):
-
     stream = Export(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}

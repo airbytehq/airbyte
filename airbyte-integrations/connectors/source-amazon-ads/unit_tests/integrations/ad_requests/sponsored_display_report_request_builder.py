@@ -12,15 +12,24 @@ from .base_request_builder import AmazonAdsBaseRequestBuilder
 class SponsoredDisplayReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     @classmethod
     def _init_report_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_type: str, tactics: str, metrics: List[str], report_date: Optional[str] = None
+        cls,
+        client_id: str,
+        client_access_token: str,
+        profile_id: str,
+        report_type: str,
+        tactics: str,
+        metrics: List[str],
+        report_date: Optional[str] = None,
     ) -> "SponsoredDisplayReportRequestBuilder":
-        return cls(f"sd/{report_type}/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_tactics(tactics) \
-            .with_metrics(metrics) \
+        return (
+            cls(f"sd/{report_type}/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_tactics(tactics)
+            .with_metrics(metrics)
             .with_report_date(report_date)
+        )
 
     @classmethod
     def init_campaigns_report_endpoint(
@@ -62,7 +71,7 @@ class SponsoredDisplayReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         return None
 
     @property
-    def request_body(self) ->Optional[str]:
+    def request_body(self) -> Optional[str]:
         body: dict = OrderedDict()
         if self._report_date:
             body["reportDate"] = self._report_date

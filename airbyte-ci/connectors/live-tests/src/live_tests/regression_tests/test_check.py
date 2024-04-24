@@ -34,7 +34,10 @@ async def test_check_passes_on_both_versions(
 
     def is_successful_check(execution_result: ExecutionResult) -> bool:
         for message in execution_result.airbyte_messages:
-            if message.type is Type.CONNECTION_STATUS and message.connectionStatus.status is Status.SUCCEEDED:
+            if (
+                message.type is Type.CONNECTION_STATUS
+                and message.connectionStatus.status is Status.SUCCEEDED
+            ):
                 return True
         return False
 
@@ -44,14 +47,22 @@ async def test_check_passes_on_both_versions(
     if not successful_control_check:
         record_property(
             f"Control CHECK standard output [Last {MAX_LINES_IN_REPORT} lines]",
-            tail_file(check_control_execution_result.stdout_file_path, n=MAX_LINES_IN_REPORT),
+            tail_file(
+                check_control_execution_result.stdout_file_path, n=MAX_LINES_IN_REPORT
+            ),
         )
-        error_messages.append("The control check did not succeed, we cannot compare the results.")
+        error_messages.append(
+            "The control check did not succeed, we cannot compare the results."
+        )
     if not successful_target_check:
         record_property(
             f"Target CHECK standard output  [Last {MAX_LINES_IN_REPORT} lines]",
-            tail_file(check_target_execution_result.stdout_file_path, n=MAX_LINES_IN_REPORT),
+            tail_file(
+                check_target_execution_result.stdout_file_path, n=MAX_LINES_IN_REPORT
+            ),
         )
-        error_messages.append("The target check did not succeed. Check the test artifacts for more information.")
+        error_messages.append(
+            "The target check did not succeed. Check the test artifacts for more information."
+        )
     if error_messages:
         pytest.fail("\n".join(error_messages))

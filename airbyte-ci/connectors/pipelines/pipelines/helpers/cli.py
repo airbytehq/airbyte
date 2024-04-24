@@ -51,7 +51,10 @@ class LogOptions:
 
 
 def log_command_results(
-    ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()
+    ctx: click.Context,
+    command_results: List[CommandResult],
+    logger: Logger,
+    options: LogOptions = LogOptions(),
 ) -> None:
     """
     Log the output of the subcommands run by `run_all_subcommands`.
@@ -70,7 +73,9 @@ def log_command_results(
         logger.info(options.help_message)
 
 
-async def invoke_commands_concurrently(ctx: click.Context, commands: List[click.Command]) -> List[Any]:
+async def invoke_commands_concurrently(
+    ctx: click.Context, commands: List[click.Command]
+) -> List[Any]:
     """
     Run click commands concurrently and return a list of their return values.
     """
@@ -78,12 +83,16 @@ async def invoke_commands_concurrently(ctx: click.Context, commands: List[click.
     soon_command_executions_results = []
     async with asyncer.create_task_group() as command_task_group:
         for command in commands:
-            soon_command_execution_result = command_task_group.soonify(command.invoke)(ctx)
+            soon_command_execution_result = command_task_group.soonify(command.invoke)(
+                ctx
+            )
             soon_command_executions_results.append(soon_command_execution_result)
     return [r.value for r in soon_command_executions_results]
 
 
-async def invoke_commands_sequentially(ctx: click.Context, commands: List[click.Command]) -> List[Any]:
+async def invoke_commands_sequentially(
+    ctx: click.Context, commands: List[click.Command]
+) -> List[Any]:
     """
     Run click commands sequentially and return a list of their return values.
     """
@@ -97,4 +106,6 @@ def get_all_sibling_commands(ctx: click.Context) -> List[click.Command]:
     """
     Get all sibling commands of the current command.
     """
-    return [c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name]  # type: ignore
+    return [
+        c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name
+    ]  # type: ignore

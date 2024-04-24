@@ -31,7 +31,10 @@ from pipelines.models.steps import STEP_PARAMS
 @click.option(
     "--code-tests-only",
     is_flag=True,
-    help=("Only execute code tests. " "Metadata checks, QA, and acceptance tests will be skipped."),
+    help=(
+        "Only execute code tests. "
+        "Metadata checks, QA, and acceptance tests will be skipped."
+    ),
     default=False,
     type=bool,
 )
@@ -66,7 +69,10 @@ from pipelines.models.steps import STEP_PARAMS
     help="Only run specific step by name. Can be used multiple times to keep multiple steps.",
 )
 @click.argument(
-    "extra_params", nargs=-1, type=click.UNPROCESSED, callback=argument_parsing.build_extra_params_mapping(CONNECTOR_TEST_STEP_ID)
+    "extra_params",
+    nargs=-1,
+    type=click.UNPROCESSED,
+    callback=argument_parsing.build_extra_params_mapping(CONNECTOR_TEST_STEP_ID),
 )
 @click.pass_context
 async def test(
@@ -84,7 +90,9 @@ async def test(
         ctx (click.Context): The click context.
     """
     if only_steps and skip_steps:
-        raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
+        raise click.UsageError(
+            "Cannot use both --only-step and --skip-step at the same time."
+        )
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 
@@ -140,15 +148,22 @@ async def test(
             ctx.obj["execute_timeout"],
         )
     except Exception as e:
-        main_logger.error("An error occurred while running the test pipeline", exc_info=e)
+        main_logger.error(
+            "An error occurred while running the test pipeline", exc_info=e
+        )
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
 
     @ctx.call_on_close
     def send_commit_status_check() -> None:
         if ctx.obj["is_ci"]:
-            global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
-            update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+            global_success = all(
+                connector_context.state is ContextState.SUCCESSFUL
+                for connector_context in connectors_tests_contexts
+            )
+            update_global_commit_status_check_for_tests(
+                ctx.obj, "success" if global_success else "failure"
+            )
 
     # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
     return True

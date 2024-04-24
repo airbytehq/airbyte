@@ -15,12 +15,10 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
 class PivotalTrackerStream(HttpStream, ABC):
-
     url_base = "https://www.pivotaltracker.com/services/v5/"
     primary_key = "id"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-
         headers = response.headers
         if "X-Tracker-Pagination-Total" not in headers:
             return None  # not paginating

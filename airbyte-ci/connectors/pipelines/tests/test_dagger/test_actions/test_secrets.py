@@ -16,7 +16,9 @@ async def test_load_from_local_directory_not_exists(mocker, tmp_path):
     context.connector.code_directory = tmp_path
     result = await secrets.load_from_local(context)
     assert result == {}
-    context.logger.warning.assert_called_with(f"Local secrets directory {tmp_path / 'secrets'} does not exist, no secrets will be loaded.")
+    context.logger.warning.assert_called_with(
+        f"Local secrets directory {tmp_path / 'secrets'} does not exist, no secrets will be loaded."
+    )
 
 
 async def test_load_from_local_empty_directory(mocker, tmp_path):
@@ -28,7 +30,9 @@ async def test_load_from_local_empty_directory(mocker, tmp_path):
     result = await secrets.load_from_local(context)
 
     assert result == {}
-    context.logger.warning.assert_called_with(f"Local secrets directory {secrets_dir} is empty, no secrets will be loaded.")
+    context.logger.warning.assert_called_with(
+        f"Local secrets directory {secrets_dir} is empty, no secrets will be loaded."
+    )
 
 
 async def test_load_from_local_with_secrets(mocker, tmp_path, dagger_client):
@@ -45,7 +49,9 @@ async def test_load_from_local_with_secrets(mocker, tmp_path, dagger_client):
     context.connector.code_directory = tmp_path
 
     result = await secrets.load_from_local(context)
-    assert len(result) == 2, "All secrets should be loaded from the local secrets directory"
+    assert (
+        len(result) == 2
+    ), "All secrets should be loaded from the local secrets directory"
     assert (
         await result["dummy_config_a.json"].plaintext() == first_dummy_config
     ), "The content of dummy_config_a.json should be loaded as a secret"

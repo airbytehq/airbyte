@@ -7,17 +7,31 @@ import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
-from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.airbyte_ci.connectors.publish.pipeline import (
+    reorder_contexts,
+    run_connector_publish_pipeline,
+)
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
+from pipelines.consts import (
+    DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
+    DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
+    ContextState,
+)
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
-@click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
+@click.command(
+    cls=DaggerPipelineCommand, help="Publish all images for the selected connectors."
+)
 @click_ci_requirements_option()
-@click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
+@click.option(
+    "--pre-release/--main-release",
+    help="Use this flag if you want to publish pre-release images.",
+    default=True,
+    type=bool,
+)
 @click.option(
     "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
@@ -129,7 +143,9 @@ async def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
-                s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+                s3_build_cache_access_key_id=ctx.obj.get(
+                    "s3_build_cache_access_key_id"
+                ),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
                 use_local_cdk=ctx.obj.get("use_local_cdk"),
                 python_registry_token=python_registry_token,
@@ -139,7 +155,9 @@ async def publish(
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
     )
-    main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
+    main_logger.warn(
+        "Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines."
+    )
     ctx.obj["concurrency"] = 1
 
     ran_publish_connector_contexts = await run_connectors_pipelines(
@@ -150,4 +168,7 @@ async def publish(
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
-    return all(context.state is ContextState.SUCCESSFUL for context in ran_publish_connector_contexts)
+    return all(
+        context.state is ContextState.SUCCESSFUL
+        for context in ran_publish_connector_contexts
+    )

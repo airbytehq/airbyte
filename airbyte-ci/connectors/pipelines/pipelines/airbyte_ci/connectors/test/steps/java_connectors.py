@@ -3,6 +3,7 @@
 #
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,7 +15,9 @@ from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorImages,
     dist_tar_directory_path,
 )
-from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
+from pipelines.airbyte_ci.connectors.build_image.steps.normalization import (
+    BuildOrPullNormalization,
+)
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
@@ -51,22 +54,36 @@ class IntegrationTests(GradleTask):
         }
 
     async def _load_normalization_image(self, normalization_tar_file: File) -> None:
-        normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
+        normalization_image_tag = (
+            f"{self.context.connector.normalization_repository}:dev"
+        )
         self.context.logger.info("Load the normalization image to the docker host.")
-        await docker.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
-        self.context.logger.info("Successfully loaded the normalization image to the docker host.")
+        await docker.load_image_to_docker_host(
+            self.context, normalization_tar_file, normalization_image_tag
+        )
+        self.context.logger.info(
+            "Successfully loaded the normalization image to the docker host."
+        )
 
     async def _load_connector_image(self, connector_tar_file: File) -> None:
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await docker.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
-        self.context.logger.info("Successfully loaded the connector image to the docker host.")
+        await docker.load_image_to_docker_host(
+            self.context, connector_tar_file, connector_image_tag
+        )
+        self.context.logger.info(
+            "Successfully loaded the connector image to the docker host."
+        )
 
-    async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:
+    async def _run(
+        self, connector_tar_file: File, normalization_tar_file: Optional[File]
+    ) -> StepResult:
         try:
             async with anyio.create_task_group() as tg:
                 if normalization_tar_file:
-                    tg.start_soon(self._load_normalization_image, normalization_tar_file)
+                    tg.start_soon(
+                        self._load_normalization_image, normalization_tar_file
+                    )
                 tg.start_soon(self._load_connector_image, connector_tar_file)
         except QueryError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
@@ -88,10 +105,13 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
     Create a function that can process the args for the integration step.
     """
 
-    async def _create_integration_step_args(results: RESULTS_DICT) -> Dict[str, Optional[File]]:
-
+    async def _create_integration_step_args(
+        results: RESULTS_DICT,
+    ) -> Dict[str, Optional[File]]:
         connector_container = results["build"].output[LOCAL_BUILD_PLATFORM]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
+        connector_image_tar_file, _ = await export_container_to_tarball(
+            context, connector_container, LOCAL_BUILD_PLATFORM
+        )
 
         if context.connector.supports_normalization:
             tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
@@ -99,23 +119,33 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
 
             normalization_container = build_normalization_results.output
             normalization_tar_file, _ = await export_container_to_tarball(
-                context, normalization_container, LOCAL_BUILD_PLATFORM, tar_file_name=tar_file_name
+                context,
+                normalization_container,
+                LOCAL_BUILD_PLATFORM,
+                tar_file_name=tar_file_name,
             )
         else:
             normalization_tar_file = None
 
-        return {"connector_tar_file": connector_image_tar_file, "normalization_tar_file": normalization_tar_file}
+        return {
+            "connector_tar_file": connector_image_tar_file,
+            "normalization_tar_file": normalization_tar_file,
+        }
 
     return _create_integration_step_args
 
 
 def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
     normalization_image = f"{context.connector.normalization_repository}:dev"
-    context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
+    context.logger.info(
+        f"This connector supports normalization: will build {normalization_image}."
+    )
     normalization_steps = [
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.BUILD_NORMALIZATION,
-            step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
+            step=BuildOrPullNormalization(
+                context, normalization_image, LOCAL_BUILD_PLATFORM
+            ),
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         )
     ]
@@ -138,7 +168,11 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+            args=lambda results: {
+                "connector_under_test_container": results[
+                    CONNECTOR_TEST_STEP_ID.BUILD
+                ].output[LOCAL_BUILD_PLATFORM]
+            },
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
     ]
@@ -150,14 +184,27 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
 
     steps: STEP_TREE = [
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.BUILD_TAR,
+                step=BuildConnectorDistributionTar(context),
+            )
+        ],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
+            )
+        ],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
                 args=lambda results: {
-                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output.directory(dist_tar_directory_path(context))
+                    "dist_dir": results[
+                        CONNECTOR_TEST_STEP_ID.BUILD_TAR
+                    ].output.directory(dist_tar_directory_path(context))
                 },
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),

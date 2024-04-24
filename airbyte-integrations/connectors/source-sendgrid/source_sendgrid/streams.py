@@ -159,9 +159,10 @@ class Contacts(SendgridStream):
 
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
-        with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        with (
+            closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response,
+            open(tmp_file, "wb") as data_file,
+        ):
             for chunk in response.iter_content(chunk_size=chunk_size):
                 try:
                     # see if it's compressed. we are seeing some that are not all of a sudden.

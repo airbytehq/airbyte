@@ -30,7 +30,6 @@ class TestChromaIndexer(unittest.TestCase):
         self.mock_client.get_collection = Mock()
 
     def test_valid_collection_name(self):
-
         test_configs = [
             ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
             (

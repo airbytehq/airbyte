@@ -1804,10 +1804,7 @@ def test_create_page_increment_with_interpolated_page_size():
         start_from_page=1,
         inject_on_first_request=True,
     )
-    config = {
-        **input_config,
-        "page_size": 5
-    }
+    config = {**input_config, "page_size": 5}
     expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
 
     strategy = factory.create_page_increment(model, config)
@@ -1839,10 +1836,9 @@ class MyCustomSchemaLoader(SchemaLoader):
 
 
 def test_create_custom_schema_loader():
-
     definition = {
         "type": "CustomSchemaLoader",
-        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader",
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
@@ -1867,12 +1863,9 @@ def test_create_custom_schema_loader():
                 "algorithm": "HS256",
                 "base64_encode_secret_key": False,
                 "token_duration": 1200,
-                "jwt_headers": {
-                    "typ": "JWT",
-                    "alg": "HS256"
-                },
-                "jwt_payload": {}
-            }
+                "jwt_headers": {"typ": "JWT", "alg": "HS256"},
+                "jwt_payload": {},
+            },
         ),
         (
             {
@@ -1914,7 +1907,6 @@ def test_create_custom_schema_loader():
                     "alg": "RS256",
                     "cty": "JWT",
                     "test": "test custom header",
-
                 },
                 "jwt_payload": {
                     "iss": "test iss",
@@ -1922,7 +1914,7 @@ def test_create_custom_schema_loader():
                     "aud": "test aud",
                     "test": "test custom payload",
                 },
-            }
+            },
         ),
         (
             {
@@ -1947,12 +1939,11 @@ def test_create_custom_schema_loader():
                     "typ": "JWT",
                     "alg": "HS256",
                     "custom_header": "custom header value",
-
                 },
                 "jwt_payload": {
                     "custom_payload": "custom payload value",
                 },
-            }
+            },
         ),
         (
             {
@@ -1966,7 +1957,7 @@ def test_create_custom_schema_loader():
             """,
             {
                 "expect_error": True,
-            }
+            },
         ),
     ],
 )
@@ -1983,9 +1974,7 @@ def test_create_jwt_authenticator(config, manifest, expected):
             )
         return
 
-    authenticator = factory.create_component(
-        model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
-    )
+    authenticator = factory.create_component(model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config)
 
     assert isinstance(authenticator, JwtAuthenticator)
     assert authenticator._secret_key.eval(config) == expected["secret_key"]
@@ -1996,9 +1985,11 @@ def test_create_jwt_authenticator(config, manifest, expected):
         assert authenticator._header_prefix.eval(config) == expected["header_prefix"]
     assert authenticator._get_jwt_headers() == expected["jwt_headers"]
     jwt_payload = expected["jwt_payload"]
-    jwt_payload.update({
-        "iat": int(datetime.datetime.now().timestamp()),
-        "nbf": int(datetime.datetime.now().timestamp()),
-        "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"]
-    })
+    jwt_payload.update(
+        {
+            "iat": int(datetime.datetime.now().timestamp()),
+            "nbf": int(datetime.datetime.now().timestamp()),
+            "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"],
+        }
+    )
     assert authenticator._get_jwt_payload() == jwt_payload

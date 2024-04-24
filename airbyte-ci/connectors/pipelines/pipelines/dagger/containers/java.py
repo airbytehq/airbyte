@@ -6,23 +6,35 @@ from dagger import CacheVolume, Container, File, Platform
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
-from pipelines.dagger.actions.connector.normalization import DESTINATION_NORMALIZATION_BUILD_CONFIGURATION, with_normalization
+from pipelines.dagger.actions.connector.normalization import (
+    DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
+    with_normalization,
+)
 from pipelines.helpers.utils import sh_dash_c
 
 
-def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:
+def with_integration_base(
+    context: PipelineContext, build_platform: Platform
+) -> Container:
     return (
         context.dagger_client.container(platform=build_platform)
         .from_("amazonlinux:2022.0.20220831.1")
         .with_workdir("/airbyte")
-        .with_file("base.sh", context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh"))
+        .with_file(
+            "base.sh",
+            context.get_repo_dir(
+                "airbyte-integrations/bases/base", include=["base.sh"]
+            ).file("base.sh"),
+        )
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
         .with_label("io.airbyte.version", "0.1.0")
         .with_label("io.airbyte.name", "airbyte/integration-base")
     )
 
 
-def with_integration_base_java(context: PipelineContext, build_platform: Platform) -> Container:
+def with_integration_base_java(
+    context: PipelineContext, build_platform: Platform
+) -> Container:
     integration_base = with_integration_base(context, build_platform)
     yum_packages_to_install = [
         "tar",  # required to untar java connector binary distributions.
@@ -52,9 +64,17 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
         .with_directory("/airbyte", integration_base.directory("/airbyte"))
         .with_workdir("/airbyte")
         # Download a utility jar from the internet.
-        .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        .with_file(
+            "dd-java-agent.jar",
+            context.dagger_client.http("https://dtdg.co/latest-java-tracer"),
+        )
         # Copy javabase.sh from the git repo.
-        .with_file("javabase.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh"))
+        .with_file(
+            "javabase.sh",
+            context.get_repo_dir(
+                "airbyte-integrations/bases/base-java", include=["javabase.sh"]
+            ).file("javabase.sh"),
+        )
         # Set a bunch of env variables used by base.sh.
         .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
         .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
@@ -68,7 +88,9 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
-def with_integration_base_java_and_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
+def with_integration_base_java_and_normalization(
+    context: ConnectorContext, build_platform: Platform
+) -> Container:
     yum_packages_to_install = [
         "python3",
         "python3-devel",
@@ -77,12 +99,18 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
         "git",
     ]
 
-    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[
+        context.connector.technical_name
+    ]["yum_packages"]
     yum_packages_to_install += additional_yum_packages
 
-    dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[
+        context.connector.technical_name
+    ]["dbt_adapter"]
     assert isinstance(dbt_adapter_package, str)
-    normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
+    normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[
+        context.connector.technical_name
+    ]["integration_name"]
     assert isinstance(normalization_integration_name, str)
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
@@ -114,7 +142,10 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
                 ]
             )
         )
-        .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
+        .with_directory(
+            "airbyte_normalization",
+            with_normalization(context, build_platform).directory("/airbyte"),
+        )
         .with_workdir("airbyte_normalization")
         .with_exec(sh_dash_c(["mv * .."]))
         .with_workdir("/airbyte")
@@ -126,16 +157,21 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
         .with_workdir("/airbyte")
         .with_file(
             "run_with_normalization.sh",
-            context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file(
-                "run_with_normalization.sh"
-            ),
+            context.get_repo_dir(
+                "airbyte-integrations/bases/base-java",
+                include=["run_with_normalization.sh"],
+            ).file("run_with_normalization.sh"),
         )
-        .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
+        .with_env_variable(
+            "AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name
+        )
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/run_with_normalization.sh")
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
+async def with_airbyte_java_connector(
+    context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform
+) -> Container:
     application = context.connector.technical_name
 
     build_stage = (
@@ -155,7 +191,9 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
     if (
         context.connector.supports_normalization
-        and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]
+        and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[
+            context.connector.technical_name
+        ]["supports_in_connector_normalization"]
     ):
         base = with_integration_base_java_and_normalization(context, build_platform)
         entrypoint = ["/airbyte/run_with_normalization.sh"]

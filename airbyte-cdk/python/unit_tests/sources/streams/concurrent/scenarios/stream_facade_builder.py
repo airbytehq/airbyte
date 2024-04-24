@@ -59,7 +59,12 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(
-            stream_instance_map={s.name: AirbyteStream(name=s.name, namespace=None, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]) for s in self._streams},
+            stream_instance_map={
+                s.name: AirbyteStream(
+                    name=s.name, namespace=None, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+                )
+                for s in self._streams
+            },
             state=self._state,
         )  # The input values into the AirbyteStream are dummy values; the connector state manager only uses `name` and `namespace`
 
@@ -81,10 +86,12 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     self._cursor_field,
                     self._cursor_boundaries,
                     None,
-                    EpochValueConcurrentStreamStateConverter.get_end_provider()
+                    EpochValueConcurrentStreamStateConverter.get_end_provider(),
                 )
                 if self._cursor_field
-                else FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+                else FinalStateCursor(
+                    stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
+                ),
             )
             for stream, state in zip(self._streams, stream_states)
         ]
@@ -136,6 +143,8 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         self._input_state = state
         return self
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> StreamFacadeSource:
+    def build(
+        self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]
+    ) -> StreamFacadeSource:
         threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
         return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, state)

@@ -3,6 +3,7 @@
 #
 
 """This module groups util function used in pipelines."""
+
 from __future__ import annotations
 
 import sys
@@ -35,12 +36,16 @@ class DaggerPipelineCommand(click.Command):
         dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
         try:
             if not ctx.obj["show_dagger_logs"]:
-                dagger_log_dir = Path(f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}")
+                dagger_log_dir = Path(
+                    f"{consts.LOCAL_REPORTS_PATH_ROOT}/{ctx.obj['report_output_prefix']}"
+                )
                 dagger_log_path = Path(f"{dagger_log_dir}/dagger.log").resolve()
                 ctx.obj["dagger_logs_path"] = dagger_log_path
                 main_logger.info(f"Saving dagger logs to: {dagger_log_path}")
                 if ctx.obj["is_ci"]:
-                    ctx.obj["dagger_logs_url"] = f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                    ctx.obj["dagger_logs_url"] = (
+                        f"{GCS_PUBLIC_DOMAIN}/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                    )
                 else:
                     ctx.obj["dagger_logs_url"] = None
             else:
@@ -54,12 +59,19 @@ class DaggerPipelineCommand(click.Command):
         finally:
             if ctx.obj.get("dagger_logs_path"):
                 if ctx.obj["is_local"]:
-                    main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
+                    main_logger.info(
+                        f"Dagger logs saved to {ctx.obj['dagger_logs_path']}"
+                    )
                 if ctx.obj["is_ci"]:
                     gcs_uri, public_url = upload_to_gcs(
-                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
+                        ctx.obj["dagger_logs_path"],
+                        ctx.obj["ci_report_bucket_name"],
+                        dagger_logs_gcs_key,
+                        ctx.obj["ci_gcs_credentials"],
                     )
-                    main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
+                    main_logger.info(
+                        f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}"
+                    )
 
     @staticmethod
     def render_report_output_prefix(ctx: click.Context) -> str:
@@ -98,7 +110,9 @@ class DaggerPipelineCommand(click.Command):
 
         # check all values are defined
         if None in path_values:
-            raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
+            raise ValueError(
+                f"Missing value required to render the report output prefix: {path_values}"
+            )
 
         # join all values with a slash, and convert all values to string
         return "/".join(map(str, path_values))

@@ -59,25 +59,20 @@ def _invoices_response() -> HttpResponseBuilder:
     )
 
 
-def _read(
-    config_builder: ConfigBuilder,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
-) -> EntrypointOutput:
+def _read(config_builder: ConfigBuilder, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False) -> EntrypointOutput:
     return read(
         SourceHarvest(),
         config_builder.build(),
         CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
         state,
-        expecting_exception
+        expecting_exception,
     )
 
 
 class InvoicesTest(TestCase):
-
     def setUp(self) -> None:
         self._datetime_start_date = datetime.fromisoformat(_A_START_DATE)
-        self._string_formatted_start_date = self._datetime_start_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        self._string_formatted_start_date = self._datetime_start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @HttpMocker()
     def test_given_start_date_when_read_then_request_is_created_properly(self, http_mocker: HttpMocker):
@@ -89,7 +84,7 @@ class InvoicesTest(TestCase):
                     "updated_since": self._string_formatted_start_date,
                 },
             ),
-            _invoices_response().with_record(_an_invoice().with_id(_AN_INVOICE_ID)).build()
+            _invoices_response().with_record(_an_invoice().with_id(_AN_INVOICE_ID)).build(),
         )
         http_mocker.get(
             HttpRequest(
@@ -99,9 +94,14 @@ class InvoicesTest(TestCase):
                     "updated_since": self._string_formatted_start_date,
                 },
             ),
-            _invoices_response().with_record(_a_message()).build()
+            _invoices_response().with_record(_a_message()).build(),
         )
 
-        _read(ConfigBuilder().with_account_id(_AN_ACCOUNT_ID).with_api_token(_AN_API_KEY).with_replication_start_date(self._datetime_start_date))
+        _read(
+            ConfigBuilder()
+            .with_account_id(_AN_ACCOUNT_ID)
+            .with_api_token(_AN_API_KEY)
+            .with_replication_start_date(self._datetime_start_date)
+        )
 
         # endpoint is called

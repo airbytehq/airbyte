@@ -12,14 +12,22 @@ from .base_request_builder import AmazonAdsBaseRequestBuilder
 class SponsoredBrandsVideoReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     @classmethod
     def _init_report_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_type: str, metrics: List[str], report_date: Optional[str] = None
+        cls,
+        client_id: str,
+        client_access_token: str,
+        profile_id: str,
+        report_type: str,
+        metrics: List[str],
+        report_date: Optional[str] = None,
     ) -> "SponsoredBrandsVideoReportRequestBuilder":
-        return cls(f"v2/hsa/{report_type}/report") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_metrics(metrics) \
+        return (
+            cls(f"v2/hsa/{report_type}/report")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_metrics(metrics)
             .with_report_date(report_date)
+        )
 
     @classmethod
     def init_campaigns_report_endpoint(
@@ -49,7 +57,7 @@ class SponsoredBrandsVideoReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         return None
 
     @property
-    def request_body(self) ->Optional[str]:
+    def request_body(self) -> Optional[str]:
         body: dict = OrderedDict()
         if self._report_date:
             body["reportDate"] = self._report_date

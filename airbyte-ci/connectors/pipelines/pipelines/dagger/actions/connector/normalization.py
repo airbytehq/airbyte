@@ -67,11 +67,20 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
 }
 DESTINATION_NORMALIZATION_BUILD_CONFIGURATION: Dict[str, Dict[str, Any]] = {
     **BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()},
+    **{
+        f"{k}-strict-encrypt": v
+        for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()
+    },
 }
 
 
-def with_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
-    normalization_image_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
+def with_normalization(
+    context: ConnectorContext, build_platform: Platform
+) -> Container:
+    normalization_image_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[
+        context.connector.technical_name
+    ]["normalization_image"]
     assert isinstance(normalization_image_name, str)
-    return context.dagger_client.container(platform=build_platform).from_(normalization_image_name)
+    return context.dagger_client.container(platform=build_platform).from_(
+        normalization_image_name
+    )

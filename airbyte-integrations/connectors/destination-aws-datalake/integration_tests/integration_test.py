@@ -95,13 +95,13 @@ def test_check_invalid_aws_account_config(invalid_account_config: Mapping):
 
 
 def _state(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(
-        type=AirbyteStateType.STREAM,
-        stream=AirbyteStreamState(
-            stream_state=data,
-            stream_descriptor=StreamDescriptor(name=stream, namespace=None)
-        )
-    ))
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_state=data, stream_descriptor=StreamDescriptor(name=stream, namespace=None)),
+        ),
+    )
 
 
 def _record(stream: str, str_value: str, int_value: int, date_value: datetime) -> AirbyteMessage:

@@ -90,18 +90,20 @@ def test_job_state_completed(auth_config) -> None:
         ("bulk_successful_completed_response", 2, None, "gid://shopify/BulkOperation/4046733967549"),
         # method should raise AirbyteTracebackException, because the concurrent BULK Job is in progress
         (
-            "bulk_error_with_concurrent_job", 
-            1, 
-            ShopifyBulkExceptions.BulkJobConcurrentError, 
+            "bulk_error_with_concurrent_job",
+            1,
+            ShopifyBulkExceptions.BulkJobConcurrentError,
             "The BULK Job couldn't be created at this time, since another job is running",
         ),
     ],
     ids=[
         "regular concurrent request",
         "max atttempt reached",
-    ]
+    ],
 )
-def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected) -> None:
+def test_job_retry_on_concurrency(
+    request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected
+) -> None:
     stream = MetafieldOrders(auth_config)
     # patching concurent settings
     stream.job_manager.concurrent_max_retry = concurrent_max_retry
@@ -114,7 +116,6 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
     else:
         result = stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
         assert stream.job_manager.job_get_id(result) == expected
-
 
 
 @pytest.mark.parametrize(
@@ -157,14 +158,14 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
         result = stream.job_manager.job_check(test_job_status_response)
         assert expected == result
-        
+
 
 @pytest.mark.parametrize(
     "job_response, error_type, expected",
     [
         (
-            "bulk_successful_response_with_errors", 
-            ShopifyBulkExceptions.BulkJobUnknownError, 
+            "bulk_successful_response_with_errors",
+            ShopifyBulkExceptions.BulkJobUnknownError,
             "Could not validate the status of the BULK Job",
         ),
     ],
@@ -218,15 +219,14 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
     job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
     # test the state of the job isn't assigned
     assert stream.job_manager.job_state == None
-    
+
     # mocking the nested request call to retrieve the data from result URL
     stream.job_manager.job_id = job_id
     requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
-    
+
     # calling the sceario processing
     stream.job_manager.job_track_running()
     assert stream.job_manager.job_state == expected
-
 
 
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
@@ -308,10 +308,10 @@ def test_bulk_stream_parse_response(
 )
 def test_stream_slices(
     auth_config,
-    stream, 
-    stream_state, 
-    with_start_date, 
-    expected, 
+    stream,
+    stream_state,
+    with_start_date,
+    expected,
 ) -> None:
     # simulating `None` for `start_date` and `config migration`
     if not with_start_date:
@@ -323,7 +323,7 @@ def test_stream_slices(
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
 
-    
+
 @pytest.mark.parametrize(
     "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
     [
@@ -332,7 +332,7 @@ def test_stream_slices(
     ids=[
         "Expand Slice Size",
     ],
-)   
+)
 def test_expand_stream_slices_job_size(
     request,
     requests_mock,
@@ -344,7 +344,6 @@ def test_expand_stream_slices_job_size(
     adjusted_slice_size,
     auth_config,
 ) -> None:
-    
     stream = stream(auth_config)
     # get the mocked job_result_url
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
@@ -358,7 +357,7 @@ def test_expand_stream_slices_job_size(
     # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
     # fake current slice interval value
     stream.job_manager.job_size = previous_slice_size
-    # fake `last job elapsed time` 
+    # fake `last job elapsed time`
     if last_job_elapsed_time:
         stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
     # parsing result from completed job

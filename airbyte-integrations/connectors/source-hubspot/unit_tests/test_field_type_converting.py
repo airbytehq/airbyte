@@ -37,7 +37,6 @@ def test_field_type_format_converting(field_type, expected):
     ],
 )
 def test_bad_field_type_converting(field_type, expected, caplog, capsys):
-
     assert Stream._get_field_props(field_type=field_type) == expected
 
     logs = caplog.records

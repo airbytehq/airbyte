@@ -16,7 +16,14 @@ PRE_CONFIRM_ALL_KEY = "yes"
 
 def pre_confirm_all_flag(f: Callable) -> Callable:
     """Decorator to add a --yes flag to a command."""
-    return click.option("-y", "--yes", PRE_CONFIRM_ALL_KEY, is_flag=True, default=False, help="Skip prompts and use default values")(f)
+    return click.option(
+        "-y",
+        "--yes",
+        PRE_CONFIRM_ALL_KEY,
+        is_flag=True,
+        default=False,
+        help="Skip prompts and use default values",
+    )(f)
 
 
 def confirm(*args: Any, **kwargs: Any) -> bool:

@@ -11,7 +11,9 @@ from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
+def get_connector_modified_files(
+    connector: Connector, all_modified_files: Set[Path]
+) -> FrozenSet[Path]:
     connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
@@ -21,14 +23,18 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
 
 
 def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
+    file_path: Union[str, Path],
+    all_connectors: Set[Connector],
+    dependency_scanning: bool = True,
 ) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = set()
 
     for connector in all_connectors:
         if Path(file_path).is_relative_to(Path(connector.code_directory)):
-            main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
+            main_logger.info(
+                f"Adding connector '{connector}' due to connector file modification: {file_path}."
+            )
             modified_connectors.add(connector)
 
         if dependency_scanning:
@@ -36,7 +42,9 @@ def _find_modified_connectors(
                 if Path(file_path).is_relative_to(Path(connector_dependency)):
                     # Add the connector to the modified connectors
                     modified_connectors.add(connector)
-                    main_logger.info(f"Adding connector '{connector}' due to dependency modification: '{file_path}'.")
+                    main_logger.info(
+                        f"Adding connector '{connector}' due to dependency modification: '{file_path}'."
+                    )
     return modified_connectors
 
 
@@ -45,7 +53,9 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
-def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
+def get_modified_connectors(
+    modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool
+) -> Set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
     If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
     It currently works only for Java connectors .
@@ -57,7 +67,11 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     modified_connectors = set()
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
-            modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
+            modified_connectors.update(
+                _find_modified_connectors(
+                    modified_file, all_connectors, dependency_scanning
+                )
+            )
     return modified_connectors
 
 

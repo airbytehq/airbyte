@@ -55,7 +55,9 @@ class TestLoadContainerToLocalDockerHost:
     async def test_run(self, dagger_client, test_context, platforms):
         """Test that the step runs successfully and that the image is loaded in the local docker host."""
         built_containers = {
-            platform: dagger_client.container(platform=platform).from_(f'{test_context.connector.metadata["dockerRepository"]}:latest')
+            platform: dagger_client.container(platform=platform).from_(
+                f'{test_context.connector.metadata["dockerRepository"]}:latest'
+            )
             for platform in platforms
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
@@ -80,49 +82,63 @@ class TestLoadContainerToLocalDockerHost:
             docker_client.images.get(full_image_name)
 
             # CI can't run docker arm64 containers
-            if platform is LOCAL_BUILD_PLATFORM or (os.environ.get("CI", "false").lower() != "true"):
+            if platform is LOCAL_BUILD_PLATFORM or (
+                os.environ.get("CI", "false").lower() != "true"
+            ):
                 docker_client.containers.run(full_image_name, "spec")
             docker_client.images.remove(full_image_name, force=True)
 
     async def test_run_export_failure(self, dagger_client, test_context, mocker):
         """Test that the step fails if the export of the container fails."""
         built_containers = {
-            LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+            LOCAL_BUILD_PLATFORM: dagger_client.container(
+                platform=LOCAL_BUILD_PLATFORM
+            ).from_(f'{test_context.connector.metadata["dockerRepository"]}:latest')
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
 
-        mocker.patch.object(common, "export_container_to_tarball", return_value=(None, None))
+        mocker.patch.object(
+            common, "export_container_to_tarball", return_value=(None, None)
+        )
         result = await step.run()
         assert result.status is StepStatus.FAILURE
         assert "Failed to export the connector image" in result.stderr
 
-    async def test_run_connection_error(self, dagger_client, test_context, bad_docker_host):
+    async def test_run_connection_error(
+        self, dagger_client, test_context, bad_docker_host
+    ):
         """Test that the step fails if the connection to the docker host fails."""
         built_containers = {
-            LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+            LOCAL_BUILD_PLATFORM: dagger_client.container(
+                platform=LOCAL_BUILD_PLATFORM
+            ).from_(f'{test_context.connector.metadata["dockerRepository"]}:latest')
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
         os.environ["DOCKER_HOST"] = bad_docker_host
         result = await step.run()
         assert result.status is StepStatus.FAILURE
-        assert "Something went wrong while interacting with the local docker client" in result.stderr
+        assert (
+            "Something went wrong while interacting with the local docker client"
+            in result.stderr
+        )
 
     async def test_run_import_failure(self, dagger_client, test_context, mocker):
         """Test that the step fails if the docker import of the tar fails."""
         built_containers = {
-            LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+            LOCAL_BUILD_PLATFORM: dagger_client.container(
+                platform=LOCAL_BUILD_PLATFORM
+            ).from_(f'{test_context.connector.metadata["dockerRepository"]}:latest')
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
         mock_docker_client = mocker.MagicMock()
         mock_docker_client.api.import_image_from_file.return_value = "bad response"
-        mock_docker_client.images.load.side_effect = docker.errors.DockerException("test error")
+        mock_docker_client.images.load.side_effect = docker.errors.DockerException(
+            "test error"
+        )
         mocker.patch.object(common.docker, "from_env", return_value=mock_docker_client)
         result = await step.run()
         assert result.status is StepStatus.FAILURE
-        assert "Something went wrong while interacting with the local docker client: test error" in result.stderr
+        assert (
+            "Something went wrong while interacting with the local docker client: test error"
+            in result.stderr
+        )

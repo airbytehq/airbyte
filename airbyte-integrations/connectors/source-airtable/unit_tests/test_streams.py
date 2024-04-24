@@ -11,7 +11,6 @@ from source_airtable.streams import URL_BASE, AirtableBases, AirtableStream, Air
 
 
 class TestBases:
-
     bases_instance = AirtableBases(authenticator=MagicMock())
 
     def test_url_base(self):
@@ -77,7 +76,6 @@ class TestBases:
 
 
 class TestTables:
-
     tables_instance = AirtableTables(base_id="test_base_id", authenticator=MagicMock())
 
     def test_path(self):

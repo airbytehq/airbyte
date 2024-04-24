@@ -17,7 +17,6 @@ from source_bing_ads.utils import transform_bulk_datetime_format_to_rfc_3339
 
 
 class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
-
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
     cursor_field = "Modified Time"
     primary_key = "Id"

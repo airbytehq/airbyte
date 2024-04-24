@@ -14,8 +14,13 @@ class BuildOrPullNormalization(Step):
     """A step to build or pull the normalization image for a connector according to the image name."""
 
     context: ConnectorContext
-    
-    def __init__(self, context: ConnectorContext, normalization_image: str, build_platform: Platform) -> None:
+
+    def __init__(
+        self,
+        context: ConnectorContext,
+        normalization_image: str,
+        build_platform: Platform,
+    ) -> None:
         """Initialize the step to build or pull the normalization image.
 
         Args:
@@ -29,11 +34,21 @@ class BuildOrPullNormalization(Step):
 
     @property
     def title(self) -> str:
-        return f"Build {self.normalization_image}" if self.use_dev_normalization else f"Pull {self.normalization_image}"
+        return (
+            f"Build {self.normalization_image}"
+            if self.use_dev_normalization
+            else f"Pull {self.normalization_image}"
+        )
 
     async def _run(self) -> StepResult:
         if self.use_dev_normalization:
-            build_normalization_container = normalization.with_normalization(self.context, self.build_platform)
+            build_normalization_container = normalization.with_normalization(
+                self.context, self.build_platform
+            )
         else:
-            build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
-        return StepResult(step=self, status=StepStatus.SUCCESS, output=build_normalization_container)
+            build_normalization_container = (
+                self.context.dagger_client.container().from_(self.normalization_image)
+            )
+        return StepResult(
+            step=self, status=StepStatus.SUCCESS, output=build_normalization_container
+        )

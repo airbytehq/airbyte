@@ -167,9 +167,7 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -253,9 +251,7 @@ class Data(BaseModel):
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
     )
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
     connectorSubtype: Literal[
         "api",
         "database",

@@ -8,7 +8,17 @@ from collections import defaultdict
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, MutableMapping, Optional, Set, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    MutableMapping,
+    Optional,
+    Set,
+    Tuple,
+)
 
 import requests
 import yaml
@@ -33,7 +43,9 @@ class ReportState(Enum):
 class Report:
     TEMPLATE_NAME = "report.html.j2"
 
-    SPEC_SECRET_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
+    SPEC_SECRET_MASK_URL = (
+        "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
+    )
 
     def __init__(self, path: Path, pytest_config: Config) -> None:
         self.path = path
@@ -57,20 +69,32 @@ class Report:
         self.updated_at = datetime.datetime.utcnow()
         self.render()
 
-    def add_control_execution_result(self, control_execution_result: ExecutionResult) -> None:
-        self.control_execution_results_per_command[control_execution_result.command] = control_execution_result
+    def add_control_execution_result(
+        self, control_execution_result: ExecutionResult
+    ) -> None:
+        self.control_execution_results_per_command[control_execution_result.command] = (
+            control_execution_result
+        )
         self.update()
 
-    def add_target_execution_result(self, target_execution_result: ExecutionResult) -> None:
-        self.target_execution_results_per_command[target_execution_result.command] = target_execution_result
+    def add_target_execution_result(
+        self, target_execution_result: ExecutionResult
+    ) -> None:
+        self.target_execution_results_per_command[target_execution_result.command] = (
+            target_execution_result
+        )
         self.update()
 
-    def add_test_result(self, test_report: pytest.TestReport, test_documentation: Optional[str] = None) -> None:
+    def add_test_result(
+        self, test_report: pytest.TestReport, test_documentation: Optional[str] = None
+    ) -> None:
         cut_properties: List[Tuple[str, str]] = []
         for property_name, property_value in test_report.user_properties:
             if len(str(property_value).splitlines()) > MAX_LINES_IN_REPORT:
                 cut_property_name = f"{property_name} (truncated)"
-                cut_property_value = "\n".join(str(property_value).splitlines()[:MAX_LINES_IN_REPORT])
+                cut_property_value = "\n".join(
+                    str(property_value).splitlines()[:MAX_LINES_IN_REPORT]
+                )
                 cut_property_value += f"\n... and {len(str(property_value).splitlines()) - MAX_LINES_IN_REPORT} more lines.\nPlease check the artifacts files for the full output."
                 cut_properties.append((cut_property_name, cut_property_value))
             else:
@@ -99,14 +123,18 @@ class Report:
             user=self.pytest_config.stash[stash_keys.USER],
             test_date=self.updated_at,
             connection_url=self.pytest_config.stash[stash_keys.CONNECTION_URL],
-            workspace_id=self.pytest_config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id,
+            workspace_id=self.pytest_config.stash[
+                stash_keys.CONNECTION_OBJECTS
+            ].workspace_id,
             connection_id=self.pytest_config.stash[stash_keys.CONNECTION_ID],
             connector_image=self.pytest_config.stash[stash_keys.CONNECTOR_IMAGE],
             control_version=self.pytest_config.stash[stash_keys.CONTROL_VERSION],
             target_version=self.pytest_config.stash[stash_keys.TARGET_VERSION],
             source_config=json.dumps(
                 self.scrub_secrets_from_config(
-                    deepcopy(self.connection_objects.source_config.data) if self.connection_objects.source_config else {}
+                    deepcopy(self.connection_objects.source_config.data)
+                    if self.connection_objects.source_config
+                    else {}
                 ),
                 indent=2,
             ),
@@ -117,7 +145,9 @@ class Report:
             configured_catalog=self.connection_objects.configured_catalog.json(indent=2)
             if self.connection_objects.configured_catalog
             else {},
-            catalog=self.connection_objects.catalog.json(indent=2) if self.connection_objects.catalog else {},
+            catalog=self.connection_objects.catalog.json(indent=2)
+            if self.connection_objects.catalog
+            else {},
             message_count_per_type=self.get_message_count_per_type(),
             stream_coverage_metrics=self.get_stream_coverage_metrics(),
             untested_streams=self.get_untested_streams(),
@@ -143,9 +173,15 @@ class Report:
     ### REPORT CONTENT HELPERS ###
     def get_stream_coverage_metrics(self) -> Dict[str, str]:
         configured_catalog_stream_count = (
-            len(self.connection_objects.configured_catalog.streams) if self.connection_objects.configured_catalog else 0
+            len(self.connection_objects.configured_catalog.streams)
+            if self.connection_objects.configured_catalog
+            else 0
         )
-        catalog_stream_count = len(self.connection_objects.catalog.streams) if self.connection_objects.catalog else 0
+        catalog_stream_count = (
+            len(self.connection_objects.catalog.streams)
+            if self.connection_objects.catalog
+            else 0
+        )
         return {
             "Available in catalog": str(catalog_stream_count),
             "In use (in configured catalog)": str(configured_catalog_stream_count),
@@ -155,7 +191,9 @@ class Report:
     def get_record_count_per_stream(
         self,
     ) -> Dict[Command, Dict[str, Dict[str, int] | int]]:
-        record_count_per_command_and_stream: Dict[Command, Dict[str, Dict[str, int] | int]] = {}
+        record_count_per_command_and_stream: Dict[
+            Command, Dict[str, Dict[str, int] | int]
+        ] = {}
 
         for control_result, target_result in zip(
             self.control_execution_results_per_command.values(),
@@ -169,10 +207,17 @@ class Report:
                 stream_schemas: Iterable = result.stream_schemas or []
 
                 for stream in stream_schemas:
-                    per_stream_count[stream][source] = sum(1 for _ in result.get_records_per_stream(stream))  # type: ignore
+                    per_stream_count[stream][source] = sum(
+                        1 for _ in result.get_records_per_stream(stream)
+                    )  # type: ignore
             for stream in per_stream_count:
-                per_stream_count[stream]["difference"] = per_stream_count[stream]["target"] - per_stream_count[stream]["control"]
-            record_count_per_command_and_stream[control_result.command] = per_stream_count  # type: ignore
+                per_stream_count[stream]["difference"] = (
+                    per_stream_count[stream]["target"]
+                    - per_stream_count[stream]["control"]
+                )
+            record_count_per_command_and_stream[control_result.command] = (
+                per_stream_count  # type: ignore
+            )
 
         return record_count_per_command_and_stream
 
@@ -181,9 +226,17 @@ class Report:
         for stream_count in self.get_record_count_per_stream().values():
             streams_with_data.update(stream_count.keys())
 
-        catalog_streams = self.connection_objects.catalog.streams if self.connection_objects.catalog else []
+        catalog_streams = (
+            self.connection_objects.catalog.streams
+            if self.connection_objects.catalog
+            else []
+        )
 
-        return [stream.name for stream in catalog_streams if stream.name not in streams_with_data]
+        return [
+            stream.name
+            for stream in catalog_streams
+            if stream.name not in streams_with_data
+        ]
 
     def get_selected_streams(self) -> Dict[str, Dict[str, SyncMode | bool]]:
         untested_streams = self.get_untested_streams()
@@ -211,7 +264,9 @@ class Report:
     def get_message_count_per_type(
         self,
     ) -> Tuple[List[Command], Dict[Type, Dict[Command, Dict[str, int]]]]:
-        message_count_per_type_and_command: Dict[Type, Dict[Command, Dict[str, int]]] = {}
+        message_count_per_type_and_command: Dict[
+            Type, Dict[Command, Dict[str, int]]
+        ] = {}
         all_message_types = set()
         all_commands = set()
         # Gather all message types from both control and target execution reports
@@ -221,11 +276,15 @@ class Report:
         ]:
             for command, execution_result in execution_results_per_command.items():
                 all_commands.add(command)
-                for message_type in execution_result.get_message_count_per_type().keys():
+                for (
+                    message_type
+                ) in execution_result.get_message_count_per_type().keys():
                     all_message_types.add(message_type)
 
         all_commands_sorted = sorted(all_commands, key=lambda command: command.value)
-        all_message_types_sorted = sorted(all_message_types, key=lambda message_type: message_type.value)
+        all_message_types_sorted = sorted(
+            all_message_types, key=lambda message_type: message_type.value
+        )
 
         # Iterate over all message types and commands to count messages
         for message_type in all_message_types_sorted:
@@ -236,16 +295,28 @@ class Report:
                     "target": 0,
                 }
                 if command in self.control_execution_results_per_command:
-                    message_count_per_type_and_command[message_type][command]["control"] = (
-                        self.control_execution_results_per_command[command].get_message_count_per_type().get(message_type, 0)
+                    message_count_per_type_and_command[message_type][command][
+                        "control"
+                    ] = (
+                        self.control_execution_results_per_command[command]
+                        .get_message_count_per_type()
+                        .get(message_type, 0)
                     )
                 if command in self.target_execution_results_per_command:
-                    message_count_per_type_and_command[message_type][command]["target"] = (
-                        self.target_execution_results_per_command[command].get_message_count_per_type().get(message_type, 0)
+                    message_count_per_type_and_command[message_type][command][
+                        "target"
+                    ] = (
+                        self.target_execution_results_per_command[command]
+                        .get_message_count_per_type()
+                        .get(message_type, 0)
                     )
-                message_count_per_type_and_command[message_type][command]["difference"] = (
+                message_count_per_type_and_command[message_type][command][
+                    "difference"
+                ] = (
                     message_count_per_type_and_command[message_type][command]["target"]
-                    - message_count_per_type_and_command[message_type][command]["control"]
+                    - message_count_per_type_and_command[message_type][command][
+                        "control"
+                    ]
                 )
         return all_commands_sorted, message_count_per_type_and_command
 
@@ -260,15 +331,31 @@ class Report:
         ):
             control_flow_count = len(control_result.http_flows)
             control_all_urls = [f.request.url for f in control_result.http_flows]
-            control_duplicate_flow_count = len(control_all_urls) - len(set(control_all_urls))
-            control_cache_hits_count = sum(1 for f in control_result.http_flows if f.is_replay)
-            control_cache_hit_ratio = f"{(control_cache_hits_count / control_flow_count) * 100:.2f}%" if control_flow_count != 0 else "N/A"
+            control_duplicate_flow_count = len(control_all_urls) - len(
+                set(control_all_urls)
+            )
+            control_cache_hits_count = sum(
+                1 for f in control_result.http_flows if f.is_replay
+            )
+            control_cache_hit_ratio = (
+                f"{(control_cache_hits_count / control_flow_count) * 100:.2f}%"
+                if control_flow_count != 0
+                else "N/A"
+            )
 
             target_flow_count = len(target_result.http_flows)
             target_all_urls = [f.request.url for f in target_result.http_flows]
-            target_duplicate_flow_count = len(target_all_urls) - len(set(target_all_urls))
-            target_cache_hits_count = sum(1 for f in target_result.http_flows if f.is_replay)
-            target_cache_hit_ratio = f"{(target_cache_hits_count / target_flow_count) * 100:.2f}%" if target_flow_count != 0 else "N/A"
+            target_duplicate_flow_count = len(target_all_urls) - len(
+                set(target_all_urls)
+            )
+            target_cache_hits_count = sum(
+                1 for f in target_result.http_flows if f.is_replay
+            )
+            target_cache_hit_ratio = (
+                f"{(target_cache_hits_count / target_flow_count) * 100:.2f}%"
+                if target_flow_count != 0
+                else "N/A"
+            )
 
             flow_count_difference = target_flow_count - control_flow_count
 
@@ -295,23 +382,35 @@ class Report:
     ) -> Dict[Command, List[Tuple[int, str, str]]]:
         requested_urls_per_command = {}
         all_commands = sorted(
-            list(set(self.control_execution_results_per_command.keys()).union(set(self.target_execution_results_per_command.keys()))),
+            list(
+                set(self.control_execution_results_per_command.keys()).union(
+                    set(self.target_execution_results_per_command.keys())
+                )
+            ),
             key=lambda command: command.value,
         )
         for command in all_commands:
             if command in self.control_execution_results_per_command:
-                control_flows = self.control_execution_results_per_command[command].http_flows
+                control_flows = self.control_execution_results_per_command[
+                    command
+                ].http_flows
             else:
                 control_flows = []
             if command in self.target_execution_results_per_command:
-                target_flows = self.target_execution_results_per_command[command].http_flows
+                target_flows = self.target_execution_results_per_command[
+                    command
+                ].http_flows
             else:
                 target_flows = []
             all_flows = []
             max_flows = max(len(control_flows), len(target_flows))
             for i in range(max_flows):
-                control_url = control_flows[i].request.url if i < len(control_flows) else ""
-                target_url = target_flows[i].request.url if i < len(target_flows) else ""
+                control_url = (
+                    control_flows[i].request.url if i < len(control_flows) else ""
+                )
+                target_url = (
+                    target_flows[i].request.url if i < len(target_flows) else ""
+                )
                 all_flows.append((i, control_url, target_url))
             requested_urls_per_command[command] = all_flows
         return requested_urls_per_command

@@ -144,7 +144,6 @@ def mock_parent_stream():
     ids=["no stream state", "successfully read parent record", "skip non_record AirbyteMessage"],
 )
 def test_read_parent_stream(mock_parent_stream, stream_state, parent_records, expected_slices):
-
     slicer = IncrementalSubstreamSlicer(
         config={},
         parameters={},
@@ -162,7 +161,6 @@ def test_read_parent_stream(mock_parent_stream, stream_state, parent_records, ex
 
 
 def test_set_initial_state():
-
     slicer = IncrementalSubstreamSlicer(
         config={},
         parameters={},

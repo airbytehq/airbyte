@@ -90,9 +90,9 @@ class MockConcurrentCursor(Cursor):
                 state=AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_descriptor=StreamDescriptor(name="__mock_stream", namespace=None),
                         stream_state=AirbyteStateBlob(**self._state),
-                    )
+                    ),
                 ),
             )
         )
@@ -146,7 +146,11 @@ def _stream_with_no_cursor_field(slice_to_partition_mapping, slice_logger, logge
 def test_full_refresh_read_a_single_slice_with_debug(constructor):
     # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
-    configured_stream = ConfiguredAirbyteStream(stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}), sync_mode=SyncMode.full_refresh,destination_sync_mode=DestinationSyncMode.overwrite)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
     internal_config = InternalConfig()
     records = [
         {"id": 1, "partition": 1},
@@ -180,9 +184,9 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
                 state=AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_descriptor=StreamDescriptor(name="__mock_stream", namespace=None),
                         stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
-                    )
+                    ),
                 ),
             ),
         )
@@ -206,7 +210,11 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 def test_full_refresh_read_a_single_slice(constructor):
     # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
-    configured_stream = ConfiguredAirbyteStream(stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}), sync_mode=SyncMode.full_refresh,destination_sync_mode=DestinationSyncMode.overwrite)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
     internal_config = InternalConfig()
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -232,9 +240,9 @@ def test_full_refresh_read_a_single_slice(constructor):
                 state=AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_descriptor=StreamDescriptor(name="__mock_stream", namespace=None),
                         stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
-                    )
+                    ),
                 ),
             ),
         )
@@ -259,7 +267,11 @@ def test_full_refresh_read_a_single_slice(constructor):
 def test_full_refresh_read_two_slices(constructor):
     # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object
     # It is done by running the same test cases on both streams
-    configured_stream = ConfiguredAirbyteStream(stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}), sync_mode=SyncMode.full_refresh,destination_sync_mode=DestinationSyncMode.overwrite)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema={}),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
     internal_config = InternalConfig()
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -292,9 +304,9 @@ def test_full_refresh_read_two_slices(constructor):
                 state=AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name='__mock_stream', namespace=None),
+                        stream_descriptor=StreamDescriptor(name="__mock_stream", namespace=None),
                         stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True),
-                    )
+                    ),
                 ),
             ),
         )
@@ -312,7 +324,11 @@ def test_full_refresh_read_two_slices(constructor):
 
 def test_incremental_read_two_slices():
     # This test verifies that a stream running in incremental mode emits state messages correctly
-    configured_stream = ConfiguredAirbyteStream(stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental], json_schema={}), sync_mode=SyncMode.incremental,destination_sync_mode=DestinationSyncMode.overwrite)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental], json_schema={}),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
     internal_config = InternalConfig()
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -335,7 +351,7 @@ def test_incremental_read_two_slices():
         *records_partition_1,
         _create_state_message("__mock_stream", {"created_at": timestamp}),
         *records_partition_2,
-        _create_state_message("__mock_stream", {"created_at": timestamp})
+        _create_state_message("__mock_stream", {"created_at": timestamp}),
     ]
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
@@ -347,7 +363,11 @@ def test_incremental_read_two_slices():
 
 def test_concurrent_incremental_read_two_slices():
     # This test verifies that an incremental concurrent stream manages state correctly for multiple slices syncing concurrently
-    configured_stream = ConfiguredAirbyteStream(stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental], json_schema={}), sync_mode=SyncMode.incremental,destination_sync_mode=DestinationSyncMode.overwrite)
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental], json_schema={}),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
     internal_config = InternalConfig()
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -373,7 +393,9 @@ def test_concurrent_incremental_read_two_slices():
         *records_partition_2,
     ]
 
-    expected_state = _create_state_message("__mock_stream", {"1": {"created_at": slice_timestamp_1}, "2": {"created_at": slice_timestamp_2}})
+    expected_state = _create_state_message(
+        "__mock_stream", {"1": {"created_at": slice_timestamp_1}, "2": {"created_at": slice_timestamp_2}}
+    )
 
     actual_records = _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
 
@@ -428,6 +450,6 @@ def _create_state_message(stream: str, state: Mapping[str, Any]) -> AirbyteMessa
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream, namespace=None),
                 stream_state=AirbyteStateBlob(**state),
-            )
+            ),
         ),
     )

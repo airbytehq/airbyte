@@ -462,10 +462,10 @@ def test_get_shared_drive_object(
     ],
 )
 def test_drives_property(auth_type, user_principal_name):
-    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
-        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
-    ) as mock_one_drive_client:
-
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
+    ):
         # Setup for different authentication types
         config_mock = MagicMock(credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name))
 

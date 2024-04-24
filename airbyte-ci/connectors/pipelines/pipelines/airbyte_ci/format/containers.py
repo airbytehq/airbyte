@@ -5,7 +5,13 @@
 from typing import Any, Dict, List, Optional
 
 import dagger
-from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
+from pipelines.airbyte_ci.format.consts import (
+    CACHE_MOUNT_PATH,
+    DEFAULT_FORMAT_IGNORE_LIST,
+    REPO_MOUNT_PATH,
+    WARM_UP_INCLUSIONS,
+    Formatter,
+)
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers import cache_keys
 from pipelines.helpers.utils import sh_dash_c
@@ -53,7 +59,9 @@ def build_container(
 
     # Install any dependencies of the formatter
     if install_commands:
-        container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
+        container = container.with_exec(
+            sh_dash_c(install_commands), skip_entrypoint=True
+        )
 
     # Mount the relevant parts of the repository: the code to format and the formatting config
     # Exclude the default ignore list to keep things as small as possible.
@@ -61,7 +69,9 @@ def build_container(
     # contents to be overwritten. This is intentional and not a concern as the current file set is
     # a superset of the earlier one.
     if warmup_dir:
-        container = container.with_mounted_directory(REPO_MOUNT_PATH, dir_to_format.with_directory(".", warmup_dir))
+        container = container.with_mounted_directory(
+            REPO_MOUNT_PATH, dir_to_format.with_directory(".", warmup_dir)
+        )
     else:
         container = container.with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
     if cache_volume:
@@ -69,7 +79,9 @@ def build_container(
     return container
 
 
-def format_java_container(dagger_client: dagger.Client, java_code: dagger.Directory) -> dagger.Container:
+def format_java_container(
+    dagger_client: dagger.Client, java_code: dagger.Directory
+) -> dagger.Container:
     """
     Create a Maven container with spotless installed with mounted code to format and a cache volume.
     We warm up the container cache with the spotless configuration and dependencies.
@@ -98,20 +110,32 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
     )
 
 
-def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory, prettier_version: str = "3.0.3") -> dagger.Container:
+def format_js_container(
+    dagger_client: dagger.Client,
+    js_code: dagger.Directory,
+    prettier_version: str = "3.0.3",
+) -> dagger.Container:
     """Create a Node container with prettier installed with mounted code to format and a cache volume."""
     return build_container(
         dagger_client,
         base_image=NODE_IMAGE,
         dir_to_format=js_code,
         install_commands=[f"npm install -g npm@10.1.0 prettier@{prettier_version}"],
-        cache_volume=dagger_client.cache_volume(cache_keys.get_prettier_cache_key(prettier_version)),
+        cache_volume=dagger_client.cache_volume(
+            cache_keys.get_prettier_cache_key(prettier_version)
+        ),
     )
 
 
-def format_license_container(dagger_client: dagger.Client, license_code: dagger.Directory) -> dagger.Container:
+def format_license_container(
+    dagger_client: dagger.Client, license_code: dagger.Directory
+) -> dagger.Container:
     """Create a Go container with addlicense installed with mounted code to format."""
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.LICENSE], exclude=DEFAULT_FORMAT_IGNORE_LIST)
+    warmup_dir = dagger_client.host().directory(
+        ".",
+        include=WARM_UP_INCLUSIONS[Formatter.LICENSE],
+        exclude=DEFAULT_FORMAT_IGNORE_LIST,
+    )
     return build_container(
         dagger_client,
         base_image=GO_IMAGE,
@@ -128,7 +152,11 @@ def format_python_container(
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """
 
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=DEFAULT_FORMAT_IGNORE_LIST)
+    warmup_dir = dagger_client.host().directory(
+        ".",
+        include=WARM_UP_INCLUSIONS[Formatter.PYTHON],
+        exclude=DEFAULT_FORMAT_IGNORE_LIST,
+    )
     return build_container(
         dagger_client,
         base_image=PYTHON_3_10_IMAGE,
@@ -140,5 +168,5 @@ def format_python_container(
             "poetry install --no-root",
         ],
         dir_to_format=python_code,
-        warmup_dir=warmup_dir
+        warmup_dir=warmup_dir,
     )

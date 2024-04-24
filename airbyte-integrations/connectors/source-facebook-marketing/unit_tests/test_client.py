@@ -106,7 +106,9 @@ class TestBackoff:
         except FacebookRequestError:
             pytest.fail("Call rate error has not being handled")
 
-    def test_given_rate_limit_reached_when_read_then_raise_transient_traced_exception(self, requests_mock, api, fb_call_rate_response, account_id, some_config):
+    def test_given_rate_limit_reached_when_read_then_raise_transient_traced_exception(
+        self, requests_mock, api, fb_call_rate_response, account_id, some_config
+    ):
         requests_mock.register_uri(
             "GET",
             FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",

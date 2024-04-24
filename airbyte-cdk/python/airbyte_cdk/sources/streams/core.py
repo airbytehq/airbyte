@@ -373,7 +373,9 @@ class Stream(ABC):
         # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(
-                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
+                self.name,
+                self.namespace,
+                self.state,  # type: ignore # we know the field might not exist...
             )
 
         except AttributeError:

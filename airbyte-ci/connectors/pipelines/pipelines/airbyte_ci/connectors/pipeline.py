@@ -3,6 +3,7 @@
 #
 
 """This module groups the functions to run full pipelines for connector testing."""
+
 from __future__ import annotations
 
 import sys
@@ -51,7 +52,10 @@ async def context_to_step_result(context: PipelineContext) -> StepResult:
 # HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
 # TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline once Steps are refactored
 async def run_report_complete_pipeline(
-    dagger_client: dagger.Client, contexts: List[ConnectorContext] | List[PublishConnectorContext] | List[PipelineContext]
+    dagger_client: dagger.Client,
+    contexts: List[ConnectorContext]
+    | List[PublishConnectorContext]
+    | List[PipelineContext],
 ) -> None:
     """Create and Save a report representing the run of the encompassing pipeline.
 
@@ -92,15 +96,25 @@ async def run_connectors_pipelines(
     """Run a connector pipeline for all the connector contexts."""
 
     default_connectors_semaphore = anyio.Semaphore(concurrency)
-    dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
-    async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
+    dagger_logs_output = (
+        sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
+    )
+    async with dagger.Connection(
+        Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)
+    ) as dagger_client:
         docker_hub_username = contexts[0].docker_hub_username
         docker_hub_password = contexts[0].docker_hub_password
 
         if docker_hub_username and docker_hub_password:
-            docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_hub_username)
-            docker_hub_password_secret = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_hub_password)
-            dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username_secret, docker_hub_password_secret)
+            docker_hub_username_secret = dagger_client.set_secret(
+                "DOCKER_HUB_USERNAME", docker_hub_username
+            )
+            docker_hub_password_secret = dagger_client.set_secret(
+                "DOCKER_HUB_PASSWORD", docker_hub_password
+            )
+            dockerd_service = docker.with_global_dockerd_service(
+                dagger_client, docker_hub_username_secret, docker_hub_password_secret
+            )
         else:
             dockerd_service = docker.with_global_dockerd_service(dagger_client)
 
@@ -108,12 +122,16 @@ async def run_connectors_pipelines(
 
         async with anyio.create_task_group() as tg_connectors:
             for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
+                context.dagger_client = dagger_client.pipeline(
+                    f"{pipeline_name} - {context.connector.technical_name}"
+                )
                 context.dockerd_service = dockerd_service
                 tg_connectors.start_soon(
                     connector_pipeline,
                     context,
-                    CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
+                    CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(
+                        context.connector.language, default_connectors_semaphore
+                    ),
                     *args,
                 )
 

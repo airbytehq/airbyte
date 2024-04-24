@@ -75,19 +75,41 @@ def connector_context(sample_connector, dagger_client, current_platform):
 @pytest.mark.parametrize(
     "build_gradle_content, expected_build_gradle_content",
     [
-        (get_sample_build_gradle("1.2.3", "false"), get_sample_build_gradle("6.6.6", "false")),
-        (get_sample_build_gradle("1.2.3", "true"), get_sample_build_gradle("6.6.6", "false")),
-        (get_sample_build_gradle("6.6.6", "false"), get_sample_build_gradle("6.6.6", "false")),
-        (get_sample_build_gradle("6.6.6", "true"), get_sample_build_gradle("6.6.6", "false")),
-        (get_sample_build_gradle("7.0.0", "false"), get_sample_build_gradle("6.6.6", "false")),
-        (get_sample_build_gradle("7.0.0", "true"), get_sample_build_gradle("6.6.6", "false")),
+        (
+            get_sample_build_gradle("1.2.3", "false"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
+        (
+            get_sample_build_gradle("1.2.3", "true"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
+        (
+            get_sample_build_gradle("6.6.6", "false"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
+        (
+            get_sample_build_gradle("6.6.6", "true"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
+        (
+            get_sample_build_gradle("7.0.0", "false"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
+        (
+            get_sample_build_gradle("7.0.0", "true"),
+            get_sample_build_gradle("6.6.6", "false"),
+        ),
     ],
 )
 async def test_run_connector_cdk_upgrade_pipeline(
-    connector_context: ConnectorContext, build_gradle_content: str, expected_build_gradle_content: str
+    connector_context: ConnectorContext,
+    build_gradle_content: str,
+    expected_build_gradle_content: str,
 ):
     full_og_connector_dir = await connector_context.get_connector_dir()
-    updated_connector_dir = full_og_connector_dir.with_new_file("build.gradle", build_gradle_content)
+    updated_connector_dir = full_og_connector_dir.with_new_file(
+        "build.gradle", build_gradle_content
+    )
 
     # For this test, replace the actual connector dir with an updated version that sets the build.gradle contents
     connector_context.get_connector_dir = AsyncMock(return_value=updated_connector_dir)
@@ -99,7 +121,9 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert step_result.status == StepStatus.SUCCESS
 
     # Check that the resulting directory that got passed to the mocked diff method looks as expected
-    resulting_directory: Directory = await full_og_connector_dir.diff(updated_connector_dir.diff.call_args[0][0])
+    resulting_directory: Directory = await full_og_connector_dir.diff(
+        updated_connector_dir.diff.call_args[0][0]
+    )
     files = await resulting_directory.entries()
     # validate only build.gradle is changed
     assert files == ["build.gradle"]
@@ -111,7 +135,9 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert updated_connector_dir.diff.return_value.export.call_count == 1
 
 
-async def test_skip_connector_cdk_upgrade_pipeline_on_missing_build_gradle(connector_context: ConnectorContext):
+async def test_skip_connector_cdk_upgrade_pipeline_on_missing_build_gradle(
+    connector_context: ConnectorContext,
+):
     full_og_connector_dir = await connector_context.get_connector_dir()
     updated_connector_dir = full_og_connector_dir.without_file("build.gradle")
 
@@ -122,9 +148,13 @@ async def test_skip_connector_cdk_upgrade_pipeline_on_missing_build_gradle(conne
     assert step_result.status == StepStatus.FAILURE
 
 
-async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(connector_context: ConnectorContext):
+async def test_fail_connector_cdk_upgrade_pipeline_on_missing_airbyte_cdk(
+    connector_context: ConnectorContext,
+):
     full_og_connector_dir = await connector_context.get_connector_dir()
-    updated_connector_dir = full_og_connector_dir.with_new_file("build.gradle", get_sample_build_gradle("abc", "false"))
+    updated_connector_dir = full_og_connector_dir.with_new_file(
+        "build.gradle", get_sample_build_gradle("abc", "false")
+    )
 
     connector_context.get_connector_dir = AsyncMock(return_value=updated_connector_dir)
 

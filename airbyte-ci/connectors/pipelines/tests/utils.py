@@ -10,7 +10,9 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
 def pick_a_random_connector(
-    language: ConnectorLanguage = None, support_level: str = None, other_picked_connectors: list = None
+    language: ConnectorLanguage = None,
+    support_level: str = None,
+    other_picked_connectors: list = None,
 ) -> Connector:
     """Pick a random connector from the list of all connectors."""
     all_connectors = [c for c in list(ALL_CONNECTORS)]

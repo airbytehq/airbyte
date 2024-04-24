@@ -80,7 +80,6 @@ class DestinationAmazonSqs(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         # Required propeties
         queue_url = config["queue_url"]
         queue_region = config["region"]

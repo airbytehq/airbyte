@@ -141,7 +141,7 @@ def test_negative_day_delta():
         ("test_false_to_string", False, "false"),
         ("test_array_to_string", ["hello", "world"], '["hello", "world"]'),
         ("test_object_to_array", {"hello": "world"}, '{"hello": "world"}'),
-    ]
+    ],
 )
 def test_to_string(test_name, input_value, expected_output):
     interpolation = JinjaInterpolation()
@@ -253,7 +253,7 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
             id="test_now_utc_with_duration_and_format",
         ),
         pytest.param("{{ 1 | string }}", "1", id="test_int_to_string"),
-        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_array_to_string"),
+        pytest.param('{{ ["hello", "world"] | string }}', '["hello", "world"]', id="test_array_to_string"),
     ],
 )
 def test_macros_examples(template_string, expected_value):

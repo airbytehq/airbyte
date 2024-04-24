@@ -30,11 +30,15 @@ class TestStep:
 
     async def test_run_with_timeout(self, test_context):
         step = self.DummyStep(test_context)
-        step_result = await step.run(run_duration=step.max_duration - timedelta(seconds=1))
+        step_result = await step.run(
+            run_duration=step.max_duration - timedelta(seconds=1)
+        )
         assert step_result.status == steps.StepStatus.SUCCESS
         assert step.retry_count == 0
 
-        step_result = await step.run(run_duration=step.max_duration + timedelta(seconds=1))
+        step_result = await step.run(
+            run_duration=step.max_duration + timedelta(seconds=1)
+        )
         timed_out_step_result = step._get_timed_out_step_result()
         assert step_result.status == timed_out_step_result.status
         assert step_result.stdout == timed_out_step_result.stdout
@@ -60,14 +64,25 @@ class TestStep:
             (steps.StepStatus.FAILURE, None, 3, 0, True),
         ],
     )
-    async def test_run_with_retries(self, mocker, test_context, step_status, exc_info, max_retries, max_dagger_error_retries, expect_retry):
+    async def test_run_with_retries(
+        self,
+        mocker,
+        test_context,
+        step_status,
+        exc_info,
+        max_retries,
+        max_dagger_error_retries,
+        expect_retry,
+    ):
         step = self.DummyStep(test_context)
         step.max_dagger_error_retries = max_dagger_error_retries
         step.max_retries = max_retries
         step.max_duration = timedelta(seconds=60)
         step.retry_delay = timedelta(seconds=0)
         step._run = mocker.AsyncMock(
-            side_effect=[steps.StepResult(step=step, status=step_status, exc_info=exc_info)]
+            side_effect=[
+                steps.StepResult(step=step, status=step_status, exc_info=exc_info)
+            ]
             * (max(max_dagger_error_retries, max_retries) + 1)
         )
 
@@ -88,23 +103,35 @@ class TestReport:
     def test_report_failed_if_it_has_no_step_result(self, test_context):
         report = reports.Report(test_context, [])
         assert not report.success
-        report = reports.Report(test_context, [steps.StepResult(step=None, status=steps.StepStatus.FAILURE)])
+        report = reports.Report(
+            test_context, [steps.StepResult(step=None, status=steps.StepStatus.FAILURE)]
+        )
         assert not report.success
 
         report = reports.Report(
             test_context,
-            [steps.StepResult(step=None, status=steps.StepStatus.FAILURE), steps.StepResult(step=None, status=steps.StepStatus.SUCCESS)],
+            [
+                steps.StepResult(step=None, status=steps.StepStatus.FAILURE),
+                steps.StepResult(step=None, status=steps.StepStatus.SUCCESS),
+            ],
         )
         assert not report.success
 
-        report = reports.Report(test_context, [steps.StepResult(step=None, status=steps.StepStatus.SUCCESS)])
+        report = reports.Report(
+            test_context, [steps.StepResult(step=None, status=steps.StepStatus.SUCCESS)]
+        )
         assert report.success
 
         report = reports.Report(
             test_context,
-            [steps.StepResult(step=None, status=steps.StepStatus.SUCCESS), steps.StepResult(step=None, status=steps.StepStatus.SKIPPED)],
+            [
+                steps.StepResult(step=None, status=steps.StepStatus.SUCCESS),
+                steps.StepResult(step=None, status=steps.StepStatus.SKIPPED),
+            ],
         )
         assert report.success
 
-        report = reports.Report(test_context, [steps.StepResult(step=None, status=steps.StepStatus.SKIPPED)])
+        report = reports.Report(
+            test_context, [steps.StepResult(step=None, status=steps.StepStatus.SKIPPED)]
+        )
         assert report.success

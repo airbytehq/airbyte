@@ -102,10 +102,7 @@ class ConcurrentCursorStateTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            {
-                "slices": [{"end": 0, "start": 0}, {"end": 30, "start": 12}],
-                "state_type": "date-range"
-            },
+            {"slices": [{"end": 0, "start": 0}, {"end": 30, "start": 12}], "state_type": "date-range"},
         )
 
     def test_given_boundary_fields_when_close_partition_then_emit_updated_state(self) -> None:
@@ -197,7 +194,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -225,7 +222,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -254,7 +251,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 10},
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 15, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -283,7 +280,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -316,7 +313,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 30},
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 40, EpochValueConcurrentStreamStateConverter.END_KEY: 50},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -346,7 +343,7 @@ class ConcurrentCursorStateTest(TestCase):
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 10},
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 20, EpochValueConcurrentStreamStateConverter.END_KEY: 25},
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 30, EpochValueConcurrentStreamStateConverter.END_KEY: 40},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -378,7 +375,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 30, EpochValueConcurrentStreamStateConverter.END_KEY: 40},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,
@@ -407,7 +404,7 @@ class ConcurrentCursorStateTest(TestCase):
                 "state_type": ConcurrencyCompatibleStateType.date_range.value,
                 "slices": [
                     {EpochValueConcurrentStreamStateConverter.START_KEY: 10, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
-                ]
+                ],
             },
             self._message_repository,
             self._state_manager,

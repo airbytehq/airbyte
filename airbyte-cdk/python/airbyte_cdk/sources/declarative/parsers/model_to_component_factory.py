@@ -340,7 +340,9 @@ class ModelToComponentFactory:
         if not hasattr(partition_router, "parent_stream_configs"):
             raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
 
-        return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
+        return LegacyToPerPartitionStateMigration(
+            declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters
+        )  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any

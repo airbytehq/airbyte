@@ -29,7 +29,14 @@ class TestGradleTask:
             secrets_to_mask=[],
             dagger_client=dagger_client,
             connector=pipelines.helpers.connectors.modifed.ConnectorWithModifiedFiles(
-                "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")})
+                "source-postgres",
+                frozenset(
+                    {
+                        Path(
+                            "airbyte-integrations/connectors/source-postgres/metadata.yaml"
+                        )
+                    }
+                ),
             ),
         )
 

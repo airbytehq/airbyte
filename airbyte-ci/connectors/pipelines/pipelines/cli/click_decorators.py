@@ -16,7 +16,10 @@ CI_REQUIREMENTS_OPTION_NAME = "--ci-requirements"
 
 
 def _contains_var_kwarg(f: Callable) -> bool:
-    return any(param.kind is inspect.Parameter.VAR_KEYWORD for param in inspect.signature(f).parameters.values())
+    return any(
+        param.kind is inspect.Parameter.VAR_KEYWORD
+        for param in inspect.signature(f).parameters.values()
+    )
 
 
 def _is_kwarg_of(key: str, f: Callable) -> bool:
@@ -24,7 +27,10 @@ def _is_kwarg_of(key: str, f: Callable) -> bool:
     if not param:
         return False
 
-    return bool(param) and (param.kind is inspect.Parameter.KEYWORD_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    return bool(param) and (
+        param.kind is inspect.Parameter.KEYWORD_ONLY
+        or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    )
 
 
 def click_ignore_unused_kwargs(f: Callable) -> Callable:
@@ -40,7 +46,9 @@ def click_ignore_unused_kwargs(f: Callable) -> Callable:
 
     @functools.wraps(f)
     def inner(*args: Any, **kwargs: Any) -> Callable:
-        filtered_kwargs = {key: value for key, value in kwargs.items() if _is_kwarg_of(key, f)}
+        filtered_kwargs = {
+            key: value for key, value in kwargs.items() if _is_kwarg_of(key, f)
+        }
         return f(*args, **filtered_kwargs)
 
     return inner
@@ -61,7 +69,9 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
         # Error if click_obj and click_params have the same key
         intersection = set(click_obj.keys()) & set(click_params.keys())
         if intersection:
-            raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
+            raise ValueError(
+                f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}"
+            )
 
         ctx.obj = {**click_obj, **click_params}
         return f(*args, **kwargs)

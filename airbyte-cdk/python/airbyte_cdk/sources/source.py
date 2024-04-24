@@ -17,12 +17,10 @@ TCatalog = TypeVar("TCatalog")
 
 class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]):
     @abstractmethod
-    def read_state(self, state_path: str) -> TState:
-        ...
+    def read_state(self, state_path: str) -> TState: ...
 
     @abstractmethod
-    def read_catalog(self, catalog_path: str) -> TCatalog:
-        ...
+    def read_catalog(self, catalog_path: str) -> TCatalog: ...
 
     @abstractmethod
     def read(self, logger: logging.Logger, config: TConfig, catalog: TCatalog, state: Optional[TState] = None) -> Iterable[AirbyteMessage]:

@@ -13,7 +13,6 @@ logger: logging.Logger = logging.getLogger("airbyte")
 
 
 class SchemaTypes:
-
     string: Dict = {"type": ["null", "string"]}
 
     number: Dict = {"type": ["null", "number"]}

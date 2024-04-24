@@ -27,7 +27,9 @@ class SourceBuilder(ABC, Generic[SourceType]):
     """
 
     @abstractmethod
-    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> SourceType:
+    def build(
+        self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]
+    ) -> SourceType:
         raise NotImplementedError()
 
 
@@ -90,7 +92,7 @@ class TestScenario(Generic[SourceType]):
                         "supported_sync_modes": [sync_mode.value],
                     },
                     "sync_mode": sync_mode.value,
-                    "destination_sync_mode": "append"
+                    "destination_sync_mode": "append",
                 }
             )
 

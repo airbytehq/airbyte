@@ -54,7 +54,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -512,7 +511,10 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                path=lambda self,
+                stream_slice,
+                *args,
+                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,

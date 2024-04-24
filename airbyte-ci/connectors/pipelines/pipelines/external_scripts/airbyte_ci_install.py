@@ -16,7 +16,9 @@ from typing import TYPE_CHECKING
 
 # !IMPORTANT! This constant is inline here instead of being imported from pipelines/consts.py
 # because we don't want to introduce any dependencies on other files in the repository.
-RELEASE_URL = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
+RELEASE_URL = os.getenv(
+    "RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases"
+)
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -97,7 +99,10 @@ def main(version: str = "latest") -> None:
         # Download the file using urllib.request
         print(f"Downloading from {url}")
         ssl_context = get_ssl_context()
-        with urllib.request.urlopen(url, context=ssl_context) as response, open(tmp_file, "wb") as out_file:
+        with (
+            urllib.request.urlopen(url, context=ssl_context) as response,
+            open(tmp_file, "wb") as out_file,
+        ):
             shutil.copyfileobj(response, out_file)
 
         # Check if the destination path is a symlink and delete it if it is

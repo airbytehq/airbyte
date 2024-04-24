@@ -20,7 +20,6 @@ SCOPES = [
 
 
 class GoogleSheetsClient:
-
     logger = AirbyteLogger()
 
     def __init__(self, config: Dict):

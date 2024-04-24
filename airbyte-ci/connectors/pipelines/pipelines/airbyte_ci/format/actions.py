@@ -6,7 +6,9 @@ from typing import List
 import dagger
 
 
-async def list_files_in_directory(dagger_client: dagger.Client, directory: dagger.Directory) -> List[str]:
+async def list_files_in_directory(
+    dagger_client: dagger.Client, directory: dagger.Directory
+) -> List[str]:
     """
     List all files in a directory.
     """

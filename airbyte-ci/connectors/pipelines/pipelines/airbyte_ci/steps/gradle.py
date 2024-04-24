@@ -33,10 +33,14 @@ class GradleTask(Step, ABC):
 
     GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
     GRADLE_HOME_PATH = "/root/.gradle"
-    STATIC_GRADLE_OPTIONS = ("--no-daemon", "--no-watch-fs", "--build-cache", "--scan", "--console=plain")
-    CDK_MAVEN_METADATA_URL = (
-        "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/airbyte-cdk-core/maven-metadata.xml"
+    STATIC_GRADLE_OPTIONS = (
+        "--no-daemon",
+        "--no-watch-fs",
+        "--build-cache",
+        "--scan",
+        "--console=plain",
     )
+    CDK_MAVEN_METADATA_URL = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/airbyte-cdk-core/maven-metadata.xml"
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
@@ -45,7 +49,9 @@ class GradleTask(Step, ABC):
 
     @property
     def gradle_task_options(self) -> Tuple[str, ...]:
-        return self.STATIC_GRADLE_OPTIONS + (f"-Ds3BuildCachePrefix={self.context.connector.technical_name}",)
+        return self.STATIC_GRADLE_OPTIONS + (
+            f"-Ds3BuildCachePrefix={self.context.connector.technical_name}",
+        )
 
     @property
     def dependency_cache_volume(self) -> CacheVolume:
@@ -63,10 +69,14 @@ class GradleTask(Step, ABC):
         """
         return [
             str(dependency_directory)
-            for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
+            for dependency_directory in self.context.connector.get_local_dependency_paths(
+                with_test_dependencies=True
+            )
         ]
 
-    def _get_gradle_command(self, task: str, *args: Any, task_options: Optional[List[str]] = None) -> str:
+    def _get_gradle_command(
+        self, task: str, *args: Any, task_options: Optional[List[str]] = None
+    ) -> str:
         task_options = task_options or []
         return f"./gradlew {' '.join(self.gradle_task_options + args)} {task} {' '.join(task_options)}"
 
@@ -75,7 +85,9 @@ class GradleTask(Step, ABC):
         response.raise_for_status()
         last_updated = ET.fromstring(response.text).find(".//lastUpdated")
         if last_updated is None or last_updated.text is None:
-            raise ValueError(f"Could not find the lastUpdated field in the CDK maven metadata at {self.CDK_MAVEN_METADATA_URL}")
+            raise ValueError(
+                f"Could not find the lastUpdated field in the CDK maven metadata at {self.CDK_MAVEN_METADATA_URL}"
+            )
         return last_updated.text
 
     async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
@@ -110,7 +122,11 @@ class GradleTask(Step, ABC):
             # Use a linux+jdk base image with long-term support, such as amazoncorretto.
             .from_(AMAZONCORRETTO_IMAGE)
             # Mount the dependency cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
-            .with_mounted_cache(self.GRADLE_DEP_CACHE_PATH, self.dependency_cache_volume, sharing=CacheSharingMode.LOCKED)
+            .with_mounted_cache(
+                self.GRADLE_DEP_CACHE_PATH,
+                self.dependency_cache_volume,
+                sharing=CacheSharingMode.LOCKED,
+            )
             # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
             .with_env_variable("GRADLE_HOME", self.GRADLE_HOME_PATH)
             # Same for GRADLE_USER_HOME.
@@ -144,16 +160,22 @@ class GradleTask(Step, ABC):
         # Augment the base container with S3 build cache secrets when available.
         if self.context.s3_build_cache_access_key_id_secret:
             gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
+                "S3_BUILD_CACHE_ACCESS_KEY_ID",
+                self.context.s3_build_cache_access_key_id_secret,
             )
             if self.context.s3_build_cache_secret_key_secret:
                 gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
+                    "S3_BUILD_CACHE_SECRET_KEY",
+                    self.context.s3_build_cache_secret_key_secret,
                 )
 
         # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
         # When the cache is cold, this downloads many gigabytes of jars and poms from all over the internet.
-        warm_dependency_cache_args = ["--write-verification-metadata", "sha256", "--dry-run"]
+        warm_dependency_cache_args = [
+            "--write-verification-metadata",
+            "sha256",
+            "--dry-run",
+        ]
         if self.context.is_local:
             # When running locally, this dependency update is slower and less useful than within a CI runner. Skip it.
             warm_dependency_cache_args = ["--dry-run"]
@@ -186,26 +208,44 @@ class GradleTask(Step, ABC):
         gradle_container = (
             gradle_container_base
             # Copy the gradle home directory and force evaluation of `with_whole_git_repo` container.
-            .with_directory(self.GRADLE_HOME_PATH, await with_whole_git_repo.directory(self.GRADLE_HOME_PATH))
+            .with_directory(
+                self.GRADLE_HOME_PATH,
+                await with_whole_git_repo.directory(self.GRADLE_HOME_PATH),
+            )
             # Mount the connector-agnostic whitelisted files in the git repo.
-            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
+            .with_mounted_directory(
+                "/airbyte", self.context.get_repo_dir(".", include=include)
+            )
             # Mount the sources for the connector and its dependencies in the git repo.
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
+            .with_mounted_directory(
+                str(self.context.connector.code_directory),
+                await self.context.get_connector_dir(),
+            )
         )
 
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
             secrets_dir = f"{self.context.connector.code_directory}/secrets"
-            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir))
+            gradle_container = gradle_container.with_(
+                await secrets.mounted_connector_secrets(self.context, secrets_dir)
+            )
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
-            gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
+            gradle_container = (
+                pipelines.dagger.actions.system.docker.with_bound_docker_host(
+                    self.context, gradle_container
+                )
+            )
             # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
-            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
+            gradle_container = gradle_container.with_exec(
+                ["yum", "install", "-y", "docker"]
+            )
 
         # Run the gradle task that we actually care about.
         connector_gradle_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_command = self._get_gradle_command(connector_gradle_task, task_options=self.params_as_cli_options)
+        gradle_command = self._get_gradle_command(
+            connector_gradle_task, task_options=self.params_as_cli_options
+        )
         gradle_container = gradle_container.with_(never_fail_exec([gradle_command]))
 
         # Collect the test artifacts, if applicable.
@@ -218,7 +258,9 @@ class GradleTask(Step, ABC):
 
         return await self.get_step_result(gradle_container, artifacts)
 
-    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:
+    async def get_step_result(
+        self, container: Container, outputs: List[Artifact]
+    ) -> StepResult:
         step_result = await super().get_step_result(container)
         # Decorate with test report, if applicable.
         return StepResult(
@@ -230,7 +272,9 @@ class GradleTask(Step, ABC):
             artifacts=outputs,
         )
 
-    async def _collect_test_logs(self, gradle_container: Container) -> Optional[Artifact]:
+    async def _collect_test_logs(
+        self, gradle_container: Container
+    ) -> Optional[Artifact]:
         """
         Exports the java docs from the container into the host filesystem.
         The docs in the container are expected to be in build/test-logs, and will end up test-artifact directory by default
@@ -242,17 +286,21 @@ class GradleTask(Step, ABC):
         )
         if (
             test_logs_dir_name_in_container
-            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+            not in await gradle_container.directory(
+                f"{self.context.connector.code_directory}/build"
+            ).entries()
         ):
-            self.context.logger.warn(f"No {test_logs_dir_name_in_container} found directory in the build folder")
+            self.context.logger.warn(
+                f"No {test_logs_dir_name_in_container} found directory in the build folder"
+            )
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
-                    test_logs_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(
+                    f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"
+                ),
+                test_logs_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_logs_dir_name_in_zip}.zip",
@@ -264,7 +312,9 @@ class GradleTask(Step, ABC):
             self.context.logger.error(str(e))
         return None
 
-    async def _collect_test_results(self, gradle_container: Container) -> Optional[Artifact]:
+    async def _collect_test_results(
+        self, gradle_container: Container
+    ) -> Optional[Artifact]:
         """
         Exports the junit test reports from the container into the host filesystem.
         The docs in the container are expected to be in build/test-results, and will end up test-artifact directory by default
@@ -277,17 +327,21 @@ class GradleTask(Step, ABC):
         )
         if (
             test_results_dir_name_in_container
-            not in await gradle_container.directory(f"{self.context.connector.code_directory}/build").entries()
+            not in await gradle_container.directory(
+                f"{self.context.connector.code_directory}/build"
+            ).entries()
         ):
-            self.context.logger.warn(f"No {test_results_dir_name_in_container} found directory in the build folder")
+            self.context.logger.warn(
+                f"No {test_results_dir_name_in_container} found directory in the build folder"
+            )
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
-                    test_results_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(
+                    f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"
+                ),
+                test_results_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_results_dir_name_in_zip}.zip",

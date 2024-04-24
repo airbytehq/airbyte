@@ -27,7 +27,9 @@ def initialize() -> None:
         )
 
 
-def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def before_send(
+    event: Dict[str, Any], hint: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
     # Ignore logged errors that do not contain an exception
     if "log_record" in hint and "exc_info" not in hint:
         return None

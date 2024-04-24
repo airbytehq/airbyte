@@ -141,13 +141,17 @@ class ConnectorContext(PipelineContext):
     @property
     def s3_build_cache_access_key_id_secret(self) -> Optional[Secret]:
         if self.s3_build_cache_access_key_id:
-            return self.dagger_client.set_secret("s3_build_cache_access_key_id", self.s3_build_cache_access_key_id)
+            return self.dagger_client.set_secret(
+                "s3_build_cache_access_key_id", self.s3_build_cache_access_key_id
+            )
         return None
 
     @property
     def s3_build_cache_secret_key_secret(self) -> Optional[Secret]:
         if self.s3_build_cache_access_key_id and self.s3_build_cache_secret_key:
-            return self.dagger_client.set_secret("s3_build_cache_secret_key", self.s3_build_cache_secret_key)
+            return self.dagger_client.set_secret(
+                "s3_build_cache_secret_key", self.s3_build_cache_secret_key
+            )
         return None
 
     @property
@@ -206,20 +210,26 @@ class ConnectorContext(PipelineContext):
     def docker_hub_username_secret(self) -> Optional[Secret]:
         if self.docker_hub_username is None:
             return None
-        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
+        return self.dagger_client.set_secret(
+            "docker_hub_username", self.docker_hub_username
+        )
 
     @property
     def docker_hub_password_secret(self) -> Optional[Secret]:
         if self.docker_hub_password is None:
             return None
-        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+        return self.dagger_client.set_secret(
+            "docker_hub_password", self.docker_hub_password
+        )
 
     async def get_connector_secrets(self) -> Dict[str, Secret]:
         if self._connector_secrets is None:
             self._connector_secrets = await secrets.get_connector_secrets(self)
         return self._connector_secrets
 
-    async def get_connector_dir(self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+    async def get_connector_dir(
+        self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None
+    ) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -229,11 +239,16 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+        vanilla_connector_dir = self.get_repo_dir(
+            str(self.connector.code_directory), exclude=exclude, include=include
+        )
         return await vanilla_connector_dir.with_timestamps(1)
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+        self,
+        exception_type: Optional[type[BaseException]],
+        exception_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the ConnectorContext.
 
@@ -252,9 +267,13 @@ class ConnectorContext(PipelineContext):
         self.stopped_at = datetime.utcnow()
         self.state = self.determine_final_state(self.report, exception_value)
         if exception_value:
-            self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
+            self.logger.error(
+                "An error got handled by the ConnectorContext", exc_info=True
+            )
         if self.report is None:
-            self.logger.error("No test report was provided. This is probably due to an upstream error")
+            self.logger.error(
+                "No test report was provided. This is probably due to an upstream error"
+            )
             self.report = ConnectorReport(self, [])
 
         if self.should_save_updated_secrets:
@@ -269,7 +288,11 @@ class ConnectorContext(PipelineContext):
 
         if self.should_send_slack_message:
             # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
+            await asyncify(send_message_to_webhook)(
+                self.create_slack_message(),
+                self.reporting_slack_channel,
+                self.slack_webhook,
+            )  # type: ignore
 
         # Supress the exception if any
         return True

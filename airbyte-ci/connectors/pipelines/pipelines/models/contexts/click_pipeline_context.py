@@ -28,7 +28,9 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     dockerd_service: Optional[dagger.Container] = Field(default=None)
     _dagger_client: Optional[dagger.Client] = PrivateAttr(default=None)
-    _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)
+    _click_context: Callable[[], Context] = PrivateAttr(
+        default_factory=lambda: get_current_context
+    )
     _og_click_context: Context = PrivateAttr(default=None)
 
     @property
@@ -79,15 +81,18 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> dagger.Client:
+    async def get_dagger_client(
+        self, pipeline_name: Optional[str] = None
+    ) -> dagger.Client:
         """
         Get (or initialize) the Dagger Client instance.
         """
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
-
-                    connection = dagger.Connection(dagger.Config(log_output=self.get_log_output()))
+                    connection = dagger.Connection(
+                        dagger.Config(log_output=self.get_log_output())
+                    )
                     """
                     Sets up the '_dagger_client' attribute, intended for single-threaded use within connectors.
 
@@ -95,10 +100,16 @@ class ClickPipelineContext(BaseModel, Singleton):
                         Avoid using this client across multiple thread pools, as it can lead to errors.
                         Cross-thread pool calls are generally considered an anti-pattern.
                     """
-                    self._dagger_client = await self._og_click_context.with_async_resource(connection)  # type: ignore
+                    self._dagger_client = (
+                        await self._og_click_context.with_async_resource(connection)
+                    )  # type: ignore
 
         assert self._dagger_client, "Error initializing Dagger client"
-        return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
+        return (
+            self._dagger_client.pipeline(pipeline_name)
+            if pipeline_name
+            else self._dagger_client
+        )
 
     def get_log_output(self) -> TextIO:
         # This `show_dagger_logs` flag is likely going to be removed in the future.
@@ -106,16 +117,22 @@ class ClickPipelineContext(BaseModel, Singleton):
         if self.params.get("show_dagger_logs", False):
             return sys.stdout
         else:
-            log_output, self._click_context().obj["dagger_logs_path"] = self._create_dagger_client_log_file()
+            log_output, self._click_context().obj["dagger_logs_path"] = (
+                self._create_dagger_client_log_file()
+            )
             return log_output
 
     def _create_dagger_client_log_file(self) -> Tuple[TextIO, Path]:
         """
         Create the dagger client log file.
         """
-        dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(dir="/tmp", prefix="dagger_client_", suffix=".log")
+        dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(
+            dir="/tmp", prefix="dagger_client_", suffix=".log"
+        )
         main_logger.info(f"Dagger client logs stored in {dagger_logs_temp_file_path}")
-        return io.TextIOWrapper(io.FileIO(dagger_logs_file_descriptor, "w+")), Path(dagger_logs_temp_file_path)
+        return io.TextIOWrapper(io.FileIO(dagger_logs_file_descriptor, "w+")), Path(
+            dagger_logs_temp_file_path
+        )
 
 
 # Create @pass_pipeline_context decorator for use in click commands

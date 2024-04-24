@@ -110,7 +110,7 @@ CONFIG_ERRORS = [
                     "code": 100,
                 }
             },
-        }
+        },
         # Error randomly happens for different connections.
         # Can be reproduced on https://developers.facebook.com/tools/explorer/?method=GET&path=act_<ad_account_id>&version=v17.0
         # 1st reason: incorrect ad account id is used
@@ -180,7 +180,7 @@ CONFIG_ERRORS = [
                     "error_user_msg": "profile should always be linked to delegate page",
                 }
             },
-        }
+        },
         # Error happens on Video stream: https://graph.facebook.com/v17.0/act_XXXXXXXXXXXXXXXX/advideos
         # Recommendations says that the problem can be fixed by switching to Business Ad Account Id
     ),
@@ -294,7 +294,7 @@ class TestRealErrors:
                             "code": 1,
                         }
                     },
-                }
+                },
                 # It can be a temporal problem:
                 # Happened during 'ad_account' stream sync which always returns only 1 record.
                 # Potentially could be caused by some particular field (list of requested fields is constant).
@@ -422,7 +422,7 @@ class TestRealErrors:
             assert friendly_msg in error.message
 
     def test_retry_for_cannot_include_error(self, requests_mock):
-        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868 """
+        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
@@ -440,7 +440,7 @@ class TestRealErrors:
                 "error": {
                     "message": "(#100) Cannot include video_avg_time_watched_actions, video_continuous_2_sec_watched_actions in summary param because they weren't there while creating the report run.",
                     "type": "OAuthException",
-                    "code": 100
+                    "code": 100,
                 }
             },
         }

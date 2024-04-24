@@ -57,12 +57,11 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
                     "access_token": "access_token",
                     "category": "Software company",
                     "id": f"act_{account_id}",
-                    "paging": {"cursors": {
-                        "before": "cursor",
-                        "after": "cursor"}},
+                    "paging": {"cursors": {"before": "cursor", "after": "cursor"}},
                     "summary": {"total_count": 1},
-                    "status_code": 200
-                }]
+                    "status_code": 200,
+                }
+            ]
         }
     }
 
@@ -107,11 +106,17 @@ def user_lifetime_insight_data_fixture():
     return {
         "name": "impressions",
         "period": "day",
-        "total_value": {"breakdowns": [
-            {"dimension_keys": ["city"], "results": [{"dimension_values": ["London, England"], "value": 22},
-                                                     {"dimension_values": ["Sydney, New South Wales"], "value": 33}
-                                                     ]}
-        ]},
+        "total_value": {
+            "breakdowns": [
+                {
+                    "dimension_keys": ["city"],
+                    "results": [
+                        {"dimension_values": ["London, England"], "value": 22},
+                        {"dimension_values": ["Sydney, New South Wales"], "value": 33},
+                    ],
+                }
+            ]
+        },
         "title": "Impressions",
         "description": "Total number of times this profile has been seen",
         "id": "17841400008460056/insights/impressions/day",

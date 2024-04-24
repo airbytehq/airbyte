@@ -25,7 +25,6 @@ def user_error(e: Exception) -> bool:
 
 
 class VectaraClient:
-
     BASE_URL = "https://api.vectara.io/v1"
 
     def __init__(self, config: VectaraConfig):
@@ -99,7 +98,6 @@ class VectaraClient:
 
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _request(self, endpoint: str, http_method: str = "POST", params: Mapping[str, Any] = None, data: Mapping[str, Any] = None):
-
         url = f"{self.BASE_URL}/{endpoint}"
 
         current_ts = datetime.datetime.now().timestamp()

@@ -26,13 +26,29 @@ DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE = (
     "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k",
 )
 
-ARGS_DISABLING_TUI = ["--no-tui", "--version", "publish", "upgrade-base-image", "--help", "format", "bump-version", "migrate-to-base-image"]
+ARGS_DISABLING_TUI = [
+    "--no-tui",
+    "--version",
+    "publish",
+    "upgrade-base-image",
+    "--help",
+    "format",
+    "bump-version",
+    "migrate-to-base-image",
+]
 
 
 def get_dagger_path() -> Optional[str]:
     try:
         return (
-            subprocess.run(["which", "dagger"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
+            subprocess.run(
+                ["which", "dagger"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            .stdout.decode("utf-8")
+            .strip()
         )
     except subprocess.CalledProcessError:
         if Path(BIN_DIR / "dagger").exists():
@@ -61,7 +77,14 @@ def get_dagger_cli_version(dagger_path: Optional[str]) -> Optional[str]:
     if not dagger_path:
         return None
     version_output = (
-        subprocess.run([dagger_path, "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
+        subprocess.run(
+            [dagger_path, "version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        .stdout.decode("utf-8")
+        .strip()
     )
     version_pattern = r"v(\d+\.\d+\.\d+)"
 
@@ -82,10 +105,14 @@ def check_dagger_cli_install() -> str:
     expected_dagger_cli_version = get_current_dagger_sdk_version()
     dagger_path = get_dagger_path()
     if dagger_path is None:
-        LOGGER.info(f"The Dagger CLI is not installed. Installing {expected_dagger_cli_version}...")
+        LOGGER.info(
+            f"The Dagger CLI is not installed. Installing {expected_dagger_cli_version}..."
+        )
         install_dagger_cli(expected_dagger_cli_version)
         dagger_path = get_dagger_path()
-        assert dagger_path is not None, "Dagger CLI installation failed, dagger not found in path"
+        assert (
+            dagger_path is not None
+        ), "Dagger CLI installation failed, dagger not found in path"
 
     cli_version = get_dagger_cli_version(dagger_path)
     if cli_version != expected_dagger_cli_version:
@@ -109,7 +136,9 @@ def call_current_command_with_dagger_run() -> None:
     # We're enabling telemetry only for local runs.
     # CI runs already have telemetry as DAGGER_CLOUD_TOKEN env var is set on the CI.
     if (os.environ.get("AIRBYTE_ROLE") == "airbyter") and not os.environ.get("CI"):
-        os.environ[DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE[1]
+        os.environ[DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE[0]] = (
+            DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE[1]
+        )
 
     exit_code = 0
     dagger_path = check_dagger_cli_install()

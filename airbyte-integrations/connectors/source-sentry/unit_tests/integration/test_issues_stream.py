@@ -31,10 +31,9 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"query": "lastSeen:>1900-01-01T00:00:00.0Z"}
+                query_params={"query": "lastSeen:>1900-01-01T00:00:00.0Z"},
             ),
-            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200)
-
+            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200),
         )
         # https://sentry.io/api/1/projects/airbyte-09/airbyte-09/issues/?query=lastSeen%3A%3E2022-01-01T00%3A00%3A00.0Z
         output = read(SourceSentry(), self.config(), self.catalog())
@@ -45,10 +44,9 @@ class TestEvents(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://sentry.io/api/0/projects/test%20organization/test%20project/issues/",
-                query_params={"query": "lastSeen:>2023-01-01T00:00:00.0Z"}
+                query_params={"query": "lastSeen:>2023-01-01T00:00:00.0Z"},
             ),
-            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200)
-
+            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200),
         )
         output = read(SourceSentry(), self.config(), self.catalog(SyncMode.incremental), self.state())
         assert len(output.records) == 2

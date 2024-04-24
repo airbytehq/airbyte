@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
+
 def records_per_slice(parent_records: List[Mapping[str, Any]], state_checkpoint_interval) -> List[int]:
     num_batches = len(parent_records) // state_checkpoint_interval
     if len(parent_records) % state_checkpoint_interval != 0:
@@ -22,6 +23,7 @@ def records_per_slice(parent_records: List[Mapping[str, Any]], state_checkpoint_
     result = [records_per_slice] * (num_batches - remaining_elements) + [records_per_slice + 1] * remaining_elements
     result.reverse()
     return result
+
 
 @pytest.fixture
 def logger():
@@ -700,49 +702,49 @@ def inventory_items_response_expected_result():
 @pytest.fixture
 def customer_address_parse_response_expected_result():
     return [
-    {
-        "address1": "My Best Accent",
-        "address2": "",
-        "city": "Fair Lawn",
-        "country": "United States",
-        "country_code": "US",
-        "company": "Test Company",
-        "first_name": "New Test",
-        "id": 123,
-        "last_name": "Customer",
-        "name": "New Test Customer",
-        "phone": "",
-        "province": "New Jersey",
-        "province_code": "NJ",
-        "zip": "07410",
-        "customer_id": 123,
-        "country_name": "United States",
-        "default": True,
-        "updated_at": "2023-04-24T13:53:48+00:00",
-        "shop_url": "test_shop"
-    },
-    {
-        "address1": None,
-        "address2": None,
-        "city": None,
-        "country": None,
-        "country_code": None,
-        "company": None,
-        "first_name": "MArcos",
-        "id": 456,
-        "last_name": "Millnitz",
-        "name": "MArcos Millnitz",
-        "phone": None,
-        "province": None,
-        "province_code": None,
-        "zip": None,
-        "customer_id": 456,
-        "country_name": None,
-        "default": True,
-        "updated_at": "2023-07-11T20:07:45+00:00",
-        "shop_url": "test_shop"
-    }
-]
+        {
+            "address1": "My Best Accent",
+            "address2": "",
+            "city": "Fair Lawn",
+            "country": "United States",
+            "country_code": "US",
+            "company": "Test Company",
+            "first_name": "New Test",
+            "id": 123,
+            "last_name": "Customer",
+            "name": "New Test Customer",
+            "phone": "",
+            "province": "New Jersey",
+            "province_code": "NJ",
+            "zip": "07410",
+            "customer_id": 123,
+            "country_name": "United States",
+            "default": True,
+            "updated_at": "2023-04-24T13:53:48+00:00",
+            "shop_url": "test_shop",
+        },
+        {
+            "address1": None,
+            "address2": None,
+            "city": None,
+            "country": None,
+            "country_code": None,
+            "company": None,
+            "first_name": "MArcos",
+            "id": 456,
+            "last_name": "Millnitz",
+            "name": "MArcos Millnitz",
+            "phone": None,
+            "province": None,
+            "province_code": None,
+            "zip": None,
+            "customer_id": 456,
+            "country_name": None,
+            "default": True,
+            "updated_at": "2023-07-11T20:07:45+00:00",
+            "shop_url": "test_shop",
+        },
+    ]
 
 
 @pytest.fixture

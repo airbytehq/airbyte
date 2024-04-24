@@ -377,7 +377,8 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
             [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}],
             200,
             {},
-            "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"),
+            "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm",
+        ),
         (
             200,
             {"access_token": "access_token", "instance_url": "https://instance_url"},
@@ -814,7 +815,6 @@ def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, s
     ],
 )
 def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
-
     stream = generate_stream("Account", stream_config, stream_api)
     url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query/queryJobId"
     requests_mock.register_uri(
@@ -905,18 +905,24 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     # assert request params: has requests might not be performed in a specific order because of concurrent CDK, we match on any request
     all_requests = {request.text for request in queries_history.request_history}
-    assert any([
-        "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
-        in request for request in all_requests
-    ])
-    assert any([
-        "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00"
-        in request for request in all_requests
-    ])
-    assert any([
-        "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00"
-        in request for request in all_requests
-    ])
+    assert any(
+        [
+            "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00" in request
+            for request in all_requests
+        ]
+    )
+    assert any(
+        [
+            "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00" in request
+            for request in all_requests
+        ]
+    )
+    assert any(
+        [
+            "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in request
+            for request in all_requests
+        ]
+    )
 
     # as the execution is concurrent, we can only assert the last state message here
     last_actual_state = [item.state.stream.stream_state.dict() for item in result if item.type == Type.STATE][-1]

@@ -35,6 +35,6 @@ class TypesenseWriter:
         for stream, data in self.write_buffer:
             grouped_by_stream[stream].append(data)
 
-        for (stream, data) in grouped_by_stream.items():
+        for stream, data in grouped_by_stream.items():
             self.client.collections[stream].documents.import_(data)
         self.write_buffer.clear()

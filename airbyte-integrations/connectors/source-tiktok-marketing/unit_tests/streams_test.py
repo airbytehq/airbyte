@@ -236,7 +236,6 @@ def test_request_params():
 
 def test_get_updated_state():
     with patch.object(Ads, "is_finished", new_callable=PropertyMock) as is_finished:
-
         ads = Ads(**CONFIG_SANDBOX)
 
         # initial state.

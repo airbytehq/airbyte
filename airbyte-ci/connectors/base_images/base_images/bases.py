@@ -3,6 +3,7 @@
 #
 
 """This module declares common (abstract) classes and methods used by all base images."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

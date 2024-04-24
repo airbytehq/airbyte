@@ -20,17 +20,24 @@ def get_build_customization_module(connector: Connector) -> Optional[ModuleType]
     Returns:
         Optional[ModuleType]: The build_customization.py module if it exists, None otherwise.
     """
-    build_customization_spec_path = connector.code_directory / BUILD_CUSTOMIZATION_SPEC_NAME
+    build_customization_spec_path = (
+        connector.code_directory / BUILD_CUSTOMIZATION_SPEC_NAME
+    )
 
-    if not build_customization_spec_path.exists() or not (build_customization_spec := importlib.util.spec_from_file_location(
-        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
-    )):
+    if not build_customization_spec_path.exists() or not (
+        build_customization_spec := importlib.util.spec_from_file_location(
+            f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}",
+            build_customization_spec_path,
+        )
+    ):
         return None
 
     if build_customization_spec.loader is None:
         return None
 
-    build_customization_module = importlib.util.module_from_spec(build_customization_spec)
+    build_customization_module = importlib.util.module_from_spec(
+        build_customization_spec
+    )
     build_customization_spec.loader.exec_module(build_customization_module)
     return build_customization_module
 
@@ -48,7 +55,8 @@ def get_main_file_name(connector: Connector) -> str:
 
     return (
         build_customization_module.MAIN_FILE_NAME
-        if build_customization_module and hasattr(build_customization_module, "MAIN_FILE_NAME")
+        if build_customization_module
+        and hasattr(build_customization_module, "MAIN_FILE_NAME")
         else DEFAULT_MAIN_FILE_NAME
     )
 
@@ -58,7 +66,9 @@ def get_entrypoint(connector: Connector) -> List[str]:
     return ["python", f"/airbyte/integration_code/{main_file_name}"]
 
 
-async def pre_install_hooks(connector: Connector, base_container: Container, logger: Logger) -> Container:
+async def pre_install_hooks(
+    connector: Connector, base_container: Container, logger: Logger
+) -> Container:
     """Run the pre_connector_install hook if it exists in the build_customization.py module.
     It will mutate the base_container and return it.
 
@@ -71,13 +81,19 @@ async def pre_install_hooks(connector: Connector, base_container: Container, log
         Container: The mutated base_container.
     """
     build_customization_module = get_build_customization_module(connector)
-    if build_customization_module and hasattr(build_customization_module, "pre_connector_install"):
-        base_container = await build_customization_module.pre_connector_install(base_container)
+    if build_customization_module and hasattr(
+        build_customization_module, "pre_connector_install"
+    ):
+        base_container = await build_customization_module.pre_connector_install(
+            base_container
+        )
         logger.info(f"Connector {connector.technical_name} pre install hook executed.")
     return base_container
 
 
-async def post_install_hooks(connector: Connector, connector_container: Container, logger: Logger) -> Container:
+async def post_install_hooks(
+    connector: Connector, connector_container: Container, logger: Logger
+) -> Container:
     """Run the post_connector_install hook if it exists in the build_customization.py module.
     It will mutate the connector_container and return it.
 
@@ -90,7 +106,11 @@ async def post_install_hooks(connector: Connector, connector_container: Containe
         Container: The mutated connector_container.
     """
     build_customization_module = get_build_customization_module(connector)
-    if build_customization_module and hasattr(build_customization_module, "post_connector_install"):
-        connector_container = await build_customization_module.post_connector_install(connector_container)
+    if build_customization_module and hasattr(
+        build_customization_module, "post_connector_install"
+    ):
+        connector_container = await build_customization_module.post_connector_install(
+            connector_container
+        )
         logger.info(f"Connector {connector.technical_name} post install hook executed.")
     return connector_container
