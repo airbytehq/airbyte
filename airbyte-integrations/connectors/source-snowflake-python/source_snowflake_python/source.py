@@ -7,10 +7,14 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+import snowflake.connector
+
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -90,6 +94,45 @@ class SnowflakeStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         yield {}
+
+
+class SourceSnowflake(AbstractSource):
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        """
+        :param config:  the user-input config object conforming to the connector's spec.yaml
+        :param logger:  logger object
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        """
+        try:
+            conn = snowflake.connector.connect(user=config["username"],
+                                               password=config["password"],
+                                               account=config["account"],
+                                               )
+            conn.cursor().execute("SELECT 1").fetchall()
+        except requests.exceptions.HTTPError as error:
+            error_msg = f"An error occurred: {error.response.text}"
+            try:
+                error_data = error.response.json()[0]
+            except (KeyError, requests.exceptions.JSONDecodeError):
+                pass
+            else:
+                error_code = error_data.get("errorCode")
+                if error.response.status_code == requests.codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                    logger.warning(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                    error_msg = "API Call limit is exceeded"
+            return False, error_msg
+
+        return (True, None)
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        TODO: Replace the streams below with your own streams.
+
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
+        # TODO remove the authenticator if not required.
+        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        return [Customers(authenticator=auth), Employees(authenticator=auth)]
 
 
 class Customers(SnowflakeStream):
@@ -180,27 +223,3 @@ class Employees(IncrementalSnowflakeStream):
         raise NotImplementedError("Implement stream slices or delete this method!")
 
 
-# Source
-class SourceSnowflake(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
