@@ -23,7 +23,7 @@ data:
   dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-linkedin-pages
   githubIssueLabel: source-linkedin-pages
-  icon: linkedin-pages.svg
+  icon: icon.svg
   license: MIT
   name: Linkedin Pages
   releaseDate: 2022-08-11
