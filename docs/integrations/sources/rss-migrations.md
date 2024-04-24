@@ -1,4 +1,4 @@
-# RSS Migration Guide
+# Rss Migration Guide
 
 ## Upgrading to 1.0.0
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte.
