@@ -19,7 +19,7 @@ Our top contributors who can help you figuring the best approach to implement yo
 * [@alafanechere](https://github.com/alafanechere). 
 * [@postamar](https://github.com/postamar)
 * [@erohmensing](https://github.com/erohmensing)
-*  [@bnchrch](https://github.com/stephane-airbyte)
+* [@bnchrch](https://github.com/bnchrch)
 * [@stephane-airbyte](https://github.com/stephane-airbyte)
 
 ## Where is the code?
@@ -29,7 +29,7 @@ The code is currently available in the `airbytehq/airbyte` repo under [ `airbyte
 ## What use cases it currently supports
 
 According to your need you might want to introduce a new logic to an existing flow or create a new one.
-Here are the currently supported use cases. Feel free to grab them as example if you want to craft a new flow, or modify an existing one. If you are not sure about which direction to take feel free to ask advices (see *Who Can I ask help?* from section). 
+Here are the currently supported use cases. Feel free to grab them as example if you want to craft a new flow, or modify an existing one. If you are not sure about which direction to take feel free to ask advices (see [*Who Can I ask help?*](## Who can I ask help from?) from section). 
 
 | Command group                                                                                                                                     | Feature                                                  | Command                                       | Entrypoint path                                                                                                                                                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -57,7 +57,9 @@ There are multiple way to have dev install of the tool. Feel free to grab the on
 * [`Poetry`](https://python-poetry.org/) or [`pipx`](https://github.com/pypa/pipx)  
 
 ### Installation options
+There are many ways to install Python tools / packages.
 
+For most users we recommend you use `make` but `pipx` and `poetry` are also viable options
 #### With `make`
 ```bash
  # From airbyte repo root:
@@ -71,6 +73,8 @@ pipx install --editable --force .
 ```
 
 #### With `poetry`
+⚠️ This places you in a python environment specific to airbyte-ci. This can be a problem if you are developing airbyte-ci and testing/using your changes in another python project.
+
 ```bash
 # From airbyte-ci/connectors/pipelines
 poetry install
@@ -124,7 +128,7 @@ We have per-language submodules in which language specific `BuildConnectorImages
 * [`python_connectors.py`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/connectors/build_image/steps/python_connectors.py)
 * [`java_connectors.py`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/connectors/build_image/steps/java_connectors.py#L14)
 
-### Pipelines are function, steps are classes
+### Pipelines are functions, steps are classes
 
 A pipeline is a function:
 * instantiating and running steps
