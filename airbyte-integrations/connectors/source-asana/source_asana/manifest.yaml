@@ -474,8 +474,7 @@ definitions:
   projects_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -811,8 +810,7 @@ definitions:
   sections_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -830,8 +828,7 @@ definitions:
   sections_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -871,8 +868,7 @@ definitions:
   tasks_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1393,8 +1389,7 @@ definitions:
   stories_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1438,8 +1433,7 @@ definitions:
   stories_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1541,8 +1535,7 @@ definitions:
   workspaces_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1570,8 +1563,7 @@ definitions:
   tags_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1635,8 +1627,7 @@ definitions:
   users_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1704,8 +1695,7 @@ definitions:
   teams_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1752,8 +1742,7 @@ definitions:
   team_memberships_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1805,8 +1794,7 @@ definitions:
   attachments_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1828,8 +1816,7 @@ definitions:
   attachments_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1914,8 +1901,7 @@ definitions:
   portfolios_compact_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1934,8 +1920,7 @@ definitions:
     $schema: http://json-schema.org/draft-07/schema#
     title: Portfolio Memberships Schema
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -1983,8 +1968,7 @@ definitions:
   portfolios_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -2135,8 +2119,7 @@ definitions:
   custom_fields_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -2273,8 +2256,7 @@ definitions:
   organization_exports_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       gid:
         type:
@@ -2318,8 +2300,7 @@ definitions:
   events_schema:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    type:
-      - object
+    type: object
     properties:
       user:
         type:
