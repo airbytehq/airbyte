@@ -10,8 +10,6 @@ import urllib
 from typing import Any, Mapping, Optional, Union, Tuple
 import requests
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 from .http_error_handler import HttpErrorHandler
@@ -20,26 +18,15 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 class HttpRequestSender():
 
-    error_mapping: Mapping[int, str] = {
-        400: FailureType.config_error, # <= straightforward failure for 400s
-        401: FailureType.config_error,
-        403: FailureType.config_error,
-        404: FailureType.system_error,
-        429: FailureType.transient_error, # <= should retry before failing, therefore indicates need for addtl interface
-        500: FailureType.transient_error,
-        502: FailureType.transient_error,
-        503: FailureType.transient_error,
-    }
-
     def __init__(
             self,
             session: requests.Session,
             logger: logging.Logger,
-            http_response_handler: HttpErrorHandler = HttpErrorHandler()
+            http_error_handler: HttpErrorHandler = HttpErrorHandler()
         ):
         self._session = session
         self._logger = logger
-        self._http_response_handler = http_response_handler
+        self._http_error_handler = http_error_handler
 
     def _dedupe_query_params(self, url: str, params: Mapping[str, str]) -> Mapping[str, str]:
         """
@@ -135,29 +122,25 @@ class HttpRequestSender():
             )
 
 
-        response = self._http_response_handler.validate_response(response)
+        response = self._http_error_handler.validate_response(response)
 
-
-
-        # !!! need to maintain backwards compatiblity with existing connectors, specifically  HttpStream public methods: should_retry, backoff_time, error_message, raise_on_http_errors
-
-
-        # if self.should_retry(response):
-        #     custom_backoff_time = self.backoff_time(response)
-        #     error_message = self.error_message(response)
-        #     if custom_backoff_time:
-        #         raise UserDefinedBackoffException(
-        #             backoff=custom_backoff_time, request=request, response=response, error_message=error_message
-        #         )
-        #     else:
-        #         raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-        # elif self.raise_on_http_errors:
-        #     # Raise any HTTP exceptions that happened in case there were unexpected ones
-        #     try:
-        #         response.raise_for_status()
-        #     except requests.HTTPError as exc:
-        #         self._logger.error(response.text)
-        #         raise exc
+        # !!! moves public methods from HttpStream to HttpRequestSender --> when wired in to HttpStream, connectors will require changes
+        if self._http_error_handler.should_retry(response):
+            custom_backoff_time = self._http_error_handler.backoff_time(response)
+            error_message = self._http_error_handler.error_message(response)
+            if custom_backoff_time:
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                )
+            else:
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
+        elif self._http_error_handler.raise_on_http_errors:
+            # Raise any HTTP exceptions that happened in case there were unexpected ones
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as exc:
+                self._logger.error(response.text)
+                raise exc
 
         return response
 
