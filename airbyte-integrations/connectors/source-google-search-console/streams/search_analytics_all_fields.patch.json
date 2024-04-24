@@ -10,7 +10,7 @@
       "type": "string"
     },
     "ctr": {
-      "multipleOf": "null",
+      "multipleOf": "",
       "type": [
         "null",
         "number"
@@ -33,7 +33,7 @@
       "type": "string"
     },
     "position": {
-      "multipleOf": "null",
+      "multipleOf": null,
       "type": [
         "null",
         "number"
