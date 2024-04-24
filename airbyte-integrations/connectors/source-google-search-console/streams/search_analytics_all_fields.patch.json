@@ -10,7 +10,7 @@
       "type": "string"
     },
     "ctr": {
-      "multipleOf": "",
+      "multipleOf": null,
       "type": [
         "null",
         "number"

@@ -10,6 +10,7 @@
       "type": "string"
     },
     "ctr": {
+      "multipleOf": null,
       "type": [
         "null",
         "number"
@@ -25,7 +26,8 @@
         "integer"
       ]
     },
-    "position": {
+    "position": {      
+      "multipleOf": null,
       "type": [
         "null",
         "number"
