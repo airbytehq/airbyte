@@ -804,7 +804,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(expectedMessageMeta, invalidDateRecord.getMeta());
 
     ObjectMapper mapper = new ObjectMapper();
-    final JsonNode expectedDataWithoutCdcFields = mapper.readTree("{\"id\":120}");
+    final JsonNode expectedDataWithoutCdcFields = mapper.readTree("{\"id\":120, \"CAR_DATE\":null}");
     removeCDCColumns((ObjectNode) invalidDateRecord.getData());
     assertEquals(expectedDataWithoutCdcFields, invalidDateRecord.getData());
   }
