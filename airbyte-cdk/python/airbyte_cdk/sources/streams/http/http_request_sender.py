@@ -89,7 +89,7 @@ class HttpRequestSender():
         least one attempt and some retry attempts, to comply this logic we add
         1 to expected retries attempts.
         """
-        if max_tries is not None:
+        if max_retries is not None:
             max_tries = max(0, max_retries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
@@ -121,10 +121,10 @@ class HttpRequestSender():
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
-
         response = self._http_error_handler.validate_response(response)
 
-        # !!! moves public methods from HttpStream to HttpRequestSender --> when wired in to HttpStream, connectors will require changes
+        # !!! moves public methods from HttpStream to HttpErrorHandler --> when wired in to HttpStream, connectors will require changes => should section be wrapped in a method in HttpErrorHandler?
+
         if self._http_error_handler.should_retry(response):
             custom_backoff_time = self._http_error_handler.backoff_time(response)
             error_message = self._http_error_handler.error_message(response)
@@ -159,8 +159,7 @@ class HttpRequestSender():
             request_kwargs: Optional[Mapping[str, Any]] = None,
         ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
-        Public method that should be called from within HttpStream's feth_next_page method.
-        Should prepare request, send it and return request and response objects.
+        Prepares and sends request and return request and response objects.
         """
 
         request: requests.PreparedRequest = self._create_prepared_request(

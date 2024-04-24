@@ -19,6 +19,7 @@ class HttpErrorHandler():
         401: { "action": ResponseAction.FAIL, "failure_type": FailureType.config_error },
         403: { "action": ResponseAction.FAIL, "failure_type": FailureType.config_error },
         404: { "action": ResponseAction.FAIL, "failure_type": FailureType.system_error },
+        408: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
         429: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
         500: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
         502: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
@@ -30,39 +31,29 @@ class HttpErrorHandler():
             logger: logging.Logger,
         ) -> None:
         self._logger = logger
-
-        # Are these checks pointless? Custom error mapping would be set in __post_init__ anyway
-        if len(self.error_mapping) == 0:
-            raise ValueError("Error mapping is empty")
-
-        for status_code, error_data in self.error_mapping:
-            if not isinstance(status_code, int):
-                raise ValueError("Error mapping key must be an integer to represent the HTTP status code")
-            if "action" not in error_data:
-                raise ValueError("Error mapping is missing required 'action' key")
-            if "failure_type" not in error_data:
-                raise ValueError("Error mapping is missing reqquired 'failure_type'")
-
         self._error_mapping = self.error_mapping
 
-
     def validate_response(self, response: requests.Response) -> None:
+
+        if response.ok:
+            return response
+
         response_status = self.error_mapping.get(response.status_code, None)
 
         if not response_status:
             raise ValueError(f"Unexpected status code: {response.status_code}")
 
-        if response_status.action == ResponseAction.FAIL:
+        if response_status['action'] == ResponseAction.FAIL:
             error_message = (
                 response_status.get("error_message") or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self.parse_response_error_message(response)}"
             )
             raise AirbyteTracedException(
                 internal_message=error_message,
                 message=error_message,
-                failure_type=response_status.failure_type
+                failure_type=response_status['failure_type']
             )
 
-        elif response_status.action == ResponseAction.IGNORE:
+        elif response_status['action'] == ResponseAction.IGNORE:
             self._logger.info(
                 f"Ignoring response for failed request with HTTP status {response.status_code} with error message {self.parse_response_error_message(response)}"
             )
@@ -129,3 +120,10 @@ class HttpErrorHandler():
         :return:
         """
         return ""
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return True
