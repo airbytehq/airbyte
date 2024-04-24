@@ -12,7 +12,6 @@ import static io.airbyte.integrations.destination.redshift.constants.RedshiftDes
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -30,7 +29,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
@@ -225,14 +223,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
             : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
-    final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
-    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
-      LOGGER.warn("""
-                  Increasing the number of file buffers past {} can lead to increased performance but
-                  leads to increased memory usage. If the number of file buffers exceeds the number
-                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
-                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
-    }
 
     final String defaultNamespace = config.get("schema").asText();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -285,26 +275,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
         .build()
         .createAsync();
-  }
-
-  /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
-   * file buffers and sets the minimum number to the default
-   * <p>
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
-   * not been thoroughly load tested across all instance sizes
-   *
-   * @param config user configurations
-   * @return number of file buffers if configured otherwise default
-   */
-  @VisibleForTesting
-  public int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-    }
-    // Only allows for values 10 <= numOfFileBuffers <= 50
-    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {

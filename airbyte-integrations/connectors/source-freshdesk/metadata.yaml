@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Freshdesk
   remoteRegistries:
     pypi:

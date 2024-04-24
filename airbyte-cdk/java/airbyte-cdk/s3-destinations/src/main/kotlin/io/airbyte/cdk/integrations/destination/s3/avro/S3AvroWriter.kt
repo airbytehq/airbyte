@@ -7,8 +7,8 @@ import alex.mojaki.s3upload.MultiPartOutputStream
 import alex.mojaki.s3upload.StreamTransferManager
 import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
@@ -46,8 +46,8 @@ class S3AvroWriter(
             BaseS3Writer.Companion.determineOutputFilename(
                 builder()
                     .timestamp(uploadTimestamp)
-                    .s3Format(S3Format.AVRO)
-                    .fileExtension(S3Format.AVRO.fileExtension)
+                    .s3Format(FileUploadFormat.AVRO)
+                    .fileExtension(FileUploadFormat.AVRO.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
                     .build()
             )
@@ -68,7 +68,7 @@ class S3AvroWriter(
         // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
 
-        val formatConfig = config.formatConfig as S3AvroFormatConfig
+        val formatConfig = config.formatConfig as UploadAvroFormatConfig
         // The DataFileWriter always uses binary encoding.
         // If json encoding is needed in the future, use the GenericDatumWriter directly.
         this.dataFileWriter =
@@ -96,8 +96,8 @@ class S3AvroWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format?
-        get() = S3Format.AVRO
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.AVRO
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {

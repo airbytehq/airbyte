@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
+## 0.82.0
+Connector builder: emit state messages
+
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
+## 0.81.4
+Adding stream_descriptor as part of AirbyteTracedException.__init__
+
+## 0.81.3
+Republish print buffer after previous pypi attempt timed out
+
+## 0.81.2
+Fix concurrent CDK printing by flushing the print buffer for every message
+
+## 0.81.1
+Concurrent CDK: add logging on exception
+
+## 0.81.0
+Unpin airbyte-protocol-models library
+
+## 0.80.0
+Concurrent CDK: support partitioned states
+
+## 0.79.2
+Concurrent CDK: Print error messages properly so that they can be categorized
+
+## 0.79.1
+Dummy patch to test new publishing flow fixes
+
+## 0.79.0
+Update release process of airbyte-cdk and source-declarative manifest
+
+## 0.78.9
+Fix CDK version mismatch introduced in 0.78.8
+
+## 0.78.8
+Update error messaging/type for missing streams. Note: version mismatch, please use 0.78.9 instead
+
+## 0.78.6
+low-code: add backward compatibility for old close slice behavior 
+
+## 0.78.5
+low-code: fix stop_condition instantiation in the cursor pagination
+
+## 0.78.4
+low-code: Add last_record and last_page_size interpolation variables to pagination
+
 ## 0.78.3
 Fix dependencies for file-based extras
 

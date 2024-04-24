@@ -572,7 +572,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     /** Some databases need special column names in the query. */
     @Throws(SQLException::class)
-    protected fun getWrappedColumnNames(
+    protected open fun getWrappedColumnNames(
         database: JdbcDatabase?,
         connection: Connection?,
         columnNames: List<String>,
@@ -622,8 +622,8 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     @Throws(SQLException::class)
-    public override fun createDatabase(sourceConfig: JsonNode): JdbcDatabase {
-        return createDatabase(sourceConfig, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
+    public override fun createDatabase(config: JsonNode): JdbcDatabase {
+        return createDatabase(config, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
     }
 
     @Throws(SQLException::class)
@@ -634,7 +634,7 @@ abstract class AbstractJdbcSource<Datatype>(
         // Create the data source
         val dataSource =
             create(
-                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY))
+                if (jdbcConfig.has(JdbcUtils.USERNAME_KEY))
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText()
                 else null,
                 if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
@@ -643,7 +643,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 driverClassName,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties!!)
+                getConnectionTimeout(connectionProperties)
             )
         // Record the data source so that it can be closed.
         dataSources.add(dataSource)
@@ -725,6 +725,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
+        @JvmStatic
         fun aggregatePrimateKeys(
             entries: List<PrimaryKeyAttributesFromDb>
         ): Map<String, MutableList<String>> {

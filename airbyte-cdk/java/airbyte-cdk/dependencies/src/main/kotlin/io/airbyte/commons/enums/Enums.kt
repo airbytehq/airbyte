@@ -15,12 +15,13 @@ import java.util.stream.Collectors
 
 class Enums {
     companion object {
+        @Suppress("UNUSED_PARAMETER")
         inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertTo(ie: T1?, oe: Class<T2>): T2? {
             if (ie == null) {
                 return null
             }
 
-            return java.lang.Enum.valueOf(oe, ie.name)
+            return enumValueOf<T2>(ie.name)
         }
 
         private fun normalizeName(name: String): String {
@@ -67,10 +68,7 @@ class Enums {
             ies: List<T1>,
             oe: Class<T2>
         ): List<T2?> {
-            return ies.stream()
-                .map { ie -> convertTo(ie, oe) }
-                .collect(Collectors.toList())
-                .toList()
+            return ies.map { convertTo(it, oe) }.toList()
         }
     }
 }

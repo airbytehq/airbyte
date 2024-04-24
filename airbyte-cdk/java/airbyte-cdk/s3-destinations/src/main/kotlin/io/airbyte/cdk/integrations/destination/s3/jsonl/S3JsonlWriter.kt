@@ -9,8 +9,8 @@ import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
@@ -44,8 +44,8 @@ class S3JsonlWriter(
             BaseS3Writer.Companion.determineOutputFilename(
                 builder()
                     .timestamp(uploadTimestamp)
-                    .s3Format(S3Format.JSONL)
-                    .fileExtension(S3Format.JSONL.fileExtension)
+                    .s3Format(FileUploadFormat.JSONL)
+                    .fileExtension(FileUploadFormat.JSONL.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
                     .build()
             )
@@ -86,8 +86,8 @@ class S3JsonlWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format?
-        get() = S3Format.JSONL
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.JSONL
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {

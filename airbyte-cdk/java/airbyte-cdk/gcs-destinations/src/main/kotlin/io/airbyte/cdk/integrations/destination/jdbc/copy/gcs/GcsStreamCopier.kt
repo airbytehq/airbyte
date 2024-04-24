@@ -45,7 +45,8 @@ abstract class GcsStreamCopier(
     private val nameTransformer: StandardNameTransformer,
     private val sqlOperations: SqlOperations
 ) : StreamCopier {
-    @get:VisibleForTesting val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
+    @get:VisibleForTesting
+    val tmpTableName: String = @Suppress("deprecation") nameTransformer.getTmpTableName(streamName)
     protected val gcsStagingFiles: MutableSet<String> = HashSet()
     protected var filenameGenerator: StagingFilenameGenerator =
         StagingFilenameGenerator(
@@ -86,9 +87,9 @@ abstract class GcsStreamCopier(
     }
 
     @Throws(Exception::class)
-    override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, gcsFileName: String?) {
-        if (csvPrinters.containsKey(gcsFileName)) {
-            csvPrinters[gcsFileName]!!.printRecord(
+    override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, fileName: String?) {
+        if (csvPrinters.containsKey(fileName)) {
+            csvPrinters[fileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
                 Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
@@ -172,7 +173,7 @@ abstract class GcsStreamCopier(
 
     @Throws(Exception::class)
     override fun createDestinationTable(): String? {
-        val destTableName = nameTransformer.getRawTableName(streamName)
+        val destTableName = @Suppress("deprecation") nameTransformer.getRawTableName(streamName)
         LOGGER.info("Preparing table {} in destination.", destTableName)
         sqlOperations.createTableIfNotExists(db, schemaName, destTableName)
         LOGGER.info("Table {} in destination prepared.", tmpTableName)

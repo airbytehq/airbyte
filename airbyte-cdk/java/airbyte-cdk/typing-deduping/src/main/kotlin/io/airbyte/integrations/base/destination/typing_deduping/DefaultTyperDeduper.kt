@@ -184,7 +184,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 val stream = initialState.streamConfig
                 try {
                     if (initialState.isFinalTablePresent) {
-                        LOGGER.info("Final Table exists for stream {}", stream.id!!.finalName)
+                        LOGGER.info("Final Table exists for stream {}", stream.id.finalName)
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
                         if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
@@ -203,17 +203,17 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                 )
                                 LOGGER.info(
                                     "Using temp final table for stream {}, will overwrite existing table at end of sync",
-                                    stream.id!!.finalName
+                                    stream.id.finalName
                                 )
                             } else {
                                 LOGGER.info(
                                     "Final Table for stream {} is empty and matches the expected v2 format, writing to table directly",
-                                    stream.id!!.finalName
+                                    stream.id.finalName
                                 )
                             }
                         } else if (
                             initialState.isSchemaMismatch ||
-                                initialState.destinationState!!.needsSoftReset()
+                                initialState.destinationState.needsSoftReset()
                         ) {
                             // We're loading data directly into the existing table.
                             // Make sure it has the right schema.
@@ -228,7 +228,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     } else {
                         LOGGER.info(
                             "Final Table does not exist for stream {}, creating.",
-                            stream.id!!.finalName
+                            stream.id.finalName
                         )
                         // The table doesn't exist. Create it. Don't force.
                         destinationHandler.execute(
@@ -239,7 +239,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     initialRawTableStateByStream[stream.id] = initialState.initialRawTableStatus
 
                     streamsWithSuccessfulSetup.add(
-                        Pair.of(stream.id!!.originalNamespace, stream.id!!.originalName)
+                        Pair.of(stream.id.originalNamespace, stream.id.originalName)
                     )
 
                     // Use fair locking. This slows down lock operations, but that performance hit
@@ -254,11 +254,11 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     // immediately acquire the lock.
                     internalTdLocks[stream.id] = ReentrantLock()
 
-                    return@supplyAsync Unit
+                    return@supplyAsync
                 } catch (e: Exception) {
                     LOGGER.error(
                         "Exception occurred while preparing tables for stream " +
-                            stream.id!!.originalName,
+                            stream.id.originalName,
                         e
                     )
                     throw RuntimeException(e)
@@ -284,12 +284,12 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
     override fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock {
         val streamConfig = parsedCatalog.getStream(originalNamespace, originalName)
-        return tdLocks[streamConfig!!.id]!!.readLock()
+        return tdLocks[streamConfig.id]!!.readLock()
     }
 
     private fun streamSetupSucceeded(streamConfig: StreamConfig?): Boolean {
-        val originalNamespace = streamConfig!!.id!!.originalNamespace
-        val originalName = streamConfig.id!!.originalName
+        val originalNamespace = streamConfig!!.id.originalNamespace
+        val originalName = streamConfig.id.originalName
         if (!streamsWithSuccessfulSetup.contains(Pair.of(originalNamespace, originalName))) {
             // For example, if T+D setup fails, but the consumer tries to run T+D on all streams
             // during close,
@@ -310,8 +310,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     ): CompletableFuture<Optional<Exception>> {
         return CompletableFuture.supplyAsync(
             {
-                val originalNamespace = streamConfig!!.id!!.originalNamespace
-                val originalName = streamConfig.id!!.originalName
+                val originalNamespace = streamConfig!!.id.originalNamespace
+                val originalName = streamConfig.id.originalName
                 try {
                     if (!streamSetupSucceeded(streamConfig)) {
                         return@supplyAsync Optional.empty<Exception>()
@@ -390,7 +390,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 // Skip if we don't have any records for this stream.
                 val streamSyncSummary =
                     streamSyncSummaries.getOrDefault(
-                        streamConfig!!.id!!.asStreamDescriptor(),
+                        streamConfig.id.asStreamDescriptor(),
                         StreamSyncSummary.DEFAULT
                     )
                 val nonzeroRecords =
@@ -410,8 +410,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info(
                         "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",
-                        streamConfig.id!!.originalNamespace,
-                        streamConfig.id!!.originalName
+                        streamConfig.id.originalNamespace,
+                        streamConfig.id.originalName
                     )
                 }
                 shouldRunTypingDeduping
@@ -439,13 +439,13 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         for (streamConfig in parsedCatalog.streams) {
             if (
                 !streamsWithSuccessfulSetup.contains(
-                    Pair.of(streamConfig!!.id!!.originalNamespace, streamConfig.id!!.originalName)
+                    Pair.of(streamConfig.id.originalNamespace, streamConfig.id.originalName)
                 )
             ) {
                 LOGGER.warn(
                     "Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
-                    streamConfig.id!!.originalNamespace,
-                    streamConfig.id!!.originalName
+                    streamConfig.id.originalNamespace,
+                    streamConfig.id.originalName
                 )
                 continue
             }
@@ -472,7 +472,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         sqlGenerator.overwriteFinalTable(streamId, finalSuffix)
                     LOGGER.info(
                         "Overwriting final table with tmp table for stream {}.{}",
-                        streamId!!.originalNamespace,
+                        streamId.originalNamespace,
                         streamId.originalName
                     )
                     try {

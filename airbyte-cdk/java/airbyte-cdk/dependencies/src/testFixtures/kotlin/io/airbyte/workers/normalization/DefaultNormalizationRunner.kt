@@ -141,7 +141,7 @@ class DefaultNormalizationRunner(
     ): Boolean {
         try {
             LOGGER.info("Running with normalization version: {}", normalizationImageName)
-            process =
+            var process =
                 processFactory.create(
                     Metadata.NORMALIZE_STEP,
                     jobId,
@@ -165,15 +165,16 @@ class DefaultNormalizationRunner(
                     emptyMap(),
                     *args
                 )
+            this.process = process
 
-            process!!.inputStream.use { stdout ->
+            process.inputStream.use { stdout ->
                 // finds and collects any AirbyteMessages from stdout
                 // also builds a list of raw dbt errors and stores in streamFactory
                 airbyteMessagesByType =
                     streamFactory
                         .create(IOs.newBufferedReader(stdout))
                         .collect(
-                            Collectors.groupingBy(Function { obj: AirbyteMessage? -> obj!!.type })
+                            Collectors.groupingBy(Function { obj: AirbyteMessage -> obj.type })
                         )
 
                 // picks up error logs from dbt
@@ -210,47 +211,45 @@ class DefaultNormalizationRunner(
                 }
             }
             LineGobbler.gobble(
-                process!!.errorStream,
+                process.errorStream,
                 { msg: String? -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 
             TestHarnessUtils.wait(process)
 
-            return process!!.exitValue() == 0
+            return process.exitValue() == 0
         } catch (e: Exception) {
             // make sure we kill the process on failure to avoid zombies.
-            if (process != null) {
-                TestHarnessUtils.cancelProcess(process)
-            }
+            process?.let { TestHarnessUtils.cancelProcess(process) }
             throw e
         }
     }
 
     @Throws(Exception::class)
     override fun close() {
-        if (process == null) {
-            return
-        }
+        process?.let {
+            LOGGER.info("Terminating normalization process...")
+            TestHarnessUtils.gentleClose(it, 1, TimeUnit.MINUTES)
 
-        LOGGER.info("Terminating normalization process...")
-        TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
-
-        /*
-         * After attempting to close the process check the following:
-         *
-         * Did the process actually terminate? If "yes", did it do so nominally?
-         */
-        if (process!!.isAlive) {
-            throw TestHarnessException("Normalization process did not terminate after 1 minute.")
-        } else if (process!!.exitValue() != 0) {
-            throw TestHarnessException(
-                "Normalization process did not terminate normally (exit code: " +
-                    process!!.exitValue() +
-                    ")"
-            )
-        } else {
-            LOGGER.info("Normalization process successfully terminated.")
+            /*
+             * After attempting to close the process check the following:
+             *
+             * Did the process actually terminate? If "yes", did it do so nominally?
+             */
+            if (it.isAlive) {
+                throw TestHarnessException(
+                    "Normalization process did not terminate after 1 minute."
+                )
+            } else if (it.exitValue() != 0) {
+                throw TestHarnessException(
+                    "Normalization process did not terminate normally (exit code: " +
+                        it.exitValue() +
+                        ")"
+                )
+            } else {
+                LOGGER.info("Normalization process successfully terminated.")
+            }
         }
     }
 
@@ -261,8 +260,8 @@ class DefaultNormalizationRunner(
                     airbyteMessagesByType!![AirbyteMessage.Type.TRACE] != null
             ) {
                 return airbyteMessagesByType!![AirbyteMessage.Type.TRACE]!!.stream().map {
-                    obj: AirbyteMessage? ->
-                    obj!!.trace
+                    obj: AirbyteMessage ->
+                    obj.trace
                 }
             }
             return Stream.empty()
