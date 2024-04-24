@@ -40,7 +40,7 @@ In all cases, if a breaking schema change is detected, the connection will be pa
 To re-enable the streams, ensure the correct **Primary Key** and **Cursor** are selected for each stream and save the connection. You will be prompted to clear the affected streams so that Airbyte can ensure future syncs are successful.
 
 ### Backfill new or renamed columns
-To further automate the propagation of schema changes, Airbyte also offers the option to backfill new or renamed columns as a part of the sync. This means that anytime a new  column is detected through the auto-propagation of schema changes, Airbyte will sync the entire stream again so that any values in the new columns will be completely filled. 
+To further automate the propagation of schema changes, Airbyte also offers the option to backfill new or renamed columns as a part of the sync. This means that anytime a new  column is detected through the auto-propagation of schema changes, Airbyte will sync the entire stream again so that all values in the new columns will be completely filled, even if the row was not updated. If this option is not enabled, only rows that are updated as a part of the regular sync will be populated with a value.
 
 This feature will only perform the backfill when `Detect and propagate schema changes` is set to `Propagate all changes` or `Propagate columns changes only` and Airbyte detects the schema change as a part of a sync. Refreshing the schema manually and applying schema changes will not allow the backfill to occur. 
 
