@@ -34,8 +34,8 @@ jobs:
         with:
           pr: ${{ github.event.inputs.pr }}
 
-      - name: Get PR info
-        id: pr-info
+      - name: Get job variables
+        id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -43,6 +43,21 @@ jobs:
           PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
           echo "::set-output name=repo::$(echo "$PR_JSON" | jq -r .head.repo.full_name)"
           echo "::set-output name=branch::$(echo "$PR_JSON" | jq -r .head.ref)"
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        # If not comment-id is provided, this will create a new
+        # comment with the job run link.
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+
+            > Format-fix job started... [Check job output.][1]
+
+            [1]: ${{ steps.job-vars.outputs.run-url }}
 
       - name: Run airbyte-ci format fix all
         uses: ./.github/actions/run-airbyte-ci
@@ -62,6 +77,7 @@ jobs:
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
       - name: Commit Formatting Changes (PR)
+        id: commit-step
         uses: stefanzweifel/git-auto-commit-action@v5
         # Don't commit if we're on master
         if: github.ref != 'refs/heads/master'
@@ -69,3 +85,30 @@ jobs:
           commit_message: "chore: format code"
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.commit-step.outputs.changes_detected == 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ Changes applied successfully. (${{ steps.commit-step.outputs.commit_hash }})
+
+      - name: Append success comment (no-op)
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.commit-step.outputs.changes_detected != 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: "+1"
+          body: |
+            > 🟦 Job completed successfully (no changes).
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > ❌ Job failed.
