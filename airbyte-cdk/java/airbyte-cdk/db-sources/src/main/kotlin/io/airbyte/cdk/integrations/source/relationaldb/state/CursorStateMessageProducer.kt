@@ -81,7 +81,6 @@ class CursorStateMessageProducer(
                 currentCursorRecordCount++
             }
         }
-        println("processed a record message. count: $currentCursorRecordCount")
         return message
     }
 
@@ -103,14 +102,6 @@ class CursorStateMessageProducer(
      */
     private fun createStateMessage(stream: ConfiguredAirbyteStream): AirbyteStateMessage? {
         val pair = AirbyteStreamNameNamespacePair(stream.stream.name, stream.stream.namespace)
-        println(
-            "state message creation: " +
-                pair +
-                " " +
-                currentMaxCursor.orElse(null) +
-                " " +
-                currentCursorRecordCount
-        )
         val stateMessage =
             stateManager!!.updateAndEmit(
                 pair,
