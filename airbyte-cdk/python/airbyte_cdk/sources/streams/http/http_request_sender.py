@@ -22,11 +22,11 @@ class HttpRequestSender():
             self,
             session: requests.Session,
             logger: logging.Logger,
-            http_error_handler: HttpErrorHandler = HttpErrorHandler()
+            http_error_handler: Optional[HttpErrorHandler] = None
         ):
         self._session = session
         self._logger = logger
-        self._http_error_handler = http_error_handler
+        self._http_error_handler = http_error_handler or HttpErrorHandler(logger)
 
     def _dedupe_query_params(self, url: str, params: Mapping[str, str]) -> Mapping[str, str]:
         """
@@ -77,7 +77,7 @@ class HttpRequestSender():
     def _send_with_retry(
             self,
             retry_factor: float,
-            max_tries: Optional[int],
+            max_retries: Optional[int],
             max_time: Optional[int],
             request: requests.PreparedRequest,
             request_kwargs: Optional[Mapping[str, Any]] = None
@@ -90,7 +90,7 @@ class HttpRequestSender():
         1 to expected retries attempts.
         """
         if max_tries is not None:
-            max_tries = max(0, max_tries) + 1
+            max_tries = max(0, max_retries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=retry_factor)
@@ -153,7 +153,7 @@ class HttpRequestSender():
             params: Optional[Mapping[str, str]] = None,
             json: Optional[Mapping[str, Any]] = None,
             data: Optional[Union[str, Mapping[str, Any]]] = None,
-            max_tries: Optional[int] = None,
+            max_retries: Optional[int] = None,
             max_time: Optional[int] = None,
             dedupe_query_params: bool = False,
             request_kwargs: Optional[Mapping[str, Any]] = None,
@@ -175,7 +175,7 @@ class HttpRequestSender():
 
         response: requests.Response = self._send_with_retry(
             retry_factor=retry_factor,
-            max_tries=max_tries,
+            max_retries=max_retries,
             max_time=max_time,
             request=request,
             request_kwargs=request_kwargs
