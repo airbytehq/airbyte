@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import dagger
 from packaging.version import Version
@@ -22,8 +22,6 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from anyio import Semaphore
-
-PACKAGE_NAME_PATTERN = r"^([a-zA-Z0-9_.\-]+)(?:\[(.*?)\])?([=~><!]=?[a-zA-Z0-9\.]+)?$"
 
 POETRY_LOCK_FILE = "poetry.lock"
 POETRY_TOML_FILE = "pyproject.toml"
@@ -81,11 +79,18 @@ class CheckIsPythonUpdateable(Step):
 
 class UpdatePoetry(Step):
     context: ConnectorContext
+    dev: bool
+    specified_versions: dict[str, str]
 
     title = "Update versions of libraries in poetry."
 
-    def __init__(self, context: PipelineContext) -> None:
+    def __init__(self, context: PipelineContext, dev: bool, specific_dependencies: List[str]) -> None:
         super().__init__(context)
+        self.dev = dev
+        self.specified_versions = parse_specific_dependencies(specific_dependencies)
+
+        for package, dep in self.specified_versions.items():
+            self.logger.info(f"Specified dependency: {package}: {dep}")
 
     async def _run(self) -> StepResult:
         base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
@@ -103,10 +108,16 @@ class UpdatePoetry(Step):
             current_cdk_version = before_versions.get("airbyte-cdk") or None
 
             if current_cdk_version:
-                # We want the CDK pinned exactly so it also works as expected in PyAirbyte and other `pip` scenarios
-                new_cdk_version = pick_airbyte_cdk_version(current_cdk_version, self.context)
-                if new_cdk_version > current_cdk_version:
-                    connector_container = await connector_container.with_exec(["poetry", "add", f"airbyte-cdk=={new_cdk_version}"])
+                if not self.specified_versions.get("airbyte-cdk"):
+                    # We want the CDK pinned exactly so it also works as expected in PyAirbyte and other `pip` scenarios
+                    new_cdk_version = pick_airbyte_cdk_version(current_cdk_version, self.context)
+                    if new_cdk_version > current_cdk_version:
+                        self.logger.info(f"Updating airbyte-cdk from {current_cdk_version} to {new_cdk_version}")
+                        self.specified_versions["airbyte-cdk"] = f"airbyte-cdk=={new_cdk_version}"
+
+            for _, version in self.specified_versions.items():
+                self.logger.info(f"  Specified: poetry add {version}")
+                connector_container = await connector_container.with_exec(["poetry", "add", version])
 
             connector_container = await connector_container.with_exec(["poetry", "update"])
             poetry_update_output = await connector_container.stdout()
@@ -125,9 +136,26 @@ class UpdatePoetry(Step):
                 if package not in main_changeset:
                     self.logger.info(f" Dev {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
 
-            if not main_changeset:
-                self.logger.info("No main dependencies updated.")
-                return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No main dependencies updated.")
+            # see if there is an important change
+            important = False
+            if len(main_changeset) > 0:
+                important = True
+            elif self.dev and len(all_changeset) > 0:
+                important = True
+            else:
+                # see if there was a specific one asked for
+                for package, version in all_changeset.items():
+                    if package in self.specified_versions:
+                        important = True
+                        break
+
+            if not important:
+                message = "No main dependencies updated."
+                if self.dev:
+                    message = "No dependencies updated."
+
+                self.logger.info(message)
+                return StepResult(step=self, status=StepStatus.SKIPPED, stderr=message)
 
             await connector_container.file(POETRY_TOML_FILE).export(f"{self.context.connector.code_directory}/{POETRY_TOML_FILE}")
             self.logger.info(f"Generated {POETRY_TOML_FILE} for {self.context.connector.technical_name}")
@@ -210,11 +238,28 @@ def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext
     return latest
 
 
+from pipelines import main_logger
+
+
+def parse_specific_dependencies(specific_dependencies: List[str]) -> dict[str, str]:
+    package_name_pattern = r"^(\w+)[@><=]([^\s]+)$"
+    versions: dict[str, str] = {}
+    for dep in specific_dependencies:
+        main_logger.info(f"Dependency: {dep}")
+        match = re.match(package_name_pattern, dep)
+        if match:
+            package = match.group(1)
+            versions[package] = dep
+        else:
+            raise ValueError(f"Invalid dependency name: {dep}")
+    return versions
+
+
 def get_package_changes(before_versions: dict[str, Version], after_versions: dict[str, Version]) -> dict[str, Version]:
     changes: dict[str, Version] = {}
     for package, before_version in before_versions.items():
         after_version = after_versions.get(package)
-        if after_version and before_version < after_version:
+        if after_version and before_version != after_version:
             changes[package] = after_version
     return changes
 
@@ -241,7 +286,12 @@ async def get_poetry_versions(connector_container: dagger.Container, only: str |
     return versions
 
 
-async def run_connector_up_to_date_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
+async def run_connector_up_to_date_pipeline(
+    context: ConnectorContext,
+    semaphore: "Semaphore",
+    dev: bool = False,
+    specific_dependencies: List[str] = [],
+) -> Report:
     restore_original_state = RestoreOriginalState(context)
 
     # TODO: could pipe in the new version from the command line
@@ -261,7 +311,7 @@ async def run_connector_up_to_date_pipeline(context: ConnectorContext, semaphore
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UPDATE_POETRY,
-                step=UpdatePoetry(context),
+                step=UpdatePoetry(context, dev, specific_dependencies),
                 depends_on=[CONNECTOR_TEST_STEP_ID.CHECK_UPDATE_CANDIDATE],
             )
         ]

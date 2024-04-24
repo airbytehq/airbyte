@@ -2,30 +2,42 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.up_to_date.pipeline import run_connector_up_to_date_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from typing import List
 
 
 @click.command(
     cls=DaggerPipelineCommand,
     short_help="Get the selected Python connectors up to date.",
 )
+@click.option(
+    "--dev",
+    type=bool,
+    default=False,
+    is_flag=True,
+    help="Force update when there are only dev changes.",
+)
+@click.option(
+    "--dep",
+    type=str,
+    multiple=True,
+    default=[],
+    help="Give a specific set of `poetry add` dependencies to update. For example: --dep airbyte-cdk==0.80.0 --dep pytest@^6.2",
+)
 
 # TODO: flag to skip regression tests
 # TODO: flag to make PR
 # TODO: also update the manifest.yaml with the cdk version?
 @click.pass_context
-async def up_to_date(
-    ctx: click.Context,
-) -> bool:
+async def up_to_date(ctx: click.Context, dev: bool, dep: List[str]) -> bool:
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Update {connector.technical_name} to latest versions.",
+            pipeline_name=f"Update {connector.technical_name} to latest",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -56,6 +68,8 @@ async def up_to_date(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
+        dev,
+        dep,
     )
 
     return True

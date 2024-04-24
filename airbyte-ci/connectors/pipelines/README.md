@@ -463,14 +463,16 @@ Meant to be run on a cron script.
 
 Actions:
 
-* Upgrades the CDK to the newest version
+* Upgrades dependecies to the current versions
 
 ### Examples
 
 Bump source-openweather:
 
-* `airbyte-ci connectors --name=source-openweather up_to_date`
-* `airbyte-ci connectors --name=source-openweather up_to_date --cdk-version 0.80.0`
+* `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
+* `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
+* `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
+
 
  ### Other things it could do
 
