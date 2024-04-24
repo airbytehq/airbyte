@@ -337,7 +337,14 @@ class SourceStripe(ConcurrentSourceAdapter):
             IncrementalStripeStream(
                 name="charges",
                 path="charges",
-                expand_items=["data.refunds"],
+                expand_items=[
+                    "data.refunds",
+                    "balance_transaction",
+                    "customer",
+                    "invoice",
+                    "payment_intent",
+                    "failure_balance_transaction"
+                ],
                 event_types=[
                     "charge.captured",
                     "charge.expired",
@@ -350,7 +357,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
+                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"],
+                expand_items=[
+                    "data.applies_to",
+                    "data.currency_options"
+                ], **args
             ),
             IncrementalStripeStream(
                 name="disputes",
@@ -393,7 +404,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **args,
             ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
+            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"],
+            expand_items=[
+                "data.tiers",
+            ], **args),
             IncrementalStripeStream(
                 name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
             ),

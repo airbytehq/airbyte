@@ -1,6 +1,12 @@
 {
   "type": ["null", "object"],
   "properties": {
+    "applies_to": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "metadata": {
       "type": ["null", "object"],
       "properties": {}

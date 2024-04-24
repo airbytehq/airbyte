@@ -1,6 +1,21 @@
 {
   "type": ["null", "object"],
   "properties": {
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "string"]
+    },
+    "invoice": {
+      "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "failure_balance_transaction": {
+      "type": ["null", "string"]
+    },
     "metadata": {
       "type": ["null", "object"],
       "properties": {}
