@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import com.codepoetics.protonpack.StreamUtils;
@@ -42,6 +43,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDedu
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
@@ -66,6 +68,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,6 +78,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -243,18 +247,32 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
+
+    // Detect any PKs that we can't handle and throw as a config error.
+    final Map<StreamId, List<String>> problematicStreams = new HashMap<>();
     for (StreamConfig streamConfig : parsedCatalog.streams()) {
-      List<String> jsonPks = streamConfig.primaryKey().stream()
-          .filter(pkColumn -> {
-            AirbyteType type = streamConfig.columns().get(pkColumn);
-            return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
-          }).map(ColumnId::originalName)
-          .toList();
-      if (!jsonPks.isEmpty()) {
-        String streamId = streamConfig.id().originalNamespace() + streamConfig.id().originalName();
-        throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys. See stream " + streamId + ". Problematic column(s): " + jsonPks);
+      if (streamConfig.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+        final List<String> jsonPks = streamConfig.primaryKey().stream()
+            .filter(pkColumn -> {
+              AirbyteType type = streamConfig.columns().get(pkColumn);
+              return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
+            }).map(ColumnId::originalName)
+            .toList();
+        if (!jsonPks.isEmpty()) {
+          problematicStreams.put(streamConfig.id(), jsonPks);
+        }
       }
     }
+    if (!problematicStreams.isEmpty()) {
+      final String streamMessages = problematicStreams.entrySet().stream().map((entry) -> {
+          final StreamId streamId = entry.getKey();
+          final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
+          final String columns = String.join(", ", entry.getValue());
+          return humanReadableStreamId + ": columns " + columns;
+        }).collect(joining("\n"));
+      throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys.\n" + streamMessages);
+    }
+
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper =
         buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
