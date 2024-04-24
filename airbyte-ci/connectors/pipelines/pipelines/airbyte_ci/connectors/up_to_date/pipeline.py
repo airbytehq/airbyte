@@ -89,9 +89,6 @@ class UpdatePoetry(Step):
         self.dev = dev
         self.specified_versions = parse_specific_dependencies(specific_dependencies)
 
-        for package, dep in self.specified_versions.items():
-            self.logger.info(f"Specified dependency: {package}: {dep}")
-
     async def _run(self) -> StepResult:
         base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image_name)
@@ -105,55 +102,45 @@ class UpdatePoetry(Step):
             before_versions = await get_poetry_versions(connector_container)
             before_main = await get_poetry_versions(connector_container, only="main")
 
-            current_cdk_version = before_versions.get("airbyte-cdk") or None
-
-            if current_cdk_version:
-                if not self.specified_versions.get("airbyte-cdk"):
+            if self.specified_versions:
+                for package, dep in self.specified_versions.items():
+                    self.logger.info(f"  Specified: poetry add {dep}")
+                    if package in before_main:
+                        connector_container = await connector_container.with_exec(["poetry", "add", dep])
+                    else:
+                        connector_container = await connector_container.with_exec(["poetry", "add", dep, "--group=dev"])
+            else:
+                current_cdk_version = before_versions.get("airbyte-cdk") or None
+                if current_cdk_version:
                     # We want the CDK pinned exactly so it also works as expected in PyAirbyte and other `pip` scenarios
                     new_cdk_version = pick_airbyte_cdk_version(current_cdk_version, self.context)
+                    self.logger.info(f"Updating airbyte-cdk from {current_cdk_version} to {new_cdk_version}")
                     if new_cdk_version > current_cdk_version:
-                        self.logger.info(f"Updating airbyte-cdk from {current_cdk_version} to {new_cdk_version}")
-                        self.specified_versions["airbyte-cdk"] = f"airbyte-cdk=={new_cdk_version}"
+                        connector_container = await connector_container.with_exec(["poetry", "add", f"airbyte-cdk=={new_cdk_version}"])
 
-            for _, version in self.specified_versions.items():
-                self.logger.info(f"  Specified: poetry add {version}")
-                connector_container = await connector_container.with_exec(["poetry", "add", version])
-
-            connector_container = await connector_container.with_exec(["poetry", "update"])
-            poetry_update_output = await connector_container.stdout()
-            self.logger.info(poetry_update_output)
+                # update everything else
+                connector_container = await connector_container.with_exec(["poetry", "update"])
+                poetry_update_output = await connector_container.stdout()
+                self.logger.info(poetry_update_output)
 
             after_versions = await get_poetry_versions(connector_container)
-            updated_cdk_version = after_versions.get("airbyte-cdk") or None
-            self.logger.info(f"airbyte-cdk updates: {current_cdk_version or 'None'} -> {updated_cdk_version or 'None'}")
 
             # see what changed
-            main_changeset = get_package_changes(before_main, after_versions)
             all_changeset = get_package_changes(before_versions, after_versions)
+            main_changeset = get_package_changes(before_main, after_versions)
+            if self.specified_versions or self.dev:
+                important_changeset = all_changeset
+            else:
+                important_changeset = main_changeset
+
             for package, version in main_changeset.items():
                 self.logger.info(f"Main {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
             for package, version in all_changeset.items():
                 if package not in main_changeset:
                     self.logger.info(f" Dev {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
 
-            # see if there is an important change
-            important = False
-            if len(main_changeset) > 0:
-                important = True
-            elif self.dev and len(all_changeset) > 0:
-                important = True
-            else:
-                # see if there was a specific one asked for
-                for package, version in all_changeset.items():
-                    if package in self.specified_versions:
-                        important = True
-                        break
-
-            if not important:
-                message = "No main dependencies updated."
-                if self.dev:
-                    message = "No dependencies updated."
-
+            if not important_changeset:
+                message = f"No important dependencies updated. Only {', '.join(all_changeset.keys() or ['none'])} were updated."
                 self.logger.info(message)
                 return StepResult(step=self, status=StepStatus.SKIPPED, stderr=message)
 
@@ -238,14 +225,10 @@ def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext
     return latest
 
 
-from pipelines import main_logger
-
-
 def parse_specific_dependencies(specific_dependencies: List[str]) -> dict[str, str]:
     package_name_pattern = r"^(\w+)[@><=]([^\s]+)$"
     versions: dict[str, str] = {}
     for dep in specific_dependencies:
-        main_logger.info(f"Dependency: {dep}")
         match = re.match(package_name_pattern, dep)
         if match:
             package = match.group(1)
