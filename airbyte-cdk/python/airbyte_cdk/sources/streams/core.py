@@ -146,11 +146,9 @@ class Stream(ABC):
             logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
         )
 
-        has_slices = False
         next_slice = checkpoint_reader.next()
         record_counter = 0
         while next_slice is not None:
-            has_slices = True
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(next_slice)
             records = self.read_records(
@@ -195,12 +193,7 @@ class Stream(ABC):
 
             next_slice = checkpoint_reader.next()
 
-        # Streams should always emit state even if there were no slices which defaults to the original incoming state
-        if not has_slices:
-            checkpoint = checkpoint_reader.get_checkpoint()
-        else:
-            checkpoint = checkpoint_reader.final_checkpoint()
-
+        checkpoint = checkpoint_reader.get_checkpoint()
         if checkpoint is not None:
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
@@ -459,9 +452,9 @@ class Stream(ABC):
             new_state = self.state  # type: ignore # we know the field might not exist...
             checkpoint_reader.observe(new_state)
         except AttributeError:
-            # Only when the stream uses legacy state should the checkpoint reader observe the parameter stream_state which
-            # is derived from the get_updated_state() method. The checkpoint reader should preserve existing state over
-            # where there is no stream_state
+            # Only when a stream uses legacy state should the checkpoint reader observe the parameter stream_state that
+            # is derived from the get_updated_state() method. The checkpoint reader should preserve existing state when
+            # there is no stream_state
             if stream_state:
                 checkpoint_reader.observe(stream_state)
 

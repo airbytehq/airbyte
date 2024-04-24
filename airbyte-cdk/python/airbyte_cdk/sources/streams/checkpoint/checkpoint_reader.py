@@ -40,15 +40,6 @@ class CheckpointReader(ABC):
         Retrieves the current state value of the stream
         """
 
-    # The separate get_checkpoint() and final_checkpoint() methods make the the two interfaces a little odd because looking at the
-    # implementation in isolation, based fields on the implementations of the CheckpointReaders aren't optional.
-    @abstractmethod
-    def final_checkpoint(self) -> Optional[Mapping[str, Any]]:
-        """
-        Certain types of streams like full_refresh don't checkpoint per-slice, but should always emit a final state at the end of
-        a sync.
-        """
-
 
 class IncrementalCheckpointReader(CheckpointReader):
     """
@@ -59,11 +50,19 @@ class IncrementalCheckpointReader(CheckpointReader):
     def __init__(self, stream_state: Mapping[str, Any], stream_slices: Iterable[Optional[Mapping[str, Any]]]):
         self._state: Mapping[str, Any] = stream_state
         self._stream_slices = iter(stream_slices)
+        self._has_slices = False
 
     def next(self) -> Optional[Mapping[str, Any]]:
         try:
-            return next(self._stream_slices)
+            next_slice = next(self._stream_slices)
+            self._has_slices = True
+            return next_slice
         except StopIteration:
+            # This is used to avoid sending a duplicate state message at the end of a sync since the stream has already
+            # emitted state at the end of each slice. If we want to avoid this extra complexity, we can also just accept
+            # that every sync emits a final duplicate state
+            if self._has_slices:
+                self._state = None
             return None
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
@@ -71,9 +70,6 @@ class IncrementalCheckpointReader(CheckpointReader):
 
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
         return self._state
-
-    def final_checkpoint(self) -> Optional[Mapping[str, Any]]:
-        return None
 
 
 class ResumableFullRefreshCheckpointReader(CheckpointReader):
@@ -106,9 +102,6 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
         return self._state or {}
 
-    def final_checkpoint(self) -> Optional[Mapping[str, Any]]:
-        return self._state  # removed this part which I think we can do because we only emit final state if needed: or {}
-
 
 class FullRefreshCheckpointReader(CheckpointReader):
     """
@@ -118,18 +111,19 @@ class FullRefreshCheckpointReader(CheckpointReader):
 
     def __init__(self, stream_slices: Iterable[Optional[Mapping[str, Any]]]):
         self._stream_slices = iter(stream_slices)
+        self._final_checkpoint = False
 
     def next(self) -> Optional[Mapping[str, Any]]:
         try:
             return next(self._stream_slices)
         except StopIteration:
+            self._final_checkpoint = True
             return None
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
         pass
 
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
+        if self._final_checkpoint:
+            return {"__ab_no_cursor_state_message": True}
         return None
-
-    def final_checkpoint(self) -> Optional[Mapping[str, Any]]:
-        return {"__ab_full_refresh_state_message": True}  # replace this with the new terminal value from ella

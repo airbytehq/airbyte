@@ -16,12 +16,22 @@ def test_incremental_checkpoint_reader_next_slice():
     checkpoint_reader = IncrementalCheckpointReader(stream_slices=stream_slices, stream_state={})
 
     assert checkpoint_reader.next() == stream_slices[0]
+    checkpoint_reader.observe({"updated_at": "2024-01-15"})
+    assert checkpoint_reader.get_checkpoint() == {"updated_at": "2024-01-15"}
     assert checkpoint_reader.next() == stream_slices[1]
+    checkpoint_reader.observe({"updated_at": "2024-02-15"})
+    assert checkpoint_reader.get_checkpoint() == {"updated_at": "2024-02-15"}
     assert checkpoint_reader.next() == stream_slices[2]
+    checkpoint_reader.observe({"updated_at": "2024-03-15"})
+    assert checkpoint_reader.get_checkpoint() == {"updated_at": "2024-03-15"}
+
+    # Validate that after iterating over every slice, the final get_checkpoint() call is None so that
+    # no duplicate final state message is emitted
     assert checkpoint_reader.next() is None
+    assert checkpoint_reader.get_checkpoint() is None
 
 
-def test_incremental_checkpoint_reader_observe():
+def test_incremental_checkpoint_reader_incoming_state():
     incoming_state = {"updated_at": "2024-04-01"}
     checkpoint_reader = IncrementalCheckpointReader(stream_slices=[], stream_state=incoming_state)
 
@@ -63,6 +73,17 @@ def test_full_refresh_checkpoint_reader_next():
     checkpoint_reader = FullRefreshCheckpointReader([{}])
 
     assert checkpoint_reader.next() == {}
-    assert checkpoint_reader.next() is None
     assert checkpoint_reader.get_checkpoint() is None
-    assert checkpoint_reader.final_checkpoint() == {"__ab_no_cursor_state_message": True}
+    assert checkpoint_reader.next() is None
+    assert checkpoint_reader.get_checkpoint() == {"__ab_no_cursor_state_message": True}
+
+
+def test_full_refresh_checkpoint_reader_substream():
+    checkpoint_reader = FullRefreshCheckpointReader([{"partition": 1}, {"partition": 2}])
+
+    assert checkpoint_reader.next() == {"partition": 1}
+    assert checkpoint_reader.get_checkpoint() is None
+    assert checkpoint_reader.next() == {"partition": 2}
+    assert checkpoint_reader.get_checkpoint() is None
+    assert checkpoint_reader.next() is None
+    assert checkpoint_reader.get_checkpoint() == {"__ab_no_cursor_state_message": True}

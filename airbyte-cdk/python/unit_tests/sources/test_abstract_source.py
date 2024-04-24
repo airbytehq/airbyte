@@ -968,13 +968,26 @@ class TestIncrementalRead:
         Tests that an incremental read returns at least one state messages even if no records were read:
             1. outputs a state message after reading the entire stream
         """
+        state = {"cursor": "value"}
         if use_legacy:
-            input_state = defaultdict(dict)
+            input_state = {"s1": state, "s2": state}
         else:
-            input_state = []
+            input_state = [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
+                    ),
+                ),
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
+                    ),
+                ),
+            ]
 
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
-        state = {"cursor": "value"}
         stream_1 = MockStreamWithState(
             [
                 (
@@ -1300,6 +1313,7 @@ class TestResumableFullRefreshRead:
                 _as_state("s1", {"page": 2}),
                 *_as_records("s1", responses[2]["records"]),
                 _as_state("s1", {}),
+                _as_state("s1", {}),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             ]
         )
@@ -1360,6 +1374,7 @@ class TestResumableFullRefreshRead:
                 *_as_records("s1", responses[2]["records"]),
                 _as_state("s1", {"page": 13}),
                 *_as_records("s1", responses[3]["records"]),
+                _as_state("s1", {}),
                 _as_state("s1", {}),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
             ]

@@ -142,8 +142,8 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 5
-        assert len(actual_messages.state_messages) == 3
-        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
+        assert len(actual_messages.state_messages) == 4
+        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 1}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
@@ -153,6 +153,9 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[2].state.stream.stream_state == {}
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 1.0
+        assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
+        assert actual_messages.state_messages[3].state.stream.stream_state == {}
+        assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
     def test_resumable_full_refresh_second_attempt(self, http_mocker):
@@ -186,8 +189,8 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 8
-        assert len(actual_messages.state_messages) == 3
-        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
+        assert len(actual_messages.state_messages) == 4
+        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"page": 101}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
@@ -197,6 +200,9 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[2].state.stream.stream_state == {}
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
+        assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
+        assert actual_messages.state_messages[3].state.stream.stream_state == {}
+        assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
     def test_resumable_full_refresh_failure(self, http_mocker):
