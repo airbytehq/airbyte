@@ -14,24 +14,18 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     cls=DaggerPipelineCommand,
     short_help="Get the selected Python connectors up to date.",
 )
-@click.option("--cdk-version", type=str, required=False, default=None)
 
-# TODO: force to be able to downgrade
 # TODO: flag to skip regression tests
 # TODO: flag to make PR
-# TODO: also update the manifest.yaml?
-# TODO: allow a * to be passed in or set as default. e.g. --cdk-version 0.80.*
-# TODO: add a flag to upgrade pytest declared dependency. This should probably have a ^ in the version
-# TODO: add a flag to do a poetry update to update as many as possible
+# TODO: also update the manifest.yaml with the cdk version?
 @click.pass_context
 async def up_to_date(
     ctx: click.Context,
-    cdk_version: str | None,
 ) -> bool:
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Update {connector.technical_name} connector's CDK",
+            pipeline_name=f"Update {connector.technical_name} to latest versions.",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -62,7 +56,6 @@ async def up_to_date(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
-        cdk_version,
     )
 
     return True
