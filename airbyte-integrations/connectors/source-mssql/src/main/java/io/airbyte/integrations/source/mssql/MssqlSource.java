@@ -476,8 +476,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         targetPosition,
         tableSnapshotPublisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime,
-        subsequentRecordWaitTime);
+        firstRecordWaitTime);
 
     final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
     return AutoCloseableIterators.concatWithEagerClose(
@@ -626,11 +625,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public boolean supportResumableFullRefresh() {
-    return true;
-  }
-
-  @Override
   protected void initializeForStateManager(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable, final StateManager stateManager) {
     if (initialLoadStateManager != null) {
       return;
@@ -664,4 +658,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
   }
+
+  @Override
+  public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
+    // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
+    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+            && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) { // TODO: needs to check for ordered column here
+      return true;
+    }
+    // for cursor based, primary key is stored in primary key under this stream.
+    if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
 }

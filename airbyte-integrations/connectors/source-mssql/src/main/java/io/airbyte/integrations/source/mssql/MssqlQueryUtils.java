@@ -195,8 +195,6 @@ public class MssqlQueryUtils {
         if (cursorInfoOptional.isEmpty()) {
           throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
         }
-        LOGGER.info("*** cursorInfo {}", cursorInfoOptional.get());
-
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
         final Optional<String> maybeCursorField = Optional.ofNullable(cursorInfoOptional.get().getCursorField());
         maybeCursorField.ifPresent(cursorField -> {

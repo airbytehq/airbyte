@@ -9,6 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.Source
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
@@ -24,6 +25,7 @@ import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import junit.framework.TestCase.assertEquals
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
@@ -36,7 +38,7 @@ import org.mockito.Mockito
 @SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
-        "The static variables are updated in subclasses for convenience, and cannot be final."
+    "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T = createTestDatabase()
@@ -362,11 +364,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         catalogStreams.addAll(expected.streams)
         catalogStreams.add(
             CatalogHelpers.createAirbyteStream(
-                    TABLE_NAME,
-                    SCHEMA_NAME2,
-                    Field.of(COL_ID, JsonSchemaType.STRING),
-                    Field.of(COL_NAME, JsonSchemaType.STRING)
-                )
+                TABLE_NAME,
+                SCHEMA_NAME2,
+                Field.of(COL_ID, JsonSchemaType.STRING),
+                Field.of(COL_NAME, JsonSchemaType.STRING)
+            )
                 .withSupportedSyncModes(
                     java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 )
@@ -382,22 +384,34 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    fun testReadSuccess() {
-        val actualMessages =
-            MoreIterators.toList(
-                source()!!.read(config(), getConfiguredCatalogWithOneStream(defaultNamespace), null)
-            )
+    protected open fun testReadSuccess() {
+        val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
         setEmittedAtToNull(actualMessages)
-        val expectedMessages = testMessages
+        val expectedMessagesResult: MutableList<AirbyteMessage> = ArrayList(testMessages)
+        val actualRecordMessages = filterRecords(actualMessages)
+
         MatcherAssert.assertThat(
-            expectedMessages,
-            Matchers.containsInAnyOrder<Any>(*actualMessages.toTypedArray())
+            expectedMessagesResult,
+            Matchers.containsInAnyOrder<Any>(*actualRecordMessages.toTypedArray())
         )
         MatcherAssert.assertThat(
-            actualMessages,
-            Matchers.containsInAnyOrder<Any>(*expectedMessages.toTypedArray())
+            actualRecordMessages,
+            Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
+
+        if ((source() as AbstractJdbcSource<*>).supportResumableFullRefresh(catalog.streams[0])) {
+            val stateMessages = extractStateMessage(actualMessages)
+            // verify the final message is expected
+            val finalStateMessage = stateMessages[stateMessages.size - 1]
+            assertEquals(
+                finalStateMessage.stream.streamState.get("state_type").textValue(),
+                "ordered_column"
+            )
+            assertEquals(finalStateMessage.stream.streamState.get("ordered_col").textValue(), "id")
+            assertEquals(finalStateMessage.stream.streamState.get("ordered_col_val").textValue(), "3")
+        }
     }
 
     @Test
@@ -464,12 +478,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
 
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
 
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
@@ -502,15 +517,16 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     )
                 )
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
         expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces))
 
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open fun getAirbyteMessagesForTablesWithQuoting(
@@ -990,7 +1006,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // some databases don't make insertion order guarantee when equal ordering value
         if (
             testdb!!.databaseDriver == DatabaseDriver.TERADATA ||
-                testdb!!.databaseDriver == DatabaseDriver.ORACLE
+            testdb!!.databaseDriver == DatabaseDriver.ORACLE
         ) {
             MatcherAssert.assertThat(
                 listOf("a", "b"),
@@ -1209,34 +1225,34 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .withStreams(
                 java.util.List.of(
                     CatalogHelpers.createAirbyteStream(
-                            TABLE_NAME,
-                            defaultNamespace,
-                            Field.of(COL_ID, JsonSchemaType.INTEGER),
-                            Field.of(COL_NAME, JsonSchemaType.STRING),
-                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                        )
+                        TABLE_NAME,
+                        defaultNamespace,
+                        Field.of(COL_ID, JsonSchemaType.INTEGER),
+                        Field.of(COL_NAME, JsonSchemaType.STRING),
+                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                    )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID))),
                     CatalogHelpers.createAirbyteStream(
-                            TABLE_NAME_WITHOUT_PK,
-                            defaultNamespace,
-                            Field.of(COL_ID, JsonSchemaType.INTEGER),
-                            Field.of(COL_NAME, JsonSchemaType.STRING),
-                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                        )
+                        TABLE_NAME_WITHOUT_PK,
+                        defaultNamespace,
+                        Field.of(COL_ID, JsonSchemaType.INTEGER),
+                        Field.of(COL_NAME, JsonSchemaType.STRING),
+                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                    )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(emptyList()),
                     CatalogHelpers.createAirbyteStream(
-                            TABLE_NAME_COMPOSITE_PK,
-                            defaultNamespace,
-                            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                        )
+                        TABLE_NAME_COMPOSITE_PK,
+                        defaultNamespace,
+                        Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                        Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                    )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
@@ -1519,6 +1535,30 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected fun extractState(airbyteMessage: AirbyteMessage): JsonNode {
         return Jsons.jsonNode(java.util.List.of(airbyteMessage.state))
+    }
+
+    protected fun createStateMessage(
+        streamNamespace: String,
+        streamName: String,
+        jsonStreamState: JsonNode,
+        recordCount: Long
+    ): AirbyteMessage {
+        return AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                    .withStream(
+                        AirbyteStreamState()
+                            .withStreamDescriptor(
+                                StreamDescriptor()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                            )
+                            .withStreamState(jsonStreamState)
+                    )
+                    .withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
+            )
     }
 
     protected fun createStateMessage(
