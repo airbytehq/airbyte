@@ -492,7 +492,7 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
     assert stream_read.slices[0].slice_descriptor == {"descriptor": "first_slice"}
     assert len(stream_read.slices[0].pages) == 1
     assert len(stream_read.slices[0].pages[0].records) == 1
-    assert stream_read.slices[0].state is None
+    assert stream_read.slices[0].state == []
 
     assert stream_read.slices[1].slice_descriptor == {"descriptor": "second_slice"}
     assert len(stream_read.slices[1].pages) == 3
@@ -500,7 +500,7 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
 
-    assert stream_read.slices[1].state.stream.stream_state == {"a_timestamp": 123}
+    assert stream_read.slices[1].state[0].stream.stream_state == {"a_timestamp": 123}
 
 
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
