@@ -1,4 +1,4 @@
-version: "0.44.0"
+version: "0.78.5"
 
 definitions:
   selector:
@@ -17,6 +17,8 @@ definitions:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
+      record_filter:
+        condition: "{{ record['published'] >= stream_interval['start_time'] }}"
     paginator:
       type: NoPagination
     requester:
