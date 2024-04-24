@@ -17,7 +17,7 @@ internal constructor(
     private val fullSourceDataType: String?
 ) {
     var nameSpace: String? = null
-    private var testNumber: Long = 0
+    private var testNumber: Int = 0
     private var idColumnName: String? = null
     private var testColumnName: String? = null
 
@@ -154,7 +154,7 @@ internal constructor(
         }
     }
 
-    fun setTestNumber(testNumber: Long) {
+    fun setTestNumber(testNumber: Int) {
         this.testNumber = testNumber
     }
 

@@ -27,7 +27,6 @@ object CatalogClientConverters {
         val protoCatalog = io.airbyte.protocol.models.AirbyteCatalog()
         val airbyteStream =
             catalog.streams
-                .stream()
                 .map { stream: AirbyteStreamAndConfiguration ->
                     try {
                         return@map toConfiguredProtocol(stream.stream, stream.config)
@@ -133,7 +132,6 @@ object CatalogClientConverters {
         return AirbyteCatalog()
             .streams(
                 catalog.streams
-                    .stream()
                     .map { stream: io.airbyte.protocol.models.AirbyteStream ->
                         toAirbyteStreamClientApi(stream)
                     }

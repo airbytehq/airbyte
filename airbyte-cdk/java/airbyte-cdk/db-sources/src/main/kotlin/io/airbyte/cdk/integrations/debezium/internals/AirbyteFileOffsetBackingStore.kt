@@ -16,8 +16,6 @@ import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.*
 import java.util.function.BiFunction
-import java.util.function.Function
-import java.util.stream.Collectors
 import org.apache.commons.io.FileUtils
 import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.util.SafeObjectInputStream
@@ -39,18 +37,7 @@ class AirbyteFileOffsetBackingStore(
     fun read(): Map<String, String> {
         val raw = load()
 
-        return raw.entries
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    Function { e: Map.Entry<ByteBuffer?, ByteBuffer?> ->
-                        byteBufferToString(e.key)
-                    },
-                    Function { e: Map.Entry<ByteBuffer?, ByteBuffer?> ->
-                        byteBufferToString(e.value)
-                    }
-                )
-            )
+        return raw.entries.associate { byteBufferToString(it.key) to byteBufferToString(it.value) }
     }
 
     fun persist(cdcState: JsonNode?) {
@@ -62,15 +49,10 @@ class AirbyteFileOffsetBackingStore(
 
         val updatedMap = updateStateForDebezium2_1(mapAsString)
 
-        val mappedAsStrings =
-            updatedMap.entries
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { e: Map.Entry<String, String?> -> stringToByteBuffer(e.key) },
-                        Function { e: Map.Entry<String, String?> -> stringToByteBuffer(e.value) }
-                    )
-                )
+        val mappedAsStrings: Map<ByteBuffer?, ByteBuffer?> =
+            updatedMap.entries.associate {
+                stringToByteBuffer(it.key) to stringToByteBuffer(it.value)
+            }
 
         FileUtils.deleteQuietly(offsetFilePath.toFile())
         save(mappedAsStrings)
@@ -79,7 +61,7 @@ class AirbyteFileOffsetBackingStore(
     private fun updateStateForDebezium2_1(mapAsString: Map<String, String?>): Map<String, String?> {
         val updatedMap: MutableMap<String, String?> = LinkedHashMap()
         if (mapAsString.size > 0) {
-            val key = mapAsString.keys.stream().toList()[0]
+            val key = mapAsString.keys.toList()[0]
             val i = key.indexOf('[')
             val i1 = key.lastIndexOf(']')
 

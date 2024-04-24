@@ -13,8 +13,6 @@ import io.airbyte.protocol.models.v0.*
 import java.io.IOException
 import java.sql.SQLException
 import java.util.function.Consumer
-import java.util.function.Function
-import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions
@@ -89,15 +87,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     fun testDataTypes() {
         if (testCatalog()) {
             runDiscover()
-            val streams =
-                lastPersistedCatalog.streams
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            Function { obj: AirbyteStream -> obj.name },
-                            Function { s: AirbyteStream -> s }
-                        )
-                    )
+            val streams = lastPersistedCatalog.streams.associateBy { it.name }
 
             // testDataHolders should be initialized using the `addDataTypeTestData` function
             testDataHolders.forEach(
@@ -140,7 +130,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
 
         val recordMessages =
             allMessages
-                .stream()
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .toList()
         val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
@@ -284,7 +273,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             ConfiguredAirbyteCatalog()
                 .withStreams(
                     testDataHolders
-                        .stream()
                         .map { test: TestDataHolder ->
                             ConfiguredAirbyteStream()
                                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -322,10 +310,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     fun addDataTypeTestData(test: TestDataHolder) {
         testDataHolders.add(test)
         test.setTestNumber(
-            testDataHolders
-                .stream()
-                .filter { t: TestDataHolder -> t.sourceType == test.sourceType }
-                .count()
+            testDataHolders.filter { t: TestDataHolder -> t.sourceType == test.sourceType }.count()
         )
         test.nameSpace = nameSpace
         test.setIdColumnName(idColumnName)
@@ -334,7 +319,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     }
 
     private fun formatCollection(collection: Collection<String?>): String {
-        return collection.stream().map { s: String? -> "`$s`" }.collect(Collectors.joining(", "))
+        return collection.joinToString(", ") { s: String? -> "`$s`" }
     }
 
     val markdownTestTable: String
@@ -406,7 +391,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
 
     protected fun extractStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
         return messages
-            .stream()
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
             .toList()

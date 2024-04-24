@@ -120,14 +120,11 @@ open class AdvancedTestDataComparator : TestDataComparator {
         } else {
             for (expectedNode in expectedList) {
                 val sameActualNode =
-                    actualList
-                        .stream()
-                        .filter { actualNode: JsonNode ->
-                            compareJsonNodes(expectedNode, actualNode)
-                        }
-                        .findFirst()
-                if (sameActualNode.isPresent) {
-                    actualList.remove(sameActualNode.get())
+                    actualList.firstOrNull { actualNode: JsonNode ->
+                        compareJsonNodes(expectedNode, actualNode)
+                    }
+                if (sameActualNode != null) {
+                    actualList.remove(sameActualNode)
                 } else {
                     return false
                 }

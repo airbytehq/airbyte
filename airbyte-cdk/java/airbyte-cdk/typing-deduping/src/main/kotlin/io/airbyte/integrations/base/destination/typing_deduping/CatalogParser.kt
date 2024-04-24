@@ -30,10 +30,10 @@ constructor(
             val actualStreamConfig: StreamConfig
             // Use empty string quote because we don't really care
             if (
-                streamConfigs.stream().anyMatch { s: StreamConfig ->
+                streamConfigs.any { s: StreamConfig ->
                     s.id.finalTableId("") == originalStreamConfig.id.finalTableId("")
                 } ||
-                    streamConfigs.stream().anyMatch { s: StreamConfig ->
+                    streamConfigs.any { s: StreamConfig ->
                         s.id.rawTableId("") == originalStreamConfig.id.rawTableId("")
                     }
             ) {
@@ -134,12 +134,11 @@ constructor(
                 else -> throw IllegalArgumentException("Top-level schema must be an object")
             }
 
-        require(!stream.primaryKey.stream().anyMatch { key: List<String?> -> key.size > 1 }) {
+        require(!stream.primaryKey.any { key: List<String?> -> key.size > 1 }) {
             "Only top-level primary keys are supported"
         }
         val primaryKey =
             stream.primaryKey
-                .stream()
                 .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
                 .toList()
 
@@ -179,7 +178,7 @@ constructor(
             val originalColumnId = sqlGenerator.buildColumnId(key)
             var columnId: ColumnId
             if (
-                columns.keys.stream().noneMatch { c: ColumnId ->
+                columns.keys.none { c: ColumnId ->
                     c.canonicalName == originalColumnId.canonicalName
                 }
             ) {
@@ -216,11 +215,7 @@ constructor(
                     }
 
                     val canonicalName = columnId.canonicalName
-                    if (
-                        columns.keys.stream().noneMatch { c: ColumnId ->
-                            c.canonicalName == canonicalName
-                        }
-                    ) {
+                    if (columns.keys.none { c: ColumnId -> c.canonicalName == canonicalName }) {
                         break
                     } else {
                         i++
@@ -278,11 +273,7 @@ constructor(
         newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")
         // if there's _still_ a collision after this, just give up.
         // we could try to be more clever, but this is already a pretty rare case.
-        if (
-            columns.keys.stream().anyMatch { c: ColumnId ->
-                c.canonicalName == newColumnId.canonicalName
-            }
-        ) {
+        if (columns.keys.any { c: ColumnId -> c.canonicalName == newColumnId.canonicalName }) {
             throw IllegalArgumentException(
                 "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
             )

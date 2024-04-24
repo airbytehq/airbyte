@@ -10,7 +10,6 @@ import java.util.*
 import java.util.concurrent.*
 import java.util.function.Function
 import java.util.function.Supplier
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -26,7 +25,7 @@ class CursorManager<S : Any>(
     cursorFunction: Function<S, String>?,
     cursorFieldFunction: Function<S, List<String>>?,
     cursorRecordCountFunction: Function<S, Long>?,
-    namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
+    namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>,
     onlyIncludeIncrementalStreams: Boolean
 ) {
     /**
@@ -87,7 +86,7 @@ class CursorManager<S : Any>(
         cursorFunction: Function<S, String>?,
         cursorFieldFunction: Function<S, List<String>>?,
         cursorRecordCountFunction: Function<S, Long>?,
-        namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
+        namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>,
         onlyIncludeIncrementalStreams: Boolean
     ): Map<AirbyteStreamNameNamespacePair, CursorInfo> {
         val allStreamNames =
@@ -106,29 +105,17 @@ class CursorManager<S : Any>(
         allStreamNames.addAll(
             streamSupplier
                 .get()
-                .stream()
-                .map(namespacePairFunction)
+                .map { namespacePairFunction.apply(it) }
                 .filter { obj: AirbyteStreamNameNamespacePair? -> Objects.nonNull(obj) }
-                .collect(Collectors.toSet())
+                .toSet()
         )
 
         val localMap: MutableMap<AirbyteStreamNameNamespacePair, CursorInfo> = ConcurrentHashMap()
-        val pairToState =
-            streamSupplier
-                .get()
-                .stream()
-                .collect(Collectors.toMap(namespacePairFunction, Function.identity()))
+        val pairToState = streamSupplier.get().associateBy { namespacePairFunction.apply(it) }
         val pairToConfiguredAirbyteStream =
-            catalog.streams
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { stream: ConfiguredAirbyteStream ->
-                            AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)
-                        },
-                        Function.identity()
-                    )
-                )
+            catalog.streams.associateBy {
+                AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(it)
+            }
 
         for (pair in allStreamNames) {
             val stateOptional: Optional<S> = Optional.ofNullable(pairToState[pair])

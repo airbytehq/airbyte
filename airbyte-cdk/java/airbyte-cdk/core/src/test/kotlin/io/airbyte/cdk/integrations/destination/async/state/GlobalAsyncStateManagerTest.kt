@@ -16,7 +16,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -212,14 +211,7 @@ class GlobalAsyncStateManagerTest {
         }
         // because no state message has been tracked, there is nothing to flush yet.
         val stateWithStats =
-            emittedStatesFromDestination
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { c: AirbyteMessage -> c },
-                        { c: AirbyteMessage -> c.state?.destinationStats },
-                    ),
-                )
+            emittedStatesFromDestination.associateWith { it.state?.destinationStats }
         assertEquals(0, stateWithStats.size)
 
         stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -231,14 +223,7 @@ class GlobalAsyncStateManagerTest {
 
         val expectedDestinationStats = AirbyteStateStats().withRecordCount(2.0)
         val stateWithStats2 =
-            emittedStatesFromDestination
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { c: AirbyteMessage -> c },
-                        { c: AirbyteMessage -> c.state?.destinationStats },
-                    ),
-                )
+            emittedStatesFromDestination.associateWith { it.state?.destinationStats }
         assertEquals(
             listOf(
                 attachDestinationStateStats(
@@ -249,9 +234,9 @@ class GlobalAsyncStateManagerTest {
                     expectedDestinationStats,
                 ),
             ),
-            stateWithStats2.keys.stream().toList(),
+            stateWithStats2.keys.toList(),
         )
-        assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.stream().toList())
+        assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
     }
 
     private fun attachDestinationStateStats(
@@ -279,14 +264,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             //
             assertEquals(
                 listOf(
@@ -298,9 +276,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
             assertThrows(
                 IllegalArgumentException::class.java,
@@ -349,14 +327,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(30.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -367,9 +338,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
         }
 
         @Test
@@ -388,14 +359,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -406,9 +370,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
             emittedStatesFromDestination.clear()
 
@@ -421,14 +385,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -439,9 +396,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
         }
 
         @Test
@@ -460,14 +417,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -478,9 +428,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -491,14 +441,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -509,11 +452,11 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
-                stateWithStats2.values.stream().toList(),
+                stateWithStats2.values.toList(),
             )
             emittedStatesFromDestination.clear()
 
@@ -526,14 +469,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val stateWithStats3 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -544,9 +480,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats3.keys.stream().toList(),
+                stateWithStats3.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats3.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats3.values.toList())
         }
 
         @Test
@@ -568,14 +504,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(20.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -586,9 +515,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
             val afterConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
@@ -602,14 +531,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -620,9 +542,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
         }
     }
 
@@ -643,14 +565,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(0.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -661,9 +576,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
             assertThrows(
                 IllegalArgumentException::class.java,
@@ -692,14 +607,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -710,9 +618,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
             emittedStatesFromDestination.clear()
 
@@ -726,14 +634,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(10.0)
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -744,11 +645,11 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
-                stateWithStats2.values.stream().toList(),
+                stateWithStats2.values.toList(),
             )
         }
 
@@ -768,14 +669,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -786,9 +680,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -798,14 +692,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
             assertEquals(
                 listOf(
@@ -817,11 +704,11 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
-                stateWithStats2.values.stream().toList(),
+                stateWithStats2.values.toList(),
             )
             emittedStatesFromDestination.clear()
 
@@ -834,14 +721,7 @@ class GlobalAsyncStateManagerTest {
                 )
             }
             val stateWithStats3 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats3 = AirbyteStateStats().withRecordCount(10.0)
             assertEquals(
                 listOf(
@@ -853,11 +733,11 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats3,
                     ),
                 ),
-                stateWithStats3.keys.stream().toList(),
+                stateWithStats3.keys.toList(),
             )
             assertEquals(
                 listOf(expectedDestinationStats3),
-                stateWithStats3.values.stream().toList(),
+                stateWithStats3.values.toList(),
             )
         }
 
@@ -879,14 +759,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats = AirbyteStateStats().withRecordCount(3.0)
             val stateWithStats =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -897,9 +770,9 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.stream().toList(),
+                stateWithStats.keys.toList(),
             )
-            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.stream().toList())
+            assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
 
             stateManager.decrement(stream2StateId, 4)
@@ -919,14 +792,7 @@ class GlobalAsyncStateManagerTest {
             }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(7.0)
             val stateWithStats2 =
-                emittedStatesFromDestination
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            { c: AirbyteMessage -> c },
-                            { c: AirbyteMessage -> c.state?.destinationStats },
-                        ),
-                    )
+                emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
                 listOf(
                     attachDestinationStateStats(
@@ -937,11 +803,11 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.stream().toList(),
+                stateWithStats2.keys.toList(),
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
-                stateWithStats2.values.stream().toList(),
+                stateWithStats2.values.toList(),
             )
         }
     }

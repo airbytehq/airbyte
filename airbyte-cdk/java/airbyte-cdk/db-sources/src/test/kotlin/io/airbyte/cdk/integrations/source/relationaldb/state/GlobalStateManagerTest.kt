@@ -98,9 +98,7 @@ class GlobalStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
         val stateManager: StateManager =
             GlobalStateManager(AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog)
@@ -126,9 +124,7 @@ class GlobalStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
 
         val expectedGlobalState =
@@ -184,13 +180,11 @@ class GlobalStateManagerTest {
                                     )
                                 )
                         )
-                        .stream()
-                        .sorted(
+                        .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
                                 o.streamDescriptor.name
                             }
                         )
-                        .toList()
                 )
         val expected =
             AirbyteStateMessage()
@@ -279,9 +273,7 @@ class GlobalStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
 
         val expectedGlobalState =
@@ -337,13 +329,11 @@ class GlobalStateManagerTest {
                                     )
                                 )
                         )
-                        .stream()
-                        .sorted(
+                        .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
                                 o.streamDescriptor.name
                             }
                         )
-                        .toList()
                 )
         val expected =
             AirbyteStateMessage()

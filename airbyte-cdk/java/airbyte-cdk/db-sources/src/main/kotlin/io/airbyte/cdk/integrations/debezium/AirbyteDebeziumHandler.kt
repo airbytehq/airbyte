@@ -155,9 +155,8 @@ class AirbyteDebeziumHandler<T>(
         @JvmStatic
         fun isAnyStreamIncrementalSyncMode(catalog: ConfiguredAirbyteCatalog): Boolean {
             return catalog.streams
-                .stream()
                 .map { obj: ConfiguredAirbyteStream -> obj.syncMode }
-                .anyMatch { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
+                .any { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
         }
     }
 }

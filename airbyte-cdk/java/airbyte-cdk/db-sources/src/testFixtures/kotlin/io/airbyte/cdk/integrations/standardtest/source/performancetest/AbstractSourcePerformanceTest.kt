@@ -9,8 +9,6 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
-import java.util.function.Function
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.TestInstance
@@ -81,16 +79,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
 
     protected fun validateNumberOfReceivedMsgs(checkStatusMap: Map<String, Int>) {
         // Iterate through all streams map and check for streams where
-        val failedStreamsMap =
-            checkStatusMap.entries
-                .stream()
-                .filter { el: Map.Entry<String, Int> -> el.value != 0 }
-                .collect(
-                    Collectors.toMap(
-                        Function { obj: Map.Entry<String, Int> -> obj.key },
-                        Function { obj: Map.Entry<String, Int> -> obj.value }
-                    )
-                )
+        val failedStreamsMap = checkStatusMap.filterValues { it != 0 }
 
         if (failedStreamsMap.isNotEmpty()) {
             Assertions.fail<Any>("Non all messages were delivered. $failedStreamsMap")

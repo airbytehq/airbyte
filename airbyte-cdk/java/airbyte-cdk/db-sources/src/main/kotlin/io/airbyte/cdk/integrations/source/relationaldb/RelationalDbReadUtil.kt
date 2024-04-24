@@ -19,7 +19,6 @@ object RelationalDbReadUtil {
         val newlyAddedStreams: Set<AirbyteStreamNameNamespacePair> =
             HashSet(Sets.difference(allStreams, alreadySyncedStreams))
         return catalog.streams
-            .stream()
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
@@ -42,7 +41,6 @@ object RelationalDbReadUtil {
                 }
                 .toSet()
         return catalog.streams
-            .stream()
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 !initialLoadStreamsNamespacePairs.contains(

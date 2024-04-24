@@ -18,7 +18,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -91,15 +90,7 @@ class S3ConsumerFactory {
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog?
     ): FlushBufferFunction {
-        val pairToWriteConfig =
-            writeConfigs
-                .stream()
-                .collect(
-                    Collectors.toUnmodifiableMap(
-                        Function { config: WriteConfig -> toNameNamespacePair(config) },
-                        Function.identity()
-                    )
-                )
+        val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
 
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
@@ -164,7 +155,7 @@ class S3ConsumerFactory {
             config: S3DestinationConfig,
             catalog: ConfiguredAirbyteCatalog?
         ): List<WriteConfig> {
-            return catalog!!.streams.stream().map(toWriteConfig(storageOperations, config)).toList()
+            return catalog!!.streams.map { toWriteConfig(storageOperations, config).apply(it) }
         }
 
         private fun toWriteConfig(

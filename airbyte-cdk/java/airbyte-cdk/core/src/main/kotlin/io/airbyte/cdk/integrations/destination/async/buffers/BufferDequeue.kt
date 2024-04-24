@@ -109,12 +109,7 @@ class BufferDequeue(
         get() = memoryManager.maxMemoryBytes
 
     val totalGlobalQueueSizeBytes: Long
-        get() =
-            buffers.values
-                .stream()
-                .map { obj: StreamAwareQueue -> obj.currentMemoryUsage }
-                .mapToLong { obj: Long -> obj }
-                .sum()
+        get() = buffers.values.sumOf { obj: StreamAwareQueue -> obj.currentMemoryUsage }
 
     fun getQueueSizeInRecords(streamDescriptor: StreamDescriptor): Optional<Long> {
         return getBuffer(streamDescriptor).map { buf: StreamAwareQueue -> buf.size().toLong() }
