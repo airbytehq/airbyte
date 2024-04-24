@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
   license: MIT
+  maxSecondsBetweenMessages: 3600
   name: Mixpanel
   remoteRegistries:
     pypi:

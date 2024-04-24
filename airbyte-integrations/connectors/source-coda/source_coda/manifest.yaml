@@ -53,7 +53,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['href'] }}"
+      cursor_value: "{{ last_record['href'] }}"
     page_token_option:
       type: "RequestPath"
       field_name: "from"

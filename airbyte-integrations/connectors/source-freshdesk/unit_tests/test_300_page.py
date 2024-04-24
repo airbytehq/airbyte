@@ -4,78 +4,82 @@
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_freshdesk.streams import Tickets
+from conftest import find_stream
 
 
 @pytest.fixture(name="responses")
 def responses_fixtures():
     return [
         {
-            "url": "/api/v2/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44Z",
             "json": [{"id": 1, "updated_at": "2018-01-02T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00Z",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00Z",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00Z",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00Z",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {
                 "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z>; rel="next"'
             },
         },
         {
-            "url": "/api/v2/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z",
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z",
             "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}],
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-03-03T00%3A00%3A00Z",
+            "json": [],
         },
     ]
 
@@ -113,16 +117,14 @@ class Test300PageLimit:
             {"id": 6, "updated_at": "2019-03-03T00:00:00Z"},
         ]
 
+        # Create test_stream instance.
+        test_stream = find_stream("tickets", config)
+
         # INT value of page number where the switch state should be triggered.
         # in this test case values from: 1 - 4, assuming we want to switch state on this page.
-        ticket_paginate_limit = 2
+        test_stream.retriever.paginator.pagination_strategy.PAGE_LIMIT = 2
         # This parameter mocks the "per_page" parameter in the API Call
-        result_return_limit = 1
-
-        # Create test_stream instance.
-        test_stream = Tickets(authenticator=authenticator, config=config)
-        test_stream.ticket_paginate_limit = ticket_paginate_limit
-        test_stream.result_return_limit = result_return_limit
+        test_stream.retriever.paginator.pagination_strategy._page_size = 1
 
         # Mocking Request
         for response in responses:
@@ -133,7 +135,10 @@ class Test300PageLimit:
                 headers=response.get("headers", {}),
             )
 
-        records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+        records = []
+        for slice in test_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            records_generator = test_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
+            records.extend([dict(record) for record in records_generator])
 
         # We're expecting 6 records to return from the tickets_stream
         assert records == expected_output
