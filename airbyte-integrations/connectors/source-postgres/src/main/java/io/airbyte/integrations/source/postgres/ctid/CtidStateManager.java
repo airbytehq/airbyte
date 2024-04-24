@@ -27,7 +27,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   public static final String STATE_TYPE_KEY = "state_type";
 
   protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
-  private Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   protected String lastCtid;
   private FileNodeHandler fileNodeHandler;

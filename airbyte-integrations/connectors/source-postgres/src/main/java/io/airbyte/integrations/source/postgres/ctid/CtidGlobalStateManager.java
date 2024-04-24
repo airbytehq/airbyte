@@ -80,6 +80,8 @@ public class CtidGlobalStateManager extends CtidStateManager {
     return filteredMap;
   }
 
+  public CdcState getCdcState() { return cdcState; }
+
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     pairToCtidStatus.put(pair, ctidStatus);
@@ -105,6 +107,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);
   }
+
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {

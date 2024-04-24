@@ -27,6 +27,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterS
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isCdc;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isXmin;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCdcState;
@@ -751,9 +752,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, tableNameToTable, stateManager, getQuoteString(), getReplicationSlot(database, sourceConfig).get(0));
+      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), getReplicationSlot(database, sourceConfig).get(0));
     } else {
-      final PostgresCursorBasedStateManager cursorBasedStateManager = new PostgresCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,
               catalog.getStreams(),
@@ -778,6 +778,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresQueryUtils.fileNodeForStreams(database,
             List.of(stream),
             getQuoteString());
+    var sourceConfig = database.getSourceConfig();
+
+    if (!isCdc(sourceConfig)) {
+      ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.emptyObject(), fileNodeHandler);
+    }
 
     return createInitialLoader(database, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager);
   }

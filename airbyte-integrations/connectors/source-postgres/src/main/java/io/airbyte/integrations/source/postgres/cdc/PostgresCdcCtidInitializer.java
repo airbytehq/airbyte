@@ -59,13 +59,11 @@ public class PostgresCdcCtidInitializer {
 
   public static CtidGlobalStateManager getCtidInitialLoadGlobalStateManager(final JdbcDatabase database,
       final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
       final StateManager stateManager,
       final String quoteString,
       final JsonNode replicationSlot) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
-
 
     final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
         sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
@@ -179,9 +177,7 @@ public class PostgresCdcCtidInitializer {
             sourceConfig.get("replication_method").get("publication").asText(),
             PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
-      final CdcState stateToBeUsed = (!savedOffsetAfterReplicationSlotLSN || stateManager.getCdcStateManager().getCdcState() == null
-          || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
-              : stateManager.getCdcStateManager().getCdcState();
+      final CdcState stateToBeUsed = ctidStateManager.getCdcState();
       final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
           savedOffsetAfterReplicationSlotLSN);
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>();

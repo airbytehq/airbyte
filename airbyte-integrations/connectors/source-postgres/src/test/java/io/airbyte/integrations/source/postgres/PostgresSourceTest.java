@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -213,7 +214,8 @@ class PostgresSourceTest {
             CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
             null));
     setEmittedAtToNull(actualMessages);
-    assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
+    assertEquals(DOUBLE_QUOTED_MESSAGES, actualRecordMessages);
     testdb.query(ctx -> ctx.execute("DROP TABLE \"\"\"test_dq_table\"\"\";"));
   }
 
@@ -227,7 +229,8 @@ class PostgresSourceTest {
       final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
       final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
-      assertEquals(UTF8_MESSAGES, actualMessages);
+      final var actualRecordMessages = filterRecords(actualMessages);
+      assertEquals(UTF8_MESSAGES, actualRecordMessages);
     }
   }
 
@@ -432,8 +435,9 @@ class PostgresSourceTest {
             Collectors.toList()));
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(getConfig(), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
 
-    assertEquals(ASCII_MESSAGES, actualMessages);
+    assertEquals(ASCII_MESSAGES, actualRecordMessages);
   }
 
   @Test
@@ -728,12 +732,14 @@ class PostgresSourceTest {
             sourceConfig,
             CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
             null));
-    setEmittedAtToNull(actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
+
+    setEmittedAtToNull(actualRecordMessages);
 
     // Check that the 'options' JDBC URL parameter was parsed correctly
     // and that the bytea value is not in the default 'hex' format.
-    assertEquals(1, actualMessages.size());
-    final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
+    assertEquals(1, actualRecordMessages.size());
+    final AirbyteMessage actualMessage = actualRecordMessages.stream().findFirst().get();
     assertTrue(actualMessage.getRecord().getData().has("bytes"));
     assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
   }
