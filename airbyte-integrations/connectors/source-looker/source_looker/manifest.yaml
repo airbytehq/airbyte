@@ -6,6 +6,45 @@ check:
   type: CheckStream
   stream_names:
     - color_collections
+    # - connections
+    # # - content_metadata
+    # - content_metadata_access
+    # - dashboards
+    # # - dashboard_elements
+    # # - dashboard_filters
+    # # - dashboard_layout_components
+    # # - dashboard_layouts
+    # - datagroups
+    # - folders
+    # # - folder_ancestors
+    # # - git_branches
+    # - groups
+    # - board_items
+    # - board_sections
+    # - boards
+    # - integration_hubs
+    # - integrations
+    # - legacy_features
+    # - lookml_models
+    # - looks
+    # - model_sets
+    # - permission_sets
+    # - permissions
+    # - primary_homepage_sections
+    # - projects
+    # # - project_files
+    # # - query_history
+    # - roles
+    # # - role_groups
+    # # - run_looks
+    # - scheduled_plans
+    # - user_attributes
+    # # - user_attribute_group_values
+    # - user_login_lockouts
+    # # - user_sessions
+    # - users
+    # - versions
+    # - workspaces
 
 definitions:
   looker_base_stream:
@@ -520,6 +559,7 @@ definitions:
     user_login_lockouts:
       $ref: "#/definitions/looker_base_stream"
       name: user_login_lockouts
+      primary_key: []
       schema_loader:
         type: InlineSchemaLoader
         schema:

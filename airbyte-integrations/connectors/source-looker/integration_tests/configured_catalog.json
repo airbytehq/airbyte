@@ -140,7 +140,7 @@
     },
     {
       "stream": {
-        "name": "homepage_items",
+        "name": "board_items",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -150,7 +150,7 @@
     },
     {
       "stream": {
-        "name": "homepage_sections",
+        "name": "board_sections",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -160,7 +160,7 @@
     },
     {
       "stream": {
-        "name": "homepages",
+        "name": "boards",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -321,26 +321,6 @@
     {
       "stream": {
         "name": "scheduled_plans",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "spaces",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "space_ancestors",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
