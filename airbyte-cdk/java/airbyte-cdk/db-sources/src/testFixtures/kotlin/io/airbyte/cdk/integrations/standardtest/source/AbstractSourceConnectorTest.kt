@@ -371,7 +371,7 @@ abstract class AbstractSourceConnectorTest {
         private const val MEMORY_LIMIT_FIELD_NAME = "memoryLimit"
 
         private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
-            return Jsons.`object`(Jsons.jsonNode(v1), klass)
+            return Jsons.`object`(Jsons.jsonNode(v1), klass)!!
         }
     }
 }

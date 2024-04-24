@@ -141,12 +141,12 @@ class AirbyteSchemaHistoryStorage(
     }
 
     private fun persist(schemaHistory: SchemaHistory<Optional<JsonNode>>?) {
-        if (schemaHistory!!.schema!!.isEmpty) {
+        if (schemaHistory!!.schema.isEmpty) {
             return
         }
-        val fileAsString = Jsons.`object`(schemaHistory.schema!!.get(), String::class.java)
+        val fileAsString = Jsons.`object`(schemaHistory.schema.get(), String::class.java)
 
-        if (fileAsString == null || fileAsString.isEmpty()) {
+        if (fileAsString.isNullOrEmpty()) {
             return
         }
 
