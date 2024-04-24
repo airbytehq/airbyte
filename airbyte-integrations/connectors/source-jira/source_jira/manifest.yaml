@@ -1140,10 +1140,9 @@ definitions:
           - path: ["updated"]
             value_type: string
             value: "{{ record.fields.updated }}"
-      - type: RemoveFields
-        field_pointers:
-          - ["renderedFields.*", "fields.*"]
-        condition: "{{ property is none }}"
+      - type: CustomTransformation
+        class_name: "source_jira.components.transformations.RemoveEmptyFields"
+        field_pointers: ["renderedFields", fields]
 
     $parameters:
       path: "search"
