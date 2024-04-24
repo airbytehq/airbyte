@@ -48,7 +48,7 @@ class IncrementalCheckpointReader(CheckpointReader):
     """
 
     def __init__(self, stream_state: Mapping[str, Any], stream_slices: Iterable[Optional[Mapping[str, Any]]]):
-        self._state: Mapping[str, Any] = stream_state
+        self._state: Optional[Mapping[str, Any]] = stream_state
         self._stream_slices = iter(stream_slices)
         self._has_slices = False
 
