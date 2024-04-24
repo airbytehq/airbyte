@@ -79,6 +79,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.arrow.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -248,30 +249,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
 
-    // Detect any PKs that we can't handle and throw as a config error.
-    final Map<StreamId, List<String>> problematicStreams = new HashMap<>();
-    for (StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (streamConfig.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-        final List<String> jsonPks = streamConfig.primaryKey().stream()
-            .filter(pkColumn -> {
-              AirbyteType type = streamConfig.columns().get(pkColumn);
-              return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
-            }).map(ColumnId::originalName)
-            .toList();
-        if (!jsonPks.isEmpty()) {
-          problematicStreams.put(streamConfig.id(), jsonPks);
-        }
-      }
-    }
-    if (!problematicStreams.isEmpty()) {
-      final String streamMessages = problematicStreams.entrySet().stream().map((entry) -> {
-          final StreamId streamId = entry.getKey();
-          final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
-          final String columns = String.join(", ", entry.getValue());
-          return humanReadableStreamId + ": columns " + columns;
-        }).collect(joining("\n"));
-      throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys.\n" + streamMessages);
-    }
+    throwIfAnyUnsupportedPrimaryKeys(disableTypeDedupe, parsedCatalog);
 
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper =
@@ -326,6 +304,45 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         typerDeduper,
         parsedCatalog,
         BigQueryUtils.getDatasetId(config));
+  }
+
+  /**
+   * Check for any streams running in dedup mode, with at least one primary key column whose type
+   * will resolve to JSON.
+   */
+  @VisibleForTesting
+  static void throwIfAnyUnsupportedPrimaryKeys(boolean disableTypingDeduping, ParsedCatalog parsedCatalog) {
+    // These PKs only matter if we're running T+D. Return early if not.
+    if (disableTypingDeduping) {
+      return;
+    }
+
+    final Map<StreamId, List<String>> problematicStreams = new HashMap<>();
+    for (StreamConfig streamConfig : parsedCatalog.streams()) {
+      // PKs only matter in dedup mode. In theory, in non-dedup mode, we shouldn't even receive a PK
+      // but we might as well be defensive here.
+      if (streamConfig.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+        final List<String> jsonPks = streamConfig.primaryKey().stream()
+            .filter(pkColumn -> {
+              AirbyteType type = streamConfig.columns().get(pkColumn);
+              return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
+            }).map(ColumnId::originalName)
+            .toList();
+        if (!jsonPks.isEmpty()) {
+          problematicStreams.put(streamConfig.id(), jsonPks);
+        }
+      }
+    }
+    if (!problematicStreams.isEmpty()) {
+      final String streamMessages = problematicStreams.entrySet().stream().map((entry) -> {
+          final StreamId streamId = entry.getKey();
+          final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
+          final String columns = String.join(", ", entry.getValue());
+          return humanReadableStreamId + ": " + columns;
+        }).sorted()
+      .collect(joining("\n"));
+      throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys.\n" + streamMessages);
+    }
   }
 
   protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(

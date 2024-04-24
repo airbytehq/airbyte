@@ -76,7 +76,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
-class BigQueryDestinationTest {
+class BigQueryDestinationIntegrationTest {
 
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
   protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
@@ -92,7 +92,7 @@ class BigQueryDestinationTest {
   protected static final Path[] ALL_PATHS = {CREDENTIALS_STANDARD_INSERT_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
     CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationIntegrationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
 
   private static final Instant NOW = Instant.now();
