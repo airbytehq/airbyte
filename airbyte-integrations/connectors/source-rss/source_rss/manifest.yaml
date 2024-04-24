@@ -36,6 +36,18 @@ definitions:
         $ref: "#/definitions/items_schema"
     $parameters:
       path: "/"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: published
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
 
   items_schema:
     $schema: http://json-schema.org/draft-07/schema#
