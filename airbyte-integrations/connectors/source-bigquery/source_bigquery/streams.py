@@ -94,23 +94,6 @@ class BigqueryDatasets(BigqueryStream):
     def get_json_schema(self) -> Mapping[str, Any]:
         return {}
     
-    # def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-    #     """
-    #     TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-    #     This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-    #     to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-    #     For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-    #     'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-    #     The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-    #     :param response: the most recent response from the API
-    #     :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-    #             If there are no more pages in the result, return None.
-    #     """
-    #     return None
-    
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Override this method to define how a response is parsed.
