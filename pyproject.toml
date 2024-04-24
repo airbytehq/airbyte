@@ -70,60 +70,59 @@ skip_glob = [
     # correctly handles first-party imports in subdirectories.
 ]
 
-[tool.ruff.pylint]
-max-args = 8      # Relaxed from default of 5
-max-branches = 15 # Relaxed from default of 12
-
 [tool.ruff]
 target-version = "py310"
+line-length = 140
+extend-exclude = ["docs", "test", "tests"]
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 select = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
-    "A",     # flake8-builtins
-    "ANN",   # flake8-annotations
-    "ARG",   # flake8-unused-arguments
-    "ASYNC", # flake8-async
-    "B",     # flake8-bugbear
-    "FBT",   # flake8-boolean-trap
-    "BLE",   # Blind except
-    "C4",    # flake8-comprehensions
-    "C90",   # mccabe (complexity)
-    "COM",   # flake8-commas
-    "CPY",   # missing copyright notice
-    # "D", # pydocstyle # TODO: Re-enable when adding docstrings
-    "DTZ",  # flake8-datetimez
-    "E",    # pycodestyle (errors)
-    "ERA",  # flake8-eradicate (commented out code)
-    "EXE",  # flake8-executable
-    "F",    # Pyflakes
-    "FA",   # flake8-future-annotations
-    "FIX",  # flake8-fixme
-    "FLY",  # flynt
-    "FURB", # Refurb
-    "I",    # isort
-    "ICN",  # flake8-import-conventions
-    "INP",  # flake8-no-pep420
-    "INT",  # flake8-gettext
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "LOG",  # flake8-logging
-    "N",    # pep8-naming
-    "PD",   # pandas-vet
-    "PERF", # Perflint
-    "PIE",  # flake8-pie
-    "PGH",  # pygrep-hooks
-    "PL",   # Pylint
-    "PT",   # flake8-pytest-style
-    "PTH",  # flake8-use-pathlib
-    "PYI",  # flake8-pyi
-    "Q",    # flake8-quotes
-    "RET",  # flake8-return
-    "RSE",  # flake8-raise
-    "RUF",  # Ruff-specific rules
-    "SIM",  # flake8-simplify
-    "SLF",  # flake8-self
-    "SLOT", # flake8-slots
-    "T10",  # debugger calls
-    # "T20", # flake8-print # TODO: Re-enable once we have logging
+    "A",      # flake8-builtins
+    "ANN",    # flake8-annotations
+    "ARG",    # flake8-unused-arguments
+    "ASYNC",  # flake8-async
+    "B",      # flake8-bugbear
+    "FBT",    # flake8-boolean-trap
+    "BLE",    # Blind except
+    "C4",     # flake8-comprehensions
+    "C90",    # mccabe (complexity)
+    "COM",    # flake8-commas
+    "D",      # pydocstyle # TODO: Re-enable when adding docstrings
+    "DTZ",    # flake8-datetimez
+    "E",      # pycodestyle (errors)
+    "ERA",    # flake8-eradicate (commented out code)
+    "EXE",    # flake8-executable
+    "F",      # Pyflakes
+    "FA",     # flake8-future-annotations
+    "FIX",    # flake8-fixme
+    "FLY",    # flynt
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "INP",    # flake8-no-pep420
+    "INT",    # flake8-gettext
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "LOG",    # flake8-logging
+    "N",      # pep8-naming
+    "PD",     # pandas-vet
+    "PERF",   # Perflint
+    "PIE",    # flake8-pie
+    "PGH",    # pygrep-hooks
+    "PL",     # Pylint
+    "PT",     # flake8-pytest-style
+    "PTH",    # flake8-use-pathlib
+    "PYI",    # flake8-pyi
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
+    "RUF",    # Ruff-specific rules
+    "SIM",    # flake8-simplify
+    "SLF",    # flake8-self
+    "SLOT",   # flake8-slots
+    "T10",    # debugger calls
+    "T20",    # flake8-print
     "TCH",    # flake8-type-checking
     "TD",     # flake8-todos
     "TID",    # flake8-tidy-imports
@@ -134,7 +133,6 @@ select = [
     "W",      # pycodestyle (warnings)
     "YTT",    # flake8-2020
 ]
-
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
 
@@ -166,17 +164,39 @@ ignore = [
 
     "UP007", # Allow legacy `Union[a, b]` and `Optional[a]` for Pydantic, until we drop Python 3.9 (Pydantic doesn't like it)
 ]
+
 fixable = ["ALL"]
 unfixable = [
     "ERA001", # Commented-out code (avoid silent loss of code)
     "T201",   # print() calls (avoid silent loss of code / log messages)
 ]
 
-line-length = 140
-extend-exclude = ["docs", "test", "tests"]
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+[tool.ruff.lint.pylint]
+max-args = 8      # Relaxed from default of 5
+max-branches = 15 # Relaxed from default of 12
 
-[tool.ruff.isort]
+[tool.ruff.lint.mccabe]
+max-complexity = 24
+
+[tool.ruff.lint.pycodestyle]
+ignore-overlong-task-comments = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = false
+ignore-fully-untyped = false
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+preview = false
+docstring-code-format = true
+
+[tool.ruff.lint.isort]
 force-sort-within-sections = false
 lines-after-imports = 2
 known-first-party = [
@@ -197,27 +217,6 @@ section-order = [
     "first-party",
     "local-folder",
 ]
-
-[tool.ruff.mccabe]
-max-complexity = 24
-
-[tool.ruff.pycodestyle]
-ignore-overlong-task-comments = true
-
-[tool.ruff.pydocstyle]
-convention = "google"
-
-[tool.ruff.flake8-annotations]
-allow-star-arg-any = false
-ignore-fully-untyped = false
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-preview = false
-docstring-code-format = true
 
 [tool.mypy]
 platform = "linux"
