@@ -142,6 +142,13 @@ class Stream(ABC):
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
+        # Get state from the stream's state getter or use the stream_state from incoming parameter if
+        # the connector uses legacy state
+        try:
+            stream_state = self.state  # type: ignore # we know the field might not exist...
+        except AttributeError:
+            pass
+
         checkpoint_reader = self._get_checkpoint_reader(
             logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
         )

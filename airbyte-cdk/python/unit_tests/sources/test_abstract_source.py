@@ -231,7 +231,7 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
+        self._cursor_value = value.get(self.cursor_field)
 
 
 class MockResumableFullRefreshStream(Stream):
@@ -702,15 +702,25 @@ class TestIncrementalRead:
         )
         mocker.patch.object(MockStreamWithState, "get_updated_state", return_value={})
 
-        # Mock the stream's getter property
+        # Mock the stream's getter property for each time the stream reads self.state while syncing a stream
         getter_mock = Mock(wraps=MockStreamWithState.state.fget)
-        getter_mock.return_value = new_state_from_connector
+        getter_mock.side_effect = [
+            old_state,  # stream s1: Setting the checkpoint reader state to self.state if implemented
+            old_state,  # stream s1: observe state after first record
+            old_state,  # stream s1: observe state after second record
+            new_state_from_connector,  # stream s2: observe state after first slice
+            {},  # stream s2: Setting the checkpoint reader state to self.state if implemented
+            {},  # stream s2: observe state after first record
+            {},  # stream s2: observe state after second record
+            new_state_from_connector,  # stream s2: observe state after first slice
+        ]
         mock_get_property = MockStreamWithState.state.getter(getter_mock)
         state_property = mocker.patch.object(
             MockStreamWithState,
             "state",
             mock_get_property,
         )
+
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
         src = MockSource(streams=[stream_1, stream_2])
         catalog = ConfiguredAirbyteCatalog(
@@ -740,9 +750,9 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-        # The state getter is called when we call the stream's observe method. We call observe once for each record (4 times)
-        # and at the end of each slice (2 times)
-        assert len(state_property.fget.mock_calls) == 6
+        # The state getter is called when we call the stream's observe method. We call self.state at the start of each stream (2 times),
+        # once for each record (4 times), and at the end of each slice (2 times)
+        assert len(state_property.fget.mock_calls) == 8
 
     @pytest.mark.parametrize(
         "use_legacy",
@@ -1207,13 +1217,23 @@ class TestIncrementalRead:
             name="s2",
             state=copy.deepcopy(input_state),
         )
+
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
-        mocker.patch.object(MockStream, "supports_incremental", return_value=True)
-        mocker.patch.object(MockStream, "get_json_schema", return_value={})
-        mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+        getter_mock = Mock(wraps=MockStreamEmittingAirbyteMessages.state.fget)
+        getter_mock.return_value = state
+        mock_get_property = MockStreamEmittingAirbyteMessages.state.getter(getter_mock)
         mocker.patch.object(
-            MockStream,
+            MockStreamEmittingAirbyteMessages,
+            "state",
+            mock_get_property,
+        )
+
+        # mocker.patch.object(MockStreamWithState, "get_updated_state", return_value=state)
+        mocker.patch.object(MockStreamWithState, "supports_incremental", return_value=True)
+        mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
+        mocker.patch.object(MockStreamWithState, "stream_slices", return_value=slices)
+        mocker.patch.object(
+            MockStreamWithState,
             "state_checkpoint_interval",
             new_callable=mocker.PropertyMock,
             return_value=2,

@@ -212,8 +212,7 @@ class AbstractSource(Source, ABC):
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
-        if stream_state and "state" in dir(stream_instance):
-            # if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
+        if "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 

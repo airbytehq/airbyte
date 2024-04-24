@@ -371,9 +371,6 @@ class JusticeSongs(HttpStream, StateMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        # for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-        #     self.state = {self.cursor_field: record.get(self.cursor_field)}
-        #     yield record
         yield from self._read_page(cursor_field, stream_slice, stream_state)
 
     def _read_page(

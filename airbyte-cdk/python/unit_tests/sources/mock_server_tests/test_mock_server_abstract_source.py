@@ -311,7 +311,6 @@ class IncrementalStreamTest(TestCase):
 
     @HttpMocker()
     def test_incremental_running_as_full_refresh(self, http_mocker):
-        # Fixed this, but also will likely be fixed by Ella's changes anyway
         start_datetime = _NOW - timedelta(days=14)
         config = {
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
