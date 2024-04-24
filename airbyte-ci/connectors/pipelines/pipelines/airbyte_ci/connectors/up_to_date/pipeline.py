@@ -7,8 +7,8 @@ import re
 from typing import TYPE_CHECKING, List
 
 import dagger
-from packaging.version import Version
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+from packaging.version import Version
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
