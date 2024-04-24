@@ -36,8 +36,8 @@ object TypeAndDedupeTransaction {
         try {
             LOGGER.info(
                 "Attempting typing and deduping for {}.{} with suffix {}",
-                streamConfig!!.id!!.originalNamespace,
-                streamConfig.id!!.originalName,
+                streamConfig!!.id.originalNamespace,
+                streamConfig.id.originalName,
                 suffix
             )
             val unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false)
@@ -47,8 +47,8 @@ object TypeAndDedupeTransaction {
                 // TODO Destination specific non-retryable exceptions should be added.
                 LOGGER.error(
                     "Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
-                    streamConfig!!.id!!.originalNamespace,
-                    streamConfig.id!!.originalName,
+                    streamConfig!!.id.originalNamespace,
+                    streamConfig.id.originalName,
                     suffix,
                     e
                 )
@@ -57,8 +57,8 @@ object TypeAndDedupeTransaction {
             } else {
                 LOGGER.error(
                     "Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",
-                    streamConfig!!.id!!.originalNamespace,
-                    streamConfig.id!!.originalName,
+                    streamConfig!!.id.originalNamespace,
+                    streamConfig.id.originalName,
                     suffix,
                     e
                 )
@@ -85,8 +85,8 @@ object TypeAndDedupeTransaction {
     ) {
         LOGGER.info(
             "Attempting soft reset for stream {} {}",
-            streamConfig.id!!.originalNamespace,
-            streamConfig.id!!.originalName
+            streamConfig.id.originalNamespace,
+            streamConfig.id.originalName
         )
         destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig))
         executeTypeAndDedupe(

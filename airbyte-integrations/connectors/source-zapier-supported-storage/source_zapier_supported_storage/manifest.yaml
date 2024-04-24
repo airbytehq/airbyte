@@ -25,6 +25,12 @@ definitions:
       name: "zapier_supported_storage"
       path: "/records"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties: {}
 streams:
   - "#/definitions/zapier_supported_storage_stream"
 

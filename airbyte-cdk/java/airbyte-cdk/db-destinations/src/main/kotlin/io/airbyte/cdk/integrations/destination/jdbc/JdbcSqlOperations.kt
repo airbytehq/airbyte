@@ -23,7 +23,7 @@ import org.apache.commons.csv.CSVPrinter
 abstract class JdbcSqlOperations : SqlOperations {
     protected val schemaSet: MutableSet<String?> = HashSet()
 
-    protected constructor() {}
+    protected constructor()
 
     @Throws(Exception::class)
     override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?) {
@@ -45,7 +45,9 @@ abstract class JdbcSqlOperations : SqlOperations {
      * @param e the exception to check.
      * @return A ConfigErrorException with a message with actionable feedback to the user.
      */
-    protected fun checkForKnownConfigExceptions(e: Exception?): Optional<ConfigErrorException> {
+    protected open fun checkForKnownConfigExceptions(
+        e: Exception?
+    ): Optional<ConfigErrorException> {
         return Optional.empty()
     }
 
@@ -166,15 +168,15 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun insertTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
-        srcTableName: String?,
-        dstTableName: String?
+        sourceTableName: String?,
+        destinationTableName: String?
     ): String? {
         return String.format(
             "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
             schemaName,
-            dstTableName,
+            destinationTableName,
             schemaName,
-            srcTableName
+            sourceTableName
         )
     }
 
