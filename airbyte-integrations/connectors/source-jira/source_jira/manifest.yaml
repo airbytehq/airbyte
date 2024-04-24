@@ -1050,23 +1050,20 @@ definitions:
     $ref: "#/definitions/incremental_stream"
     retriever: "#/definitions/semi_incremental_retriever"
 
-  __boards_parent_retriever:
-    $ref: "#/definitions/retriever"
-    partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          stream: "#/definitions/boards_stream"
-          parent_key: "id"
-          partition_field: "board_id"
-
   # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
   board_issues_stream:
     $ref: "#/definitions/incremental_stream"
     name: board_issues
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/__boards_parent_retriever"
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/boards_stream"
+            parent_key: "id"
+            partition_field: "board_id"
       requester:
         $ref: "#/definitions/requester_v1"
         request_parameters:
@@ -1078,7 +1075,7 @@ definitions:
             - http_codes: [500]
               # TODO: consider use predicate
               # predicate: "{{ 'This board has no columns with a mapped status.' in response }}"
-              action: FAIL
+              action: IGNORE
     transformations:
       - type: AddFields
         fields:

@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from typing import Any, List, Mapping, Union
+from dataclasses import dataclass
 
 import dpath.util
 import requests
@@ -9,6 +10,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from requests_cache import Response
 
 
+@dataclass
 class LabelsRecordExtractor(DpathExtractor):
     """
     A custom record extractor is needed to handle cases when records are represented as list of strings insted of dictionaries.
@@ -22,6 +24,7 @@ class LabelsRecordExtractor(DpathExtractor):
         return [{"label": record} for record in records]
 
 
+@dataclass
 class UnionListsRecordExtractor(DpathExtractor):
     """
     A custom record extractor is needed to handle cases when records are represented as values of multiple keys instead of list of dictionaries.
