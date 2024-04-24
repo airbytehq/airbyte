@@ -10,7 +10,7 @@ from typing import Any, List, MutableMapping
 
 import pendulum
 
-ACCESS_TOKEN = "test_access_token"
+SERVICE_ACCOUNT_INFO = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 CLIENT_ID = "test_client_id"
 CLIENT_SECRET = "test_client_secret"
@@ -25,7 +25,10 @@ class ConfigBuilder:
     def __init__(self) -> None:
         self._config: MutableMapping[str, Any] = {
             "account_ids": [ACCOUNT_ID],
-            "access_token": ACCESS_TOKEN,
+            "credentials": {
+                "auth_type": "Service",
+                "service_account_info": SERVICE_ACCOUNT_INFO,
+            },
             "start_date": START_DATE,
             "end_date": END_DATE,
             "include_deleted": True,

@@ -20,7 +20,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage, SyncMode
 
-from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
+from .config import SERVICE_ACCOUNT_INFO, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
@@ -63,7 +63,7 @@ _FIELDS = [
 
 def _get_videos_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
     return (
-        RequestBuilder.get_videos_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+        RequestBuilder.get_videos_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
         .with_limit(100)
         .with_fields(_FIELDS)
         .with_summary()
