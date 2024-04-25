@@ -22,15 +22,18 @@ import kotlin.Boolean
 import kotlin.IllegalArgumentException
 import kotlin.Int
 import kotlin.String
-import kotlin.UnsupportedOperationException
 import kotlin.plus
 import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
-abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventionTransformer) :
-    SqlGenerator {
+abstract class JdbcSqlGenerator
+@JvmOverloads
+constructor(
+    protected val namingTransformer: NamingConventionTransformer,
+    private val cascadeDrop: Boolean = false
+) : SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
     override fun buildStreamId(
@@ -71,7 +74,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     @VisibleForTesting
-    fun toDialectType(airbyteProtocolType: AirbyteProtocolType): DataType<*> {
+    open fun toDialectType(airbyteProtocolType: AirbyteProtocolType): DataType<*> {
         return when (airbyteProtocolType) {
             AirbyteProtocolType.STRING -> SQLDataType.VARCHAR(65535)
             AirbyteProtocolType.NUMBER -> SQLDataType.DECIMAL(38, 9)
@@ -87,20 +90,16 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     protected abstract val structType: DataType<*>
-        get
 
     protected abstract val arrayType: DataType<*>?
-        get
 
     @get:VisibleForTesting
     val timestampWithTimeZoneType: DataType<*>
         get() = toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
 
     protected abstract val widestType: DataType<*>?
-        get
 
     protected abstract val dialect: SQLDialect?
-        get
 
     /**
      * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
@@ -144,7 +143,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         cursorField: Optional<ColumnId>
     ): Field<Int>
 
-    protected val dslContext: DSLContext
+    protected open val dslContext: DSLContext
         get() = DSL.using(dialect)
 
     /**
@@ -266,13 +265,17 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                     .toList()
             )
         }
+
+        val dropTableStep =
+            DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
+        if (cascadeDrop) {
+            dropTableStep.cascade()
+        }
+
         return transactionally(
             Stream.concat(
                     Stream.of(
-                        DSL.dropTableIfExists(
-                                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
-                            )
-                            .getSQL(ParamType.INLINED),
+                        dropTableStep.getSQL(ParamType.INLINED),
                         createTableSql(
                             stream.id.finalNamespace,
                             finalTableIdentifier,
@@ -286,25 +289,28 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     override fun updateTable(
-        streamConfig: StreamConfig,
-        finalSuffix: String?,
+        stream: StreamConfig,
+        finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
         // TODO: Add flag to use merge vs insert/delete
 
         return insertAndDeleteTransaction(
-            streamConfig,
+            stream,
             finalSuffix,
             minRawTimestamp,
             useExpensiveSaferCasting
         )
     }
 
-    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql {
+    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
+        val dropTableStep = DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
+        if (cascadeDrop) {
+            dropTableStep.cascade()
+        }
         return transactionally(
-            DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
-                .getSQL(ParamType.INLINED),
+            dropTableStep.getSQL(ParamType.INLINED),
             DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
                 .renameTo(DSL.name(stream.finalName))
                 .sql
@@ -491,15 +497,6 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         )
     }
 
-    private fun mergeTransaction(
-        streamConfig: StreamConfig,
-        finalSuffix: String,
-        minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
-    ): String {
-        throw UnsupportedOperationException("Not implemented yet")
-    }
-
     protected fun createSchemaSql(namespace: String?): String {
         val dsl = dslContext
         val createSchemaSql = dsl.createSchemaIfNotExists(DSL.quotedName(namespace))
@@ -523,7 +520,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      * statement. This is useful if the destination's CREATE TABLE statement does not accept an
      * index definition.
      */
-    protected fun createIndexSql(stream: StreamConfig?, suffix: String?): List<String> {
+    protected open fun createIndexSql(stream: StreamConfig?, suffix: String?): List<String> {
         return emptyList()
     }
 
@@ -596,7 +593,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             .getSQL(ParamType.INLINED)
     }
 
-    protected fun castedField(
+    protected open fun castedField(
         field: Field<*>?,
         type: AirbyteType,
         alias: String?,
@@ -617,7 +614,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         }
     }
 
-    protected fun castedField(
+    protected open fun castedField(
         field: Field<*>?,
         type: AirbyteProtocolType,
         useExpensiveSaferCasting: Boolean
@@ -625,7 +622,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         return DSL.cast(field, toDialectType(type))
     }
 
-    protected fun currentTimestamp(): Field<Timestamp> {
+    protected open fun currentTimestamp(): Field<Timestamp> {
         return DSL.currentTimestamp()
     }
 

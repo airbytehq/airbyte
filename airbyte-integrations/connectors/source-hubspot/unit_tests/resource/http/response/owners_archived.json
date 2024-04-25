@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "id": "52550153",
+      "email": "integration-test@airbyte.io",
+      "firstName": "Team-1",
+      "lastName": "Airbyte",
+      "userId": 12282590,
+      "createdAt": "2020-10-28T21:17:56.082Z",
+      "updatedAt": "2023-01-31T00:25:34.448Z",
+      "archived": true
+    }
+  ]
+}
