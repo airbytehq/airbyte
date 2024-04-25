@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Set
 
 import pytest
 from live_tests.commons.models import ConnectionObjects
@@ -16,13 +16,15 @@ CONNECTOR_IMAGE = pytest.StashKey[str]()
 CONTROL_VERSION = pytest.StashKey[str]()
 DAGGER_LOG_PATH = pytest.StashKey[Path]()
 DUCKDB_PATH = pytest.StashKey[Path]()
-HTTP_DUMP_CACHE_VOLUMES = pytest.StashKey[List]()
+HTTP_DUMP_CACHE_VOLUMES = pytest.StashKey[list]()
+RUN_IN_AIRBYTE_CI = pytest.StashKey[bool]()  # Running in airbyte-ci, locally or in GhA
+IS_PRODUCTION_CI = pytest.StashKey[bool]()  # Running in airbyte-ci in GhA
 IS_PERMITTED_BOOL = pytest.StashKey[bool]()
 PR_URL = pytest.StashKey[str]()
 REPORT = pytest.StashKey[Report]()
 RETRIEVAL_REASONS = pytest.StashKey[str]()
-SELECTED_STREAMS = pytest.StashKey[Set[str]]()
-SESSION_START_TIMESTAMP = pytest.StashKey[int]()
+SELECTED_STREAMS = pytest.StashKey[set[str]]()
+SESSION_RUN_ID = pytest.StashKey[str]()
 SHOULD_READ_WITH_STATE = pytest.StashKey[bool]()
 TARGET_VERSION = pytest.StashKey[str]()
 TEST_ARTIFACT_DIRECTORY = pytest.StashKey[Path]()

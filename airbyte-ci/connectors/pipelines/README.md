@@ -649,6 +649,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.9.0   | [#37440](https://github.com/airbytehq/airbyte/pull/37440)  | Run regression tests with `airbyte-ci connectors test`                                                                       |
 | 4.8.0   | [#37404](https://github.com/airbytehq/airbyte/pull/37404)  | Accept a `git-repo-url` option on the `airbyte-ci` root command to checkout forked repo.                                                                                                     |
 | 4.7.4   | [#37485](https://github.com/airbytehq/airbyte/pull/37485)  | Allow java connectors to be written in kotlin.                                                                             |
 | 4.7.3   | [#37101](https://github.com/airbytehq/airbyte/pull/37101)  | Pin PyAirbyte version.                                                                                                     |
