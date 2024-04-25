@@ -72,9 +72,7 @@
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
-        "properties": {
-          "description": "Description of the exemption details."
-        }
+        "properties": {}
       }
     },
     "taxability": {
