@@ -14,18 +14,13 @@ from typing import Any, Optional
 import _collections_abc
 import dagger
 import requests
-from airbyte_protocol.models import (  # type: ignore
-    AirbyteCatalog,  # type: ignore
-    AirbyteMessage,  # type: ignore
-    ConfiguredAirbyteCatalog,  # type: ignore
-)
 
 # type: ignore
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore; type: ignore
+from airbyte_protocol.models import AirbyteMessage  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from genson import SchemaBuilder  # type: ignore
-from mitmproxy import http
-from pydantic import ValidationError
-
 from live_tests.commons.backends import DuckDbBackend, FileBackend
 from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.utils import (
@@ -35,6 +30,8 @@ from live_tests.commons.utils import (
     sanitize_stream_name,
     sort_dict_keys,
 )
+from mitmproxy import http
+from pydantic import ValidationError
 
 
 class UserDict(_collections_abc.MutableMapping):  # type: ignore
@@ -203,9 +200,7 @@ class ExecutionInputs:
 
     def raise_if_missing_attr_for_command(self, attribute: str) -> None:
         if getattr(self, attribute) is None:
-            raise ValueError(
-                f"We need a {attribute} to run the {self.command.value} command"
-            )
+            raise ValueError(f"We need a {attribute} to run the {self.command.value} command")
 
     def __post_init__(self) -> None:
         if self.command is Command.CHECK:
@@ -249,9 +244,7 @@ class ExecutionResult:
 
     @property
     def logger(self) -> logging.Logger:
-        return logging.getLogger(
-            f"{self.connector_under_test.target_or_control.value}-{self.command.value}"
-        )
+        return logging.getLogger(f"{self.connector_under_test.target_or_control.value}-{self.command.value}")
 
     @property
     def airbyte_messages(self) -> Iterable[AirbyteMessage]:
@@ -323,10 +316,7 @@ class ExecutionResult:
                 stream_builders[stream] = stream_schema_builder
             stream_builders[stream].add_object(record.record.data)
         self.logger.info("Stream schemas generated")
-        return {
-            stream: sort_dict_keys(stream_builders[stream].to_schema())
-            for stream in stream_builders
-        }
+        return {stream: sort_dict_keys(stream_builders[stream].to_schema()) for stream in stream_builders}
 
     def get_records_per_stream(self, stream: str) -> Iterator[AirbyteMessage]:
         assert self.backend is not None, "Backend must be set to get records per stream"
@@ -349,9 +339,7 @@ class ExecutionResult:
 
     async def save_http_dump(self, output_dir: Path) -> None:
         if self.http_dump:
-            self.logger.info(
-                "An http dump was captured during the execution of the command, saving it."
-            )
+            self.logger.info("An http dump was captured during the execution of the command, saving it.")
             http_dump_file_path = (output_dir / self.HTTP_DUMP_FILE_NAME).resolve()
             await self.http_dump.export(str(http_dump_file_path))
             self.logger.info(f"Http dump saved to {http_dump_file_path}")
@@ -364,16 +352,12 @@ class ExecutionResult:
         else:
             self.logger.warning("No http dump to save")
 
-    def save_airbyte_messages(
-        self, output_dir: Path, duckdb_path: Optional[Path] = None
-    ) -> None:
+    def save_airbyte_messages(self, output_dir: Path, duckdb_path: Optional[Path] = None) -> None:
         self.logger.info("Saving Airbyte messages to disk")
         airbyte_messages_dir = output_dir / "airbyte_messages"
         airbyte_messages_dir.mkdir(parents=True, exist_ok=True)
         if duckdb_path:
-            self.backend = DuckDbBackend(
-                airbyte_messages_dir, duckdb_path, self.duckdb_schema
-            )
+            self.backend = DuckDbBackend(airbyte_messages_dir, duckdb_path, self.duckdb_schema)
         else:
             self.backend = FileBackend(airbyte_messages_dir)
         self.backend.write(self.airbyte_messages)
@@ -384,14 +368,10 @@ class ExecutionResult:
         stream_schemas_dir = output_dir / "stream_schemas"
         stream_schemas_dir.mkdir(parents=True, exist_ok=True)
         for stream_name, stream_schema in self.stream_schemas.items():
-            (
-                stream_schemas_dir / f"{sanitize_stream_name(stream_name)}.json"
-            ).write_text(json.dumps(stream_schema, sort_keys=True))
+            (stream_schemas_dir / f"{sanitize_stream_name(stream_name)}.json").write_text(json.dumps(stream_schema, sort_keys=True))
         self.logger.info("Stream schemas saved to disk")
 
-    async def save_artifacts(
-        self, output_dir: Path, duckdb_path: Optional[Path] = None
-    ) -> None:
+    async def save_artifacts(self, output_dir: Path, duckdb_path: Optional[Path] = None) -> None:
         self.logger.info("Saving artifacts to disk")
         self.save_airbyte_messages(output_dir, duckdb_path)
         self.update_configuration()
@@ -399,9 +379,7 @@ class ExecutionResult:
         self.save_stream_schemas(output_dir)
         self.logger.info("All artifacts saved to disk")
 
-    def get_updated_configuration(
-        self, control_message_path: Path
-    ) -> Optional[dict[str, Any]]:
+    def get_updated_configuration(self, control_message_path: Path) -> Optional[dict[str, Any]]:
         """Iterate through the control messages to find CONNECTOR_CONFIG message and return the last updated configuration."""
         if not control_message_path.exists():
             return None
@@ -417,18 +395,12 @@ class ExecutionResult:
         """This function checks if a configuration has to be updated by reading the control messages file.
         If a configuration has to be updated, it updates the configuration on the actor using the Airbyte API.
         """
-        assert (
-            self.backend is not None
-        ), "Backend must be set to update configuration in order to find the control messages path"
-        updated_configuration = self.get_updated_configuration(
-            self.backend.jsonl_controls_path
-        )
+        assert self.backend is not None, "Backend must be set to update configuration in order to find the control messages path"
+        updated_configuration = self.get_updated_configuration(self.backend.jsonl_controls_path)
         if updated_configuration is None:
             return
 
-        self.logger.warning(
-            f"Updating configuration for {self.connector_under_test.name}, actor {self.actor_id}"
-        )
+        self.logger.warning(f"Updating configuration for {self.connector_under_test.name}, actor {self.actor_id}")
         url = f"https://api.airbyte.com/v1/{self.connector_under_test.actor_type.value}s/{self.actor_id}"
 
         payload = {
@@ -447,13 +419,9 @@ class ExecutionResult:
         try:
             response.raise_for_status()
         except requests.HTTPError as e:
-            self.logger.error(
-                f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}"
-            )
+            self.logger.error(f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}")
             self.logger.error(f"Response: {response.text}")
-        self.logger.info(
-            f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}"
-        )
+        self.logger.info(f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}")
 
 
 @dataclass(kw_only=True)

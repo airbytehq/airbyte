@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncclick as click
-
 from live_tests.debug.cli import debug_cmd
 
 
