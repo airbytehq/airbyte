@@ -4,17 +4,17 @@ plugins {
 }
 
 dependencies {
-    testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
+    testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 def copySshScript = tasks.register('copySshScript', Copy) {
-    from "${project(':airbyte-cdk:java:airbyte-cdk:dependencies').buildDir}/resources/testFixtures"
+    from "${project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').buildDir}/resources/testFixtures"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
 copySshScript.configure {
-    dependsOn project(':airbyte-cdk:java:airbyte-cdk:dependencies').tasks.named('processTestFixturesResources')
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies').tasks.named('processTestFixturesResources')
 }
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)

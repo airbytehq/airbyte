@@ -20,12 +20,13 @@ object AdaptiveDestinationRunner {
     private const val DEPLOYMENT_MODE_KEY = EnvVariableFeatureFlags.DEPLOYMENT_MODE
     private const val CLOUD_MODE = "CLOUD"
 
+    @JvmStatic
     fun baseOnEnv(): OssDestinationBuilder {
         val mode = System.getenv(DEPLOYMENT_MODE_KEY)
         return OssDestinationBuilder(mode)
     }
 
-    class OssDestinationBuilder(private val deploymentMode: String) {
+    class OssDestinationBuilder(private val deploymentMode: String?) {
         fun <OT : Destination> withOssDestination(
             ossDestinationSupplier: Supplier<OT>
         ): CloudDestinationBuilder<OT> {
@@ -34,7 +35,7 @@ object AdaptiveDestinationRunner {
     }
 
     class CloudDestinationBuilder<OT : Destination>(
-        private val deploymentMode: String,
+        private val deploymentMode: String?,
         private val ossDestinationSupplier: Supplier<OT>
     ) {
         fun <CT : Destination> withCloudDestination(

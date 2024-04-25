@@ -4,6 +4,7 @@
 
 
 import enum
+import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Mapping, Optional
@@ -89,6 +90,26 @@ class ShopifyRateLimiter:
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
 
+    logger = logging.getLogger("airbyte")
+
+    log_message_count = 0
+    log_message_frequency = 3
+
+    def log_message_counter(message: str) -> None:
+        """
+        Print the rate-limit info message every `log_message_frequency` request, to minimize the noise in the logs.
+        """
+        if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
+            ShopifyRateLimiter.log_message_count += 1
+        else:
+            ShopifyRateLimiter.logger.info(message)
+            ShopifyRateLimiter.log_message_count = 0
+
+    def get_response_from_args(*args) -> Optional[requests.Response]:
+        for arg in args:
+            if isinstance(arg, requests.models.Response):
+                return arg
+
     @staticmethod
     def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
         """
@@ -105,16 +126,24 @@ class ShopifyRateLimiter:
         if not load:
             # when there is no rate_limits from header, use the `sleep_on_unknown_load`
             wait_time = ShopifyRateLimiter.on_unknown_load
+            ShopifyRateLimiter.log_message_counter("API Load: `REGULAR`")
         elif load >= threshold:
             wait_time = ShopifyRateLimiter.on_high_load
+            ShopifyRateLimiter.log_message_counter("API Load: `HIGH`")
         elif load >= mid_load:
             wait_time = ShopifyRateLimiter.on_mid_load
+            ShopifyRateLimiter.log_message_counter("API Load: `MID`")
         elif load < mid_load:
             wait_time = ShopifyRateLimiter.on_low_load
+            ShopifyRateLimiter.log_message_counter("API Load: `LOW`")
         return wait_time
 
     @staticmethod
-    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit") -> float:
+    def get_rest_api_wait_time(
+        *args,
+        threshold: float = 0.9,
+        rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
+    ) -> float:
         """
         To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
@@ -131,8 +160,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
         # Get the rate_limits from response
         rate_limits = response.headers.get(rate_limit_header) if response else None
         # define current load from rate_limits
@@ -173,8 +201,7 @@ class ShopifyRateLimiter:
         More information: https://shopify.dev/api/usage/rate-limits
         """
         # find the requests.Response inside args list
-        for arg in args:
-            response = arg if isinstance(arg, requests.models.Response) else None
+        response = ShopifyRateLimiter.get_response_from_args(*args)
 
         # Get the rate limit info from response
         if response:
@@ -191,6 +218,22 @@ class ShopifyRateLimiter:
 
         wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
         return wait_time
+
+    def _debug_info(*args) -> Any:
+        # find the requests.Response inside args list
+        response = ShopifyRateLimiter.get_response_from_args(*args)
+
+        if response:
+            try:
+                content = response.json()
+                content_keys = list(content.keys())
+                stream_name = content_keys[0] if len(content_keys) > 0 else None
+                content_lengh = len(content.get(stream_name, [])) if stream_name else None
+                debug_info = {"stream": stream_name, "url": response.request.url, "n_records": content_lengh}
+                return debug_info
+            except (requests.JSONDecodeError, Exception):
+                # bypassing the errors, we don't care about it here
+                pass
 
     @staticmethod
     def wait_time(wait_time: float) -> None:

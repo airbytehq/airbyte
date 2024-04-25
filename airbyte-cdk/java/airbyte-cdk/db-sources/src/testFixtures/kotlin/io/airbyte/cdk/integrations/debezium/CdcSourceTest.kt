@@ -25,22 +25,22 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    protected lateinit var testdb: T
+    @JvmField protected var testdb: T = createTestDatabase()
 
-    protected fun createTableSqlFmt(): String {
+    protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
     }
 
-    protected fun createSchemaSqlFmt(): String {
+    protected open fun createSchemaSqlFmt(): String {
         return "CREATE SCHEMA %s;"
     }
 
-    protected fun modelsSchema(): String {
+    protected open fun modelsSchema(): String {
         return "models_schema"
     }
 
     /** The schema of a random table which is used as a new table in snapshot test */
-    protected fun randomSchema(): String {
+    protected open fun randomSchema(): String {
         return "models_schema_random"
     }
 
@@ -94,20 +94,20 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
-    protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>?)
+    protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
 
     // TODO: this assertion should be added into test cases in this class, we will need to implement
     // corresponding iterator for other connectors before
     // doing so.
-    protected fun assertExpectedStateMessageCountMatches(
-        stateMessages: List<AirbyteStateMessage>?,
+    protected open fun assertExpectedStateMessageCountMatches(
+        stateMessages: List<AirbyteStateMessage>,
         totalCount: Long
     ) {
         // Do nothing.
     }
 
     @BeforeEach
-    protected fun setup() {
+    protected open fun setup() {
         testdb = createTestDatabase()
         createTables()
         populateTables()
@@ -168,7 +168,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @AfterEach
-    protected fun tearDown() {
+    protected open fun tearDown() {
         try {
             testdb!!.close()
         } catch (e: Throwable) {
@@ -176,7 +176,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
-    protected fun columnClause(
+    protected open fun columnClause(
         columnsWithDataType: Map<String, String>,
         primaryKey: Optional<String>
     ): String {
@@ -203,7 +203,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         writeRecords(recordJson, modelsSchema(), MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL)
     }
 
-    protected fun writeRecords(
+    protected open fun writeRecords(
         recordJson: JsonNode,
         dbName: String?,
         streamName: String?,
@@ -224,15 +224,15 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun deleteMessageOnIdCol(streamName: String?, idCol: String?, idValue: Int) {
+    protected open fun deleteMessageOnIdCol(streamName: String?, idCol: String?, idValue: Int) {
         testdb!!.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), streamName, idCol, idValue)
     }
 
-    protected fun deleteCommand(streamName: String?) {
+    protected open fun deleteCommand(streamName: String?) {
         testdb!!.with("DELETE FROM %s.%s", modelsSchema(), streamName)
     }
 
-    protected fun updateCommand(
+    protected open fun updateCommand(
         streamName: String?,
         modelCol: String?,
         modelVal: String?,
@@ -381,7 +381,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessageCountMatches(stateMessages, MODEL_RECORDS.size.toLong())
     }
 
-    protected fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
+    protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
         record: AirbyteRecordMessage
     ) {
@@ -412,8 +412,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertCdcMetaData(recordMessages2[0].data, false)
     }
 
-    protected fun assertExpectedStateMessagesFromIncrementalSync(
-        stateMessages: List<AirbyteStateMessage>?
+    protected open fun assertExpectedStateMessagesFromIncrementalSync(
+        stateMessages: List<AirbyteStateMessage>
     ) {
         assertExpectedStateMessages(stateMessages)
     }
@@ -529,8 +529,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
-        stateAfterFirstBatch: List<AirbyteStateMessage>?
+    protected open fun assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
+        stateAfterFirstBatch: List<AirbyteStateMessage>
     ) {
         assertExpectedStateMessages(stateAfterFirstBatch)
     }
@@ -650,7 +650,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessageCountMatches(stateMessages, 0)
     }
 
-    protected fun assertExpectedStateMessagesForNoData(stateMessages: List<AirbyteStateMessage>?) {
+    protected open fun assertExpectedStateMessagesForNoData(
+        stateMessages: List<AirbyteStateMessage>
+    ) {
         assertExpectedStateMessages(stateMessages)
     }
 
@@ -703,7 +705,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    fun newTableSnapshotTest() {
+    open fun newTableSnapshotTest() {
         val firstBatchIterator = source().read(config()!!, configuredCatalog, null)
         val dataFromFirstBatch = AutoCloseableIterators.toListAndClose(firstBatchIterator)
         val recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch)
@@ -920,7 +922,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun assertStateMessagesForNewTableSnapshotTest(
+    protected open fun assertStateMessagesForNewTableSnapshotTest(
         stateMessages: List<AirbyteStateMessage>,
         stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage
     ) {
@@ -1037,18 +1039,23 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @Throws(Exception::class)
-    protected fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int) {}
+    protected open fun waitForCdcRecords(
+        schemaName: String?,
+        tableName: String?,
+        recordCount: Int
+    ) {}
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)
 
-        protected const val MODELS_STREAM_NAME: String = "models"
-        protected val STREAM_NAMES: Set<String?> = java.util.Set.of(MODELS_STREAM_NAME)
+        const val MODELS_STREAM_NAME: String = "models"
+        @JvmField val STREAM_NAMES: Set<String?> = java.util.Set.of(MODELS_STREAM_NAME)
         protected const val COL_ID: String = "id"
         protected const val COL_MAKE_ID: String = "make_id"
         protected const val COL_MODEL: String = "model"
 
-        protected val MODEL_RECORDS: List<JsonNode> =
+        @JvmField
+        val MODEL_RECORDS: List<JsonNode> =
             ImmutableList.of(
                 Jsons.jsonNode(ImmutableMap.of(COL_ID, 11, COL_MAKE_ID, 1, COL_MODEL, "Fiesta")),
                 Jsons.jsonNode(ImmutableMap.of(COL_ID, 12, COL_MAKE_ID, 1, COL_MODEL, "Focus")),
@@ -1060,7 +1067,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         protected const val RANDOM_TABLE_NAME: String = MODELS_STREAM_NAME + "_random"
 
-        protected val MODEL_RECORDS_RANDOM: List<JsonNode> =
+        @JvmField
+        val MODEL_RECORDS_RANDOM: List<JsonNode> =
             MODEL_RECORDS.stream()
                 .map { r: JsonNode ->
                     Jsons.jsonNode(
@@ -1076,6 +1084,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 }
                 .toList()
 
+        @JvmStatic
         protected fun removeDuplicates(
             messages: Set<AirbyteRecordMessage>
         ): Set<AirbyteRecordMessage> {
