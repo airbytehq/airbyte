@@ -45,7 +45,6 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final JsonNode after = debeziumEvent.get(DebeziumEventConverter.AFTER_EVENT);
     final JsonNode source = debeziumEvent.get(DebeziumEventConverter.SOURCE_EVENT);
     final String operation = debeziumEvent.get(DebeziumEventConverter.OPERATION_FIELD).asText();
-    LOGGER.info("OPERATION: {}", operation);
     final boolean isEnforceSchema = MongoDbCdcEventUtils.isEnforceSchema(config);
 
     final Set<String> configuredFields = isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
@@ -78,10 +77,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      LOGGER.info("In delete path");
       return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
     } else {
-      LOGGER.info("In non-delete path");
       final String eventJson = (after.isNull() ? before : after).asText();
       return DebeziumEventConverter.addCdcMetadata(
           isEnforceSchema
