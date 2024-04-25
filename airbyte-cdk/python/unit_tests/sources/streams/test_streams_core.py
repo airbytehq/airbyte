@@ -3,10 +3,11 @@
 #
 
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from unittest import mock
 
 import pytest
+import requests
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import StateMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint import (
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.streams.checkpoint import (
     IncrementalCheckpointReader,
     ResumableFullRefreshCheckpointReader,
 )
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 logger = logging.getLogger("airbyte")
 
@@ -33,20 +35,6 @@ class StreamStubFullRefresh(Stream):
         pass
 
     primary_key = None
-
-
-def test_as_airbyte_stream_full_refresh(mocker):
-    """
-    Should return an full refresh AirbyteStream with information matching the
-    provided Stream interface.
-    """
-    test_stream = StreamStubFullRefresh()
-
-    mocker.patch.object(StreamStubFullRefresh, "get_json_schema", return_value={})
-    airbyte_stream = test_stream.as_airbyte_stream()
-
-    exp = AirbyteStream(name="stream_stub_full_refresh", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-    assert exp == airbyte_stream
 
 
 class StreamStubIncremental(Stream, StateMixin):
@@ -145,6 +133,68 @@ class StreamStubIncrementalEmptyNamespace(Stream):
     cursor_field = "test_cursor"
     primary_key = "primary_key"
     namespace = ""
+
+
+class HttpSubStreamStubFullRefresh(HttpSubStream):
+    """
+    Stub substream full refresh class to assist with testing.
+    """
+
+    primary_key = "primary_key"
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+
+class ParentHttpStreamStub(HttpStream):
+    primary_key = "primary_key"
+    url_base = "https://airbyte.io/api/v1"
+    path = "/parent"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+
+def test_as_airbyte_stream_full_refresh(mocker):
+    """
+    Should return an full refresh AirbyteStream with information matching the
+    provided Stream interface.
+    """
+    test_stream = StreamStubFullRefresh()
+
+    mocker.patch.object(StreamStubFullRefresh, "get_json_schema", return_value={})
+    airbyte_stream = test_stream.as_airbyte_stream()
+
+    exp = AirbyteStream(name="stream_stub_full_refresh", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
+    assert exp == airbyte_stream
 
 
 def test_as_airbyte_stream_incremental(mocker):
@@ -258,6 +308,7 @@ def test_get_json_schema_is_cached(mocked_method):
         pytest.param(StreamStubFullRefresh(), FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader"),
         pytest.param(StreamStubResumableFullRefresh(), ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"),
         pytest.param(StreamStubLegacyStateInterface(), IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"),
+        pytest.param(HttpSubStreamStubFullRefresh(parent=ParentHttpStreamStub()), FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader_for_substream"),
     ]
 )
 def test_get_checkpoint_reader(stream: Stream, expected_checkpoint_reader_type):

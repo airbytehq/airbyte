@@ -268,7 +268,12 @@ class Stream(ABC):
         can checkpoint progress in between attempts for improved fault tolerance. However, they will start from the beginning
         on the next sync job.
         """
-        if hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
+        if hasattr(type(self), "parent"):
+            # We temporarily gate substream to not support RFR because puts a pretty high burden on connector developers
+            # to structure stream state in a very specific way. We also can't check for issubclass(HttpSubStream)
+            # because it would be a circular dependency so we use parent as a surrogate
+            return False
+        elif hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
             # Modern case where a stream manages state using getter/setter
             return True
         else:
