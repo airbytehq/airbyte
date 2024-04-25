@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.78.1"
+version = "0.80.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.78.1-py3-none-any.whl", hash = "sha256:73dfc03e55a7107bf28b5bbc4e43572d448c60e9b34368d22cf48b6536aa2263"},
-    {file = "airbyte_cdk-0.78.1.tar.gz", hash = "sha256:700e5526ae29db1e453b3def8682726f7d8aa653ee2f3056488d0a484f055133"},
+    {file = "airbyte_cdk-0.80.0-py3-none-any.whl", hash = "sha256:060e92323a73674fa4e9e2e4a1eb312b9b9d072c9bbe5fa28f54ef21cb4974f3"},
+    {file = "airbyte_cdk-0.80.0.tar.gz", hash = "sha256:1383512a83917fecca5b24cea4c72aa5c561cf96dd464485fbcefda48fe574c5"},
 ]
 
 [package.dependencies]
@@ -861,12 +861,10 @@ files = [
 ]
 
 [package.dependencies]
-requests = ">=2.3,<3"
-six = "*"
+requests = ">=2.22,<3"
 
 [package.extras]
 fixture = ["fixtures"]
-test = ["fixtures", "mock", "purl", "pytest", "requests-futures", "sphinx", "testtools"]
 
 [[package]]
 name = "setuptools"
@@ -1044,4 +1042,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "987a9fd3716b6001482423ffd138cfe7a77609236390f1a48a686daebf28ac68"
+content-hash = "fd71a66ff806019e95bd2a8f42b10311c8058043369732030ae63db9e6774b01"
