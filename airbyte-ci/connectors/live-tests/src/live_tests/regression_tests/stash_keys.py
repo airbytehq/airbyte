@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import List, Set
 
 import pytest
-
 from live_tests.commons.models import ConnectionObjects
 from live_tests.regression_tests.report import Report
 

@@ -8,7 +8,6 @@ from typing import Any, Dict, Iterable, TextIO, Tuple
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from cachetools import LRUCache, cached
-
 from live_tests.commons.backends.base_backend import BaseBackend
 from live_tests.commons.utils import sanitize_stream_name
 
@@ -109,36 +108,20 @@ class FileBackend(BaseBackend):
             for f in self.CACHE.values():
                 f.close()
 
-    def _get_filepaths_and_messages(
-        self, message: AirbyteMessage
-    ) -> Tuple[Tuple[str, ...], Tuple[str, ...]]:
+    def _get_filepaths_and_messages(self, message: AirbyteMessage) -> Tuple[Tuple[str, ...], Tuple[str, ...]]:
         if message.type == AirbyteMessageType.CATALOG:
             return (self.RELATIVE_CATALOGS_PATH,), (message.catalog.json(),)
 
         elif message.type == AirbyteMessageType.CONNECTION_STATUS:
-            return (self.RELATIVE_CONNECTION_STATUS_PATH,), (
-                message.connectionStatus.json(),
-            )
+            return (self.RELATIVE_CONNECTION_STATUS_PATH,), (message.connectionStatus.json(),)
 
         elif message.type == AirbyteMessageType.RECORD:
             stream_name = message.record.stream
-            stream_file_path = (
-                self.record_per_stream_directory
-                / f"{sanitize_stream_name(stream_name)}.jsonl"
-            )
-            stream_file_path_data_only = (
-                self.record_per_stream_directory
-                / f"{sanitize_stream_name(stream_name)}_data_only.jsonl"
-            )
+            stream_file_path = self.record_per_stream_directory / f"{sanitize_stream_name(stream_name)}.jsonl"
+            stream_file_path_data_only = self.record_per_stream_directory / f"{sanitize_stream_name(stream_name)}_data_only.jsonl"
             self.record_per_stream_paths[stream_name] = stream_file_path
-            self.record_per_stream_paths_data_only[stream_name] = (
-                stream_file_path_data_only
-            )
-            return (
-                self.RELATIVE_RECORDS_PATH,
-                str(stream_file_path),
-                str(stream_file_path_data_only),
-            ), (
+            self.record_per_stream_paths_data_only[stream_name] = stream_file_path_data_only
+            return (self.RELATIVE_RECORDS_PATH, str(stream_file_path), str(stream_file_path_data_only),), (
                 message.json(sort_keys=True),
                 message.json(sort_keys=True),
                 json.dumps(message.record.data, sort_keys=True),
@@ -159,6 +142,4 @@ class FileBackend(BaseBackend):
         elif message.type == AirbyteMessageType.CONTROL:
             return (self.RELATIVE_CONTROLS_PATH,), (message.control.json(),)
 
-        raise NotImplementedError(
-            f"No handling for AirbyteMessage type {message.type} has been implemented. This is unexpected."
-        )
+        raise NotImplementedError(f"No handling for AirbyteMessage type {message.type} has been implemented. This is unexpected.")

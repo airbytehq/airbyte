@@ -7,33 +7,14 @@ import textwrap
 import time
 import webbrowser
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    AsyncGenerator,
-    AsyncIterable,
-    Callable,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Set,
-)
+from typing import TYPE_CHECKING, AsyncGenerator, AsyncIterable, Callable, Dict, Generator, Iterable, List, Optional, Set
 
 import dagger
 import pytest
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
-from connection_retriever.retrieval import (  # type: ignore
-    ConnectionNotFoundError,
-    NotPermittedError,
-)
-from rich.prompt import Confirm, Prompt
-
-from live_tests.commons.connection_objects_retrieval import (
-    ConnectionObject,
-    get_connection_objects,
-)
+from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError  # type: ignore
+from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
 from live_tests.commons.models import (
     ActorType,
@@ -49,6 +30,7 @@ from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import build_connection_url, clean_up_artifacts
 from live_tests.regression_tests import stash_keys
+from rich.prompt import Confirm, Prompt
 
 from .report import Report, ReportState
 
@@ -109,9 +91,7 @@ def pytest_addoption(parser: Parser) -> None:
 
 def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
-    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(
-        os.getenv("RUN_IN_AIRBYTE_CI", False)
-    )
+    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(os.getenv("RUN_IN_AIRBYTE_CI", False))
     config.stash[stash_keys.IS_PRODUCTION_CI] = bool(os.getenv("CI", False))
     prompt_for_confirmation(user_email)
     track_usage(
@@ -124,9 +104,7 @@ def pytest_configure(config: Config) -> None:
     )
     config.stash[stash_keys.AIRBYTE_API_KEY] = get_airbyte_api_key()
     config.stash[stash_keys.USER] = user_email
-    config.stash[stash_keys.SESSION_RUN_ID] = config.getoption("--run-id") or str(
-        int(time.time())
-    )
+    config.stash[stash_keys.SESSION_RUN_ID] = config.getoption("--run-id") or str(int(time.time()))
     test_artifacts_directory = get_artifacts_directory(config)
     duckdb_path = test_artifacts_directory / "duckdb.db"
     config.stash[stash_keys.DUCKDB_PATH] = duckdb_path
@@ -139,30 +117,20 @@ def pytest_configure(config: Config) -> None:
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
-    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = config.getoption(
-        "--auto-select-connection"
-    )
-    config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(
-        config, "--connector-image"
-    )
-    config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(
-        config, "--target-version"
-    )
+    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = config.getoption("--auto-select-connection")
+    config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
+    config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
     custom_source_config_path = config.getoption("--config-path")
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
-        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(
-            get_option_or_fail(config, "--should-read-with-state")
-        )
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
     elif _should_read_with_state := config.getoption("--should-read-with-state"):
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = _should_read_with_state
     else:
-        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = (
-            prompt_for_read_with_or_without_state()
-        )
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
 
     retrieval_reason = f"Running regression tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
 
@@ -180,9 +148,7 @@ def pytest_configure(config: Config) -> None:
             },
             config.getoption("--connection-id"),
             Path(custom_source_config_path) if custom_source_config_path else None,
-            Path(custom_configured_catalog_path)
-            if custom_configured_catalog_path
-            else None,
+            Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
             fail_if_missing_objects=False,
@@ -195,28 +161,16 @@ def pytest_configure(config: Config) -> None:
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
         pytest.exit(str(exc))
 
-    config.stash[stash_keys.CONNECTION_ID] = config.stash[  # type: ignore
-        stash_keys.CONNECTION_OBJECTS
-    ].connection_id
+    config.stash[stash_keys.CONNECTION_ID] = config.stash[stash_keys.CONNECTION_OBJECTS].connection_id  # type: ignore
 
-    if source_docker_image := config.stash[
-        stash_keys.CONNECTION_OBJECTS
-    ].source_docker_image:
+    if source_docker_image := config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image:
         config.stash[stash_keys.CONTROL_VERSION] = source_docker_image.split(":")[-1]
     else:
         config.stash[stash_keys.CONTROL_VERSION] = "latest"
 
-    if (
-        config.stash[stash_keys.CONTROL_VERSION]
-        == config.stash[stash_keys.TARGET_VERSION]
-    ):
-        pytest.exit(
-            f"Control and target versions are the same: {control_version}. Please provide different versions."
-        )
-    if (
-        config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id
-        and config.stash[stash_keys.CONNECTION_ID]
-    ):
+    if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
+        pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
+    if config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id and config.stash[stash_keys.CONNECTION_ID]:
         config.stash[stash_keys.CONNECTION_URL] = build_connection_url(
             config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id,
             config.stash[stash_keys.CONNECTION_ID],
@@ -235,29 +189,15 @@ def get_artifacts_directory(config: pytest.Config) -> Path:
     return MAIN_OUTPUT_DIRECTORY / f"session_{run_id}"
 
 
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: List[pytest.Item]
-) -> None:
+def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]) -> None:
     for item in items:
-        if (
-            config.stash[stash_keys.SHOULD_READ_WITH_STATE]
-            and "without_state" in item.keywords
-        ):
-            item.add_marker(
-                pytest.mark.skip(reason="Test is marked with without_state marker")
-            )
-        if (
-            not config.stash[stash_keys.SHOULD_READ_WITH_STATE]
-            and "with_state" in item.keywords
-        ):
-            item.add_marker(
-                pytest.mark.skip(reason="Test is marked with with_state marker")
-            )
+        if config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "without_state" in item.keywords:
+            item.add_marker(pytest.mark.skip(reason="Test is marked with without_state marker"))
+        if not config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "with_state" in item.keywords:
+            item.add_marker(pytest.mark.skip(reason="Test is marked with with_state marker"))
 
 
-def pytest_terminal_summary(
-    terminalreporter: SugarTerminalReporter, exitstatus: int, config: Config
-) -> None:
+def pytest_terminal_summary(terminalreporter: SugarTerminalReporter, exitstatus: int, config: Config) -> None:
     config.stash[stash_keys.REPORT].update(ReportState.FINISHED)
     if not config.stash.get(stash_keys.IS_PERMITTED_BOOL, False):
         # Don't display the prompt if the tests were not run due to inability to fetch config
@@ -286,9 +226,7 @@ def pytest_terminal_summary(
 
 
 def pytest_keyboard_interrupt(excinfo: Exception) -> None:
-    LOGGER.error(
-        "Test execution was interrupted by the user. Cleaning up test artifacts."
-    )
+    LOGGER.error("Test execution was interrupted by the user. Cleaning up test artifacts.")
     clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
 
 
@@ -400,9 +338,7 @@ def connector_config(connection_objects: ConnectionObjects) -> Optional[SecretDi
 
 
 @pytest.fixture(scope="session")
-def actor_id(
-    connection_objects: ConnectionObjects, control_connector: ConnectorUnderTest
-) -> str | None:
+def actor_id(connection_objects: ConnectionObjects, control_connector: ConnectorUnderTest) -> str | None:
     if control_connector.actor_type is ActorType.SOURCE:
         return connection_objects.source_id
     elif control_connector.actor_type is ActorType.DESTINATION:
@@ -417,9 +353,7 @@ def selected_streams(request: SubRequest) -> Set[str]:
 
 
 @pytest.fixture(scope="session")
-def configured_catalog(
-    connection_objects: ConnectionObjects, selected_streams: Optional[Set[str]]
-) -> ConfiguredAirbyteCatalog:
+def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[Set[str]]) -> ConfiguredAirbyteCatalog:
     if not connection_objects.configured_catalog:
         pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
     assert connection_objects.configured_catalog is not None
@@ -430,12 +364,7 @@ def configured_catalog(
 def primary_keys_per_stream(
     configured_catalog: ConfiguredAirbyteCatalog,
 ) -> Dict[str, Optional[List[str]]]:
-    return {
-        stream.stream.name: stream.primary_key[0]
-        if getattr(stream, "primary_key")
-        else None
-        for stream in configured_catalog.streams
-    }
+    return {stream.stream.name: stream.primary_key[0] if getattr(stream, "primary_key") else None for stream in configured_catalog.streams}
 
 
 @pytest.fixture(scope="session")
@@ -452,11 +381,7 @@ def state(connection_objects: ConnectionObjects) -> Optional[Dict]:
 
 @pytest.fixture(scope="session")
 def dagger_connection(request: SubRequest) -> dagger.Connection:
-    return dagger.Connection(
-        dagger.Config(
-            log_output=request.config.stash[stash_keys.DAGGER_LOG_PATH].open("w")
-        )
-    )
+    return dagger.Connection(dagger.Config(log_output=request.config.stash[stash_keys.DAGGER_LOG_PATH].open("w")))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -468,21 +393,13 @@ async def dagger_client(
 
 
 @pytest.fixture(scope="session")
-async def control_connector(
-    dagger_client: dagger.Client, connector_image: str, control_version: str
-) -> ConnectorUnderTest:
-    return await ConnectorUnderTest.from_image_name(
-        dagger_client, f"{connector_image}:{control_version}", TargetOrControl.CONTROL
-    )
+async def control_connector(dagger_client: dagger.Client, connector_image: str, control_version: str) -> ConnectorUnderTest:
+    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{control_version}", TargetOrControl.CONTROL)
 
 
 @pytest.fixture(scope="session")
-async def target_connector(
-    dagger_client: dagger.Client, connector_image: str, target_version: str
-) -> ConnectorUnderTest:
-    return await ConnectorUnderTest.from_image_name(
-        dagger_client, f"{connector_image}:{target_version}", TargetOrControl.TARGET
-    )
+async def target_connector(dagger_client: dagger.Client, connector_image: str, target_version: str) -> ConnectorUnderTest:
+    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{target_version}", TargetOrControl.TARGET)
 
 
 @pytest.fixture(scope="session")
@@ -524,13 +441,9 @@ async def spec_control_execution_result(
     spec_control_execution_inputs: ExecutionInputs,
     spec_control_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running spec for control connector {spec_control_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running spec for control connector {spec_control_execution_inputs.connector_under_test.name}")
     execution_result = await spec_control_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_control_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_control_execution_result(execution_result)
     return execution_result
 
 
@@ -568,14 +481,10 @@ async def spec_target_execution_result(
     spec_target_execution_inputs: ExecutionInputs,
     spec_target_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running spec for target connector {spec_target_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running spec for target connector {spec_target_execution_inputs.connector_under_test.name}")
     execution_result = await spec_target_connector_runner.run()
 
-    request.config.stash[stash_keys.REPORT].add_target_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_target_execution_result(execution_result)
 
     return execution_result
 
@@ -621,14 +530,10 @@ async def check_control_execution_result(
     check_control_execution_inputs: ExecutionInputs,
     check_control_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running check for control connector {check_control_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running check for control connector {check_control_execution_inputs.connector_under_test.name}")
     execution_result = await check_control_connector_runner.run()
 
-    request.config.stash[stash_keys.REPORT].add_control_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_control_execution_result(execution_result)
 
     return execution_result
 
@@ -680,13 +585,9 @@ async def check_target_execution_result(
     check_target_execution_inputs: ExecutionInputs,
     check_target_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running check for target connector {check_target_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running check for target connector {check_target_execution_inputs.connector_under_test.name}")
     execution_result = await check_target_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_target_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_target_execution_result(execution_result)
 
     return execution_result
 
@@ -715,13 +616,9 @@ async def discover_control_execution_result(
     discover_control_execution_inputs: ExecutionInputs,
     discover_control_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running discover for control connector {discover_control_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running discover for control connector {discover_control_execution_inputs.connector_under_test.name}")
     execution_result = await discover_control_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_control_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_control_execution_result(execution_result)
 
     return execution_result
 
@@ -788,13 +685,9 @@ async def discover_target_execution_result(
     discover_target_execution_inputs: ExecutionInputs,
     discover_target_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running discover for target connector {discover_target_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running discover for target connector {discover_target_execution_inputs.connector_under_test.name}")
     execution_result = await discover_target_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_target_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_target_execution_result(execution_result)
 
     return execution_result
 
@@ -861,14 +754,10 @@ async def read_control_execution_result(
     read_control_execution_inputs: ExecutionInputs,
     read_control_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running read for control connector {read_control_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running read for control connector {read_control_execution_inputs.connector_under_test.name}")
     execution_result = await read_control_connector_runner.run()
 
-    request.config.stash[stash_keys.REPORT].add_control_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_control_execution_result(execution_result)
 
     return execution_result
 
@@ -902,14 +791,10 @@ async def read_target_execution_result(
     read_target_execution_inputs: ExecutionInputs,
     read_target_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
-    logging.info(
-        f"Running read for target connector {read_target_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running read for target connector {read_target_execution_inputs.connector_under_test.name}")
     execution_result = await read_target_connector_runner.run()
 
-    request.config.stash[stash_keys.REPORT].add_target_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_target_execution_result(execution_result)
     return execution_result
 
 
@@ -924,9 +809,7 @@ def read_with_state_control_execution_inputs(
     duckdb_path: Path,
 ) -> ExecutionInputs:
     if not state:
-        pytest.skip(
-            "The state is not provided. Skipping the test as it's not possible to run a read with state."
-        )
+        pytest.skip("The state is not provided. Skipping the test as it's not possible to run a read with state.")
     return ExecutionInputs(
         connector_under_test=control_connector,
         actor_id=actor_id,
@@ -950,9 +833,7 @@ def read_with_state_target_execution_inputs(
     duckdb_path: Path,
 ) -> ExecutionInputs:
     if not state:
-        pytest.skip(
-            "The state is not provided. Skipping the test as it's not possible to run a read with state."
-        )
+        pytest.skip("The state is not provided. Skipping the test as it's not possible to run a read with state.")
     return ExecutionInputs(
         connector_under_test=target_connector,
         actor_id=actor_id,
@@ -988,17 +869,11 @@ async def read_with_state_control_execution_result(
     read_with_state_control_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
     if read_with_state_control_execution_inputs.state is None:
-        pytest.skip(
-            "The control state is not provided. Skipping the test as it's not possible to run a read with state."
-        )
+        pytest.skip("The control state is not provided. Skipping the test as it's not possible to run a read with state.")
 
-    logging.info(
-        f"Running read with state for control connector {read_with_state_control_execution_inputs.connector_under_test.name}"
-    )
+    logging.info(f"Running read with state for control connector {read_with_state_control_execution_inputs.connector_under_test.name}")
     execution_result = await read_with_state_control_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_control_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_control_execution_result(execution_result)
 
     return execution_result
 
@@ -1031,15 +906,9 @@ async def read_with_state_target_execution_result(
     read_with_state_target_connector_runner: ConnectorRunner,
 ) -> ExecutionResult:
     if read_with_state_target_execution_inputs.state is None:
-        pytest.skip(
-            "The target state is not provided. Skipping the test as it's not possible to run a read with state."
-        )
-    logging.info(
-        f"Running read with state for target connector {read_with_state_target_execution_inputs.connector_under_test.name}"
-    )
+        pytest.skip("The target state is not provided. Skipping the test as it's not possible to run a read with state.")
+    logging.info(f"Running read with state for target connector {read_with_state_target_execution_inputs.connector_under_test.name}")
     execution_result = await read_with_state_target_connector_runner.run()
-    request.config.stash[stash_keys.REPORT].add_target_execution_result(
-        execution_result
-    )
+    request.config.stash[stash_keys.REPORT].add_target_execution_result(execution_result)
 
     return execution_result
