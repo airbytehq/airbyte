@@ -7,7 +7,6 @@ import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
-from source_shopify.streams.base_streams import IncrementalShopifyGraphQlBulkStream
 from source_shopify.streams.streams import (
     Collections,
     CustomerAddress,
@@ -119,28 +118,21 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
 
 
 @pytest.mark.parametrize(
-    "job_response, error_type, patch_healthcheck, expected",
+    "job_response, error_type, expected",
     [
-        (
-            "bulk_job_completed_response",
-            None,
-            False,
-            "bulk-123456789.jsonl",
-        ),
-        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, False, "exited with FAILED"),
-        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, False, "exited with TIMEOUT"),
-        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, False, "exited with ACCESS_DENIED"),
-        ("bulk_successful_response_with_errors", ShopifyBulkExceptions.BulkJobUnknownError, True, "Could not validate the status of the BULK Job"),
+        ("bulk_job_completed_response", None, "bulk-123456789.jsonl"),
+        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
+        ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
+        ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
     ],
     ids=[
         "completed",
         "failed",
         "timeout",
         "access_denied",
-        "success with errors (edge)",
     ],
 )
-def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, patch_healthcheck, expected) -> None:
+def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
     stream.job_manager.concurrent_max_retry = 1
@@ -151,8 +143,6 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
     # patching the method to get the right ID checks
     if job_id:
         mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
-    if patch_healthcheck:
-        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_healthcheck", value=job_response)
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
@@ -167,6 +157,40 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
         result = stream.job_manager.job_check(test_job_status_response)
         assert expected == result
+        
+
+@pytest.mark.parametrize(
+    "job_response, error_type, expected",
+    [
+        (
+            "bulk_successful_response_with_errors", 
+            ShopifyBulkExceptions.BulkJobUnknownError, 
+            "Could not validate the status of the BULK Job",
+        ),
+    ],
+    ids=[
+        "success with errors (edge)",
+    ],
+)
+def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+    stream = MetafieldOrders(auth_config)
+    # modify the sleep time for the test
+    stream.job_manager.concurrent_max_retry = 1
+    stream.job_manager.concurrent_interval_sec = 1
+    stream.job_manager.job_check_interval_sec = 1
+    # get job_id from FIXTURE
+    job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
+    # patching the method to get the right ID checks
+    if job_id:
+        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
+    # mocking the response for STATUS CHECKS
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+    test_job_status_response = requests.post(stream.job_manager.base_url)
+    with pytest.raises(error_type) as error:
+        stream.job_manager.job_check(test_job_status_response)
+    # The retried request should FAIL here, because we stil want to see the Exception raised
+    # We expect the call count to be 4 due to the status checks, the non-retried request would take 2 calls.
+    assert expected in repr(error.value) and requests_mock.call_count == 4
 
 
 @pytest.mark.parametrize(
@@ -294,6 +318,50 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
+    stream.job_manager.job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
+
+    
+@pytest.mark.parametrize(
+    "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
+    [
+        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 5.5),
+    ],
+    ids=[
+        "Expand Slice Size",
+    ],
+)   
+def test_expand_stream_slices_job_size(
+    request,
+    requests_mock,
+    bulk_job_completed_response,
+    stream,
+    json_content_example,
+    last_job_elapsed_time,
+    previous_slice_size,
+    adjusted_slice_size,
+    auth_config,
+) -> None:
+    
+    stream = stream(auth_config)
+    # get the mocked job_result_url
+    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
+    # mocking the result url with jsonl content
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    # getting mock response
+    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
+    # mocking nested api call to get data from result url
+    requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
+
+    # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
+    # fake current slice interval value
+    stream.job_manager.job_size = previous_slice_size
+    # fake `last job elapsed time` 
+    if last_job_elapsed_time:
+        stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
+    # parsing result from completed job
+    list(stream.parse_response(test_bulk_response))
+    # check the next slice
+    assert stream.job_manager.job_size == adjusted_slice_size

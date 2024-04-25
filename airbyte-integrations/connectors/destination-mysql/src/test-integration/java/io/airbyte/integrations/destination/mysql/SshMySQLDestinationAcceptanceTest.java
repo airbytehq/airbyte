@@ -31,6 +31,9 @@ import org.junit.jupiter.api.Disabled;
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
+ * <p>
+ * This class probably should extend {@link MySQLDestinationAcceptanceTest} to further reduce code
+ * duplication though.
  */
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -107,6 +110,14 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     final var tableName = namingResolver.getIdentifier(streamName);
     final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);
     return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
+      return null;
+    }
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {

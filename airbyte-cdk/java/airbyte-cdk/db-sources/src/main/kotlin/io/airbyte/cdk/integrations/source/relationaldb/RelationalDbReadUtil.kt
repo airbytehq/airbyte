@@ -31,6 +31,7 @@ object RelationalDbReadUtil {
             .collect(Collectors.toList())
     }
 
+    @JvmStatic
     fun identifyStreamsForCursorBased(
         catalog: ConfiguredAirbyteCatalog,
         streamsForInitialLoad: List<ConfiguredAirbyteStream>
@@ -54,6 +55,7 @@ object RelationalDbReadUtil {
             .collect(Collectors.toList())
     }
 
+    @JvmStatic
     fun convertNameNamespacePairFromV0(
         v1NameNamespacePair: io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
     ): AirbyteStreamNameNamespacePair {
