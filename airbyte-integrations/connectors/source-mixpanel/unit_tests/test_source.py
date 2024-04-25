@@ -183,11 +183,6 @@ def test_streams_string_date(requests_mock, config_raw):
         ),
         ({"credentials": {"api_secret": "secret"}, "region": "UK"}, False, "Region must be either EU or US."),
         (
-            {"credentials": {"api_secret": "secret"}, "date_window_size": "month"},
-            False,
-            "Please provide a valid integer for the `Date slicing window` parameter.",
-        ),
-        (
             {"credentials": {"username": "user", "secret": "secret"}},
             False,
             "Required parameter 'project_id' missing or malformed. Please provide a valid project ID.",

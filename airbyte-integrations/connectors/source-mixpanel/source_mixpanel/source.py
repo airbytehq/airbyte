@@ -42,11 +42,14 @@ class SourceMixpanel(YamlDeclarativeSource):
             else:
                 credentials["option_title"] = "Service Account"
 
+        streams = super().streams(config=config)
+
         config_transformed = copy.deepcopy(config)
         config_transformed = self._validate_and_transform(config_transformed)
         auth = self.get_authenticator(config)
-        streams = super().streams(config=config)
+
         streams.append(Export(authenticator=auth, **config_transformed))
+
         return streams
 
     @staticmethod
@@ -104,7 +107,7 @@ class SourceMixpanel(YamlDeclarativeSource):
         today = pendulum.today(tz=project_timezone).date()
         config["project_timezone"] = project_timezone
         config["start_date"] = self.validate_date("start date", start_date, today.subtract(days=365))
-        config["end_date"] = self.validate_date("end date", end_date, today)
+        config["end_date"] = self.validate_date("end date", end_date, today.subtract(days=1))
         config["attribution_window"] = attribution_window
         config["select_properties_by_default"] = select_properties_by_default
         config["region"] = region

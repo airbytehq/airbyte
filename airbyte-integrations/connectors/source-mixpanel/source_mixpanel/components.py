@@ -25,6 +25,16 @@ class MixpanelHttpRequester(HttpRequester):
     reqs_per_hour_limit = 60
     is_first_request = True
 
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+
+        return {"Accept": "application/json"}
+
     def get_request_params(
         self,
         *,
@@ -32,7 +42,6 @@ class MixpanelHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-
         project_id = self.config.get("credentials", {}).get("project_id")
         return {"project_id": project_id} if project_id else {}
 
@@ -54,13 +63,15 @@ class MixpanelHttpRequester(HttpRequester):
 
     def send_request(self, **kwargs) -> Optional[requests.Response]:
 
-        if not self.is_first_request and self.reqs_per_hour_limit:
-            self.is_first_request = False
-            # we skip this block, if self.reqs_per_hour_limit = 0,
-            # in all other cases wait for X seconds to match API limitations
-            # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
-            time.sleep(3600 / self.reqs_per_hour_limit)
+        if self.reqs_per_hour_limit:
+            if self.is_first_request:
+                self.is_first_request = False
+            else:
+                # we skip this block, if self.reqs_per_hour_limit = 0,
+                # in all other cases wait for X seconds to match API limitations
+                # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+                self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
+                time.sleep(3600 / self.reqs_per_hour_limit)
 
         return super().send_request(**kwargs)
 
@@ -84,6 +95,19 @@ class AnnotationsHttpRequester(MixpanelHttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {}
+
+
+class FunnelsHttpRequester(MixpanelHttpRequester):
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params['unit'] = 'day'
+        return params
 
 
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
