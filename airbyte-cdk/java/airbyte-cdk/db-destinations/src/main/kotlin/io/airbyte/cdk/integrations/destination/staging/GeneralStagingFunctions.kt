@@ -155,7 +155,7 @@ object GeneralStagingFunctions {
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
         return OnCloseFunction {
-            hasFailed: Boolean,
+            _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             // After moving data from staging area to the target table (airybte_raw) clean up the
             // staging

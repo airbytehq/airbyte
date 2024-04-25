@@ -59,7 +59,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
         return !jdbcDatabase.queryBoolean(
             dslContext
                 .select(
-                    DSL.field(
+                    field(
                         DSL.exists(
                             DSL.selectOne().from(DSL.name(id.finalNamespace, id.finalName)).limit(1)
                         )
@@ -100,7 +100,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 CheckedFunction { conn: Connection ->
                     conn.prepareStatement(
                         dslContext
-                            .select(DSL.field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
+                            .select(field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName))
                             .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                             .sql
@@ -129,7 +129,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 CheckedFunction { conn: Connection ->
                     conn.prepareStatement(
                         dslContext
-                            .select(DSL.field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
+                            .select(field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName))
                             .sql
                     )
