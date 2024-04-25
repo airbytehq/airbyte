@@ -4,7 +4,6 @@
 
 import datetime
 import decimal
-import functools
 import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -174,6 +173,9 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
                             type_.__name__,
                             k,
                         )
+                # Apply fields rename
+                if k in self._field_name_map:
+                    row[self._field_name_map[k]] = row.pop(k)
 
             return row
 
@@ -207,7 +209,6 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
             yield {cf: date.isoformat()}
             date += datetime.timedelta(days=1)
 
-    @functools.lru_cache(maxsize=None)
     def get_json_schema(self):
         """
         Prune the schema to only include selected fields to synchronize.
@@ -225,10 +226,13 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         for attr in self._additional_metrics:
             properties[attr] = {"type": "number"}
 
+        # Replace properties keys
         for old_val, new_val in self._field_name_map.items():
             if old_val in properties:
                 properties[new_val] = properties.pop(old_val)
 
+        # Replace required fields in list
+        schema["required"] = [self._field_name_map.get(required_field, required_field) for required_field in required]
         return schema
 
     @property
@@ -370,6 +374,7 @@ class SourceAdjust(AbstractSource):
         config = SourceAdjust.prepare_config_datetime(config)
         for report in config["reports"]:
             report["field_name_map"] = SourceAdjust.get_field_name_map(report)
+
         return config
 
     def streams(self, config: dict[str, Any]) -> List[Stream]:
@@ -390,9 +395,9 @@ class SourceAdjust(AbstractSource):
                     prepared_date_range=config["prepared_date_range"].copy(),
                     date_range=config["date_range"].copy(),
                     dimensions=report_config["dimensions"],
-                    metrics=report_config["metrics"],
+                    metrics=report_config.get("metrics", []),
                     additional_metrics=report_config["additional_metrics"],
-                    field_name_map=config.get("field_name_map"),
+                    field_name_map=report_config.get("field_name_map"),
                     adjust_account_id=config.get("account_id"),
                     authenticator=auth,
                     attribution_type=config.get("attribution_type"),
