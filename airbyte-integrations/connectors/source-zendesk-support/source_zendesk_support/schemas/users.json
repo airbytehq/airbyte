@@ -199,9 +199,7 @@
     "user_fields": {
       "description": "Custom fields associated with the user.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "A custom field associated with the user."
-      },
+      "properties": {},
       "additionalProperties": true
     },
     "last_login_at": {
