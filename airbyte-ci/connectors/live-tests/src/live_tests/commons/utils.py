@@ -96,10 +96,9 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     # If a container_id.txt file is available, we'll use it to load the connector container
     # We use a txt file as container ids can be too long to be passed as env vars
     # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
-    connector_container_id_path = Path("/tmp/container_id.txt")
-    if connector_container_id_path.exists():
-        # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
-        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
+    container_id_path = Path(f"/tmp/container_id.txt")
+    if container_id_path.exists():
+        return await get_container_from_id(dagger_client, container_id_path.read_text())
 
     # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
     if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):

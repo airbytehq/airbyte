@@ -74,23 +74,41 @@ def pytest_addoption(parser: Parser) -> None:
     )
     parser.addoption("--pr-url", help="The URL of the PR you are testing")
     parser.addoption("--stream", help="The stream to run the tests on. (Can be used multiple times)", action="append")
+    # Required when running in CI
+    parser.addoption("--run-id", type=str)
+    parser.addoption(
+        "--should-read-with-state",
+        type=bool,
+        help="Whether to run the `read` command with state. \n"
+        "We recommend reading with state to properly test incremental sync. \n"
+        "But if the target version introduces a breaking change in the state, you might want to run without state. \n",
+    )
 
 
 def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
+    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = os.getenv("RUN_IN_AIRBYTE_CI", False)
+    config.stash[stash_keys.IS_PRODUCTION_CI] = os.getenv("CI", False)
     prompt_for_confirmation(user_email)
-    track_usage(user_email, vars(config.option))
+    track_usage(
+        "production-ci"
+        if config.stash[stash_keys.IS_PRODUCTION_CI]
+        else "local-ci"
+        if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]
+        else user_email,
+        vars(config.option),
+    )
     config.stash[stash_keys.AIRBYTE_API_KEY] = get_airbyte_api_key()
     config.stash[stash_keys.USER] = user_email
-    start_timestamp = int(time.time())
-    test_artifacts_directory = MAIN_OUTPUT_DIRECTORY / f"session_{start_timestamp}"
+    config.stash[stash_keys.SESSION_RUN_ID] = config.getoption("--run-id") or str(int(time.time()))
+    test_artifacts_directory = get_artifacts_directory(config)
     duckdb_path = test_artifacts_directory / "duckdb.db"
     config.stash[stash_keys.DUCKDB_PATH] = duckdb_path
     test_artifacts_directory.mkdir(parents=True, exist_ok=True)
     dagger_log_path = test_artifacts_directory / "dagger.log"
     config.stash[stash_keys.IS_PERMITTED_BOOL] = False
     report_path = test_artifacts_directory / "report.html"
-    config.stash[stash_keys.SESSION_START_TIMESTAMP] = start_timestamp
+
     config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY] = test_artifacts_directory
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
@@ -103,8 +121,15 @@ def pytest_configure(config: Config) -> None:
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
 
-    config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
+    if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = get_option_or_fail(config, "--should-read-with-state")
+    elif _should_read_with_state := config.getoption("--should-read-with-state"):
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = _should_read_with_state
+    else:
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
+
     retrieval_reason = f"Running regression tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+
     try:
         config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
             {
@@ -155,6 +180,11 @@ def pytest_configure(config: Config) -> None:
     webbrowser.open_new_tab(config.stash[stash_keys.REPORT].path.resolve().as_uri())
 
 
+def get_artifacts_directory(config: pytest.Config) -> Path:
+    run_id = config.stash[stash_keys.SESSION_RUN_ID]
+    return MAIN_OUTPUT_DIRECTORY / f"session_{run_id}"
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]) -> None:
     for item in items:
         if config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "without_state" in item.keywords:
@@ -176,18 +206,20 @@ def pytest_terminal_summary(terminalreporter: SugarTerminalReporter, exitstatus:
         f"All tests artifacts for this sessions should be available in {config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY].resolve()}"
     )
 
-    try:
-        Prompt.ask(
-            textwrap.dedent(
-                """
-            Test artifacts will be destroyed after this prompt. 
-            Press enter when you're done reading them.
-            🚨 Do not copy them elsewhere on your disk!!! 🚨
-            """
+    if not config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        try:
+
+            Prompt.ask(
+                textwrap.dedent(
+                    """
+                    Test artifacts will be destroyed after this prompt.
+                    Press enter when you're done reading them.
+                    🚨 Do not copy them elsewhere on your disk!!! 🚨
+                    """
+                )
             )
-        )
-    finally:
-        clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
+        finally:
+            clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
 
 
 def pytest_keyboard_interrupt(excinfo: Exception) -> None:
