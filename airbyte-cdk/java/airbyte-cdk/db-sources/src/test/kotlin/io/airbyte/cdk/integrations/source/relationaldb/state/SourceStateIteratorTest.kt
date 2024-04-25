@@ -15,9 +15,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
 class SourceStateIteratorTest {
-    lateinit var mockProducer: SourceStateMessageProducer<AirbyteMessage>
-    lateinit var messageIterator: Iterator<AirbyteMessage>
-    lateinit var stream: ConfiguredAirbyteStream
+    var mockProducer: SourceStateMessageProducer<AirbyteMessage> = mock()
+    var messageIterator: Iterator<AirbyteMessage> = mock()
+    var stream: ConfiguredAirbyteStream = mock()
 
     var sourceStateIterator: SourceStateIteratorForTest<*>? = null
 

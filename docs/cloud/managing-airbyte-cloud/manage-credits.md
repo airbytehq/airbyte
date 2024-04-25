@@ -8,15 +8,15 @@ Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resou
 
 ## Buy credits
 
-To purchase credits directly through the UI, 
+1. To purchase credits directly through the UI, click **Billing** in the left-hand sidebar. The billing page displays the available credits, total credit usage, and the credit usage per connection. 
 
-1. Click **Billing** in the left-hand sidebar.
+    :::tip
 
-2. If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
+    If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
 
-3. Click **Buy credits**.
+    :::
 
-4. Determine the quantity of credits you intend to purchase. Adjust the **credit quantity**. When you're ready, click **Checkout**.
+2. Click **Buy credits**. Enter the quantity of credits you intend to purchase and adjust the **credit quantity** accordingly. When you're ready, click **Checkout**.
 
     :::note 
 
@@ -30,11 +30,7 @@ To purchase credits directly through the UI,
 
 5. You'll be renavigated to a Stripe payment page. If this is your first time purchasing, you'll be asked for payment details. After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
 
-6. Click **Pay**.
-    
-    Your payment is processed. The Billing page displays the available credits, total credit usage, and the credit usage per connection. 
-
-    A receipt for your purchase is sent to your email. 
+6. Click **Pay** to process your payment. A receipt for your purchase is automatically sent to your email. 
 
     :::note 
 
